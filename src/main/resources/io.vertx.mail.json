@@ -1,0 +1,8 @@
+{
+  "main": "cx.lehmann.vertx.mail.vertxmail.MailTest",
+  "options": {
+    "worker": false,
+    "config": {
+    }
+  }
+}
