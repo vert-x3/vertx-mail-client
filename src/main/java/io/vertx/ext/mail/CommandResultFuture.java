@@ -27,7 +27,7 @@ public class CommandResultFuture implements Future<String> {
         String string = event.result();
         handler.handle(string);
       } else {
-        // FIXME: logging
+        // FIXME: proper logging or propagate the exception
         event.cause().printStackTrace();
       }
     });
