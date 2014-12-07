@@ -1,9 +1,9 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.mailutil.MyHtmlEmail;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,8 +11,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -45,47 +43,33 @@ public class MailTest {
       Properties account = new Properties();
       InputStream inputstream = new FileInputStream("account.properties");
       account.load(inputstream);
-      sendMail(account.getProperty("username"), account.getProperty("pw"));
-      latch.await();
-    } catch (IOException | InterruptedException ioe) {
-      log.error("IOException", ioe);
-    }
-  }
 
-  /**
-   * 
-   */
-  private void sendMail(String username, String pw) {
-    try {
-      HtmlEmail email = new MyHtmlEmail(); // this provides the missing getter for bounceAddress
+      JsonObject mailConfig = new JsonObject();
 
-      email.setCharset("UTF-8");
+      mailConfig.put("hostname", "mail.arcor.de");
+      mailConfig.put("port", 587);
+      mailConfig.put("starttls", "required");
+      mailConfig.put("login", "required");
+      mailConfig.put("username", account.getProperty("username"));
+      mailConfig.put("password", account.getProperty("pw"));
 
-      email.setHostName("mail.arcor.de");
-      email.setSmtpPort(587);
-      email.setStartTLSRequired(true);
+      MailService mailService = MailService.create(vertx, mailConfig);
 
-      // Create the email message
-      email.addTo("lehmann333@arcor.de", "User");
-      email.setFrom("lehmann333@arcor.de", "Sender");
-      email.setBounceAddress("user@example.com");
-      email.setSubject("Test email with HTML");
+      JsonObject email = new JsonObject();
+      email.put("from", "lehmann333@arcor.de");
+      email.put("recipient", "lehmann333@arcor.de");
+      email.put("bounceAddress", "user@example.com");
+      email.put("subject", "Test email with HTML");
+      email.put("text", "this is a test email");
 
-      // set the html message
-      email.setHtmlMsg("<html>This is a test message from <a href=\"http://vertx.io\">Vert.x</a></html>");
-
-      // set the alternative message
-      email.setTextMsg("Your email client does not support HTML messages");
-
-      // OK, its not really a verticle, we will get that right later ...
-      MailVerticle mailVerticle = new MailVerticle(vertx, v -> {
+      mailService.sendMail(email, v -> {
         log.info("mail finished");
         latch.countDown();
       });
-      mailVerticle.sendMail(email, username, pw);
 
-    } catch (EmailException e) {
-      log.error("Exception", e);
+      latch.await();
+    } catch (IOException | InterruptedException ioe) {
+      log.error("IOException", ioe);
     }
   }
 

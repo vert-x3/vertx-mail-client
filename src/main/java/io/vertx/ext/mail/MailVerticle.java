@@ -137,7 +137,7 @@ public class MailVerticle {
           log.warn("STARTTLS required but not supported by server");
         } else {
           // TODO: this assumes that auth is always required if present
-          if (!capaAuth.isEmpty()) {
+          if (username != null && pw != null && !capaAuth.isEmpty()) {
             authCmd();
           } else {
             mailFromCmd();
