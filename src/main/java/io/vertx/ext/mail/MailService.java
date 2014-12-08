@@ -26,10 +26,10 @@ public interface MailService {
   }
 
   // send an email previously constructed
-  void sendMailString(String email, Handler<AsyncResult<String>> resultHandler);
+  void sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   // send an email with all options explicitly set
-  void sendMail(JsonObject email, Handler<AsyncResult<String>> resultHandler);
+  void sendMail(JsonObject email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   // send an email with options based on a apache.commons.mail
   // Email object, this will not go through the event bus but will
