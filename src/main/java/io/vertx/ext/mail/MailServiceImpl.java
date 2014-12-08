@@ -45,13 +45,13 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public void sendMailString(String email, Handler<AsyncResult<String>> resultHandler) {
+  public void sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler) {
     // not yet implemented
   }
 
   @Override
   public void start() {
-    // may take case of validating the options
+    // may take care of validating the options
     // and configure a queue if we implement one
     log.debug("mail service started");
   }
@@ -64,7 +64,7 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public void sendMail(JsonObject emailJson,
-      Handler<AsyncResult<String>> resultHandler) {
+      Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
       String text = emailJson.getString("text");
       String bounceAddress = emailJson.getString("bounceAddress");
@@ -83,34 +83,7 @@ public class MailServiceImpl implements MailService {
       email.setHostName(hostname);
       email.setSmtpPort(port);
 
-      // TODO: result handling is not sensible yet
-      Handler<Void> voidHandler = v -> {
-        AsyncResult<String> asyncResult = new AsyncResult<String>() {
-
-          @Override
-          public String result() {
-            return "";
-          }
-
-          @Override
-          public Throwable cause() {
-            return null;
-          }
-
-          @Override
-          public boolean succeeded() {
-            return true;
-          }
-
-          @Override
-          public boolean failed() {
-            return false;
-          }
-
-        };
-        resultHandler.handle(asyncResult);
-      };
-      MailVerticle mailVerticle = new MailVerticle(vertx, voidHandler);
+      MailVerticle mailVerticle = new MailVerticle(vertx, resultHandler);
       mailVerticle.sendMail(email, username, password);
     } catch (EmailException | AddressException e) {
       e.printStackTrace();
