@@ -77,14 +77,31 @@ public class MailServiceImpl implements MailService {
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
       tos.add(new InternetAddress(recipient));
       email.setTo(tos);
+      email.setSubject(emailJson.getString("subject"));
       email.setBounceAddress(bounceAddress);
       email.setContent(text, "text/plain");
+
+      // use optional as default, this way we do opportunistic unless disabled
+      // TODO: can we do this as enum?
+      final String starttls=config.getString("starttls", "enabled");
+      if(starttls.equals("enabled")) {
+        email.setStartTLSEnabled(true);
+      }
+      if(starttls.equals("required")) {
+        email.setStartTLSRequired(true);
+      }
+
+      if(config.getString("ssl", "false").equals("true")) {
+        email.setSSLOnConnect(true);
+      }
 
       email.setHostName(hostname);
       email.setSmtpPort(port);
 
+      final String login = config.getString("login", "enabled");
+
       MailVerticle mailVerticle = new MailVerticle(vertx, resultHandler);
-      mailVerticle.sendMail(email, username, password);
+      mailVerticle.sendMail(email, username, password, login);
     } catch (EmailException | AddressException e) {
       e.printStackTrace();
     }
