@@ -99,6 +99,7 @@ public class MailVerticle {
             ns.handler(mlp);
           } else {
             log.error("exception", asyncResult.cause());
+            throwAsyncResult(asyncResult.cause());
           }
         });
   }
@@ -137,6 +138,7 @@ public class MailVerticle {
       } else {
         if (!ns.isSsl() && email.isStartTLSRequired()) {
           log.warn("STARTTLS required but not supported by server");
+          throwAsyncResult(new Exception("STARTTLS required but not supported by server"));
         } else {
           // TODO: this assumes that auth is always required if present
           if (username != null && pw != null && !capaAuth.isEmpty()) {
@@ -176,6 +178,7 @@ public class MailVerticle {
     for (String l : string.split("\n")) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
         log.error("format error in ehlo response");
+        throwAsyncResult(new Exception("format error in ehlo response"));
       } else {
         v.add(l.substring(4));
       }
@@ -198,6 +201,7 @@ public class MailVerticle {
         log.info("AUTH result: " + buffer);
         if (!buffer.toString().startsWith("2")) {
           log.warn("authentication failed");
+          throwAsyncResult(new Exception("authentication failed"));
         } else {
           mailFromCmd();
         }
@@ -210,6 +214,7 @@ public class MailVerticle {
       });
     } else {
       log.warn("cannot find supported auth method");
+      throwAsyncResult(new Exception("cannot find supported auth method"));
     }
   }
 
@@ -247,6 +252,7 @@ public class MailVerticle {
       mailFromCmd();
     } else {
       log.warn("authentication failed");
+      throwAsyncResult(new Exception("authentication failed"));
     }
   }
 
@@ -264,6 +270,7 @@ public class MailVerticle {
       log.info("username result: " + buffer);
       if (!buffer.toString().startsWith("2")) {
         log.warn("authentication failed");
+        throwAsyncResult(new Exception("authentication failed"));
       } else {
         mailFromCmd();
       }
@@ -290,6 +297,7 @@ public class MailVerticle {
       });
     } catch (AddressException e) {
       log.error("address exception", e);
+      throwAsyncResult(e);
     }
   }
 
@@ -305,6 +313,7 @@ public class MailVerticle {
       });
     } catch (AddressException e) {
       log.error("address exception", e);
+      throwAsyncResult(e);
     }
   }
 
@@ -323,11 +332,16 @@ public class MailVerticle {
       email.getMimeMessage().writeTo(bos);
     } catch (IOException | MessagingException | EmailException e) {
       log.error("cannot create mime message", e);
+      throwAsyncResult(new Exception("cannot create mime message"));
+    }
+    String message=bos.toString();
+    // fail delivery if we exceed size
+    if(capaSize>0 && message.length()>capaSize) {
+      throwAsyncResult(new Exception("message exceeds allowed size"));
     }
     // convert message to escape . at the start of line
     // TODO: this is probably bad for large messages
-    String mailmessage = bos.toString().replaceAll("\n\\.", "\n..") + "\r\n.";
-    write(ns, mailmessage);
+    write(ns, message.replaceAll("\n\\.", "\n..") + "\r\n.");
     commandResult = new CommandResultFuture(buffer -> {
       log.info("maildata result: " + buffer);
       quitCmd();
@@ -344,7 +358,61 @@ public class MailVerticle {
 
   private void shutdownConnection() {
     ns.close();
-    finishedHandler.handle(null);
+    JsonObject result=new JsonObject();
+    result.put("result", "success");
+    finishedHandler.handle(createSuccess(result));
+  }
+
+  private void throwAsyncResult(Throwable throwable) {
+    finishedHandler.handle(createFailure(throwable));
+  }
+
+  private AsyncResult<JsonObject> createSuccess(JsonObject result) {
+    return new AsyncResult<JsonObject>() {
+      @Override
+      public JsonObject result() {
+        return result;
+      }
+
+      @Override
+      public Throwable cause() {
+        return null;
+      }
+
+      @Override
+      public boolean succeeded() {
+        return true;
+      }
+
+      @Override
+      public boolean failed() {
+        return false;
+      }
+    };
+  }
+
+  private AsyncResult<JsonObject> createFailure(Throwable throwable) {
+    return new AsyncResult<JsonObject>() {
+      @Override
+      public JsonObject result() {
+        return null;
+      }
+
+      @Override
+      public Throwable cause() {
+        return throwable;
+      }
+
+      @Override
+      public boolean succeeded() {
+        return false;
+      }
+
+      @Override
+      public boolean failed() {
+        return true;
+      }
+    };
   }
 
   private String base64(String string) {
