@@ -28,7 +28,7 @@ public class MailTest {
 
   CountDownLatch latch;
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() {
     log.info("starting");
@@ -60,10 +60,26 @@ public class MailTest {
       email.put("recipient", "lehmann333@arcor.de");
       email.put("bounceAddress", "user@example.com");
       email.put("subject", "Test email with HTML");
-      email.put("text", "this is a test email");
+      // message to exceed SIZE limit (48000000 for our server)
+      // 46 Bytes
+      StringBuilder sb=new StringBuilder("*********************************************\n");
+      // multiply by 2**20
+      for(int i=0;i<20;i++) {
+        sb.append(sb);
+      }
+      String message=sb.toString();
+      log.info("message size "+message.length());
+      email.put("text", message);
 
       mailService.sendMail(email, v -> {
         log.info("mail finished");
+        if(v!=null) {
+          if(v.succeeded()) {
+            log.info(v.result().toString());
+          } else {
+            log.warn("got exception", v.cause());
+          }
+        }
         latch.countDown();
       });
 
