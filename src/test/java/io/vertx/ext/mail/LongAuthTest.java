@@ -24,8 +24,11 @@ import org.subethamail.wiser.WiserMessage;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  * this test uses a local smtp server mockup
+ * 
+ * this tests uses more than 57 bytes as auth plain string which would break
+ * the authentication if the base64 were chunked
  */
-public class MailLocalTest {
+public class LongAuthTest {
 
   Vertx vertx = Vertx.vertx();
   Logger log = LoggerFactory.getLogger(this.getClass());
@@ -43,8 +46,8 @@ public class MailLocalTest {
 
       mailConfig.put("hostname", "localhost");
       mailConfig.put("port", 1587);
-      mailConfig.put("username", "username");
-      mailConfig.put("password", "asdf");
+      mailConfig.put("username", "**************************************************");
+      mailConfig.put("password", "**************************************************");
       mailConfig.put("starttls", "disabled");
 
       MailService mailService = MailService.create(vertx, mailConfig);

@@ -75,17 +75,20 @@ public class MailVerticle {
   Email email;
   String username;
   String pw;
+  String login;
 
   // public void start() {
   // log=container.logger();
   // log.info("starting");
   // }
 
-  public void sendMail(Email email, String username, String password) {
+  public void sendMail(Email email, String username, String password, String login) {
     this.email = email;
     this.username = username;
     pw = password;
-    NetClientOptions netClientOptions = new NetClientOptions();
+    this.login=login;
+
+    NetClientOptions netClientOptions = new NetClientOptions().setSsl(email.isSSLOnConnect());
     NetClient client = vertx.createNetClient(netClientOptions);
 
     client.connect(Integer.parseInt(email.getSmtpPort()), email.getHostName(),
@@ -110,6 +113,7 @@ public class MailVerticle {
   }
 
   private void ehloCmd() {
+    // TODO: get real hostname
     write(ns, "EHLO windows7");
     commandResult = new CommandResultFuture(buffer -> {
       log.info("EHLO result: " + buffer);
@@ -140,11 +144,18 @@ public class MailVerticle {
           log.warn("STARTTLS required but not supported by server");
           throwAsyncResult(new Exception("STARTTLS required but not supported by server"));
         } else {
-          // TODO: this assumes that auth is always required if present
-          if (username != null && pw != null && !capaAuth.isEmpty()) {
+          if (!login.equals("disabled") && username != null && pw != null && !capaAuth.isEmpty()) {
             authCmd();
           } else {
-            mailFromCmd();
+            if(login.equals("required")) {
+              if(username != null && pw != null) {
+                throwAsyncResult(new Exception("login is required, but no AUTH methods available. You may need do to STARTTLS"));
+              } else {
+                throwAsyncResult(new Exception("login is required, but no credentials supplied"));
+              }
+            } else {
+              mailFromCmd();
+            }
           }
         }
       }
@@ -421,6 +432,7 @@ public class MailVerticle {
       // (if someone uses a password longer than 57 chars or
       // one of the other SASL replies is longer than 76 chars)
       return Base64.encodeBase64String(string.getBytes("UTF-8"));
+//      return new String(Base64.encodeBase64Chunked(string.getBytes("UTF-8")));
     } catch (UnsupportedEncodingException e) {
       // doesn't happen
       return "";

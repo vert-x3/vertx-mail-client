@@ -2,12 +2,15 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.json.impl.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -44,30 +47,37 @@ public class MailTest {
       InputStream inputstream = new FileInputStream("account.properties");
       account.load(inputstream);
 
-      JsonObject mailConfig = new JsonObject();
+//      String accJson="{\"username\":\"user\", \"password\":\"pw\"}";
+//      JsonObject accConf=new JsonObject(accJson);
 
-      mailConfig.put("hostname", "mail.arcor.de");
-      mailConfig.put("port", 587);
-      mailConfig.put("starttls", "required");
-      mailConfig.put("login", "required");
+//      JsonObject mailConfig = new JsonObject();
+
+//      mailConfig.put("hostname", "mail.arcor.de");
+//      mailConfig.put("port", 465);
+////      mailConfig.put("starttls", "disabled");
+//      mailConfig.put("ssl", "true");
+//      mailConfig.put("login", "required");
+//      JsonObject mailConfig = ServerConfigs.configMailtrap();
+      JsonObject mailConfig = ServerConfigs.configMailgun();
       mailConfig.put("username", account.getProperty("username"));
-      mailConfig.put("password", account.getProperty("pw"));
+      mailConfig.put("password", account.getProperty("password"));
 
       MailService mailService = MailService.create(vertx, mailConfig);
 
       JsonObject email = new JsonObject();
       email.put("from", "lehmann333@arcor.de");
       email.put("recipient", "lehmann333@arcor.de");
-      email.put("bounceAddress", "user@example.com");
+      email.put("bounceAddress", "postmaster@mailgun.lehmann.cx");
       email.put("subject", "Test email with HTML");
-      // message to exceed SIZE limit (48000000 for our server)
-      // 46 Bytes
-      StringBuilder sb=new StringBuilder("*********************************************\n");
-      // multiply by 2**20
-      for(int i=0;i<20;i++) {
-        sb.append(sb);
-      }
-      String message=sb.toString();
+//      // message to exceed SIZE limit (48000000 for our server)
+//      // 46 Bytes
+//      StringBuilder sb=new StringBuilder("*********************************************\n");
+//      // multiply by 2**20
+//      for(int i=0;i<20;i++) {
+//        sb.append(sb);
+//      }
+//      String message=sb.toString();
+      String message="this is a message";
       log.info("message size "+message.length());
       email.put("text", message);
 
@@ -84,9 +94,8 @@ public class MailTest {
       });
 
       latch.await();
-    } catch (IOException | InterruptedException ioe) {
+    } catch (InterruptedException | IOException ioe) {
       log.error("IOException", ioe);
     }
   }
-
 }
