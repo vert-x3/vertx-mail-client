@@ -26,7 +26,7 @@ public class MailServiceImpl implements MailService {
   private static final Logger log = LoggerFactory.getLogger(MailService.class);
 
   private Vertx vertx;
-  private JsonObject config;
+  private MailConfig config;
 
   private String username;
   private String password;
@@ -35,13 +35,13 @@ public class MailServiceImpl implements MailService {
 
   private int port;
 
-  public MailServiceImpl(Vertx vertx, JsonObject config) {
+  public MailServiceImpl(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
     this.config = config;
-    username = config.getString("username");
-    password = config.getString("password");
-    hostname = config.getString("hostname", "localhost");
-    port = config.getInteger("port", 25);
+    username = config.getUsername();
+    password = config.getPassword();
+    hostname = config.getHostname();
+    port = config.getPort();
   }
 
   @Override
@@ -83,25 +83,24 @@ public class MailServiceImpl implements MailService {
 
       // use optional as default, this way we do opportunistic unless disabled
       // TODO: can we do this as enum?
-      final String starttls=config.getString("starttls", "enabled");
-      if(starttls.equals("enabled")) {
+      final StarttlsOption starttls=config.getStarttls();
+      log.info(starttls);
+      if(starttls==StarttlsOption.OPTIONAL) {
         email.setStartTLSEnabled(true);
       }
-      if(starttls.equals("required")) {
+      if(starttls==StarttlsOption.REQUIRED) {
         email.setStartTLSRequired(true);
       }
 
-      if(config.getString("ssl", "false").equals("true")) {
+      if(config.isSsl()) {
         email.setSSLOnConnect(true);
       }
 
       email.setHostName(hostname);
       email.setSmtpPort(port);
 
-      final String login = config.getString("login", "enabled");
-
       MailVerticle mailVerticle = new MailVerticle(vertx, resultHandler);
-      mailVerticle.sendMail(email, username, password, login);
+      mailVerticle.sendMail(email, username, password, config.getLogin());
     } catch (EmailException | AddressException e) {
       e.printStackTrace();
     }

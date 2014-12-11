@@ -39,13 +39,10 @@ public class MailLocalTest {
     latch = new CountDownLatch(1);
 
     try {
-      JsonObject mailConfig = new JsonObject();
+      MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
 
-      mailConfig.put("hostname", "localhost");
-      mailConfig.put("port", 1587);
-      mailConfig.put("username", "username");
-      mailConfig.put("password", "asdf");
-      mailConfig.put("starttls", "disabled");
+      mailConfig.setUsername("username");
+      mailConfig.setPassword("asdf");
 
       MailService mailService = MailService.create(vertx, mailConfig);
 

@@ -17,7 +17,7 @@ import io.vertx.serviceproxy.ProxyHelper;
 @ProxyGen
 public interface MailService {
 
-  static MailService create(Vertx vertx, JsonObject config) {
+  static MailService create(Vertx vertx, MailConfig config) {
     return new MailServiceImpl(vertx, config);
   }
 

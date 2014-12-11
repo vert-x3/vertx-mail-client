@@ -28,11 +28,10 @@ public class MissingAuthTest {
     latch = new CountDownLatch(1);
 
     try {
-      JsonObject mailConfig = ServerConfigs.configGoogle();
-      mailConfig.put("starttls", "disabled");
-      mailConfig.put("login", "required");
-      mailConfig.put("username", "xxx");
-      mailConfig.put("password", "xxx");
+      MailConfig mailConfig = ServerConfigs.configGoogle();
+      mailConfig.setStarttls(StarttlsOption.DISABLED);
+      mailConfig.setUsername("xxx");
+      mailConfig.setPassword("xxx");
 
       MailService mailService = MailService.create(vertx, mailConfig);
 

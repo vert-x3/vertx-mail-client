@@ -42,13 +42,10 @@ public class LongAuthTest {
     latch = new CountDownLatch(1);
 
     try {
-      JsonObject mailConfig = new JsonObject();
+      MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
 
-      mailConfig.put("hostname", "localhost");
-      mailConfig.put("port", 1587);
-      mailConfig.put("username", "**************************************************");
-      mailConfig.put("password", "**************************************************");
-      mailConfig.put("starttls", "disabled");
+      mailConfig.setUsername("*************************************************");
+      mailConfig.setPassword("*************************************************");
 
       MailService mailService = MailService.create(vertx, mailConfig);
 
