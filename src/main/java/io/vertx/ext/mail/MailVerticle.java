@@ -75,14 +75,14 @@ public class MailVerticle {
   Email email;
   String username;
   String pw;
-  String login;
+  LoginOption login;
 
   // public void start() {
   // log=container.logger();
   // log.info("starting");
   // }
 
-  public void sendMail(Email email, String username, String password, String login) {
+  public void sendMail(Email email, String username, String password, LoginOption login) {
     this.email = email;
     this.username = username;
     pw = password;
@@ -144,10 +144,10 @@ public class MailVerticle {
           log.warn("STARTTLS required but not supported by server");
           throwAsyncResult(new Exception("STARTTLS required but not supported by server"));
         } else {
-          if (!login.equals("disabled") && username != null && pw != null && !capaAuth.isEmpty()) {
+          if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
             authCmd();
           } else {
-            if(login.equals("required")) {
+            if(login==LoginOption.REQUIRED) {
               if(username != null && pw != null) {
                 throwAsyncResult(new Exception("login is required, but no AUTH methods available. You may need do to STARTTLS"));
               } else {

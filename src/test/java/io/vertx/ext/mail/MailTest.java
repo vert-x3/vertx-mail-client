@@ -47,20 +47,9 @@ public class MailTest {
       InputStream inputstream = new FileInputStream("account.properties");
       account.load(inputstream);
 
-//      String accJson="{\"username\":\"user\", \"password\":\"pw\"}";
-//      JsonObject accConf=new JsonObject(accJson);
-
-//      JsonObject mailConfig = new JsonObject();
-
-//      mailConfig.put("hostname", "mail.arcor.de");
-//      mailConfig.put("port", 465);
-////      mailConfig.put("starttls", "disabled");
-//      mailConfig.put("ssl", "true");
-//      mailConfig.put("login", "required");
-//      JsonObject mailConfig = ServerConfigs.configMailtrap();
-      JsonObject mailConfig = ServerConfigs.configMailgun();
-      mailConfig.put("username", account.getProperty("username"));
-      mailConfig.put("password", account.getProperty("password"));
+      MailConfig mailConfig = ServerConfigs.configGoogle();
+      mailConfig.setUsername(account.getProperty("username"));
+      mailConfig.setPassword(account.getProperty("password"));
 
       MailService mailService = MailService.create(vertx, mailConfig);
 
