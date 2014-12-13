@@ -2,15 +2,12 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.json.impl.Json;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,7 +28,7 @@ public class MailTest {
 
   CountDownLatch latch;
 
-//  @Ignore
+  @Ignore
   @Test
   public void mailTest() {
     log.info("starting");
