@@ -17,7 +17,7 @@ import org.junit.Test;
 public class MissingAuthTest {
 
   Vertx vertx = Vertx.vertx();
-  Logger log = LoggerFactory.getLogger(this.getClass());
+  private static final Logger log = LoggerFactory.getLogger(MissingAuthTest.class);
 
   CountDownLatch latch;
 

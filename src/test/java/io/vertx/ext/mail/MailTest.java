@@ -27,7 +27,7 @@ import org.junit.Test;
 public class MailTest {
 
   Vertx vertx = Vertx.vertx();
-  Logger log = LoggerFactory.getLogger(this.getClass());
+  private static final Logger log = LoggerFactory.getLogger(MailTest.class);
 
   CountDownLatch latch;
 

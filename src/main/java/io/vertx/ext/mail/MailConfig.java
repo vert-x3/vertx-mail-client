@@ -81,7 +81,10 @@ public class MailConfig {
     }
     username=config.getString("username");
     password=config.getString("password");
-    ssl=config.getBoolean("ssl");
+    Boolean sslOption=config.getBoolean("ssl");
+    if(sslOption!=null) {
+      ssl=sslOption;
+    }
   }
   
   public String getHostname() {
@@ -165,17 +168,33 @@ public class MailConfig {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
 
     MailConfig config = (MailConfig) o;
 
-    if (hostname != config.hostname) return false;
-    if (port != config.port) return false;
-    if (starttls != config.starttls) return false;
-    if (login != config.login) return false;
-    if (username != config.username) return false;
-    if (password != config.password) return false;
+    if (!hostname.equals(config.hostname)) {
+      return false;
+    }
+    if (port != config.port) {
+      return false;
+    }
+    if (starttls != config.starttls) {
+      return false;
+    }
+    if (login != config.login) {
+      return false;
+    }
+    if (!username.equals(config.username)) {
+      return false;
+    }
+    if (!password.equals(config.password)) {
+      return false;
+    }
     return ssl == config.ssl;
   }
 
@@ -192,7 +211,7 @@ public class MailConfig {
   }
 
   private int hashCodeNull(Object o) {
-    return o!=null ? o.hashCode() : 0;
+    return o==null ? 0: o.hashCode();
   }
   
 }

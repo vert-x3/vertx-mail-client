@@ -60,7 +60,7 @@ public class MailVerticle {
     netSocket.write(str + "\r\n");
   }
 
-  Logger log = LoggerFactory.getLogger(this.getClass());;
+  private static final Logger log = LoggerFactory.getLogger(MailVerticle.class);
   NetSocket ns;
 
   Future<String> commandResult;

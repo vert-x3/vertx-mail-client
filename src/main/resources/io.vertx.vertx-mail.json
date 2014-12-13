@@ -1,5 +1,5 @@
 {
-  "main": "cx.lehmann.vertx.mail.vertxmail.MailTest",
+  "main": "io.vertx.ext.mail.MailServiceVerticle",
   "options": {
     "worker": false,
     "config": {

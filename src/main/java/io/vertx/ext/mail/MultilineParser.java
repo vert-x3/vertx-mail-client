@@ -11,7 +11,7 @@ import io.vertx.core.parsetools.RecordParser;
  *
  */
 public class MultilineParser implements Handler<Buffer> {
-  Logger log = LoggerFactory.getLogger(MultilineParser.class);
+  private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   boolean initialized = false;
   boolean crlfMode = false;
   Buffer result;

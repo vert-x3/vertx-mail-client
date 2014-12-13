@@ -28,7 +28,7 @@ import org.subethamail.wiser.WiserMessage;
 public class MailLocalTest {
 
   Vertx vertx = Vertx.vertx();
-  Logger log = LoggerFactory.getLogger(this.getClass());
+  private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
 
   CountDownLatch latch;
 
