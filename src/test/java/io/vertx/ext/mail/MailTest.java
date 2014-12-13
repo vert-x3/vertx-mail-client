@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +29,7 @@ public class MailTest {
 
   CountDownLatch latch;
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() {
     log.info("starting");
@@ -40,13 +41,34 @@ public class MailTest {
       // script, you will have to put your own account into the file
       // or write the account data directly into the java code
       // or a vertx conf file
-      Properties account = new Properties();
-      InputStream inputstream = new FileInputStream("account.properties");
-      account.load(inputstream);
 
-      MailConfig mailConfig = ServerConfigs.configGoogle();
-      mailConfig.setUsername(account.getProperty("username"));
-      mailConfig.setPassword(account.getProperty("password"));
+      String username=null;
+      String password=null;
+
+      if(new File("account.properties").exists()) {
+        Properties account = new Properties();
+        try(InputStream inputstream= new FileInputStream("account.properties")) {
+          account.load(inputstream);
+          username = account.getProperty("username");
+          password = account.getProperty("password");
+        };
+      }
+      else if("true".equals(System.getenv("DRONE"))) {
+        // assume we are running inside drone.io
+        // and get the credentials from environment
+        username=System.getenv("SMTP_USERNAME");
+        password=System.getenv("SMTP_PASSWORD");
+      }
+
+      // if username is null, the auth will fail in the smtp dialoge since we set
+      // LoginOption.REQUIRED
+      if(username==null) {
+        log.warn("auth account unavailable");
+      }
+
+      MailConfig mailConfig = new MailConfig("mail.arcor.de", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+      mailConfig.setUsername(username);
+      mailConfig.setPassword(password);
 
       MailService mailService = MailService.create(vertx, mailConfig);
 
