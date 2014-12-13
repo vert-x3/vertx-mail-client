@@ -23,7 +23,7 @@ import org.apache.commons.mail.EmailException;
  */
 public class MailServiceImpl implements MailService {
 
-  private static final Logger log = LoggerFactory.getLogger(MailService.class);
+  private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
   private Vertx vertx;
   private MailConfig config;

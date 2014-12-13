@@ -14,18 +14,10 @@ public class CommandResultFuture implements Future<String> {
   private String result;
   private Throwable cause;
 
-  // for some reason eclipse 4.4 thinks this is unused
-  // probably a bug with the lambda function parser
-  @SuppressWarnings("unused")
-  private Handler<String> stringHandler;
-
   public CommandResultFuture(Handler<String> handler) {
-    super();
-    stringHandler = handler;
     this.setHandler(event -> {
       if (event.succeeded()) {
-        String string = event.result();
-        handler.handle(string);
+        handler.handle(event.result());
       } else {
         // FIXME: proper logging or propagate the exception
         event.cause().printStackTrace();
