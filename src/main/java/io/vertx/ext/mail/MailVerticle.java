@@ -56,7 +56,12 @@ public class MailVerticle {
   }
 
   private void write(NetSocket netSocket, String str) {
-    log.info("command: " + str);
+    write(netSocket, str, str);
+  }
+
+  // avoid logging password data
+  private void write(NetSocket netSocket, String str, String logStr) {
+    log.info("command: " + logStr);
     netSocket.write(str + "\r\n");
   }
 
@@ -207,7 +212,8 @@ public class MailVerticle {
       });
     } else if (capaAuth.contains("PLAIN")) {
       String authdata = base64("\0" + username + "\0" + pw);
-      write(ns, "AUTH PLAIN " + authdata);
+      String authdummy = base64("\0dummy\0XXX");
+      write(ns, "AUTH PLAIN " + authdata, "AUTH PLAIN " + authdummy);
       commandResult = new CommandResultFuture(buffer -> {
         log.info("AUTH result: " + buffer);
         if (!buffer.toString().startsWith("2")) {
@@ -233,7 +239,7 @@ public class MailVerticle {
     String message = decodeb64(string);
     log.info("message " + message);
     String reply = hmacMD5hex(message, pw);
-    write(ns, base64(username + " " + reply));
+    write(ns, base64(username + " " + reply), base64("dummy XXX"));
     commandResult = new CommandResultFuture(buffer -> {
       log.info("AUTH step 2 result: " + buffer);
       cramMD5Step2(buffer);
@@ -268,7 +274,7 @@ public class MailVerticle {
   }
 
   private void sendUsername() {
-    write(ns, base64(username));
+    write(ns, base64(username), base64("dummy"));
     commandResult = new CommandResultFuture(buffer -> {
       log.info("username result: " + buffer);
       sendPw();
@@ -276,7 +282,7 @@ public class MailVerticle {
   }
 
   private void sendPw() {
-    write(ns, base64(pw));
+    write(ns, base64(pw), base64("XXX"));
     commandResult = new CommandResultFuture(buffer -> {
       log.info("username result: " + buffer);
       if (!buffer.toString().startsWith("2")) {
