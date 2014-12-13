@@ -86,7 +86,7 @@ public class MailConfig {
       ssl=sslOption;
     }
   }
-  
+
   public String getHostname() {
     return hostname;
   }
