@@ -60,13 +60,13 @@ public class MailTest {
         password=System.getenv("SMTP_PASSWORD");
       }
 
-      // if username is null, the auth will fail in the smtp dialoge since we set
+      // if username is null, auth will fail in the smtp dialog since we set
       // LoginOption.REQUIRED
       if(username==null) {
         log.warn("auth account unavailable");
       }
 
-      MailConfig mailConfig = new MailConfig("mail.arcor.de", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+      MailConfig mailConfig = ServerConfigs.configMailgun();
       mailConfig.setUsername(username);
       mailConfig.setPassword(password);
 
