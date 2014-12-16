@@ -13,4 +13,9 @@ public class ServerConfigs {
   public static MailConfig configMailgun() {
     return new MailConfig("smtp.mailgun.org", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
   }
+
+  public static MailConfig configSendgrid() {
+    return new MailConfig("smtp.sendgrid.net", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+  }
+
 }

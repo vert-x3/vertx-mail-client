@@ -1,0 +1,29 @@
+= Vert.x Mail (SMTP client implementation)
+
+The link:javadoc/io/vertx/groovy/ext/apex/MailService.html[`MailService`] is really cool stuff, here is an example
+
+[source,{lang}]
+----
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.MailService;
+
+MailConfig mailConfig = ServerConfigs.configSendgrid();
+mailConfig.setUsername(username);
+mailConfig.setPassword(password);
+
+MailService mailService = MailService.create(vertx, mailConfig);
+
+JsonObject email = new JsonObject();
+email.put("from", "address@example.com");
+email.put("recipient", "address@example.com");
+email.put("subject", "meaningful subjct");
+email.put("text", "this is a message");
+
+mailService.sendMail(email, ar -> {
+  if(ar.succeeded()) {
+    log.info(ar.result().toString());
+  } else {
+    log.warn("got exception", ar.cause());
+  }
+});
+----
