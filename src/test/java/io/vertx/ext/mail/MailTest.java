@@ -53,9 +53,9 @@ public class MailTest {
           password = account.getProperty("password");
         };
       }
-      else if("true".equals(System.getenv("DRONE"))) {
-        // assume we are running inside drone.io
-        // and get the credentials from environment
+      else if("true".equals(System.getenv("DRONE")) || System.getenv("JENKINS_URL ")!=null) {
+        // assume we are running inside CI (drone.io or jenkins)
+        // and can get the credentials from environment
         username=System.getenv("SMTP_USERNAME");
         password=System.getenv("SMTP_PASSWORD");
       }
@@ -66,7 +66,7 @@ public class MailTest {
         log.warn("auth account unavailable");
       }
 
-      MailConfig mailConfig = ServerConfigs.configMailgun();
+      MailConfig mailConfig = ServerConfigs.configSendgrid();
       mailConfig.setUsername(username);
       mailConfig.setPassword(password);
 
@@ -75,7 +75,7 @@ public class MailTest {
       JsonObject email = new JsonObject();
       email.put("from", "lehmann333@arcor.de");
       email.put("recipient", "lehmann333@arcor.de");
-      email.put("bounceAddress", "postmaster@mailgun.lehmann.cx");
+//      email.put("bounceAddress", "nobody@lehmann.cx");
       email.put("subject", "Test email with HTML");
 //      // message to exceed SIZE limit (48000000 for our server)
 //      // 46 Bytes
