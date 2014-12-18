@@ -1,15 +1,31 @@
-= Vert.x Apex
+= Vert.x Mail (SMTP client implementation)
 
-The link:jsdoc/router-Router.html[`router`] is really cool stuff, here is an example
+The link:javadoc/io/vertx/groovy/ext/apex/MailService.html[`MailService`] is really cool stuff, here is an example
 
-[source,{lang}]
+
+[source,java]
 ----
-var Router = require("ext-apex-core-js/router");
-var router = Router.router(vertx);
-var subRouter = Router.router(vertx);
-router.mountSubRouter("/subpath", subRouter);
-subRouter.route("/foo").handler(function (rc) {
-  rc.response().setStatusMessage(rc.request().path()).end();
-});
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.MailService;
 
+MailConfig mailConfig = ServerConfigs.configSendgrid();
+mailConfig.setUsername(username);
+mailConfig.setPassword(password);
+
+MailService mailService = MailService.create(vertx, mailConfig);
+
+JsonObject email = new JsonObject();
+email.put("from", "address@example.com");
+email.put("recipient", "address@example.com");
+email.put("subject", "meaningful subject");
+email.put("text", "this is a message");
+
+mailService.sendMail(email, result -> {
+  if(result.succeeded()) {
+    log.info(result.result().toString());
+  } else {
+    log.warn("got exception", result.cause());
+  }
+
+});
 ----
