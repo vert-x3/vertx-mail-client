@@ -29,81 +29,65 @@ public class MailTest {
 
   CountDownLatch latch;
 
-//  @Ignore
+  @Ignore
   @Test
-  public void mailTest() {
+  public void mailTest() throws IOException, InterruptedException {
     log.info("starting");
 
     latch = new CountDownLatch(1);
 
-    try {
-      // this is a hack to avoid putting an actual account into the test
-      // script, you will have to put your own account into the file
-      // or write the account data directly into the java code
-      // or a vertx conf file
+    // this is a hack to avoid putting an actual account into the test
+    // script, you will have to put your own account into the file
+    // or write the account data directly into the java code
+    // or a vertx conf file
 
-      String username=null;
-      String password=null;
+    String username = null;
+    String password = null;
 
-      if(new File("account.properties").exists()) {
-        Properties account = new Properties();
-        try(InputStream inputstream= new FileInputStream("account.properties")) {
-          account.load(inputstream);
-          username = account.getProperty("username");
-          password = account.getProperty("password");
-        };
+    if (new File("account.properties").exists()) {
+      Properties account = new Properties();
+      try (InputStream inputstream = new FileInputStream("account.properties")) {
+        account.load(inputstream);
+        username = account.getProperty("username");
+        password = account.getProperty("password");
       }
-      else if("true".equals(System.getenv("DRONE")) || System.getenv("JENKINS_URL ")!=null) {
-        // assume we are running inside CI (drone.io or jenkins)
-        // and can get the credentials from environment
-        username=System.getenv("SMTP_USERNAME");
-        password=System.getenv("SMTP_PASSWORD");
-      }
-
-      // if username is null, auth will fail in the smtp dialog since we set
-      // LoginOption.REQUIRED
-      if(username==null) {
-        log.warn("auth account unavailable");
-      }
-
-      MailConfig mailConfig = ServerConfigs.configSendgrid();
-      mailConfig.setUsername(username);
-      mailConfig.setPassword(password);
-
-      MailService mailService = MailService.create(vertx, mailConfig);
-
-      JsonObject email = new JsonObject();
-      email.put("from", "lehmann333@arcor.de");
-      email.put("recipient", "lehmann333@arcor.de");
-//      email.put("bounceAddress", "nobody@lehmann.cx");
-      email.put("subject", "Test email with HTML");
-//      // message to exceed SIZE limit (48000000 for our server)
-//      // 46 Bytes
-//      StringBuilder sb=new StringBuilder("*********************************************\n");
-//      // multiply by 2**20
-//      for(int i=0;i<20;i++) {
-//        sb.append(sb);
-//      }
-//      String message=sb.toString();
-      String message="this is a message";
-      log.info("message size "+message.length());
-      email.put("text", message);
-
-      mailService.sendMail(email, v -> {
-        log.info("mail finished");
-        if(v!=null) {
-          if(v.succeeded()) {
-            log.info(v.result().toString());
-          } else {
-            log.warn("got exception", v.cause());
-          }
-        }
-        latch.countDown();
-      });
-
-      latch.await();
-    } catch (InterruptedException | IOException ioe) {
-      log.error("IOException", ioe);
     }
+    else if ("true".equals(System.getenv("DRONE")) || System.getenv("JENKINS_URL ") != null) {
+      // assume we are running inside CI (drone.io or jenkins)
+      // and can get the credentials from environment
+      username = System.getenv("SMTP_USERNAME");
+      password = System.getenv("SMTP_PASSWORD");
+    }
+
+    // if username is null, auth will fail in the smtp dialog since we set
+    // LoginOption.REQUIRED
+    if (username == null) {
+      log.warn("auth account unavailable");
+    }
+
+    MailConfig mailConfig = ServerConfigs.configSendgrid();
+    mailConfig.setUsername(username);
+    mailConfig.setPassword(password);
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("bounceAddress", "nobody@lehmann.cx");
+    email.put("subject", "Test email with HTML");
+    email.put("text", "this is a message");
+
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+      } else {
+        log.warn("got exception", result.cause());
+      }
+      latch.countDown();
+    });
+
+    latch.await();
   }
 }

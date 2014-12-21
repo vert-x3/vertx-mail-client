@@ -36,49 +36,43 @@ public class LongAuthTest {
   CountDownLatch latch;
 
   @Test
-  public void mailTest() {
+  public void mailTest() throws MessagingException, InterruptedException {
     log.info("starting");
 
     latch = new CountDownLatch(1);
 
-    try {
-      MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
 
-      mailConfig.setUsername("*************************************************");
-      mailConfig.setPassword("*************************************************");
+    mailConfig.setUsername("*************************************************");
+    mailConfig.setPassword("*************************************************");
 
-      MailService mailService = MailService.create(vertx, mailConfig);
+    MailService mailService = MailService.create(vertx, mailConfig);
 
-      JsonObject email = new JsonObject();
-      email.put("from", "lehmann333@arcor.de");
-      email.put("recipient", "lehmann333@arcor.de");
-      email.put("bounceAddress", "user@example.com");
-      email.put("subject", "Test email with HTML");
-      email.put("text", "this is a test email");
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("bounceAddress", "user@example.com");
+    email.put("subject", "Test email with HTML");
+    email.put("text", "this is a test email");
 
-      mailService.sendMail(email, v -> {
-        log.info("mail finished");
-        if(v!=null) {
-          if(v.succeeded()) {
-            log.info(v.result().toString());
-          } else {
-            log.warn("got exception", v.cause());
-          }
-        }
-        latch.countDown();
-      });
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if(result.succeeded()) {
+        log.info(result.result().toString());
+      } else {
+        log.warn("got exception", result.cause());
+      }
+      latch.countDown();
+    });
 
-      latch.await();
+    latch.await();
 
-      final WiserMessage message = wiser.getMessages().get(0);
-      String sender = message.getEnvelopeSender();
-      final MimeMessage mimeMessage = message.getMimeMessage();
-      assertEquals("user@example.com", sender);
-      assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-      assertThat(mimeMessage.getSubject() , equalTo("Test email with HTML"));
-    } catch (InterruptedException | MessagingException ioe) {
-      log.error("IOException", ioe);
-    }
+    final WiserMessage message = wiser.getMessages().get(0);
+    String sender = message.getEnvelopeSender();
+    final MimeMessage mimeMessage = message.getMimeMessage();
+    assertEquals("user@example.com", sender);
+    assertThat(mimeMessage.getContentType(), containsString("text/plain"));
+    assertThat(mimeMessage.getSubject() , equalTo("Test email with HTML"));
   }
 
   Wiser wiser;

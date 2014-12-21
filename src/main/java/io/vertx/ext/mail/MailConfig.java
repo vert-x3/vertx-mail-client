@@ -14,7 +14,7 @@ public class MailConfig {
   private StarttlsOption starttls;
   /**
    * LoginOption: disabled, none, required
-   * 
+   *
    * if you choose none, you can also set the auth data
    * to null with the same effect
    */
@@ -24,7 +24,7 @@ public class MailConfig {
   // e.g. XOAUTH for google
   private String username;
   private String password;
-  
+
   /**
    * use ssl on connect? (i.e. Port 465)
    */
@@ -213,5 +213,5 @@ public class MailConfig {
   private int hashCodeNull(Object o) {
     return o==null ? 0: o.hashCode();
   }
-  
+
 }

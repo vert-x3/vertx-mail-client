@@ -11,5 +11,5 @@ package io.vertx.ext.mail.mailutil;
  *
  */
 public interface BounceGetter {
-  public String getBounceAddress();
+  String getBounceAddress();
 }
