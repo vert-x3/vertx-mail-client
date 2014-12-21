@@ -22,40 +22,34 @@ public class MissingAuthTest {
   CountDownLatch latch;
 
   @Test
-  public void mailTest() {
+  public void mailTest() throws InterruptedException {
     log.info("starting");
 
     latch = new CountDownLatch(1);
 
-    try {
-      MailConfig mailConfig = ServerConfigs.configGoogle();
-      mailConfig.setStarttls(StarttlsOption.DISABLED);
-      mailConfig.setUsername("xxx");
-      mailConfig.setPassword("xxx");
+    MailConfig mailConfig = ServerConfigs.configGoogle();
+    mailConfig.setStarttls(StarttlsOption.DISABLED);
+    mailConfig.setUsername("xxx");
+    mailConfig.setPassword("xxx");
 
-      MailService mailService = MailService.create(vertx, mailConfig);
+    MailService mailService = MailService.create(vertx, mailConfig);
 
-      JsonObject email = new JsonObject();
-      email.put("from", "lehmann333@arcor.de");
-      email.put("recipient", "lehmann333@arcor.de");
-      email.put("subject", "Test email with HTML");
-      email.put("text", "this is a test email");
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("subject", "Test email with HTML");
+    email.put("text", "this is a test email");
 
-      mailService.sendMail(email, v -> {
-        log.info("mail finished");
-        if(v!=null) {
-          if(v.succeeded()) {
-            log.info(v.result().toString());
-          } else {
-            log.warn("got exception", v.cause());
-          }
-        }
-        latch.countDown();
-      });
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if(result.succeeded()) {
+        log.info(result.result().toString());
+      } else {
+        log.warn("got exception", result.cause());
+      }
+      latch.countDown();
+    });
 
-      latch.await();
-    } catch (InterruptedException ioe) {
-      log.error("IOException", ioe);
-    }
+    latch.await();
   }
 }

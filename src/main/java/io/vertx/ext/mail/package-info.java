@@ -16,14 +16,14 @@
 /**
  * = Vert.x Mail (SMTP client implementation)
  *
- * The link:javadoc/io/vertx/groovy/ext/apex/MailService.html[`MailService`] is really cool stuff, here is an example
+ * link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
  *
  *
  * [source,java]
  * ----
  * import io.vertx.ext.mail.MailConfig;
  * import io.vertx.ext.mail.MailService;
- * 
+ *
  * MailConfig mailConfig = ServerConfigs.configSendgrid();
  * mailConfig.setUsername(username);
  * mailConfig.setPassword(password);
@@ -42,7 +42,6 @@
  *   } else {
  *     log.warn("got exception", result.cause());
  *   }
- *
  * });
  * ----
  */

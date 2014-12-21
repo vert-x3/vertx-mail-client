@@ -1,6 +1,6 @@
 = Vert.x Mail (SMTP client implementation)
 
-The link:javadoc/io/vertx/groovy/ext/apex/MailService.html[`MailService`] is really cool stuff, here is an example
+link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
 
 
 [source,java]
@@ -26,6 +26,5 @@ mailService.sendMail(email, result -> {
   } else {
     log.warn("got exception", result.cause());
   }
-
 });
 ----
