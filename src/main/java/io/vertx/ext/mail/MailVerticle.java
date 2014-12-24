@@ -101,7 +101,7 @@ public class MailVerticle {
           if (asyncResult.succeeded()) {
             ns = asyncResult.result();
             commandResult = new CommandResultFuture(
-                event -> serverGreeting(event));
+                message -> serverGreeting(message));
             final Handler<Buffer> mlp = new MultilineParser(
                 buffer -> commandResult.complete(buffer.toString()));
             ns.handler(mlp);
@@ -112,8 +112,8 @@ public class MailVerticle {
         });
   }
 
-  private void serverGreeting(String buffer) {
-    log.info("server greeting: " + buffer);
+  private void serverGreeting(String message) {
+    log.info("server greeting: " + message);
     ehloCmd();
   }
 
@@ -141,22 +141,22 @@ public class MailVerticle {
 
       if (capaStartTLS && !ns.isSsl()
           && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
-        // avoid starting TLS if we already have connected with SSL or are in
-        // TLS
+        // do not start TLS if we are connected with SSL
+        // or are already in TLS
         startTLSCmd();
       } else {
         if (!ns.isSsl() && email.isStartTLSRequired()) {
           log.warn("STARTTLS required but not supported by server");
-          throwAsyncResult(new Exception("STARTTLS required but not supported by server"));
+          commandResult.fail(new Exception("STARTTLS required but not supported by server"));
         } else {
           if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
             authCmd();
           } else {
             if(login==LoginOption.REQUIRED) {
               if(username != null && pw != null) {
-                throwAsyncResult(new Exception("login is required, but no AUTH methods available. You may need do to STARTTLS"));
+                commandResult.fail(new Exception("login is required, but no AUTH methods available. You may need do to STARTTLS"));
               } else {
-                throwAsyncResult(new Exception("login is required, but no credentials supplied"));
+                commandResult.fail(new Exception("login is required, but no credentials supplied"));
               }
             } else {
               mailFromCmd();
