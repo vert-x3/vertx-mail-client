@@ -48,11 +48,12 @@ import org.bouncycastle.crypto.params.KeyParameter;
 public class MailVerticle {
 
   private Vertx vertx;
-  private Handler<AsyncResult<JsonObject>> finishedHandler;
+//  private Handler<AsyncResult<JsonObject>> finishedHandler;
 
   public MailVerticle(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
-    this.finishedHandler = finishedHandler;
+    mailResult=Future.future();
+    mailResult.setHandler(finishedHandler);
   }
 
   private void write(NetSocket netSocket, String str) {
@@ -69,23 +70,19 @@ public class MailVerticle {
   NetSocket ns;
 
   Future<String> commandResult;
+  Future<JsonObject> mailResult;
+
   private boolean capaStartTLS = false;
   private Set<String> capaAuth = Collections.emptySet();
   // 8BITMIME can be used if the server supports it, currently this is not
   // implemented
   private boolean capa8BitMime = false;
-  // SIZE is not implemented yet
   private int capaSize = 0;
 
   Email email;
   String username;
   String pw;
   LoginOption login;
-
-  // public void start() {
-  // log=container.logger();
-  // log.info("starting");
-  // }
 
   public void sendMail(Email email, String username, String password, LoginOption login) {
     this.email = email;
@@ -100,8 +97,8 @@ public class MailVerticle {
         asyncResult -> {
           if (asyncResult.succeeded()) {
             ns = asyncResult.result();
-            commandResult = new CommandResultFuture(
-                message -> serverGreeting(message));
+            commandResult = Future.future();
+            commandResult.setHandler(message -> serverGreeting(message));
             final Handler<Buffer> mlp = new MultilineParser(
                 buffer -> commandResult.complete(buffer.toString()));
             ns.handler(mlp);
@@ -112,7 +109,7 @@ public class MailVerticle {
         });
   }
 
-  private void serverGreeting(String message) {
+  private void serverGreeting(AsyncResult<String> message) {
     log.info("server greeting: " + message);
     ehloCmd();
   }
@@ -120,9 +117,11 @@ public class MailVerticle {
   private void ehloCmd() {
     // TODO: get real hostname
     write(ns, "EHLO windows7");
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("EHLO result: " + buffer);
-      List<String> capabilities = parseEhlo(buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("EHLO result: " + message);
+      List<String> capabilities = parseEhlo(message);
       for (String c : capabilities) {
         if (c.equals("STARTTLS")) {
           capaStartTLS = true;
@@ -147,16 +146,16 @@ public class MailVerticle {
       } else {
         if (!ns.isSsl() && email.isStartTLSRequired()) {
           log.warn("STARTTLS required but not supported by server");
-          commandResult.fail(new Exception("STARTTLS required but not supported by server"));
+          commandResult.fail("STARTTLS required but not supported by server");
         } else {
           if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
             authCmd();
           } else {
             if(login==LoginOption.REQUIRED) {
               if(username != null && pw != null) {
-                commandResult.fail(new Exception("login is required, but no AUTH methods available. You may need do to STARTTLS"));
+                throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
               } else {
-                commandResult.fail(new Exception("login is required, but no credentials supplied"));
+                throwAsyncResult("login is required, but no credentials supplied");
               }
             } else {
               mailFromCmd();
@@ -172,8 +171,10 @@ public class MailVerticle {
    */
   private void startTLSCmd() {
     write(ns, "STARTTLS");
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("STARTTLS result: " + buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("STARTTLS result: " + message);
       upgradeTLS();
     });
   }
@@ -185,16 +186,16 @@ public class MailVerticle {
     });
   }
 
-  private List<String> parseEhlo(String string) {
+  private List<String> parseEhlo(String message) {
     // parse ehlo and other multiline replies
     List<String> v = new ArrayList<String>();
 
-    String resultCode = string.substring(0, 3);
+    String resultCode = message.substring(0, 3);
 
-    for (String l : string.split("\n")) {
+    for (String l : message.split("\n")) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
         log.error("format error in ehlo response");
-        throwAsyncResult(new Exception("format error in ehlo response"));
+        throwAsyncResult("format error in ehlo response");
       } else {
         v.add(l.substring(4));
       }
@@ -206,32 +207,38 @@ public class MailVerticle {
   private void authCmd() {
     if (capaAuth.contains("CRAM-MD5")) {
       write(ns, "AUTH CRAM-MD5");
-      commandResult = new CommandResultFuture(buffer -> {
-        log.info("AUTH result: " + buffer);
-        cramMD5Step1(buffer.substring(4));
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String message=result.result();
+        log.info("AUTH result: " + message);
+        cramMD5Step1(message.substring(4));
       });
     } else if (capaAuth.contains("PLAIN")) {
       String authdata = base64("\0" + username + "\0" + pw);
       String authdummy = base64("\0dummy\0XXX");
       write(ns, "AUTH PLAIN " + authdata, "AUTH PLAIN " + authdummy);
-      commandResult = new CommandResultFuture(buffer -> {
-        log.info("AUTH result: " + buffer);
-        if (!buffer.toString().startsWith("2")) {
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String message=result.result();
+        log.info("AUTH result: " + message);
+        if (!message.toString().startsWith("2")) {
           log.warn("authentication failed");
-          throwAsyncResult(new Exception("authentication failed"));
+          throwAsyncResult("authentication failed");
         } else {
           mailFromCmd();
         }
       });
     } else if (capaAuth.contains("LOGIN")) {
       write(ns, "AUTH LOGIN");
-      commandResult = new CommandResultFuture(buffer -> {
-        log.info("AUTH result: " + buffer);
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String message=result.result();
+        log.info("AUTH result: " + message);
         sendUsername();
       });
     } else {
       log.warn("cannot find supported auth method");
-      throwAsyncResult(new Exception("cannot find supported auth method"));
+      throwAsyncResult("cannot find supported auth method");
     }
   }
 
@@ -240,9 +247,11 @@ public class MailVerticle {
     log.info("message " + message);
     String reply = hmacMD5hex(message, pw);
     write(ns, base64(username + " " + reply), base64("dummy XXX"));
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("AUTH step 2 result: " + buffer);
-      cramMD5Step2(buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message2 = result.result();
+      log.info("AUTH step 2 result: " + message2);
+      cramMD5Step2(message2);
     });
   }
 
@@ -263,31 +272,35 @@ public class MailVerticle {
     }
   }
 
-  private void cramMD5Step2(String string) {
-    log.info(string);
-    if (string.startsWith("2")) {
+  private void cramMD5Step2(String message2) {
+    log.info(message2);
+    if (message2.startsWith("2")) {
       mailFromCmd();
     } else {
       log.warn("authentication failed");
-      throwAsyncResult(new Exception("authentication failed"));
+      throwAsyncResult("authentication failed");
     }
   }
 
   private void sendUsername() {
     write(ns, base64(username), base64("dummy"));
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("username result: " + buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("username result: " + message);
       sendPw();
     });
   }
 
   private void sendPw() {
     write(ns, base64(pw), base64("XXX"));
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("username result: " + buffer);
-      if (!buffer.toString().startsWith("2")) {
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("username result: " + message);
+      if (!message.toString().startsWith("2")) {
         log.warn("authentication failed");
-        throwAsyncResult(new Exception("authentication failed"));
+        throwAsyncResult("authentication failed");
       } else {
         mailFromCmd();
       }
@@ -308,8 +321,10 @@ public class MailVerticle {
       }
       InternetAddress.parse(fromAddr, true);
       write(ns, "MAIL FROM:<" + fromAddr + ">");
-      commandResult = new CommandResultFuture(buffer -> {
-        log.info("MAIL FROM result: " + buffer);
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String message=result.result();
+        log.info("MAIL FROM result: " + message);
         rcptToCmd();
       });
     } catch (AddressException e) {
@@ -324,8 +339,10 @@ public class MailVerticle {
       String toAddr = email.getToAddresses().get(0).getAddress();
       InternetAddress.parse(toAddr, true);
       write(ns, "RCPT TO:<" + toAddr + ">");
-      commandResult = new CommandResultFuture(buffer -> {
-        log.info("RCPT TO result: " + buffer);
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String message=result.result();
+        log.info("RCPT TO result: " + message);
         dataCmd();
       });
     } catch (AddressException e) {
@@ -336,8 +353,10 @@ public class MailVerticle {
 
   private void dataCmd() {
     write(ns, "DATA");
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("DATA result: " + buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("DATA result: " + message);
       sendMaildata();
     });
   }
@@ -349,26 +368,30 @@ public class MailVerticle {
       email.getMimeMessage().writeTo(bos);
     } catch (IOException | MessagingException | EmailException e) {
       log.error("cannot create mime message", e);
-      throwAsyncResult(new Exception("cannot create mime message"));
+      throwAsyncResult("cannot create mime message");
     }
     String message=bos.toString();
     // fail delivery if we exceed size
     if(capaSize>0 && message.length()>capaSize) {
-      throwAsyncResult(new Exception("message exceeds allowed size"));
+      throwAsyncResult("message exceeds allowed size");
     }
     // convert message to escape . at the start of line
     // TODO: this is probably bad for large messages
     write(ns, message.replaceAll("\n\\.", "\n..") + "\r\n.");
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("maildata result: " + buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String messageReply=result.result();
+      log.info("maildata result: " + messageReply);
       quitCmd();
     });
   }
 
   private void quitCmd() {
     write(ns, "QUIT");
-    commandResult = new CommandResultFuture(buffer -> {
-      log.info("QUIT result: " + buffer);
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("QUIT result: " + message);
       shutdownConnection();
     });
   }
@@ -377,59 +400,15 @@ public class MailVerticle {
     ns.close();
     JsonObject result=new JsonObject();
     result.put("result", "success");
-    finishedHandler.handle(createSuccess(result));
+    mailResult.complete(result);
   }
 
   private void throwAsyncResult(Throwable throwable) {
-    finishedHandler.handle(createFailure(throwable));
+    mailResult.fail(throwable);
   }
 
-  private AsyncResult<JsonObject> createSuccess(JsonObject result) {
-    return new AsyncResult<JsonObject>() {
-      @Override
-      public JsonObject result() {
-        return result;
-      }
-
-      @Override
-      public Throwable cause() {
-        return null;
-      }
-
-      @Override
-      public boolean succeeded() {
-        return true;
-      }
-
-      @Override
-      public boolean failed() {
-        return false;
-      }
-    };
-  }
-
-  private AsyncResult<JsonObject> createFailure(Throwable throwable) {
-    return new AsyncResult<JsonObject>() {
-      @Override
-      public JsonObject result() {
-        return null;
-      }
-
-      @Override
-      public Throwable cause() {
-        return throwable;
-      }
-
-      @Override
-      public boolean succeeded() {
-        return false;
-      }
-
-      @Override
-      public boolean failed() {
-        return true;
-      }
-    };
+  private void throwAsyncResult(String message) {
+    mailResult.fail(message);
   }
 
   private String base64(String string) {
@@ -438,7 +417,6 @@ public class MailVerticle {
       // (if someone uses a password longer than 57 chars or
       // one of the other SASL replies is longer than 76 chars)
       return Base64.encodeBase64String(string.getBytes("UTF-8"));
-//      return new String(Base64.encodeBase64Chunked(string.getBytes("UTF-8")));
     } catch (UnsupportedEncodingException e) {
       // doesn't happen
       return "";
