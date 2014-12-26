@@ -7,6 +7,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -21,6 +22,7 @@ public class MissingAuthTest {
 
   CountDownLatch latch;
 
+  @Ignore
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
