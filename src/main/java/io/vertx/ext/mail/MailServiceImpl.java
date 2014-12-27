@@ -82,9 +82,7 @@ public class MailServiceImpl implements MailService {
       email.setContent(text, "text/plain");
 
       // use optional as default, this way we do opportunistic unless disabled
-      // TODO: can we do this as enum?
       final StarttlsOption starttls=config.getStarttls();
-      log.info(starttls);
       if(starttls==StarttlsOption.OPTIONAL) {
         email.setStartTLSEnabled(true);
       }

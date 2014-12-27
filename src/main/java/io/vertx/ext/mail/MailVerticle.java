@@ -59,7 +59,7 @@ public class MailVerticle {
   }
 
   private void shutdown() {
-    commandResult.setHandler(null);
+    commandResult=null;
     if(ns!=null) {
       ns.close();
       ns=null;
@@ -122,10 +122,16 @@ public class MailVerticle {
             commandResult = Future.future();
             commandResult.setHandler(message -> serverGreeting(message));
             final Handler<Buffer> mlp = new MultilineParser(
-                buffer -> commandResult.complete(buffer.toString()));
+                buffer -> {
+                  if(commandResult==null) {
+                    log.info("dropping reply arriving after we stopped processing \""+buffer.toString()+"\"");
+                  } else {
+                    commandResult.complete(buffer.toString());
+                  }
+                });
             ns.handler(mlp);
           } else {
-            log.error("exception", asyncResult.cause());
+            log.error("exception on connect", asyncResult.cause());
             throwAsyncResult(asyncResult.cause());
           }
         });
@@ -197,7 +203,7 @@ public class MailVerticle {
         } else {
           if (!ns.isSsl() && email.isStartTLSRequired()) {
             log.warn("STARTTLS required but not supported by server");
-            commandResult.fail("STARTTLS required but not supported by server");
+            throwAsyncResult("STARTTLS required but not supported by server");
           } else {
             if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
               authCmd();
@@ -520,6 +526,7 @@ public class MailVerticle {
   }
 
   private void shutdownConnection() {
+    commandResult=null;
     ns.close();
     ns=null;
     client.close();

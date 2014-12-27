@@ -106,7 +106,6 @@ public class HeloTest {
    * I got a "Result has already been set" exception before
    * but I cannot reproduce this right now
    */
-  @Ignore
   @Test
   public void replyAfterQuitTest() throws InterruptedException {
     log.info("starting");
@@ -127,7 +126,7 @@ public class HeloTest {
         // QUIT
         "221 2.0.0 Bye",
         // this should not happen:
-        "221 2.0.0 Bye"
+        "this is unexpected"
         );
 
     latch = new CountDownLatch(1);
@@ -155,7 +154,6 @@ public class HeloTest {
     latch.await();
   }
 
-  @Ignore
   @Test
   public void serverUnavailableTest() throws InterruptedException {
     log.info("starting");
@@ -165,6 +163,74 @@ public class HeloTest {
     latch = new CountDownLatch(1);
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("subject", "Subject");
+    email.put("text", "Message");
+
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+      } else {
+        log.warn("got exception", result.cause());
+      }
+      latch.countDown();
+    });
+
+    latch.await();
+  }
+
+  @Test
+  public void connectionRefusedTest() throws InterruptedException {
+    log.info("starting");
+
+    latch = new CountDownLatch(1);
+
+    MailConfig mailConfig = new MailConfig("localhost", 1588);
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("subject", "Subject");
+    email.put("text", "Message");
+
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+      } else {
+        log.warn("got exception", result.cause());
+      }
+      latch.countDown();
+    });
+
+    latch.await();
+  }
+
+  @Test
+  public void tlsMissingTest() throws InterruptedException {
+    log.info("starting");
+
+    smtpServer.setAnswers("220 example.com ESMTP multiline",
+        "250-example.com", 
+        "250-SIZE 48000000", 
+        "250 PIPELINING",
+        "250 2.1.0 Ok", 
+        "250 2.1.5 Ok",
+        "354 End data with <CR><LF>.<CR><LF>",
+        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "221 2.0.0 Bye");
+
+    latch = new CountDownLatch(1);
+
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
