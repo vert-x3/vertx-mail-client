@@ -78,7 +78,7 @@ public class LongAuthTest {
   Wiser wiser;
 
   @Before
-  public void startSMTP() throws Exception {
+  public void startSMTP() {
     wiser = new Wiser();
     wiser.setPort(1587);
     wiser.start();
