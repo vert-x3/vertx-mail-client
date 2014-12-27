@@ -52,7 +52,22 @@ public class MailVerticle {
   public MailVerticle(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
     mailResult=Future.future();
-    mailResult.setHandler(finishedHandler);
+    mailResult.setHandler(result -> {
+      shutdown();
+      finishedHandler.handle(result);
+    });
+  }
+
+  private void shutdown() {
+    commandResult.setHandler(null);
+    if(ns!=null) {
+      ns.close();
+      ns=null;
+    }
+    if(client!=null) {
+      client.close();
+      client=null;
+    }
   }
 
   private void write(NetSocket netSocket, String str) {
@@ -89,6 +104,7 @@ public class MailVerticle {
   String username;
   String pw;
   LoginOption login;
+  NetClient client;
 
   public void sendMail(Email email, String username, String password, LoginOption login) {
     this.email = email;
@@ -97,7 +113,7 @@ public class MailVerticle {
     this.login=login;
 
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(email.isSSLOnConnect());
-    NetClient client = vertx.createNetClient(netClientOptions);
+    client = vertx.createNetClient(netClientOptions);
 
     client.connect(Integer.parseInt(email.getSmtpPort()), email.getHostName(),
         asyncResult -> {
@@ -470,21 +486,22 @@ public class MailVerticle {
     // TODO: we should do that earlier after the EHLO reply
     if(capaSize>0 && message.length()>capaSize) {
       throwAsyncResult("message exceeds allowed size");
+    } else {
+      // convert message to escape . at the start of line
+      // TODO: this is probably bad for large messages
+      write(ns, message.replaceAll("\n\\.", "\n..") + "\r\n.");
+      commandResult = Future.future();
+      commandResult.setHandler(result -> {
+        String messageReply=result.result();
+        log.info("maildata result: " + messageReply);
+        if(isStatusOk(messageReply)) {
+          quitCmd();
+        } else {
+          log.warn("sending data failed: "+messageReply);
+          throwAsyncResult("sending data failed: "+messageReply);
+        }
+      });
     }
-    // convert message to escape . at the start of line
-    // TODO: this is probably bad for large messages
-    write(ns, message.replaceAll("\n\\.", "\n..") + "\r\n.");
-    commandResult = Future.future();
-    commandResult.setHandler(result -> {
-      String messageReply=result.result();
-      log.info("maildata result: " + messageReply);
-      if(isStatusOk(messageReply)) {
-        quitCmd();
-      } else {
-        log.warn("sending data failed: "+messageReply);
-        throwAsyncResult("sending data failed: "+messageReply);
-      }
-    });
   }
 
   private void quitCmd() {
@@ -504,6 +521,9 @@ public class MailVerticle {
 
   private void shutdownConnection() {
     ns.close();
+    ns=null;
+    client.close();
+    client=null;
     JsonObject result=new JsonObject();
     result.put("result", "success");
     mailResult.complete(result);
