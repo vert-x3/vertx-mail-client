@@ -48,7 +48,6 @@ import org.bouncycastle.crypto.params.KeyParameter;
 public class MailVerticle {
 
   private Vertx vertx;
-//  private Handler<AsyncResult<JsonObject>> finishedHandler;
 
   public MailVerticle(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
@@ -77,6 +76,8 @@ public class MailVerticle {
   // 8BITMIME can be used if the server supports it, currently this is not
   // implemented
   private boolean capa8BitMime = false;
+  // PIPELINING is not yet used
+  private boolean capaPipelining = false;
   private int capaSize = 0;
 
   Email email;
@@ -109,9 +110,52 @@ public class MailVerticle {
         });
   }
 
-  private void serverGreeting(AsyncResult<String> message) {
+  private void serverGreeting(AsyncResult<String> result) {
+    String message = result.result();
     log.info("server greeting: " + message);
-    ehloCmd();
+    if(isStatusOk(message)) {
+      if(isEsmtpSupported(message)) {
+        ehloCmd();
+      } else {
+        heloCmd();
+      }
+    } else {
+      throwAsyncResult("got error response "+message);
+    }
+  }
+
+  private boolean isEsmtpSupported(String message) {
+    return message.contains("ESMTP");
+  }
+
+  private int getStatusCode(String message) {
+    if(message.length()<4) {
+      return 500;
+    }
+    if(!message.substring(3,4).equals(" ") &&
+        !message.substring(3,4).equals("-")) {
+      return 500;
+    }
+    try {
+      return Integer.valueOf(message.substring(0,3));
+    }
+    catch(NumberFormatException n) {
+      return 500;
+    }
+  }
+
+  private boolean isStatusOk(String message) {
+    int statusCode=getStatusCode(message);
+    return statusCode>=200 && statusCode<400;
+  }
+
+  private boolean isStatusFatal(String message) {
+    return getStatusCode(message)>=500;
+  }
+
+  private boolean isStatusTemporary(String message) {
+    int statusCode=getStatusCode(message);
+    return statusCode>=400 && statusCode<500;
   }
 
   private void ehloCmd() {
@@ -121,48 +165,76 @@ public class MailVerticle {
     commandResult.setHandler(result -> {
       String message=result.result();
       log.info("EHLO result: " + message);
-      List<String> capabilities = parseEhlo(message);
-      for (String c : capabilities) {
-        if (c.equals("STARTTLS")) {
-          capaStartTLS = true;
-        }
-        if (c.startsWith("AUTH ")) {
-          capaAuth = new HashSet<String>(Arrays.asList(c.substring(5)
-              .split(" ")));
-        }
-        if (c.equals("8BITMIME")) {
-          capa8BitMime = true;
-        }
-        if (c.startsWith("SIZE ")) {
-          capaSize = Integer.parseInt(c.substring(5));
-        }
-      }
+      if(isStatusOk(message)) {
+        setCapabilities(message);
 
-      if (capaStartTLS && !ns.isSsl()
-          && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
-        // do not start TLS if we are connected with SSL
-        // or are already in TLS
-        startTLSCmd();
-      } else {
-        if (!ns.isSsl() && email.isStartTLSRequired()) {
-          log.warn("STARTTLS required but not supported by server");
-          commandResult.fail("STARTTLS required but not supported by server");
+        if (capaStartTLS && !ns.isSsl()
+            && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
+          // do not start TLS if we are connected with SSL
+          // or are already in TLS
+          startTLSCmd();
         } else {
-          if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
-            authCmd();
+          if (!ns.isSsl() && email.isStartTLSRequired()) {
+            log.warn("STARTTLS required but not supported by server");
+            commandResult.fail("STARTTLS required but not supported by server");
           } else {
-            if(login==LoginOption.REQUIRED) {
-              if(username != null && pw != null) {
-                throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
-              } else {
-                throwAsyncResult("login is required, but no credentials supplied");
-              }
+            if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
+              authCmd();
             } else {
-              mailFromCmd();
+              if(login==LoginOption.REQUIRED) {
+                if(username != null && pw != null) {
+                  throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
+                } else {
+                  throwAsyncResult("login is required, but no credentials supplied");
+                }
+              } else {
+                mailFromCmd();
+              }
             }
           }
         }
+      } else {
+        // if EHLO fails, assume we have to do HELO
+        heloCmd();
       }
+    });
+  }
+
+  /**
+   * @param message
+   */
+  private void setCapabilities(String message) {
+    List<String> capabilities = parseEhlo(message);
+    for (String c : capabilities) {
+      if (c.equals("STARTTLS")) {
+        capaStartTLS = true;
+      }
+      if (c.startsWith("AUTH ")) {
+        capaAuth = new HashSet<String>(Arrays.asList(c.substring(5)
+            .split(" ")));
+      }
+      if (c.equals("8BITMIME")) {
+        capa8BitMime = true;
+      }
+      if (c.startsWith("SIZE ")) {
+        try {
+          capaSize = Integer.parseInt(c.substring(5));
+        }
+        catch(NumberFormatException n) {
+          capaSize=0;
+        }
+      }
+    }
+  }
+
+  private void heloCmd() {
+    // TODO: get real hostname
+    write(ns, "HELO windows7");
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("HELO result: " + message);
+      mailFromCmd();
     });
   }
 
@@ -182,6 +254,9 @@ public class MailVerticle {
   private void upgradeTLS() {
     ns.upgradeToSsl(v -> {
       log.info("ssl started");
+      // capabilities may have changed, e.g.
+      // if a service only announces PLAIN/LOGIN
+      // on secure channel
       ehloCmd();
     });
   }
@@ -194,8 +269,8 @@ public class MailVerticle {
 
     for (String l : message.split("\n")) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
-        log.error("format error in ehlo response");
-        throwAsyncResult("format error in ehlo response");
+        log.error("format error in multiline response");
+        throwAsyncResult("format error in multiline response");
       } else {
         v.add(l.substring(4));
       }
@@ -272,9 +347,9 @@ public class MailVerticle {
     }
   }
 
-  private void cramMD5Step2(String message2) {
-    log.info(message2);
-    if (message2.startsWith("2")) {
+  private void cramMD5Step2(String message) {
+    log.info(message);
+    if (isStatusOk(message)) {
       mailFromCmd();
     } else {
       log.warn("authentication failed");
@@ -297,12 +372,12 @@ public class MailVerticle {
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("username result: " + message);
-      if (!message.toString().startsWith("2")) {
+      log.info("pw result: " + message);
+      if (isStatusOk(message)) {
+        mailFromCmd();
+      } else {
         log.warn("authentication failed");
         throwAsyncResult("authentication failed");
-      } else {
-        mailFromCmd();
       }
     });
   }
@@ -325,7 +400,12 @@ public class MailVerticle {
       commandResult.setHandler(result -> {
         String message=result.result();
         log.info("MAIL FROM result: " + message);
-        rcptToCmd();
+        if(isStatusOk(message)) {
+          rcptToCmd();
+        } else {
+          log.warn("sender address not accepted: "+message);
+          throwAsyncResult("sender address not accepted: "+message);
+        }
       });
     } catch (AddressException e) {
       log.error("address exception", e);
@@ -343,7 +423,12 @@ public class MailVerticle {
       commandResult.setHandler(result -> {
         String message=result.result();
         log.info("RCPT TO result: " + message);
-        dataCmd();
+        if(isStatusOk(message)) {
+          dataCmd();
+        } else {
+          log.warn("recipient address not accepted: "+message);
+          throwAsyncResult("recipient address not accepted: "+message);
+        }
       });
     } catch (AddressException e) {
       log.error("address exception", e);
@@ -357,7 +442,12 @@ public class MailVerticle {
     commandResult.setHandler(result -> {
       String message=result.result();
       log.info("DATA result: " + message);
-      sendMaildata();
+      if(isStatusOk(message)) {
+        sendMaildata();
+      } else {
+        log.warn("DATA command not accepted: "+message);
+        throwAsyncResult("DATA command not accepted: "+message);
+      }
     });
   }
 
@@ -372,6 +462,7 @@ public class MailVerticle {
     }
     String message=bos.toString();
     // fail delivery if we exceed size
+    // TODO: we should do that earlier after the EHLO reply
     if(capaSize>0 && message.length()>capaSize) {
       throwAsyncResult("message exceeds allowed size");
     }
@@ -382,7 +473,12 @@ public class MailVerticle {
     commandResult.setHandler(result -> {
       String messageReply=result.result();
       log.info("maildata result: " + messageReply);
-      quitCmd();
+      if(isStatusOk(messageReply)) {
+        quitCmd();
+      } else {
+        log.warn("sending data failed: "+messageReply);
+        throwAsyncResult("sending data failed: "+messageReply);
+      }
     });
   }
 
@@ -392,7 +488,12 @@ public class MailVerticle {
     commandResult.setHandler(result -> {
       String message=result.result();
       log.info("QUIT result: " + message);
-      shutdownConnection();
+      if(isStatusOk(message)) {
+        shutdownConnection();
+      } else {
+        log.warn("quit failed: "+message);
+        throwAsyncResult("quit failed: "+message);
+      }
     });
   }
 
