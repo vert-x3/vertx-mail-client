@@ -61,7 +61,12 @@ public class MailVerticle {
 
   // avoid logging password data
   private void write(NetSocket netSocket, String str, String logStr) {
-    log.info("command: " + logStr);
+    // avoid logging large mail body
+    if(logStr.length()<1000) {
+      log.info("command: " + logStr);
+    } else {
+      log.info("command: " + logStr.substring(0,1000)+"...");
+    }
     netSocket.write(str + "\r\n");
   }
 
