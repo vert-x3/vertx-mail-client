@@ -1,6 +1,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
@@ -69,19 +70,32 @@ public class MailServiceImpl implements MailService {
       String text = emailJson.getString("text");
       String bounceAddress = emailJson.getString("bounceAddress");
       String from = emailJson.getString("from");
-      // TODO: handle more than one recipient
-      String recipient = emailJson.getString("recipient");
+      List<InternetAddress> tos = new ArrayList<InternetAddress>();
+      if(emailJson.containsKey("recipient")) {
+        tos.add(new InternetAddress(emailJson.getString("recipient")));
+      }
+      else if(emailJson.containsKey("recipients")) {
+        for(Object r:emailJson.getJsonArray("recipients")) {
+          if(r instanceof String) {
+            tos.add(new InternetAddress((String)r));
+          } else {
+            throw new AddressException("type error");
+          }
+        }
+      }
+
+      if(from==null || tos.size()==0) {
+        throw new EmailException("from or to addresses missing");
+      }
 
       Email email = new MySimpleEmail();
       email.setFrom(from);
-      List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      tos.add(new InternetAddress(recipient));
       email.setTo(tos);
       email.setSubject(emailJson.getString("subject"));
       email.setBounceAddress(bounceAddress);
       email.setContent(text, "text/plain");
 
-      // use optional as default, this way we do opportunistic unless disabled
+      // use optional as default, this way we do opportunistic TLS unless disabled
       final StarttlsOption starttls=config.getStarttls();
       if(starttls==StarttlsOption.OPTIONAL) {
         email.setStartTLSEnabled(true);
@@ -100,7 +114,7 @@ public class MailServiceImpl implements MailService {
       MailVerticle mailVerticle = new MailVerticle(vertx, resultHandler);
       mailVerticle.sendMail(email, username, password, config.getLogin());
     } catch (EmailException | AddressException e) {
-      e.printStackTrace();
+      resultHandler.handle(Future.failedFuture(e));
     }
   }
 
