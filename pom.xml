@@ -35,7 +35,7 @@
   <artifactId>vertx-mail</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <!--<name>Vert.x SMTP Service</name>-->
+  <!--<name>Vert.x SMTP Service</name> -->
 
   <dependencies>
     <dependency>
@@ -73,6 +73,13 @@
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
       <version>1.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>3.0.0-SNAPSHOT</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
   </dependencies>

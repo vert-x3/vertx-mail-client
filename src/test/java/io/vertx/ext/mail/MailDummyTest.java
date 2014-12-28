@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -18,7 +19,7 @@ import org.junit.Test;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MailDummyTest {
+public class MailDummyTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(MailDummyTest.class);
@@ -46,13 +47,14 @@ public class MailDummyTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   TestSmtpServer smtpServer;

@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -19,7 +20,7 @@ import org.junit.Test;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class HeloTest {
+public class HeloTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(HeloTest.class);
@@ -55,13 +56,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   @Test
@@ -92,13 +94,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   /*
@@ -145,13 +148,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   @Test
@@ -176,13 +180,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
+        latch.countDown();
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   @Test
@@ -205,13 +210,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
+        latch.countDown();
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   @Test
@@ -244,13 +250,47 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
+        latch.countDown();
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
+  }
+
+  @Ignore
+  @Test
+  public void closeOnConnectTest() throws InterruptedException {
+    log.info("starting");
+
+    smtpServer.setAnswers("");
+
+    latch = new CountDownLatch(1);
+
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    JsonObject email = new JsonObject();
+    email.put("from", "lehmann333@arcor.de");
+    email.put("recipient", "lehmann333@arcor.de");
+    email.put("subject", "Subject");
+    email.put("text", "Message");
+
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+        latch.countDown();
+      } else {
+        log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
+      }
+    });
+
+    awaitLatch(latch);
   }
 
   /*
@@ -291,13 +331,14 @@ public class HeloTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 
   TestSmtpServer smtpServer;

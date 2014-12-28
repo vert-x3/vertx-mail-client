@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,7 +23,7 @@ import org.junit.Test;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MailTest {
+public class MailTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(MailTest.class);
@@ -65,17 +66,18 @@ public class MailTest {
       log.warn("auth account unavailable");
     }
 
-    MailConfig mailConfig = ServerConfigs.configSendgrid();
-//    MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+//    MailConfig mailConfig = ServerConfigs.configSendgrid();
+    MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
     JsonObject email = new JsonObject();
-    email.put("from", "lehmann333@arcor.de");
+    email.put("from", "alexlehm1969@aol.com");
     email.put("recipient", "lehmann333@arcor.de");
-    email.put("bounceAddress", "nobody@lehmann.cx");
+//    email.put("bounceAddress", "nobody@lehmann.cx");
+    email.put("bounceAddress", "alexlehm1969@aol.com");
     email.put("subject", "Test email with HTML");
     email.put("text", "this is a message");
 
@@ -83,12 +85,12 @@ public class MailTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
-
-    latch.await();
+    awaitLatch(latch);
   }
 }

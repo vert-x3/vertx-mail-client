@@ -1,13 +1,12 @@
 package io.vertx.ext.mail;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -28,7 +27,7 @@ import org.subethamail.wiser.WiserMessage;
  * this tests uses more than 57 bytes as auth plain string which would break
  * the authentication if the base64 were chunked
  */
-public class LongAuthTest {
+public class LongAuthTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(LongAuthTest.class);
@@ -59,13 +58,15 @@ public class LongAuthTest {
       log.info("mail finished");
       if(result.succeeded()) {
         log.info(result.result().toString());
+        assertEquals("success", result.result().getValue("result"));
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
 
     final WiserMessage message = wiser.getMessages().get(0);
     String sender = message.getEnvelopeSender();
