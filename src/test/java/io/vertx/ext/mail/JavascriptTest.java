@@ -6,7 +6,7 @@ import org.junit.Test;
 import io.vertx.core.Starter;
 
 /**
- * @author alex
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  * simulate "vertx run mailtest.js"
  * to run a javascript test file in e.g. eclipse

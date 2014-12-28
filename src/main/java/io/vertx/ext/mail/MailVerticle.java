@@ -16,6 +16,8 @@ import io.vertx.ext.mail.mailutil.BounceGetter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,6 +103,7 @@ public class MailVerticle {
   private int capaSize = 0;
 
   Email email;
+  String mailMessage;
   String username;
   String pw;
   LoginOption login;
@@ -186,8 +189,7 @@ public class MailVerticle {
   }
 
   private void ehloCmd() {
-    // TODO: get real hostname
-    write(ns, "EHLO windows7");
+    write(ns, "EHLO "+getMyHostname());
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
@@ -195,35 +197,45 @@ public class MailVerticle {
       if(isStatusOk(message)) {
         setCapabilities(message);
 
-        if (capaStartTLS && !ns.isSsl()
-            && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
-          // do not start TLS if we are connected with SSL
-          // or are already in TLS
-          startTLSCmd();
+        // fail if we are exceeding size as early as possible
+        mailMessage = createMailMessage();
+        if(capaSize>0 && mailMessage.length()>capaSize) {
+          throwAsyncResult("message exceeds allowed size limit");
         } else {
-          if (!ns.isSsl() && email.isStartTLSRequired()) {
-            log.warn("STARTTLS required but not supported by server");
-            throwAsyncResult("STARTTLS required but not supported by server");
+          if (capaStartTLS && !ns.isSsl()
+              && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
+            // do not start TLS if we are connected with SSL
+            // or are already in TLS
+            startTLSCmd();
           } else {
-            if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
-              authCmd();
+            if (!ns.isSsl() && email.isStartTLSRequired()) {
+              log.warn("STARTTLS required but not supported by server");
+              throwAsyncResult("STARTTLS required but not supported by server");
             } else {
-              if(login==LoginOption.REQUIRED) {
-                if(username != null && pw != null) {
-                  throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
-                } else {
-                  throwAsyncResult("login is required, but no credentials supplied");
-                }
+              if (login!=LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
+                authCmd();
               } else {
-                mailFromCmd();
+                if(login==LoginOption.REQUIRED) {
+                  if(username != null && pw != null) {
+                    throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
+                  } else {
+                    throwAsyncResult("login is required, but no credentials supplied");
+                  }
+                } else {
+                  mailFromCmd();
+                }
               }
             }
           }
         }
       } else {
         // if EHLO fails, assume we have to do HELO
-        heloCmd();
-      }
+        if(isStatusTemporary(message)) {
+          heloCmd();
+        } else {
+          throwAsyncResult("EHLO failed with "+message);
+        } 
+      } 
     });
   }
 
@@ -255,14 +267,25 @@ public class MailVerticle {
   }
 
   private void heloCmd() {
-    // TODO: get real hostname
-    write(ns, "HELO windows7");
+    write(ns, "HELO "+getMyHostname());
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
       log.info("HELO result: " + message);
       mailFromCmd();
     });
+  }
+
+  /**
+   * @return
+   */
+  private String getMyHostname() {
+    try {
+      InetAddress ip = InetAddress.getLocalHost();
+      return ip.getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      return "unknown";
+    }
   }
 
   /**
@@ -441,9 +464,13 @@ public class MailVerticle {
   }
 
   private void rcptToCmd() {
+    final List<InternetAddress> toAddrs = email.getToAddresses();
+    rcptToCmd(toAddrs, 0);
+  }
+
+  private void rcptToCmd(List<InternetAddress> toAddrs, int i) {
     try {
-      // FIXME: have to handle all addresses
-      String toAddr = email.getToAddresses().get(0).getAddress();
+      String toAddr=toAddrs.get(i).getAddress();
       InternetAddress.parse(toAddr, true);
       write(ns, "RCPT TO:<" + toAddr + ">");
       commandResult = Future.future();
@@ -451,7 +478,11 @@ public class MailVerticle {
         String message=result.result();
         log.info("RCPT TO result: " + message);
         if(isStatusOk(message)) {
-          dataCmd();
+          if(i+1<toAddrs.size()) {
+            rcptToCmd(toAddrs, i+1);
+          } else {
+            dataCmd();
+          }
         } else {
           log.warn("recipient address not accepted: "+message);
           throwAsyncResult("recipient address not accepted: "+message);
@@ -479,6 +510,29 @@ public class MailVerticle {
   }
 
   private void sendMaildata() {
+    if(mailMessage==null) {
+      mailMessage = createMailMessage();
+    }
+    // convert message to escape . at the start of line
+    // TODO: this is probably bad for large messages
+    write(ns, mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.");
+    commandResult = Future.future();
+    commandResult.setHandler(result -> {
+      String message=result.result();
+      log.info("maildata result: " + message);
+      if(isStatusOk(message)) {
+        quitCmd();
+      } else {
+        log.warn("sending data failed: "+message);
+        throwAsyncResult("sending data failed: "+message);
+      }
+    });
+  }
+
+  /**
+   * @return
+   */
+  private String createMailMessage() {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     try {
       email.buildMimeMessage();
@@ -487,27 +541,7 @@ public class MailVerticle {
       log.error("cannot create mime message", e);
       throwAsyncResult("cannot create mime message");
     }
-    String message=bos.toString();
-    // fail delivery if we exceed size
-    // TODO: we should do that earlier after the EHLO reply
-    if(capaSize>0 && message.length()>capaSize) {
-      throwAsyncResult("message exceeds allowed size");
-    } else {
-      // convert message to escape . at the start of line
-      // TODO: this is probably bad for large messages
-      write(ns, message.replaceAll("\n\\.", "\n..") + "\r\n.");
-      commandResult = Future.future();
-      commandResult.setHandler(result -> {
-        String messageReply=result.result();
-        log.info("maildata result: " + messageReply);
-        if(isStatusOk(messageReply)) {
-          quitCmd();
-        } else {
-          log.warn("sending data failed: "+messageReply);
-          throwAsyncResult("sending data failed: "+messageReply);
-        }
-      });
-    }
+    return bos.toString();
   }
 
   private void quitCmd() {
@@ -517,7 +551,7 @@ public class MailVerticle {
       String message=result.result();
       log.info("QUIT result: " + message);
       if(isStatusOk(message)) {
-        shutdownConnection();
+        finishMail();
       } else {
         log.warn("quit failed: "+message);
         throwAsyncResult("quit failed: "+message);
@@ -525,12 +559,8 @@ public class MailVerticle {
     });
   }
 
-  private void shutdownConnection() {
-    commandResult=null;
-    ns.close();
-    ns=null;
-    client.close();
-    client=null;
+  private void finishMail() {
+    shutdown();
     JsonObject result=new JsonObject();
     result.put("result", "success");
     mailResult.complete(result);

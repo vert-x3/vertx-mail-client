@@ -3,6 +3,7 @@ package io.vertx.ext.mail;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -46,7 +47,7 @@ public class MailLocalTest extends VertxTestBase {
 
     JsonObject email = new JsonObject();
     email.put("from", "lehmann333@arcor.de");
-    email.put("recipient", "lehmann333@arcor.de");
+    email.put("recipients", new JsonArray().add("lehmann333@arcor.de (User Name)").add("Another User <user@example.com>"));
     email.put("bounceAddress", "user@example.com");
     email.put("subject", "Test email with HTML");
     email.put("text", "this is a test email");
