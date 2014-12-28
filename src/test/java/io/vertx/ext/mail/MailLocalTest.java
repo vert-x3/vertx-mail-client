@@ -1,13 +1,12 @@
 package io.vertx.ext.mail;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -25,7 +24,7 @@ import org.subethamail.wiser.WiserMessage;
  *
  * this test uses a local smtp server mockup
  */
-public class MailLocalTest {
+public class MailLocalTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
@@ -56,13 +55,14 @@ public class MailLocalTest {
       log.info("mail finished");
       if(result.succeeded()) {
         log.info(result.result().toString());
+        latch.countDown();
       } else {
         log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
 
     final WiserMessage message = wiser.getMessages().get(0);
     String sender = message.getEnvelopeSender();

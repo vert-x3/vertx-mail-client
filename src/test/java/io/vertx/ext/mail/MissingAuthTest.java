@@ -4,6 +4,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
 
 import java.util.concurrent.CountDownLatch;
 
@@ -15,7 +16,7 @@ import org.junit.Test;
  *
  * this test uses google but connects without tls
  */
-public class MissingAuthTest {
+public class MissingAuthTest extends VertxTestBase {
 
   Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(MissingAuthTest.class);
@@ -46,12 +47,13 @@ public class MissingAuthTest {
       log.info("mail finished");
       if(result.succeeded()) {
         log.info(result.result().toString());
+        fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
+        latch.countDown();
       }
-      latch.countDown();
     });
 
-    latch.await();
+    awaitLatch(latch);
   }
 }
