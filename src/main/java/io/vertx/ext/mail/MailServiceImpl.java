@@ -63,6 +63,7 @@ public class MailServiceImpl implements MailService {
     log.debug("mail service stopped");
   }
 
+  @SuppressWarnings("unchecked")
   @Override
   public void sendMail(JsonObject emailJson,
       Handler<AsyncResult<JsonObject>> resultHandler) {
@@ -75,12 +76,8 @@ public class MailServiceImpl implements MailService {
         tos.add(new InternetAddress(emailJson.getString("recipient")));
       }
       else if(emailJson.containsKey("recipients")) {
-        for(Object r:emailJson.getJsonArray("recipients")) {
-          if(r instanceof String) {
-            tos.add(new InternetAddress((String)r));
-          } else {
-            throw new AddressException("type error");
-          }
+        for(String r:(List<String>)emailJson.getJsonArray("recipients").getList()) {
+          tos.add(new InternetAddress(r));
         }
       }
 

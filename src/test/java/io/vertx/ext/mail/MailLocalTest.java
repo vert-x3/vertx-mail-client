@@ -47,7 +47,7 @@ public class MailLocalTest extends VertxTestBase {
 
     JsonObject email = new JsonObject();
     email.put("from", "lehmann333@arcor.de");
-    email.put("recipients", new JsonArray().add("lehmann333@arcor.de (User Name)").add("Another User <user@example.com>"));
+    email.put("recipients", new JsonArray().add("lehmann333@arcor.de (User Name)").add("user@example.com (Another User)"));
     email.put("bounceAddress", "user@example.com");
     email.put("subject", "Test email with HTML");
     email.put("text", "this is a test email");

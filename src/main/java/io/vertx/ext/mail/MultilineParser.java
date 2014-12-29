@@ -12,28 +12,24 @@ import io.vertx.core.parsetools.RecordParser;
  */
 public class MultilineParser implements Handler<Buffer> {
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
-  boolean initialized = false;
-  boolean crlfMode = false;
-  Buffer result;
-  Handler<Buffer> output;
-  RecordParser rp;
+  private boolean initialized = false;
+  private Buffer result;
+  private Handler<Buffer> output;
+  private RecordParser rp;
 
   public MultilineParser(Handler<Buffer> output) {
     Handler<Buffer> mlp = new Handler<Buffer>() {
 
       @Override
-      public void handle(Buffer buffer) {
-        // log.info("handle:\""+buffer+"\"");
+      public void handle(final Buffer buffer) {
         if (!initialized) {
           initialized = true;
           // process the first line to determine CRLF mode
-          String line = buffer.toString();
+          final String line = buffer.toString();
           if (line.endsWith("\r")) {
-            log.info("setting crlf line mode");
-            crlfMode = true;
+            log.debug("setting crlf line mode");
             rp.delimitedMode("\r\n");
-            line = line.substring(0, line.length() - 1);
-            appendOrHandle(Buffer.buffer(line));
+            appendOrHandle(Buffer.buffer(line.substring(0, line.length() - 1)));
           } else {
             appendOrHandle(buffer);
           }
@@ -42,7 +38,7 @@ public class MultilineParser implements Handler<Buffer> {
         }
       }
 
-      private void appendOrHandle(Buffer buffer) {
+      private void appendOrHandle(final Buffer buffer) {
         if (result == null) {
           result = buffer;
         } else {
@@ -55,7 +51,7 @@ public class MultilineParser implements Handler<Buffer> {
         }
       }
 
-      private boolean isFinalLine(Buffer buffer) {
+      private boolean isFinalLine(final Buffer buffer) {
         String line = buffer.toString();
         return !line.matches("^\\d+-.*");
       }
@@ -67,7 +63,7 @@ public class MultilineParser implements Handler<Buffer> {
   }
 
   @Override
-  public void handle(Buffer event) {
+  public void handle(final Buffer event) {
     rp.handle(event);
   }
 
