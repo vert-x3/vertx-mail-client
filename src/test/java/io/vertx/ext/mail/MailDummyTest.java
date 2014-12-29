@@ -57,11 +57,11 @@ public class MailDummyTest extends VertxTestBase {
     awaitLatch(latch);
   }
 
-  TestSmtpServer smtpServer;
+  private TestSmtpServer smtpServer;
 
   @Before
   public void startSMTP() {
-    smtpServer=new TestSmtpServer(vertx);
+    smtpServer = new TestSmtpServer(vertx);
   }
 
   @After

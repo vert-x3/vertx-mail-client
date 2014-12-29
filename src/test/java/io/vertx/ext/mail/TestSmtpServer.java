@@ -42,9 +42,9 @@ public class TestSmtpServer {
   }
 
   private void startServer(Vertx vertx) {
-    NetServerOptions nsOptions=new NetServerOptions();
+    NetServerOptions nsOptions = new NetServerOptions();
     nsOptions.setPort(1587);
-    netServer=vertx.createNetServer(nsOptions);
+    netServer = vertx.createNetServer(nsOptions);
 
     netServer.connectHandler(socket -> {
       socket.write(answers);
@@ -55,17 +55,17 @@ public class TestSmtpServer {
   }
 
   public void setAnswers(String answers) {
-    this.answers=answers;
+    this.answers = answers;
   }
 
   public void setAnswers(String... answers) {
-    this.answers=String.join("\r\n", answers)+"\r\n";
+    this.answers = String.join("\r\n", answers) + "\r\n";
   }
 
   public void stop() {
-    if(netServer!=null) {
+    if (netServer != null) {
       netServer.close();
-      netServer=null;
+      netServer = null;
     }
   }
 
