@@ -34,8 +34,8 @@ public interface MailService {
   // send an email with options based on a apache.commons.mail
   // Email object, this will not go through the event bus but will
   // be constructed as JsonObject locally and sent via the previous method
-//  @ProxyIgnore
-//  void sendMail(Email email, Handler<AsyncResult<String>> resultHandler);
+  // @ProxyIgnore
+  // void sendMail(Email email, Handler<AsyncResult<String>> resultHandler);
 
   @ProxyIgnore
   void start();

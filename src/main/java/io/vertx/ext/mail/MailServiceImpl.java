@@ -65,23 +65,21 @@ public class MailServiceImpl implements MailService {
 
   @SuppressWarnings("unchecked")
   @Override
-  public void sendMail(JsonObject emailJson,
-      Handler<AsyncResult<JsonObject>> resultHandler) {
+  public void sendMail(JsonObject emailJson, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
       String text = emailJson.getString("text");
       String bounceAddress = emailJson.getString("bounceAddress");
       String from = emailJson.getString("from");
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      if(emailJson.containsKey("recipient")) {
+      if (emailJson.containsKey("recipient")) {
         tos.add(new InternetAddress(emailJson.getString("recipient")));
-      }
-      else if(emailJson.containsKey("recipients")) {
-        for(String r:(List<String>)emailJson.getJsonArray("recipients").getList()) {
+      } else if (emailJson.containsKey("recipients")) {
+        for (String r : (List<String>) emailJson.getJsonArray("recipients").getList()) {
           tos.add(new InternetAddress(r));
         }
       }
 
-      if(from==null || tos.size()==0) {
+      if (from == null || tos.size() == 0) {
         throw new EmailException("from or to addresses missing");
       }
 
@@ -92,16 +90,17 @@ public class MailServiceImpl implements MailService {
       email.setBounceAddress(bounceAddress);
       email.setContent(text, "text/plain");
 
-      // use optional as default, this way we do opportunistic TLS unless disabled
-      final StarttlsOption starttls=config.getStarttls();
-      if(starttls==StarttlsOption.OPTIONAL) {
+      // use optional as default, this way we do opportunistic TLS unless
+      // disabled
+      final StarttlsOption starttls = config.getStarttls();
+      if (starttls == StarttlsOption.OPTIONAL) {
         email.setStartTLSEnabled(true);
       }
-      if(starttls==StarttlsOption.REQUIRED) {
+      if (starttls == StarttlsOption.REQUIRED) {
         email.setStartTLSRequired(true);
       }
 
-      if(config.isSsl()) {
+      if (config.isSsl()) {
         email.setSSLOnConnect(true);
       }
 
@@ -115,8 +114,9 @@ public class MailServiceImpl implements MailService {
     }
   }
 
-//  @Override
-//  public void sendMail(Email email, Handler<AsyncResult<String>> resultHandler) {
-//  }
+  // @Override
+  // public void sendMail(Email email, Handler<AsyncResult<String>>
+  // resultHandler) {
+  // }
 
 }

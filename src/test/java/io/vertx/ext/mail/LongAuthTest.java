@@ -22,10 +22,10 @@ import org.subethamail.wiser.WiserMessage;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses a local smtp server mockup
+ *         this test uses a local smtp server mockup
  * 
- * this tests uses more than 57 bytes as auth plain string which would break
- * the authentication if the base64 were chunked
+ *         this tests uses more than 57 bytes as auth plain string which would
+ *         break the authentication if the base64 were chunked
  */
 public class LongAuthTest extends VertxTestBase {
 
@@ -56,7 +56,7 @@ public class LongAuthTest extends VertxTestBase {
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.info(result.result().toString());
         assertEquals("success", result.result().getValue("result"));
         latch.countDown();
@@ -73,7 +73,7 @@ public class LongAuthTest extends VertxTestBase {
     final MimeMessage mimeMessage = message.getMimeMessage();
     assertEquals("user@example.com", sender);
     assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-    assertThat(mimeMessage.getSubject() , equalTo("Test email with HTML"));
+    assertThat(mimeMessage.getSubject(), equalTo("Test email with HTML"));
   }
 
   Wiser wiser;

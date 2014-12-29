@@ -52,8 +52,7 @@ public class MailTest extends VertxTestBase {
         username = account.getProperty("username");
         password = account.getProperty("password");
       }
-    }
-    else if ("true".equals(System.getenv("DRONE")) || System.getenv("JENKINS_URL ") != null) {
+    } else if ("true".equals(System.getenv("DRONE")) || System.getenv("JENKINS_URL ") != null) {
       // assume we are running inside CI (drone.io or jenkins)
       // and can get the credentials from environment
       username = System.getenv("SMTP_USERNAME");
@@ -66,7 +65,7 @@ public class MailTest extends VertxTestBase {
       log.warn("auth account unavailable");
     }
 
-//    MailConfig mailConfig = ServerConfigs.configSendgrid();
+    // MailConfig mailConfig = ServerConfigs.configSendgrid();
     MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);
@@ -76,7 +75,7 @@ public class MailTest extends VertxTestBase {
     JsonObject email = new JsonObject();
     email.put("from", "alexlehm1969@aol.com");
     email.put("recipient", "lehmann333@arcor.de");
-//    email.put("bounceAddress", "nobody@lehmann.cx");
+    // email.put("bounceAddress", "nobody@lehmann.cx");
     email.put("bounceAddress", "alexlehm1969@aol.com");
     email.put("subject", "Test email with HTML");
     email.put("text", "this is a message");

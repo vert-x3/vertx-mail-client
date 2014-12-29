@@ -23,7 +23,7 @@ import org.subethamail.wiser.WiserMessage;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses a local smtp server mockup
+ *         this test uses a local smtp server mockup
  */
 public class MailLocalTest extends VertxTestBase {
 
@@ -47,14 +47,15 @@ public class MailLocalTest extends VertxTestBase {
 
     JsonObject email = new JsonObject();
     email.put("from", "lehmann333@arcor.de");
-    email.put("recipients", new JsonArray().add("lehmann333@arcor.de (User Name)").add("user@example.com (Another User)"));
+    email.put("recipients",
+        new JsonArray().add("lehmann333@arcor.de (User Name)").add("user@example.com (Another User)"));
     email.put("bounceAddress", "user@example.com");
     email.put("subject", "Test email with HTML");
     email.put("text", "this is a test email");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.info(result.result().toString());
         latch.countDown();
       } else {
@@ -70,7 +71,7 @@ public class MailLocalTest extends VertxTestBase {
     final MimeMessage mimeMessage = message.getMimeMessage();
     assertEquals("user@example.com", sender);
     assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-    assertThat(mimeMessage.getSubject() , equalTo("Test email with HTML"));
+    assertThat(mimeMessage.getSubject(), equalTo("Test email with HTML"));
   }
 
   Wiser wiser;

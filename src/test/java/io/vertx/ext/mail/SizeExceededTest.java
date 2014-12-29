@@ -15,8 +15,8 @@ import org.junit.Test;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses a message that exceeds the SIZE limit of the smtp server
- * (uses the mockup server that just plays a file)
+ *         this test uses a message that exceeds the SIZE limit of the smtp
+ *         server (uses the mockup server that just plays a file)
  */
 public class SizeExceededTest extends VertxTestBase {
 
@@ -42,20 +42,20 @@ public class SizeExceededTest extends VertxTestBase {
 
     // message to exceed SIZE limit (1000000 for our server)
     // 32 Bytes
-    StringBuilder sb=new StringBuilder("*******************************\n");
+    StringBuilder sb = new StringBuilder("*******************************\n");
     // multiply by 2**15
-    for(int i=0;i<15;i++) {
+    for (int i = 0; i < 15; i++) {
       sb.append(sb);
     }
-    String message=sb.toString();
+    String message = sb.toString();
 
-    log.info("message size is "+message.length());
+    log.info("message size is " + message.length());
 
     email.put("text", message);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
       } else {
@@ -71,7 +71,7 @@ public class SizeExceededTest extends VertxTestBase {
 
   @Before
   public void startSMTP() {
-    smtpServer=new TestSmtpServer(vertx);
+    smtpServer = new TestSmtpServer(vertx);
   }
 
   @After
