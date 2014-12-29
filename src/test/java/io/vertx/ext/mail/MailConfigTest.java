@@ -1,9 +1,8 @@
 package io.vertx.ext.mail;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 import io.vertx.core.json.JsonObject;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class MailConfigTest {

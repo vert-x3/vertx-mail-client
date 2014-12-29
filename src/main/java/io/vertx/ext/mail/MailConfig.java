@@ -9,14 +9,14 @@ public class MailConfig {
   private String hostname;
   private int port;
   /**
-   * StarttlsOption: disabled, optional, required
+   * StarttlsOption: DISABLED, OPTIONAL, REQUIRED
    */
   private StarttlsOption starttls;
   /**
-   * LoginOption: disabled, none, required
+   * LoginOption: DISABLED, NONE, REQUIRED
    *
-   * if you choose none, you can also set the auth data
-   * to null with the same effect
+   * if you choose NONE, you can also set the auth data to null with the same
+   * effect
    */
   private LoginOption login;
   // TODO: it might be better to put username/password into
@@ -31,24 +31,24 @@ public class MailConfig {
   private boolean ssl;
 
   public MailConfig() {
-    this.hostname="localhost";
-    this.port=25;
-    this.starttls=StarttlsOption.OPTIONAL;
-    this.login=LoginOption.NONE;
+    this.hostname = "localhost";
+    this.port = 25;
+    this.starttls = StarttlsOption.OPTIONAL;
+    this.login = LoginOption.NONE;
   }
 
   public MailConfig(String hostname) {
     this.hostname = hostname;
     this.port = 25;
-    this.starttls=StarttlsOption.OPTIONAL;
-    this.login=LoginOption.NONE;
+    this.starttls = StarttlsOption.OPTIONAL;
+    this.login = LoginOption.NONE;
   }
 
   public MailConfig(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
-    this.starttls=StarttlsOption.OPTIONAL;
-    this.login=LoginOption.NONE;
+    this.starttls = StarttlsOption.OPTIONAL;
+    this.login = LoginOption.NONE;
   }
 
   public MailConfig(String hostname, int port, StarttlsOption starttls, LoginOption login) {
@@ -59,18 +59,18 @@ public class MailConfig {
   }
 
   public MailConfig(MailConfig other) {
-    this.hostname=other.hostname;
-    this.port=other.port;
-    this.starttls=other.starttls;
-    this.login=other.login;
-    this.username=other.username;
-    this.password=other.password;
-    this.ssl=other.ssl;
+    this.hostname = other.hostname;
+    this.port = other.port;
+    this.starttls = other.starttls;
+    this.login = other.login;
+    this.username = other.username;
+    this.password = other.password;
+    this.ssl = other.ssl;
   }
 
   public MailConfig(JsonObject config) {
-    hostname=config.getString("hostname");
-    port=config.getInteger("port");
+    hostname = config.getString("hostname");
+    port = config.getInteger("port");
     String starttlsOption = config.getString("starttls");
     if (starttlsOption != null) {
       starttls = StarttlsOption.valueOf(starttlsOption.toUpperCase());
@@ -79,11 +79,11 @@ public class MailConfig {
     if (loginOption != null) {
       login = LoginOption.valueOf(loginOption.toUpperCase());
     }
-    username=config.getString("username");
-    password=config.getString("password");
-    Boolean sslOption=config.getBoolean("ssl");
-    if(sslOption!=null) {
-      ssl=sslOption;
+    username = config.getString("username");
+    password = config.getString("password");
+    Boolean sslOption = config.getBoolean("ssl");
+    if (sslOption != null) {
+      ssl = sslOption;
     }
   }
 
@@ -145,23 +145,23 @@ public class MailConfig {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if(hostname!=null) {
+    if (hostname != null) {
       json.put("hostname", hostname);
     }
     json.put("port", port);
-    if(starttls!=null) {
-      json.put("starttls",starttls);
+    if (starttls != null) {
+      json.put("starttls", starttls);
     }
-    if(login!=null) {
-      json.put("login",login);
+    if (login != null) {
+      json.put("login", login);
     }
-    if(username!=null) {
-      json.put("username",username);
+    if (username != null) {
+      json.put("username", username);
     }
-    if(password!=null) {
-      json.put("password",password);
+    if (password != null) {
+      json.put("password", password);
     }
-    json.put("ssl",ssl);
+    json.put("ssl", ssl);
 
     return json;
   }
@@ -211,7 +211,7 @@ public class MailConfig {
   }
 
   private int hashCodeNull(Object o) {
-    return o==null ? 0: o.hashCode();
+    return o == null ? 0 : o.hashCode();
   }
 
 }

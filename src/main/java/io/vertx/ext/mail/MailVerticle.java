@@ -72,21 +72,38 @@ public class MailVerticle {
     }
   }
 
-  private void write(NetSocket netSocket, String str) {
-    write(netSocket, str, str);
+  /*
+   * write command without masking anything
+   */
+  private void write(String str) {
+    write(str, -1);
   }
 
-  // avoid logging password data
-  private void write(NetSocket netSocket, String str, String logStr) {
-    // avoid logging large mail body
-    if(logStr.length()<1000) {
-      log.info("command: " + logStr);
-    } else {
-      log.info("command: " + logStr.substring(0,1000)+"...");
+  /*
+   * write command masking everything after position blank
+   */
+  private void write(String str, int blank) {
+    if(log.isDebugEnabled()) {
+      String logStr;
+      if(blank>=0) {
+        StringBuilder sb=new StringBuilder();
+        for(int i=blank;i<str.length();i++) {
+          sb.append('*');
+        }
+        logStr=str.substring(0,blank+1)+sb;
+      } else {
+        logStr=str;
+      }
+      // avoid logging large mail body
+      if(logStr.length()<1000) {
+        log.debug("command: " + logStr);
+      } else {
+        log.debug("command: " + logStr.substring(0,1000)+"...");
+      }
     }
-    netSocket.write(str + "\r\n");
+    ns.write(str + "\r\n");
   }
-
+  
   private static final Logger log = LoggerFactory.getLogger(MailVerticle.class);
   NetSocket ns;
 
@@ -127,7 +144,7 @@ public class MailVerticle {
             final Handler<Buffer> mlp = new MultilineParser(
                 buffer -> {
                   if(commandResult==null) {
-                    log.info("dropping reply arriving after we stopped processing \""+buffer.toString()+"\"");
+                    log.debug("dropping reply arriving after we stopped processing \""+buffer.toString()+"\"");
                   } else {
                     commandResult.complete(buffer.toString());
                   }
@@ -142,7 +159,7 @@ public class MailVerticle {
 
   private void serverGreeting(AsyncResult<String> result) {
     String message = result.result();
-    log.info("server greeting: " + message);
+    log.debug("server greeting: " + message);
     if(isStatusOk(message)) {
       if(isEsmtpSupported(message)) {
         ehloCmd();
@@ -189,11 +206,11 @@ public class MailVerticle {
   }
 
   private void ehloCmd() {
-    write(ns, "EHLO "+getMyHostname());
+    write("EHLO "+getMyHostname());
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("EHLO result: " + message);
+      log.debug("EHLO result: " + message);
       if(isStatusOk(message)) {
         setCapabilities(message);
 
@@ -267,11 +284,11 @@ public class MailVerticle {
   }
 
   private void heloCmd() {
-    write(ns, "HELO "+getMyHostname());
+    write("HELO "+getMyHostname());
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("HELO result: " + message);
+      log.debug("HELO result: " + message);
       mailFromCmd();
     });
   }
@@ -292,18 +309,18 @@ public class MailVerticle {
    * 
    */
   private void startTLSCmd() {
-    write(ns, "STARTTLS");
+    write("STARTTLS");
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("STARTTLS result: " + message);
+      log.debug("STARTTLS result: " + message);
       upgradeTLS();
     });
   }
 
   private void upgradeTLS() {
     ns.upgradeToSsl(v -> {
-      log.info("ssl started");
+      log.debug("ssl started");
       // capabilities may have changed, e.g.
       // if a service only announces PLAIN/LOGIN
       // on secure channel
@@ -331,21 +348,20 @@ public class MailVerticle {
 
   private void authCmd() {
     if (capaAuth.contains("CRAM-MD5")) {
-      write(ns, "AUTH CRAM-MD5");
+      write("AUTH CRAM-MD5");
       commandResult = Future.future();
       commandResult.setHandler(result -> {
         String message=result.result();
-        log.info("AUTH result: " + message);
+        log.debug("AUTH result: " + message);
         cramMD5Step1(message.substring(4));
       });
     } else if (capaAuth.contains("PLAIN")) {
       String authdata = base64("\0" + username + "\0" + pw);
-      String authdummy = base64("\0dummy\0XXX");
-      write(ns, "AUTH PLAIN " + authdata, "AUTH PLAIN " + authdummy);
+      write("AUTH PLAIN " + authdata, 10);
       commandResult = Future.future();
       commandResult.setHandler(result -> {
         String message=result.result();
-        log.info("AUTH result: " + message);
+        log.debug("AUTH result: " + message);
         if (!message.toString().startsWith("2")) {
           log.warn("authentication failed");
           throwAsyncResult("authentication failed");
@@ -354,11 +370,11 @@ public class MailVerticle {
         }
       });
     } else if (capaAuth.contains("LOGIN")) {
-      write(ns, "AUTH LOGIN");
+      write("AUTH LOGIN");
       commandResult = Future.future();
       commandResult.setHandler(result -> {
         String message=result.result();
-        log.info("AUTH result: " + message);
+        log.debug("AUTH result: " + message);
         sendUsername();
       });
     } else {
@@ -369,13 +385,13 @@ public class MailVerticle {
 
   private void cramMD5Step1(String string) {
     String message = decodeb64(string);
-    log.info("message " + message);
+    log.debug("message " + message);
     String reply = hmacMD5hex(message, pw);
-    write(ns, base64(username + " " + reply), base64("dummy XXX"));
+    write(base64(username + " " + reply), 0);
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message2 = result.result();
-      log.info("AUTH step 2 result: " + message2);
+      log.debug("AUTH step 2 result: " + message2);
       cramMD5Step2(message2);
     });
   }
@@ -398,7 +414,7 @@ public class MailVerticle {
   }
 
   private void cramMD5Step2(String message) {
-    log.info(message);
+    log.debug(message);
     if (isStatusOk(message)) {
       mailFromCmd();
     } else {
@@ -408,21 +424,21 @@ public class MailVerticle {
   }
 
   private void sendUsername() {
-    write(ns, base64(username), base64("dummy"));
+    write(base64(username), 0);
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("username result: " + message);
+      log.debug("username result: " + message);
       sendPw();
     });
   }
 
   private void sendPw() {
-    write(ns, base64(pw), base64("XXX"));
+    write(base64(pw), 0);
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("pw result: " + message);
+      log.debug("pw result: " + message);
       if (isStatusOk(message)) {
         mailFromCmd();
       } else {
@@ -445,11 +461,11 @@ public class MailVerticle {
         }
       }
       InternetAddress.parse(fromAddr, true);
-      write(ns, "MAIL FROM:<" + fromAddr + ">");
+      write("MAIL FROM:<" + fromAddr + ">");
       commandResult = Future.future();
       commandResult.setHandler(result -> {
         String message=result.result();
-        log.info("MAIL FROM result: " + message);
+        log.debug("MAIL FROM result: " + message);
         if(isStatusOk(message)) {
           rcptToCmd();
         } else {
@@ -472,11 +488,11 @@ public class MailVerticle {
     try {
       String toAddr=toAddrs.get(i).getAddress();
       InternetAddress.parse(toAddr, true);
-      write(ns, "RCPT TO:<" + toAddr + ">");
+      write("RCPT TO:<" + toAddr + ">");
       commandResult = Future.future();
       commandResult.setHandler(result -> {
         String message=result.result();
-        log.info("RCPT TO result: " + message);
+        log.debug("RCPT TO result: " + message);
         if(isStatusOk(message)) {
           if(i+1<toAddrs.size()) {
             rcptToCmd(toAddrs, i+1);
@@ -495,11 +511,11 @@ public class MailVerticle {
   }
 
   private void dataCmd() {
-    write(ns, "DATA");
+    write("DATA");
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("DATA result: " + message);
+      log.debug("DATA result: " + message);
       if(isStatusOk(message)) {
         sendMaildata();
       } else {
@@ -515,11 +531,11 @@ public class MailVerticle {
     }
     // convert message to escape . at the start of line
     // TODO: this is probably bad for large messages
-    write(ns, mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.");
+    write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.");
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("maildata result: " + message);
+      log.debug("maildata result: " + message);
       if(isStatusOk(message)) {
         quitCmd();
       } else {
@@ -545,11 +561,11 @@ public class MailVerticle {
   }
 
   private void quitCmd() {
-    write(ns, "QUIT");
+    write("QUIT");
     commandResult = Future.future();
     commandResult.setHandler(result -> {
       String message=result.result();
-      log.info("QUIT result: " + message);
+      log.debug("QUIT result: " + message);
       if(isStatusOk(message)) {
         finishMail();
       } else {
