@@ -14,7 +14,6 @@ import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.mailutil.BounceGetter;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,14 +24,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.mail.Email;
-import org.apache.commons.mail.EmailException;
 import org.bouncycastle.crypto.Mac;
 import org.bouncycastle.crypto.digests.MD5Digest;
 import org.bouncycastle.crypto.macs.HMac;
@@ -205,7 +202,9 @@ public class MailVerticle {
         setCapabilities(message);
 
         // fail if we are exceeding size as early as possible
-        mailMessage = createMailMessage();
+        if(mailMessage==null) {
+          mailMessage = createMailMessage();
+        }
         if (capaSize > 0 && mailMessage.length() > capaSize) {
           throwAsyncResult("message exceeds allowed size limit");
         } else {
@@ -516,9 +515,9 @@ public class MailVerticle {
     try {
       email.buildMimeMessage();
       email.getMimeMessage().writeTo(bos);
-    } catch (IOException | MessagingException | EmailException e) {
+    } catch (Exception e) {
       log.error("cannot create mime message", e);
-      throwAsyncResult("cannot create mime message");
+      throwAsyncResult(e);
     }
     return bos.toString();
   }

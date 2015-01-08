@@ -7,16 +7,21 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.mailutil.MySimpleEmail;
+import io.vertx.ext.mail.mailutil.MyHtmlEmail;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.activation.DataSource;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
+import org.apache.commons.mail.HtmlEmail;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -68,6 +73,7 @@ public class MailServiceImpl implements MailService {
   public void sendMail(JsonObject emailJson, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
       String text = emailJson.getString("text");
+      String html = emailJson.getString("html");
       String bounceAddress = emailJson.getString("bounceAddress");
       String from = emailJson.getString("from");
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
@@ -83,12 +89,31 @@ public class MailServiceImpl implements MailService {
         throw new EmailException("from or to addresses missing");
       }
 
-      Email email = new MySimpleEmail();
+      HtmlEmail email = new MyHtmlEmail();
       email.setFrom(from);
       email.setTo(tos);
       email.setSubject(emailJson.getString("subject"));
       email.setBounceAddress(bounceAddress);
-      email.setContent(text, "text/plain");
+      if(text!=null) {
+        email.setTextMsg(text);
+      }
+      if(html!=null) {
+        email.setHtmlMsg(html);
+      }
+
+      JsonObject attachment=emailJson.getJsonObject("attachment");
+
+      if(attachment!=null) {
+        DataSource attachmentDS=createDS(attachment);
+        final String disposition=attachment.getString("disposition");
+        final String name = attachment.getString("name");
+        final String description = attachment.getString("description");
+        if(disposition!=null) {
+          email.attach(attachmentDS, name, description, disposition);
+        } else {
+          email.attach(attachmentDS, name, description);
+        }
+      }
 
       // use optional as default, this way we do opportunistic TLS unless
       // disabled
@@ -112,6 +137,35 @@ public class MailServiceImpl implements MailService {
     } catch (EmailException | AddressException e) {
       resultHandler.handle(Future.failedFuture(e));
     }
+  }
+
+  private DataSource createDS(JsonObject attachment) {
+    String name=attachment.getString("name");
+    String contentType=attachment.getString("content-type");
+    byte[] bytes=attachment.getBinary("data");
+    return new DataSource() {
+      
+      @Override
+      public OutputStream getOutputStream() throws IOException {
+        throw new IOException("read only");
+      }
+      
+      @Override
+      public String getName() {
+        return name;
+      }
+      
+      @Override
+      public InputStream getInputStream() throws IOException {
+        // TODO Auto-generated method stub
+        return new ByteArrayInputStream(bytes);
+      }
+      
+      @Override
+      public String getContentType() {
+        return contentType;
+      }
+    };
   }
 
   // @Override

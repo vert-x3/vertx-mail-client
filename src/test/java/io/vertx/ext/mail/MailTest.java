@@ -1,6 +1,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -72,13 +73,24 @@ public class MailTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    JsonObject email = new JsonObject();
-    email.put("from", "alexlehm1969@aol.com");
-    email.put("recipient", "lehmann333@arcor.de");
-    // email.put("bounceAddress", "nobody@lehmann.cx");
-    email.put("bounceAddress", "alexlehm1969@aol.com");
-    email.put("subject", "Test email with HTML");
-    email.put("text", "this is a message");
+    Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
+
+    JsonObject email = new JsonObject()
+      .put("from", "alexlehm1969@aol.com")
+      .put("recipient", "alexlehm@gmail.com")
+      .put("bounceAddress", "alexlehm1969@aol.com")
+      .put("subject", "Test email with HTML")
+      .put("text", "this is a message")
+      .put("html", "<a href=\"http://vertx.io\">vertx.io</a>");
+
+    JsonObject attachment=new JsonObject()
+      .put("data", image.getBytes())
+      .put("name", "logo-white-big.png")
+      .put("content-type", "image/png")
+      .put("disposition", "inline")
+      .put("description", "logo of vert.x web page");
+
+    email.put("attachment", attachment);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
