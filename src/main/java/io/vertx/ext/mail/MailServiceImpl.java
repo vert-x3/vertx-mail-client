@@ -8,6 +8,7 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.mailutil.MyHtmlEmail;
+import io.vertx.ext.mail.mailutil.MySimpleEmail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -20,8 +21,8 @@ import javax.activation.DataSource;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
+import org.apache.commons.mail.Email;
 import org.apache.commons.mail.EmailException;
-import org.apache.commons.mail.HtmlEmail;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -72,8 +73,6 @@ public class MailServiceImpl implements MailService {
   @Override
   public void sendMail(JsonObject emailJson, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
-      String text = emailJson.getString("text");
-      String html = emailJson.getString("html");
       String bounceAddress = emailJson.getString("bounceAddress");
       String from = emailJson.getString("from");
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
@@ -89,32 +88,20 @@ public class MailServiceImpl implements MailService {
         throw new EmailException("from or to addresses missing");
       }
 
-      HtmlEmail email = new MyHtmlEmail();
+      Email email;
+
+      // create a Email object that can handle the elements we want
+      if(isPlainMail(emailJson)) {
+        email=createPlainMail(emailJson);
+      } else {
+        email=createHtmlMail(emailJson);
+      }
+      // the rest of the settings are all available in the Email class
       email.setFrom(from);
       email.setTo(tos);
       email.setSubject(emailJson.getString("subject"));
       email.setBounceAddress(bounceAddress);
-      if(text!=null) {
-        email.setTextMsg(text);
-      }
-      if(html!=null) {
-        email.setHtmlMsg(html);
-      }
-
-      JsonObject attachment=emailJson.getJsonObject("attachment");
-
-      if(attachment!=null) {
-        DataSource attachmentDS=createDS(attachment);
-        final String disposition=attachment.getString("disposition");
-        final String name = attachment.getString("name");
-        final String description = attachment.getString("description");
-        if(disposition!=null) {
-          email.attach(attachmentDS, name, description, disposition);
-        } else {
-          email.attach(attachmentDS, name, description);
-        }
-      }
-
+  
       // use optional as default, this way we do opportunistic TLS unless
       // disabled
       final StarttlsOption starttls = config.getStarttls();
@@ -137,6 +124,44 @@ public class MailServiceImpl implements MailService {
     } catch (EmailException | AddressException e) {
       resultHandler.handle(Future.failedFuture(e));
     }
+  }
+
+  private Email createPlainMail(JsonObject emailJson) throws EmailException {
+    MySimpleEmail email=new MySimpleEmail();
+    email.setMsg(emailJson.getString("text", ""));
+    return email;
+  }
+
+  private Email createHtmlMail(JsonObject emailJson) throws EmailException {
+    MyHtmlEmail email=new MyHtmlEmail();
+    String text=emailJson.getString("text");
+    String html=emailJson.getString("html");
+    if(text!=null) {
+      email.setMsg(text);
+    }
+    if(html!=null) {
+      email.setHtmlMsg(html);
+    }
+
+    JsonObject attachment=emailJson.getJsonObject("attachment");
+
+    if(attachment!=null) {
+      DataSource attachmentDS=createDS(attachment);
+      final String disposition=attachment.getString("disposition");
+      final String name = attachment.getString("name");
+      final String description = attachment.getString("description");
+      if(disposition!=null) {
+        email.attach(attachmentDS, name, description, disposition);
+      } else {
+        email.attach(attachmentDS, name, description);
+      }
+    }
+
+    return email;
+  }
+
+  private boolean isPlainMail(JsonObject emailJson) {
+    return !emailJson.containsKey("html") && !emailJson.containsKey("attachment");
   }
 
   private DataSource createDS(JsonObject attachment) {
