@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -12,7 +11,6 @@ import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /*
@@ -29,7 +27,7 @@ public class MailDummyTest extends VertxTestBase {
 
   CountDownLatch latch;
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
@@ -40,12 +38,12 @@ public class MailDummyTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    JsonObject email = new JsonObject();
-    email.put("from", "lehmann333@arcor.de");
-    email.put("recipient", "lehmann333@arcor.de");
-    email.put("bounceAddress", "nobody@lehmann.cx");
-    email.put("subject", "Test email with HTML");
-    email.put("text", "this is a message");
+    MailMessage email=new MailMessage()
+      .setFrom("lehmann333@arcor.de")
+      .setBounceAddress("nobody@lehmann.cx")
+      .setRecipient("lehmann333@arcor.de")
+      .setSubject("Test email with HTML")
+      .setText("this is a message");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
@@ -61,6 +59,7 @@ public class MailDummyTest extends VertxTestBase {
     awaitLatch(latch);
   }
 
+//  @Ignore
   @Test
   public void mailHtml() throws InterruptedException, UnsupportedEncodingException {
     log.info("starting");
@@ -73,20 +72,20 @@ public class MailDummyTest extends VertxTestBase {
 
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
-    JsonObject email = new JsonObject()
-      .put("from", "lehmann333@arcor.de")
-      .put("recipient", "lehmann333@arcor.de")
-      .put("bounceAddress", "nobody@lehmann.cx")
-      .put("subject", "Test email with HTML")
-      .put("text", "this is a message")
-      .put("html", "<a href=\"http://vertx.io\">vertx.io</a>");
+    MailMessage message = new MailMessage()
+      .setFrom("lehmann333@arcor.de")
+      .setRecipient("lehmann333@arcor.de")
+      .setBounceAddress("nobody@lehmann.cx")
+      .setSubject("Test email with HTML")
+      .setText("this is a message")
+      .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    JsonObject attachment=new JsonObject()
-      .put("data", image.getBytes())
-      .put("name", "logo-white-big.png")
-      .put("content-type", "image/png")
-      .put("disposition", "inline")
-      .put("description", "logo of vert.x web page");
+    MailAttachment attachment=new MailAttachment()
+      .setData(new String(image.getBytes(), "ISO-8859-1"))
+      .setName("logo-white-big.png")
+      .setContentType("image/png")
+      .setDisposition("inline")
+      .setDescription("logo of vert.x web page");
 
 //    JsonObject attachment=new JsonObject()
 //      .put("data", "this is a text attachment".getBytes("utf-8"))
@@ -94,9 +93,9 @@ public class MailDummyTest extends VertxTestBase {
 //      .put("content-type", "text/plain")
 //      .put("description", "some text");
 
-    email.put("attachment", attachment);
+    message.setAttachment(attachment);
 
-    mailService.sendMail(email, result -> {
+    mailService.sendMail(message, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());

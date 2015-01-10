@@ -69,19 +69,86 @@ public class MailServiceImpl implements MailService {
     log.debug("mail service stopped");
   }
 
-  @SuppressWarnings("unchecked")
+  private Email createPlainMail(MailMessage message) throws EmailException {
+    MySimpleEmail email=new MySimpleEmail();
+    String text=message.getText();
+    if(text!=null) {
+      email.setMsg(text);
+    }
+    return email;
+  }
+
+  private Email createHtmlMail(MailMessage message) throws EmailException {
+    MyHtmlEmail email=new MyHtmlEmail();
+    String text=message.getText();
+    String html=message.getHtml();
+    if(text!=null) {
+      email.setMsg(text);
+    }
+    if(html!=null) {
+      email.setHtmlMsg(html);
+    }
+
+    MailAttachment attachment=message.getAttachment();
+
+    if(attachment!=null) {
+      DataSource attachmentDS=createDS(attachment);
+      final String disposition=attachment.getDisposition();
+      final String name = attachment.getName();
+      final String description = attachment.getDescription();
+      if(disposition!=null) {
+        email.attach(attachmentDS, name, description, disposition);
+      } else {
+        email.attach(attachmentDS, name, description);
+      }
+    }
+
+    return email;
+  }
+
+  private boolean isPlainMail(MailMessage message) {
+    return message.getHtml()==null && message.getAttachment()==null;
+  }
+
+  private DataSource createDS(MailAttachment attachment) {
+    String name=attachment.getName();
+    String contentType=attachment.getContentType();
+
+    //byte[] bytes=attachment.getData().getBytes("iso-8859-1");
+    String bytes=attachment.getData();
+
+    return new DataSource() {
+
+      @Override
+      public OutputStream getOutputStream() throws IOException {
+        throw new IOException("read only");
+      }
+
+      @Override
+      public String getName() {
+        return name;
+      }
+
+      @Override
+      public InputStream getInputStream() throws IOException {
+        return new ByteArrayInputStream(bytes.getBytes("iso-8859-1"));
+      }
+
+      @Override
+      public String getContentType() {
+        return contentType;
+      }
+    };
+  }
+
   @Override
-  public void sendMail(JsonObject emailJson, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public void sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
-      String bounceAddress = emailJson.getString("bounceAddress");
-      String from = emailJson.getString("from");
+      String bounceAddress = message.getBounceAddress();
+      String from = message.getFrom();
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      if (emailJson.containsKey("recipient")) {
-        tos.add(new InternetAddress(emailJson.getString("recipient")));
-      } else if (emailJson.containsKey("recipients")) {
-        for (String r : (List<String>) emailJson.getJsonArray("recipients").getList()) {
-          tos.add(new InternetAddress(r));
-        }
+      for (String r : (List<String>) message.getRecipients()) {
+        tos.add(new InternetAddress(r));
       }
 
       if (from == null || tos.size() == 0) {
@@ -91,17 +158,17 @@ public class MailServiceImpl implements MailService {
       Email email;
 
       // create a Email object that can handle the elements we want
-      if(isPlainMail(emailJson)) {
-        email=createPlainMail(emailJson);
+      if(isPlainMail(message)) {
+        email=createPlainMail(message);
       } else {
-        email=createHtmlMail(emailJson);
+        email=createHtmlMail(message);
       }
-      // the rest of the settings are all available in the Email class
+      // the rest of the settings are all available in the Email base class
       email.setFrom(from);
       email.setTo(tos);
-      email.setSubject(emailJson.getString("subject"));
+      email.setSubject(message.getSubject());
       email.setBounceAddress(bounceAddress);
-  
+
       // use optional as default, this way we do opportunistic TLS unless
       // disabled
       final StarttlsOption starttls = config.getStarttls();
@@ -125,77 +192,5 @@ public class MailServiceImpl implements MailService {
       resultHandler.handle(Future.failedFuture(e));
     }
   }
-
-  private Email createPlainMail(JsonObject emailJson) throws EmailException {
-    MySimpleEmail email=new MySimpleEmail();
-    email.setMsg(emailJson.getString("text", ""));
-    return email;
-  }
-
-  private Email createHtmlMail(JsonObject emailJson) throws EmailException {
-    MyHtmlEmail email=new MyHtmlEmail();
-    String text=emailJson.getString("text");
-    String html=emailJson.getString("html");
-    if(text!=null) {
-      email.setMsg(text);
-    }
-    if(html!=null) {
-      email.setHtmlMsg(html);
-    }
-
-    JsonObject attachment=emailJson.getJsonObject("attachment");
-
-    if(attachment!=null) {
-      DataSource attachmentDS=createDS(attachment);
-      final String disposition=attachment.getString("disposition");
-      final String name = attachment.getString("name");
-      final String description = attachment.getString("description");
-      if(disposition!=null) {
-        email.attach(attachmentDS, name, description, disposition);
-      } else {
-        email.attach(attachmentDS, name, description);
-      }
-    }
-
-    return email;
-  }
-
-  private boolean isPlainMail(JsonObject emailJson) {
-    return !emailJson.containsKey("html") && !emailJson.containsKey("attachment");
-  }
-
-  private DataSource createDS(JsonObject attachment) {
-    String name=attachment.getString("name");
-    String contentType=attachment.getString("content-type");
-    byte[] bytes=attachment.getBinary("data");
-    return new DataSource() {
-      
-      @Override
-      public OutputStream getOutputStream() throws IOException {
-        throw new IOException("read only");
-      }
-      
-      @Override
-      public String getName() {
-        return name;
-      }
-      
-      @Override
-      public InputStream getInputStream() throws IOException {
-        // TODO Auto-generated method stub
-        return new ByteArrayInputStream(bytes);
-      }
-      
-      @Override
-      public String getContentType() {
-        return contentType;
-      }
-    };
-  }
-
-  // @Override
-  // public void sendMail(Email email, Handler<AsyncResult<String>>
-  // resultHandler) {
-  // }
 
 }

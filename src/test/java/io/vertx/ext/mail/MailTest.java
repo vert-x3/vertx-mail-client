@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -14,7 +13,6 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /*
@@ -31,7 +29,7 @@ public class MailTest extends VertxTestBase {
 
   CountDownLatch latch;
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() throws IOException, InterruptedException {
     log.info("starting");
@@ -75,22 +73,22 @@ public class MailTest extends VertxTestBase {
 
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
-    JsonObject email = new JsonObject()
-      .put("from", "alexlehm1969@aol.com")
-      .put("recipient", "alexlehm@gmail.com")
-      .put("bounceAddress", "alexlehm1969@aol.com")
-      .put("subject", "Test email with HTML")
-      .put("text", "this is a message")
-      .put("html", "<a href=\"http://vertx.io\">vertx.io</a>");
+    MailMessage email = new MailMessage()
+      .setFrom("alexlehm1969@aol.com")
+      .setRecipient("alexlehm@gmail.com")
+      .setBounceAddress("alexlehm1969@aol.com")
+      .setSubject("Test email with HTML")
+      .setText("this is a message")
+      .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    JsonObject attachment=new JsonObject()
-      .put("data", image.getBytes())
-      .put("name", "logo-white-big.png")
-      .put("content-type", "image/png")
-      .put("disposition", "inline")
-      .put("description", "logo of vert.x web page");
+    MailAttachment attachment=new MailAttachment()
+      .setData(image.toString("iso-8859-1"))
+      .setName("logo-white-big.png")
+      .setContentType("image/png")
+      .setDisposition("inline")
+      .setDescription("logo of vert.x web page");
 
-    email.put("attachment", attachment);
+    email.setAttachment(attachment);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

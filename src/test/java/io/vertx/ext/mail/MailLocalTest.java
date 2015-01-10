@@ -3,12 +3,12 @@ package io.vertx.ext.mail;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.mail.MessagingException;
@@ -45,13 +45,16 @@ public class MailLocalTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    JsonObject email = new JsonObject();
-    email.put("from", "lehmann333@arcor.de");
-    email.put("recipients",
-        new JsonArray().add("lehmann333@arcor.de (User Name)").add("user@example.com (Another User)"));
-    email.put("bounceAddress", "user@example.com");
-    email.put("subject", "Test email with HTML");
-    email.put("text", "this is a test email");
+    MailMessage email = new MailMessage();
+
+    email.setFrom("lehmann333@arcor.de");
+    List<String> recipients=new ArrayList<String>();
+    recipients.add("lehmann333@arcor.de (User Name)");
+    recipients.add("user@example.com (Another User)");
+    email.setRecipients(recipients);
+    email.setBounceAddress("user@example.com");
+    email.setSubject("Test email with HTML");
+    email.setText("this is a test email");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
