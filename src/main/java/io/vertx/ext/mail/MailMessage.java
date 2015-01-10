@@ -5,6 +5,7 @@ import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Options
 public class MailMessage {
@@ -21,13 +22,34 @@ public class MailMessage {
   }
 
   public MailMessage(MailMessage other) {
-    // TODO
-    }
-
-  public MailMessage(JsonObject config) {
-    // TODO
+    this.bounceAddress=other.bounceAddress;
+    this.from=other.from;
+    this.recipients=other.recipients;
+    this.subject=other.subject;
+    this.text=other.text;
+    this.html=other.html;
+    this.attachment=new MailAttachment(other.attachment);
   }
 
+  public MailMessage(JsonObject json) {
+    Objects.requireNonNull(json);
+    this.bounceAddress=json.getString("bounceAddress");
+    this.from=json.getString("from");
+    // TODO: handle single recipient without array
+    if(json.containsKey("recipients")) {
+      @SuppressWarnings("unchecked")
+      final List<String> recipients = (List<String>) json.getJsonArray("recipients").getList();
+      this.recipients=recipients;
+    }
+    this.subject=json.getString("subject");
+    this.text=json.getString("text");
+    this.html=json.getString("html");
+    if(json.containsKey("attachment")) {
+      this.attachment=new MailAttachment(json.getJsonObject("attachment"));
+    }
+  }
+
+  // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
     this.from=from;
     this.recipients=new ArrayList<String>();
@@ -109,24 +131,86 @@ public class MailMessage {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    // TODO
+    if(bounceAddress!=null) {
+      json.put("bounceAddress", bounceAddress);
+    }
+    if(from!=null) {
+      json.put("from", from);
+    }
+    if(recipients!=null) {
+      json.put("recipients", recipients);
+    }
+    if(subject!=null) {
+      json.put("subject", subject);
+    }
+    if(text!=null) {
+      json.put("text", text);
+    }
+    if(html!=null) {
+      json.put("html", html);
+    }
+    if(attachment!=null) {
+      json.put("attachment", attachment.toJson());
+    }
     return json;
   }
 
   @Override
   public boolean equals(Object o) {
-    // TODO
-    return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    MailMessage other = (MailMessage) o;
+
+    if (!equalsNull(bounceAddress, other.bounceAddress)) {
+      return false;
+    }
+    if (!equalsNull(from, other.from)) {
+      return false;
+    }
+    if (!equalsNull(recipients, other.recipients)) {
+      return false;
+    }
+    if (!equalsNull(subject, other.subject)) {
+      return false;
+    }
+    if (!equalsNull(text, other.text)) {
+      return false;
+    }
+    if (!equalsNull(html, other.html)) {
+      return false;
+    }
+    return equalsNull(attachment, other.attachment);
   }
 
   @Override
   public int hashCode() {
-    // TODO
-    return 0;  
+    int result = hashCodeNull(bounceAddress);
+    result = 31 * result + hashCodeNull(from);
+    result = 31 * result + hashCodeNull(recipients);
+    result = 31 * result + hashCodeNull(subject);
+    result = 31 * result + hashCodeNull(text);
+    result = 31 * result + hashCodeNull(html);
+    result = 31 * result + hashCodeNull(attachment);
+    return result;
   }
 
-//  private int hashCodeNull(Object o) {
-//    return o == null ? 0 : o.hashCode();
-//  }
+  private boolean equalsNull(Object o1, Object o2) {
+    if(o1 == null && o2 == null) {
+      return true;
+    }
+    if(o1 == null || o2 == null) {
+      return false;
+    }
+    return o1.equals(o2);
+  }
+
+  private int hashCodeNull(Object o) {
+    return o == null ? 0 : o.hashCode();
+  }
 
 }
