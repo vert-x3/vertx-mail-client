@@ -1,5 +1,7 @@
 package io.vertx.ext.mail;
 
+import java.util.Objects;
+
 import io.vertx.codegen.annotations.Options;
 import io.vertx.core.json.JsonObject;
 
@@ -15,7 +17,7 @@ public class MailAttachment {
   private String data;
   // if filename is set, data will be read from the filesystem
   // TODO: this is not yet implemented
-  private String filename;
+//  private String filename;
   // name is the descriptive filename that will be put into the mail
   // i.e. usually a local filename without path
   // will be filled based on filename if not set
@@ -28,17 +30,17 @@ public class MailAttachment {
   /**
    * @return the filename
    */
-  public String getFilename() {
-    return filename;
-  }
+//  public String getFilename() {
+//    return filename;
+//  }
 
   /**
    * @param filename the filename to set
    */
-  public MailAttachment setFilename(String filename) {
-    this.filename = filename;
-    return this;
-  }
+//  public MailAttachment setFilename(String filename) {
+//    this.filename = filename;
+//    return this;
+//  }
 
   public String getName() {
     return name;
@@ -53,6 +55,7 @@ public class MailAttachment {
   }
 
   public MailAttachment(MailAttachment other) {
+    Objects.requireNonNull(other);
     this.data=other.data;
     this.name=other.name;
     this.contentType=other.contentType;
@@ -60,12 +63,13 @@ public class MailAttachment {
     this.description=other.description;
   }
 
-  public MailAttachment(JsonObject config) {
-    this.data=config.getString("data");
-    this.name=config.getString("name");
-    this.contentType=config.getString("content-type");
-    this.disposition=config.getString("disposition");
-    this.description=config.getString("description");
+  public MailAttachment(JsonObject json) {
+    Objects.requireNonNull(json);
+    this.data=json.getString("data");
+    this.name=json.getString("name");
+    this.contentType=json.getString("content-type");
+    this.disposition=json.getString("disposition");
+    this.description=json.getString("description");
   }
 
   public String getData() {
@@ -106,28 +110,60 @@ public class MailAttachment {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    json.put("data", data);
-    json.put("name", name);
-    json.put("content-type", contentType);
-    json.put("disposition", disposition);
-    json.put("description", description);
+    putIfNotNull(json, "data", data);
+    putIfNotNull(json, "name", name);
+    putIfNotNull(json, "content-type", contentType);
+    putIfNotNull(json, "disposition", disposition);
+    putIfNotNull(json, "description", description);
     return json;
   }
 
   @Override
   public boolean equals(Object o) {
-    // TODO
-    return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    MailAttachment other = (MailAttachment) o;
+
+    return equalsNull(data, other.data) &&
+      equalsNull(name, other.name) &&
+      equalsNull(contentType, other.contentType) &&
+      equalsNull(disposition, other.disposition) &&
+      equalsNull(description, other.description);
   }
 
   @Override
   public int hashCode() {
-    // TODO
-    return 0;  
+    int result = hashCodeNull(data);
+    result = 31 * result + hashCodeNull(name);
+    result = 31 * result + hashCodeNull(contentType);
+    result = 31 * result + hashCodeNull(disposition);
+    result = 31 * result + hashCodeNull(description);
+    return result;
   }
 
-//  private int hashCodeNull(Object o) {
-//    return o == null ? 0 : o.hashCode();
-//  }
+  private boolean equalsNull(Object o1, Object o2) {
+    if(o1 == null && o2 == null) {
+      return true;
+    }
+    if(o1 == null || o2 == null) {
+      return false;
+    }
+    return o1.equals(o2);
+  }
+
+  private int hashCodeNull(Object o) {
+    return o == null ? 0 : o.hashCode();
+  }
+
+  private void putIfNotNull(JsonObject json, String key, Object value) {
+    if(value!=null) {
+      json.put(key, value);
+    }
+  }
 
 }
