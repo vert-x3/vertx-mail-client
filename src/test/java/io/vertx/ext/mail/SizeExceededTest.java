@@ -1,7 +1,6 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -35,11 +34,6 @@ public class SizeExceededTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    JsonObject email = new JsonObject();
-    email.put("from", "lehmann333@arcor.de");
-    email.put("recipient", "lehmann333@arcor.de");
-    email.put("subject", "Test email with HTML");
-
     // message to exceed SIZE limit (1000000 for our server)
     // 32 Bytes
     StringBuilder sb = new StringBuilder("*******************************\n");
@@ -51,7 +45,7 @@ public class SizeExceededTest extends VertxTestBase {
 
     log.info("message size is " + message.length());
 
-    email.put("text", message);
+    MailMessage email = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", message);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

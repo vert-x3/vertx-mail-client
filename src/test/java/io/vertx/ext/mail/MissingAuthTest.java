@@ -1,7 +1,6 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -37,11 +36,7 @@ public class MissingAuthTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    JsonObject email = new JsonObject();
-    email.put("from", "lehmann333@arcor.de");
-    email.put("recipient", "lehmann333@arcor.de");
-    email.put("subject", "Test email with HTML");
-    email.put("text", "this is a test email");
+    MailMessage email = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

@@ -26,16 +26,17 @@ public interface MailService {
   }
 
   // send an email previously constructed
+  // TODO: this is not implemented
   void sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler);
 
-  // send an email with all options explicitly set
-  void sendMail(JsonObject email, Handler<AsyncResult<JsonObject>> resultHandler);
+  void sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   // send an email with options based on a apache.commons.mail
   // Email object, this will not go through the event bus but will
   // be constructed as JsonObject locally and sent via the previous method
-  // @ProxyIgnore
-  // void sendMail(Email email, Handler<AsyncResult<String>> resultHandler);
+  // TODO: not quite sure if this method makes much sense to be available in the interface
+//  @GenIgnore
+//  void sendMail(Email email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @ProxyIgnore
   void start();
