@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /*
@@ -29,7 +30,7 @@ public class MailTest extends VertxTestBase {
 
   CountDownLatch latch;
 
-//  @Ignore
+  @Ignore
   @Test
   public void mailTest() throws IOException, InterruptedException {
     log.info("starting");
