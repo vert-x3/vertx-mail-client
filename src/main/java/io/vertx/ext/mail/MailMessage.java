@@ -1,9 +1,10 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.Options;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +17,7 @@ public class MailMessage {
   private String subject;
   private String text;
   private String html;
-  private MailAttachment attachment;
+  private List<MailAttachment> attachment;
 
   public MailMessage() {
   }
@@ -28,16 +29,17 @@ public class MailMessage {
     this.subject=other.subject;
     this.text=other.text;
     this.html=other.html;
-    this.attachment=new MailAttachment(other.attachment);
+    // TODO: create new list with new instances?
+    this.attachment=other.attachment;
   }
 
+  @SuppressWarnings("unchecked")
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
     this.bounceAddress=json.getString("bounceAddress");
     this.from=json.getString("from");
     // TODO: handle single recipient without array
     if(json.containsKey("recipients")) {
-      @SuppressWarnings("unchecked")
       final List<String> recipients = (List<String>) json.getJsonArray("recipients").getList();
       this.recipients=recipients;
     }
@@ -45,15 +47,25 @@ public class MailMessage {
     this.text=json.getString("text");
     this.html=json.getString("html");
     if(json.containsKey("attachment")) {
-      this.attachment=new MailAttachment(json.getJsonObject("attachment"));
+      List<MailAttachment> list;
+      Object object=json.getValue("attachment");
+      if(object instanceof JsonObject) {
+        list=Arrays.asList(new MailAttachment((JsonObject) object));
+      }
+      else if(object instanceof JsonArray) {
+        list=(List<MailAttachment>) ((JsonArray)object).getList();
+      }
+      else {
+        throw new IllegalArgumentException("invalid attachment type");
+      }
+      this.attachment=list;
     }
   }
 
   // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
     this.from=from;
-    this.recipients=new ArrayList<String>();
-    recipients.add(to);
+    this.recipients=Arrays.asList(to);
     this.subject=subject;
     this.text=text;
   }
@@ -87,9 +99,7 @@ public class MailMessage {
 
   // helper method for single recipient
   public MailMessage setRecipient(String recipient) {
-    List<String> rList=new ArrayList<String>();
-    rList.add(recipient);
-    this.recipients = rList;
+    this.recipients = Arrays.asList(recipient);
     return this;
   }
 
@@ -120,12 +130,17 @@ public class MailMessage {
     return this;
   }
 
-  public MailAttachment getAttachment() {
+  public List<MailAttachment> getAttachment() {
     return attachment;
   }
 
-  public MailMessage setAttachment(MailAttachment attachment) {
+  public MailMessage setAttachment(List<MailAttachment> attachment) {
     this.attachment = attachment;
+    return this;
+  }
+
+  public MailMessage setAttachment(MailAttachment attachment) {
+    this.attachment = Arrays.asList(attachment);
     return this;
   }
 
@@ -150,7 +165,11 @@ public class MailMessage {
       json.put("html", html);
     }
     if(attachment!=null) {
-      json.put("attachment", attachment.toJson());
+      JsonArray array=new JsonArray();
+      for(MailAttachment a:attachment) {
+        array.add(a.toJson());
+      }
+      json.put("attachment", array);
     }
     return json;
   }

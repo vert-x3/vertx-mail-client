@@ -89,17 +89,18 @@ public class MailServiceImpl implements MailService {
       email.setHtmlMsg(html);
     }
 
-    MailAttachment attachment=message.getAttachment();
-
-    if(attachment!=null) {
-      DataSource attachmentDS=createDS(attachment);
-      final String disposition=attachment.getDisposition();
-      final String name = attachment.getName();
-      final String description = attachment.getDescription();
-      if(disposition!=null) {
-        email.attach(attachmentDS, name, description, disposition);
-      } else {
-        email.attach(attachmentDS, name, description);
+    List<MailAttachment> list=message.getAttachment();
+    if(list!=null) {
+      for(MailAttachment attachment: list) {
+        DataSource attachmentDS=createDS(attachment);
+        final String disposition=attachment.getDisposition();
+        final String name = attachment.getName();
+        final String description = attachment.getDescription();
+        if(disposition!=null) {
+          email.attach(attachmentDS, name, description, disposition);
+        } else {
+          email.attach(attachmentDS, name, description);
+        }
       }
     }
 
@@ -147,7 +148,7 @@ public class MailServiceImpl implements MailService {
       String bounceAddress = message.getBounceAddress();
       String from = message.getFrom();
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      for (String r : (List<String>) message.getRecipients()) {
+      for (String r : message.getRecipients()) {
         tos.add(new InternetAddress(r));
       }
 
