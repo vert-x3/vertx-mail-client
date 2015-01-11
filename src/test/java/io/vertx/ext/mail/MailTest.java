@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.CountDownLatch;
 
@@ -82,14 +84,23 @@ public class MailTest extends VertxTestBase {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    MailAttachment attachment=new MailAttachment()
-      .setData(image.toString("iso-8859-1"))
+    List<MailAttachment> list=new ArrayList<MailAttachment>();
+
+    list.add(new MailAttachment()
+      .setData(new String(image.getBytes(), "ISO-8859-1"))
       .setName("logo-white-big.png")
       .setContentType("image/png")
       .setDisposition("inline")
-      .setDescription("logo of vert.x web page");
+      .setDescription("logo of vert.x web page"));
 
-    email.setAttachment(attachment);
+    list.add(new MailAttachment()
+      .setData("this is a text attachment")
+      .setName("file.txt")
+      .setContentType("text/plain")
+      .setDisposition("attachment")
+      .setDescription("some text"));
+
+    email.setAttachment(list);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

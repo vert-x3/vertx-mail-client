@@ -3,7 +3,9 @@ package io.vertx.ext.mail;
 import static org.junit.Assert.assertEquals;
 import io.vertx.core.json.JsonObject;
 
-import org.junit.Ignore;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
 
 public class MailMessageTest {
@@ -17,15 +19,39 @@ public class MailMessageTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailMessage().toJson().encode());
-    assertEquals("{\"from\":\"a\",\"recipients\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}", new MailMessage("a","b","c","d").toJson().encode());
+    assertEquals("{\"from\":\"a\",\"recipients\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
+        new MailMessage("a","b","c","d").toJson().encode());
   }
 
-  @Ignore
+  @Test
+  public void testAttachment() {
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData("asdfasdf");
+    attachment.setName("file.txt");
+    MailMessage message = new MailMessage("a","b","c","d");
+    message.setAttachment(attachment);
+    assertEquals("{\"from\":\"a\",\"recipients\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"}]}", message.toJson().encode());
+  }
+
+  @Test
+  public void testAttachment2() {
+    List<MailAttachment> list = new ArrayList<MailAttachment>();
+    list.add(new MailAttachment()
+      .setData("asdfasdf")
+      .setName("file.txt"));
+    list.add(new MailAttachment()
+      .setData("xxxxx")
+      .setName("file2.txt"));
+    MailMessage message = new MailMessage();
+    message.setAttachment(list);
+    assertEquals("{\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"},{\"data\":\"xxxxx\",\"name\":\"file2.txt\"}]}", message.toJson().encode());
+  }
+
   @Test
   public void testConstructorFromClass() {
     MailMessage message=new MailMessage();
 
-    assertEquals(message, new MailMessage());
+    assertEquals(message, new MailMessage(message));
   }
 
   @Test(expected = NullPointerException.class)
@@ -41,11 +67,7 @@ public class MailMessageTest {
   @Test
   public void testConstructorFromJson() {
     final String jsonString = "{\"from\":\"a\",\"recipients\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}";
-    JsonObject json=new JsonObject(jsonString);
-
-    MailMessage message = new MailMessage(json);
-
-    assertEquals(jsonString, message.toJson().encode());
+    assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
   }
 
 }

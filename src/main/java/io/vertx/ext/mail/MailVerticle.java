@@ -90,7 +90,7 @@ public class MailVerticle {
         logStr = str;
       }
       // avoid logging large mail body
-      if (logStr.length() < 1000) {
+      if (logStr.length() < 10000) {
         log.debug("command: " + logStr);
       } else {
         log.debug("command: " + logStr.substring(0, 1000) + "...");
@@ -108,9 +108,9 @@ public class MailVerticle {
   private Set<String> capaAuth = Collections.emptySet();
   // 8BITMIME can be used if the server supports it, currently this is not
   // implemented
-  private boolean capa8BitMime = false;
+//  private boolean capa8BitMime = false;
   // PIPELINING is not yet used
-  private boolean capaPipelining = false;
+//  private boolean capaPipelining = false;
   private int capaSize = 0;
 
   Email email;
@@ -202,9 +202,7 @@ public class MailVerticle {
         setCapabilities(message);
 
         // fail if we are exceeding size as early as possible
-        if(mailMessage==null) {
-          mailMessage = createMailMessage();
-        }
+        createMailMessage();
         if (capaSize > 0 && mailMessage.length() > capaSize) {
           throwAsyncResult("message exceeds allowed size limit");
         } else {
@@ -256,9 +254,9 @@ public class MailVerticle {
       if (c.startsWith("AUTH ")) {
         capaAuth = new HashSet<String>(Arrays.asList(c.substring(5).split(" ")));
       }
-      if (c.equals("8BITMIME")) {
-        capa8BitMime = true;
-      }
+//      if (c.equals("8BITMIME")) {
+//        capa8BitMime = true;
+//      }
       if (c.startsWith("SIZE ")) {
         try {
           capaSize = Integer.parseInt(c.substring(5));
@@ -490,9 +488,9 @@ public class MailVerticle {
   }
 
   private void sendMaildata() {
-    if (mailMessage == null) {
-      mailMessage = createMailMessage();
-    }
+    // make sure we create the message here if it hasn't been created
+    // for the size check above
+    createMailMessage();
     // convert message to escape . at the start of line
     // TODO: this is probably bad for large messages
     write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", result -> {
@@ -510,16 +508,18 @@ public class MailVerticle {
   /**
    * @return
    */
-  private String createMailMessage() {
-    ByteArrayOutputStream bos = new ByteArrayOutputStream();
-    try {
-      email.buildMimeMessage();
-      email.getMimeMessage().writeTo(bos);
-    } catch (Exception e) {
-      log.error("cannot create mime message", e);
-      throwAsyncResult(e);
+  private void createMailMessage() {
+    if(mailMessage==null) {
+      ByteArrayOutputStream bos = new ByteArrayOutputStream();
+      try {
+        email.buildMimeMessage();
+        email.getMimeMessage().writeTo(bos);
+        mailMessage = bos.toString();
+      } catch (Exception e) {
+        log.error("cannot create mime message", e);
+        throwAsyncResult(e);
+      }
     }
-    return bos.toString();
   }
 
   private void quitCmd() {

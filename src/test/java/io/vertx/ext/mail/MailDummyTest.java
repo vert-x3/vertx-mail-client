@@ -7,6 +7,8 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
@@ -27,7 +29,6 @@ public class MailDummyTest extends VertxTestBase {
 
   CountDownLatch latch;
 
-//  @Ignore
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
@@ -59,7 +60,6 @@ public class MailDummyTest extends VertxTestBase {
     awaitLatch(latch);
   }
 
-//  @Ignore
   @Test
   public void mailHtml() throws InterruptedException, UnsupportedEncodingException {
     log.info("starting");
@@ -72,7 +72,7 @@ public class MailDummyTest extends VertxTestBase {
 
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
-    MailMessage message = new MailMessage()
+    MailMessage email = new MailMessage()
       .setFrom("lehmann333@arcor.de")
       .setRecipient("lehmann333@arcor.de")
       .setBounceAddress("nobody@lehmann.cx")
@@ -80,22 +80,25 @@ public class MailDummyTest extends VertxTestBase {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    MailAttachment attachment=new MailAttachment()
+    List<MailAttachment> list=new ArrayList<MailAttachment>();
+
+    list.add(new MailAttachment()
       .setData(new String(image.getBytes(), "ISO-8859-1"))
       .setName("logo-white-big.png")
       .setContentType("image/png")
       .setDisposition("inline")
-      .setDescription("logo of vert.x web page");
+      .setDescription("logo of vert.x web page"));
 
-//    JsonObject attachment=new JsonObject()
-//      .put("data", "this is a text attachment".getBytes("utf-8"))
-//      .put("name", "file.txt")
-//      .put("content-type", "text/plain")
-//      .put("description", "some text");
+    list.add(new MailAttachment()
+      .setData("this is a text attachment")
+      .setName("file.txt")
+      .setContentType("text/plain")
+      .setDisposition("attachment")
+      .setDescription("some text"));
 
-    message.setAttachment(attachment);
+    email.setAttachment(list);
 
-    mailService.sendMail(message, result -> {
+    mailService.sendMail(email, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
