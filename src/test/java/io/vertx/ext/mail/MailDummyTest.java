@@ -42,7 +42,7 @@ public class MailDummyTest extends VertxTestBase {
     MailMessage email=new MailMessage()
       .setFrom("lehmann333@arcor.de")
       .setBounceAddress("nobody@lehmann.cx")
-      .setRecipient("lehmann333@arcor.de")
+      .setTo("lehmann333@arcor.de")
       .setSubject("Test email with HTML")
       .setText("this is a message");
 
@@ -74,7 +74,7 @@ public class MailDummyTest extends VertxTestBase {
 
     MailMessage email = new MailMessage()
       .setFrom("lehmann333@arcor.de")
-      .setRecipient("lehmann333@arcor.de")
+      .setTo("lehmann333@arcor.de")
       .setBounceAddress("nobody@lehmann.cx")
       .setSubject("Test email with HTML")
       .setText("this is a message")

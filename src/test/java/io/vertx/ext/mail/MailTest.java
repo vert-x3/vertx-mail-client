@@ -78,7 +78,7 @@ public class MailTest extends VertxTestBase {
 
     MailMessage email = new MailMessage()
       .setFrom("alexlehm1969@aol.com")
-      .setRecipient("alexlehm@gmail.com")
+      .setTo("alexlehm@gmail.com")
       .setBounceAddress("alexlehm1969@aol.com")
       .setSubject("Test email with HTML")
       .setText("this is a message")

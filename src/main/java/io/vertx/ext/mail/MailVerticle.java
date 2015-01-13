@@ -90,7 +90,7 @@ public class MailVerticle {
         logStr = str;
       }
       // avoid logging large mail body
-      if (logStr.length() < 10000) {
+      if (logStr.length() < 1000) {
         log.debug("command: " + logStr);
       } else {
         log.debug("command: " + logStr.substring(0, 1000) + "...");

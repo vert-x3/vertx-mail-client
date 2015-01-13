@@ -13,7 +13,9 @@ public class MailMessage {
 
   private String bounceAddress;
   private String from;
-  private List<String> recipients;
+  private List<String> tos;
+  private List<String> ccs;
+  private List<String> bccs;
   private String subject;
   private String text;
   private String html;
@@ -25,7 +27,9 @@ public class MailMessage {
   public MailMessage(MailMessage other) {
     this.bounceAddress=other.bounceAddress;
     this.from=other.from;
-    this.recipients=other.recipients;
+    this.tos=other.tos;
+    this.ccs=other.ccs;
+    this.bccs=other.bccs;
     this.subject=other.subject;
     this.text=other.text;
     this.html=other.html;
@@ -38,10 +42,29 @@ public class MailMessage {
     Objects.requireNonNull(json);
     this.bounceAddress=json.getString("bounceAddress");
     this.from=json.getString("from");
-    // TODO: handle single recipient without array
-    if(json.containsKey("recipients")) {
-      final List<String> recipients = (List<String>) json.getJsonArray("recipients").getList();
-      this.recipients=recipients;
+    if(json.containsKey("tos")) {
+      final List<String> recipients = (List<String>) json.getJsonArray("tos").getList();
+      this.tos=recipients;
+    }
+    else if(json.containsKey("to")) {
+      final List<String> recipients = Arrays.asList(json.getString("to"));
+      this.tos=recipients;
+    }
+    if(json.containsKey("ccs")) {
+      final List<String> recipients = (List<String>) json.getJsonArray("ccs").getList();
+      this.ccs=recipients;
+    }
+    else if(json.containsKey("cc")) {
+      final List<String> recipients = Arrays.asList(json.getString("cc"));
+      this.ccs=recipients;
+    }
+    if(json.containsKey("bccs")) {
+      final List<String> recipients = (List<String>) json.getJsonArray("bccs").getList();
+      this.bccs=recipients;
+    }
+    else if(json.containsKey("bcc")) {
+      final List<String> recipients = Arrays.asList(json.getString("bcc"));
+      this.bccs=recipients;
     }
     this.subject=json.getString("subject");
     this.text=json.getString("text");
@@ -65,7 +88,7 @@ public class MailMessage {
   // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
     this.from=from;
-    this.recipients=Arrays.asList(to);
+    this.tos=Arrays.asList(to);
     this.subject=subject;
     this.text=text;
   }
@@ -88,18 +111,48 @@ public class MailMessage {
     return this;
   }
 
-  public List<String> getRecipients() {
-    return recipients;
+  public List<String> getTos() {
+    return tos;
   }
 
-  public MailMessage setRecipients(List<String> recipients) {
-    this.recipients = recipients;
+  public MailMessage setTos(List<String> tos) {
+    this.tos = tos;
     return this;
   }
 
   // helper method for single recipient
-  public MailMessage setRecipient(String recipient) {
-    this.recipients = Arrays.asList(recipient);
+  public MailMessage setTo(String to) {
+    this.tos = Arrays.asList(to);
+    return this;
+  }
+
+  public List<String> getCcs() {
+    return ccs;
+  }
+
+  public MailMessage setCcs(List<String> ccs) {
+    this.ccs = ccs;
+    return this;
+  }
+
+  // helper method for single recipient
+  public MailMessage setCc(String cc) {
+    this.ccs = Arrays.asList(cc);
+    return this;
+  }
+
+  public List<String> getBccs() {
+    return bccs;
+  }
+
+  public MailMessage setBccs(List<String> bccs) {
+    this.bccs = bccs;
+    return this;
+  }
+
+  // helper method for single recipient
+  public MailMessage setBcc(String bcc) {
+    this.bccs = Arrays.asList(bcc);
     return this;
   }
 
@@ -152,8 +205,14 @@ public class MailMessage {
     if(from!=null) {
       json.put("from", from);
     }
-    if(recipients!=null) {
-      json.put("recipients", recipients);
+    if(tos!=null) {
+      json.put("tos", tos);
+    }
+    if(ccs!=null) {
+      json.put("ccs", ccs);
+    }
+    if(bccs!=null) {
+      json.put("bccs", bccs);
     }
     if(subject!=null) {
       json.put("subject", subject);
@@ -191,7 +250,13 @@ public class MailMessage {
     if (!equalsNull(from, other.from)) {
       return false;
     }
-    if (!equalsNull(recipients, other.recipients)) {
+    if (!equalsNull(tos, other.tos)) {
+      return false;
+    }
+    if (!equalsNull(ccs, other.ccs)) {
+      return false;
+    }
+    if (!equalsNull(bccs, other.bccs)) {
       return false;
     }
     if (!equalsNull(subject, other.subject)) {
@@ -210,7 +275,9 @@ public class MailMessage {
   public int hashCode() {
     int result = hashCodeNull(bounceAddress);
     result = 31 * result + hashCodeNull(from);
-    result = 31 * result + hashCodeNull(recipients);
+    result = 31 * result + hashCodeNull(tos);
+    result = 31 * result + hashCodeNull(ccs);
+    result = 31 * result + hashCodeNull(bccs);
     result = 31 * result + hashCodeNull(subject);
     result = 31 * result + hashCodeNull(text);
     result = 31 * result + hashCodeNull(html);
