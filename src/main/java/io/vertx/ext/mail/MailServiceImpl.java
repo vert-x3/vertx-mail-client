@@ -148,11 +148,25 @@ public class MailServiceImpl implements MailService {
       String bounceAddress = message.getBounceAddress();
       String from = message.getFrom();
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      for (String r : message.getRecipients()) {
-        tos.add(new InternetAddress(r));
+      if(message.getTos()!=null) {
+        for (String r : message.getTos()) {
+          tos.add(new InternetAddress(r));
+        }
+      }
+      List<InternetAddress> ccs = new ArrayList<InternetAddress>();
+      if(message.getCcs()!=null) {
+        for (String r : message.getCcs()) {
+          ccs.add(new InternetAddress(r));
+        }
+      }
+      List<InternetAddress> bccs = new ArrayList<InternetAddress>();
+      if(message.getBccs()!=null) {
+        for (String r : message.getBccs()) {
+          bccs.add(new InternetAddress(r));
+        }
       }
 
-      if (from == null || tos.size() == 0) {
+      if (from == null || tos.size() == 0 && ccs.size() == 0 && bccs.size() == 0 ) {
         throw new EmailException("from or to addresses missing");
       }
 
@@ -166,7 +180,15 @@ public class MailServiceImpl implements MailService {
       }
       // the rest of the settings are all available in the Email base class
       email.setFrom(from);
-      email.setTo(tos);
+      if(tos.size()>0) {
+        email.setTo(tos);
+      }
+      if(ccs.size()>0) {
+        email.setCc(ccs);
+      }
+      if(bccs.size()>0) {
+        email.setBcc(bccs);
+      }
       email.setSubject(message.getSubject());
       email.setBounceAddress(bounceAddress);
 

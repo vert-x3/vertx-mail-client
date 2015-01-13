@@ -8,6 +8,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
@@ -48,10 +49,9 @@ public class MailLocalTest extends VertxTestBase {
     MailMessage email = new MailMessage();
 
     email.setFrom("lehmann333@arcor.de");
-    List<String> recipients=new ArrayList<String>();
-    recipients.add("lehmann333@arcor.de (User Name)");
-    recipients.add("user@example.com (Another User)");
-    email.setRecipients(recipients);
+    email.setTos(Arrays.asList(
+        "lehmann333@arcor.de (User Name)",
+        "user@example.com (Another User)"));
     email.setBounceAddress("user@example.com");
     email.setSubject("Test email with HTML");
     email.setText("this is a test email");
