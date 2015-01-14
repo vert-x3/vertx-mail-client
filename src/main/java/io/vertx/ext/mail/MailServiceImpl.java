@@ -83,7 +83,7 @@ public class MailServiceImpl implements MailService {
     String text=message.getText();
     String html=message.getHtml();
     if(text!=null) {
-      email.setMsg(text);
+      email.setTextMsg(text);
     }
     if(html!=null) {
       email.setHtmlMsg(html);
@@ -112,8 +112,8 @@ public class MailServiceImpl implements MailService {
   }
 
   private DataSource createDS(MailAttachment attachment) {
-    String name=attachment.getName();
-    String contentType=attachment.getContentType();
+    final String name=attachment.getName()==null ? "" : attachment.getName();
+    final String contentType=attachment.getContentType()==null ? "application/octet-stream" : attachment.getContentType();
 
     //byte[] bytes=attachment.getData().getBytes("iso-8859-1");
     String bytes=attachment.getData();

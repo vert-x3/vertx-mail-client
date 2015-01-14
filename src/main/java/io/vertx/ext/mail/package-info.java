@@ -18,23 +18,23 @@
  *
  * link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
  *
- *
  * [source,java]
  * ----
  * import io.vertx.ext.mail.MailConfig;
+ * import io.vertx.ext.mail.MailMessage;
  * import io.vertx.ext.mail.MailService;
  *
- * MailConfig mailConfig = ServerConfigs.configSendgrid();
- * mailConfig.setUsername(username);
- * mailConfig.setPassword(password);
+ * MailConfig mailConfig = ServerConfigs.configSendgrid()
+ *   .setUsername(username)
+ *   .setPassword(password);
  *
  * MailService mailService = MailService.create(vertx, mailConfig);
  *
- * JsonObject email = new JsonObject();
- * email.put("from", "address@example.com");
- * email.put("recipient", "address@example.com");
- * email.put("subject", "meaningful subject");
- * email.put("text", "this is a message");
+ * MailMessage email = new MailMessage()
+ *   .setFrom("address@example.com")
+ *   .setTo("address@example.com")
+ *   .setSubject("meaningful subject")
+ *   .setText("this is a message");
  *
  * mailService.sendMail(email, result -> {
  *   if(result.succeeded()) {
