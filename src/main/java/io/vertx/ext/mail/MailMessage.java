@@ -4,6 +4,7 @@ import io.vertx.codegen.annotations.Options;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -76,7 +77,10 @@ public class MailMessage {
         list=Arrays.asList(new MailAttachment((JsonObject) object));
       }
       else if(object instanceof JsonArray) {
-        list=(List<MailAttachment>) ((JsonArray)object).getList();
+        list=new ArrayList<MailAttachment>();
+        for(Object attach:(JsonArray)object) {
+          list.add(new MailAttachment((JsonObject)attach));
+        }
       }
       else {
         throw new IllegalArgumentException("invalid attachment type");

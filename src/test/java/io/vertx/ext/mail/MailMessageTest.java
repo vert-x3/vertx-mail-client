@@ -55,6 +55,11 @@ public class MailMessageTest {
   }
 
   @Test(expected = NullPointerException.class)
+  public void testConstructorFromClassNull() {
+    new MailMessage((MailMessage)null);
+  }
+
+  @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
     new MailMessage((JsonObject)null);
   }
@@ -70,6 +75,12 @@ public class MailMessageTest {
     assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
     assertEquals("{\"from\":\"a\",\"tos\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
         new MailMessage(new JsonObject("{\"from\":\"a\",\"to\":\"b\",\"subject\":\"c\",\"text\":\"d\"}")).toJson().encode());
+  }
+
+  @Test
+  public void testConstructorFromJsonAttachment() {
+    final String jsonString = "{\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"},{\"data\":\"xxxxx\",\"name\":\"file2.txt\"}]}";
+    assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
   }
 
 }

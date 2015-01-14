@@ -1,6 +1,5 @@
-//
-// simple example to show that the generated interface works in javascript
-// 
+
+//simple example to show that the generated interface works in javascript
 
 var Vertx = require("vertx-js/vertx");
 var vertx = Vertx.vertx();
@@ -8,11 +7,11 @@ var vertx = Vertx.vertx();
 var MailService = require('vertx-mail-js/mail_service');
 
 var config={
-  "hostname": "mail.arcor.de",
-  port: 587,
-  "username": "xxx",
-  "password": "xxx",
-  "starttls": "required"
+		"hostname": "mail.arcor.de",
+		port: 587,
+		"username": "xxx",
+		"password": "xxx",
+		"starttls": "required"
 };
 
 console.log("starting");
@@ -20,16 +19,25 @@ console.log("starting");
 var service=MailService.create(vertx,config);
 
 var email={
-  "from": "lehmann333@arcor.de",
-  "recipient": "lehmann333@arcor.de",
-  "subject": "Test email",
-  "text": "this is a mail message"
+		"from": "lehmann333@arcor.de",
+		"to": "lehmann333@arcor.de",
+		"subject": "Test email",
+		"text": "this is a mail message",
+		"attachment":
+			[
+			 {
+				 "data": "attachment file content",
+				 "content-type": "text/plain"
+			 },
+			 {
+				 "data": "\0\0\0\0"
+//				 "content-type": "application/octet-stream"
+			 }
+			 ]
 };
 
-var handler=function(result) {
-  console.log('Mail finished '+result);
-};
-
-service.sendMail(email, handler);
+service.sendMail(email, function(result) {
+	console.log('Mail finished '+JSON.stringify(result));
+});
 
 console.log("finished");

@@ -446,20 +446,22 @@ public class MailVerticle {
   }
 
   private void rcptToCmd() {
-    final List<InternetAddress> toAddrs = email.getToAddresses();
-    rcptToCmd(toAddrs, 0);
+    List<InternetAddress> recipientAddrs = email.getToAddresses();
+    recipientAddrs.addAll(email.getCcAddresses());
+    recipientAddrs.addAll(email.getBccAddresses());
+    rcptToCmd(recipientAddrs, 0);
   }
 
-  private void rcptToCmd(List<InternetAddress> toAddrs, int i) {
+  private void rcptToCmd(List<InternetAddress> recipientAddrs, int i) {
     try {
-      String toAddr = toAddrs.get(i).getAddress();
+      String toAddr = recipientAddrs.get(i).getAddress();
       InternetAddress.parse(toAddr, true);
       write("RCPT TO:<" + toAddr + ">", result -> {
         String message = result.result();
         log.debug("RCPT TO result: " + message);
         if (isStatusOk(message)) {
-          if (i + 1 < toAddrs.size()) {
-            rcptToCmd(toAddrs, i + 1);
+          if (i + 1 < recipientAddrs.size()) {
+            rcptToCmd(recipientAddrs, i + 1);
           } else {
             dataCmd();
           }
