@@ -148,20 +148,20 @@ public class MailServiceImpl implements MailService {
       String bounceAddress = message.getBounceAddress();
       String from = message.getFrom();
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      if(message.getTos()!=null) {
-        for (String r : message.getTos()) {
+      if(message.getTo()!=null) {
+        for (String r : message.getTo()) {
           tos.add(new InternetAddress(r));
         }
       }
       List<InternetAddress> ccs = new ArrayList<InternetAddress>();
-      if(message.getCcs()!=null) {
-        for (String r : message.getCcs()) {
+      if(message.getCc()!=null) {
+        for (String r : message.getCc()) {
           ccs.add(new InternetAddress(r));
         }
       }
       List<InternetAddress> bccs = new ArrayList<InternetAddress>();
-      if(message.getBccs()!=null) {
-        for (String r : message.getBccs()) {
+      if(message.getBcc()!=null) {
+        for (String r : message.getBcc()) {
           bccs.add(new InternetAddress(r));
         }
       }

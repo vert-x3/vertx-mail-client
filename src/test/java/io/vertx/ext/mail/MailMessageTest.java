@@ -19,7 +19,7 @@ public class MailMessageTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailMessage().toJson().encode());
-    assertEquals("{\"from\":\"a\",\"tos\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
+    assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
         new MailMessage("a","b","c","d").toJson().encode());
   }
 
@@ -30,7 +30,7 @@ public class MailMessageTest {
     attachment.setName("file.txt");
     MailMessage message = new MailMessage("a","b","c","d");
     message.setAttachment(attachment);
-    assertEquals("{\"from\":\"a\",\"tos\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"}]}", message.toJson().encode());
+    assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"}]}", message.toJson().encode());
   }
 
   @Test
@@ -71,9 +71,9 @@ public class MailMessageTest {
 
   @Test
   public void testConstructorFromJson() {
-    String jsonString = "{\"from\":\"a\",\"tos\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}";
+    String jsonString = "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}";
     assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
-    assertEquals("{\"from\":\"a\",\"tos\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
+    assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
         new MailMessage(new JsonObject("{\"from\":\"a\",\"to\":\"b\",\"subject\":\"c\",\"text\":\"d\"}")).toJson().encode());
   }
 

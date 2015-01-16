@@ -49,7 +49,7 @@ public class MailLocalTest extends VertxTestBase {
     MailMessage email = new MailMessage();
 
     email.setFrom("lehmann333@arcor.de");
-    email.setTos(Arrays.asList(
+    email.setTo(Arrays.asList(
         "lehmann333@arcor.de (User Name)",
         "user@example.com (Another User)"));
     email.setBounceAddress("user@example.com");
