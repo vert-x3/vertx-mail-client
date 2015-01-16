@@ -1,5 +1,7 @@
 package io.vertx.ext.mail;
 
+import java.util.concurrent.CountDownLatch;
+
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
@@ -51,7 +53,13 @@ public class TestSmtpServer {
       // wait 10 seconds for the protocol to finish
       vertx.setTimer(10000, v -> socket.close());
     });
-    netServer.listen();
+    CountDownLatch latch = new CountDownLatch(1);
+    netServer.listen(r -> latch.countDown());
+    try {
+      latch.await();
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
   }
 
   public void setAnswers(String answers) {
@@ -64,7 +72,13 @@ public class TestSmtpServer {
 
   public void stop() {
     if (netServer != null) {
-      netServer.close();
+      CountDownLatch latch = new CountDownLatch(1);
+      netServer.close(v -> latch.countDown());
+      try {
+        latch.await();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
       netServer = null;
     }
   }
