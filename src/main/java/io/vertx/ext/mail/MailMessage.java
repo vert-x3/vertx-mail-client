@@ -14,9 +14,9 @@ public class MailMessage {
 
   private String bounceAddress;
   private String from;
-  private List<String> tos;
-  private List<String> ccs;
-  private List<String> bccs;
+  private List<String> to;
+  private List<String> cc;
+  private List<String> bcc;
   private String subject;
   private String text;
   private String html;
@@ -28,9 +28,9 @@ public class MailMessage {
   public MailMessage(MailMessage other) {
     this.bounceAddress=other.bounceAddress;
     this.from=other.from;
-    this.tos=other.tos;
-    this.ccs=other.ccs;
-    this.bccs=other.bccs;
+    this.to=other.to;
+    this.cc=other.cc;
+    this.bcc=other.bcc;
     this.subject=other.subject;
     this.text=other.text;
     this.html=other.html;
@@ -38,35 +38,13 @@ public class MailMessage {
     this.attachment=other.attachment;
   }
 
-  @SuppressWarnings("unchecked")
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
     this.bounceAddress=json.getString("bounceAddress");
     this.from=json.getString("from");
-    if(json.containsKey("tos")) {
-      final List<String> recipients = (List<String>) json.getJsonArray("tos").getList();
-      this.tos=recipients;
-    }
-    else if(json.containsKey("to")) {
-      final List<String> recipients = Arrays.asList(json.getString("to"));
-      this.tos=recipients;
-    }
-    if(json.containsKey("ccs")) {
-      final List<String> recipients = (List<String>) json.getJsonArray("ccs").getList();
-      this.ccs=recipients;
-    }
-    else if(json.containsKey("cc")) {
-      final List<String> recipients = Arrays.asList(json.getString("cc"));
-      this.ccs=recipients;
-    }
-    if(json.containsKey("bccs")) {
-      final List<String> recipients = (List<String>) json.getJsonArray("bccs").getList();
-      this.bccs=recipients;
-    }
-    else if(json.containsKey("bcc")) {
-      final List<String> recipients = Arrays.asList(json.getString("bcc"));
-      this.bccs=recipients;
-    }
+    this.to=getKeyAsStringOrList(json, "to");
+    this.cc=getKeyAsStringOrList(json, "cc");
+    this.bcc=getKeyAsStringOrList(json, "bcc");
     this.subject=json.getString("subject");
     this.text=json.getString("text");
     this.html=json.getString("html");
@@ -89,10 +67,27 @@ public class MailMessage {
     }
   }
 
+  @SuppressWarnings("unchecked")
+  private List<String> getKeyAsStringOrList(JsonObject json, String key) {
+    Object value=json.getValue(key);
+    if(value==null) {
+      return null;
+    } else {
+      if(value instanceof String) {
+        return Arrays.asList((String) value);
+      }
+      else if(value instanceof JsonArray) {
+        return (List<String>) ((JsonArray)value).getList();
+      } else {
+        throw new IllegalArgumentException("invalid attachment type");
+      }
+    }
+  }
+  
   // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
     this.from=from;
-    this.tos=Arrays.asList(to);
+    this.to=Arrays.asList(to);
     this.subject=subject;
     this.text=text;
   }
@@ -115,48 +110,48 @@ public class MailMessage {
     return this;
   }
 
-  public List<String> getTos() {
-    return tos;
+  public List<String> getTo() {
+    return to;
   }
 
-  public MailMessage setTos(List<String> tos) {
-    this.tos = tos;
+  public MailMessage setTo(List<String> to) {
+    this.to = to;
     return this;
   }
 
   // helper method for single recipient
   public MailMessage setTo(String to) {
-    this.tos = Arrays.asList(to);
+    this.to = Arrays.asList(to);
     return this;
   }
 
-  public List<String> getCcs() {
-    return ccs;
+  public List<String> getCc() {
+    return cc;
   }
 
-  public MailMessage setCcs(List<String> ccs) {
-    this.ccs = ccs;
+  public MailMessage setCc(List<String> cc) {
+    this.cc = cc;
     return this;
   }
 
   // helper method for single recipient
   public MailMessage setCc(String cc) {
-    this.ccs = Arrays.asList(cc);
+    this.cc = Arrays.asList(cc);
     return this;
   }
 
-  public List<String> getBccs() {
-    return bccs;
+  public List<String> getBcc() {
+    return bcc;
   }
 
-  public MailMessage setBccs(List<String> bccs) {
-    this.bccs = bccs;
+  public MailMessage setBcc(List<String> bcc) {
+    this.bcc = bcc;
     return this;
   }
 
   // helper method for single recipient
   public MailMessage setBcc(String bcc) {
-    this.bccs = Arrays.asList(bcc);
+    this.bcc = Arrays.asList(bcc);
     return this;
   }
 
@@ -209,14 +204,14 @@ public class MailMessage {
     if(from!=null) {
       json.put("from", from);
     }
-    if(tos!=null) {
-      json.put("tos", tos);
+    if(to!=null) {
+      json.put("to", to);
     }
-    if(ccs!=null) {
-      json.put("ccs", ccs);
+    if(cc!=null) {
+      json.put("cc", cc);
     }
-    if(bccs!=null) {
-      json.put("bccs", bccs);
+    if(bcc!=null) {
+      json.put("bcc", bcc);
     }
     if(subject!=null) {
       json.put("subject", subject);
@@ -254,13 +249,13 @@ public class MailMessage {
     if (!equalsNull(from, other.from)) {
       return false;
     }
-    if (!equalsNull(tos, other.tos)) {
+    if (!equalsNull(to, other.to)) {
       return false;
     }
-    if (!equalsNull(ccs, other.ccs)) {
+    if (!equalsNull(cc, other.cc)) {
       return false;
     }
-    if (!equalsNull(bccs, other.bccs)) {
+    if (!equalsNull(bcc, other.bcc)) {
       return false;
     }
     if (!equalsNull(subject, other.subject)) {
@@ -279,9 +274,9 @@ public class MailMessage {
   public int hashCode() {
     int result = hashCodeNull(bounceAddress);
     result = 31 * result + hashCodeNull(from);
-    result = 31 * result + hashCodeNull(tos);
-    result = 31 * result + hashCodeNull(ccs);
-    result = 31 * result + hashCodeNull(bccs);
+    result = 31 * result + hashCodeNull(to);
+    result = 31 * result + hashCodeNull(cc);
+    result = 31 * result + hashCodeNull(bcc);
     result = 31 * result + hashCodeNull(subject);
     result = 31 * result + hashCodeNull(text);
     result = 31 * result + hashCodeNull(html);
