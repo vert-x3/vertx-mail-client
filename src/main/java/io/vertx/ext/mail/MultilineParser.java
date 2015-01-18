@@ -14,7 +14,6 @@ public class MultilineParser implements Handler<Buffer> {
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   private boolean initialized = false;
   private Buffer result;
-  private Handler<Buffer> output;
   private RecordParser rp;
 
   public MultilineParser(Handler<Buffer> output) {
@@ -59,7 +58,6 @@ public class MultilineParser implements Handler<Buffer> {
     };
 
     this.rp = RecordParser.newDelimited("\n", mlp);
-    this.output = output;
   }
 
   @Override

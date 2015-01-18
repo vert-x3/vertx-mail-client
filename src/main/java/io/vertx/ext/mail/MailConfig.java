@@ -6,6 +6,10 @@ import io.vertx.core.json.JsonObject;
 @Options
 public class MailConfig {
 
+  private static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
+  private static final StarttlsOption DEFAULT_TLS = StarttlsOption.OPTIONAL;
+  private static final int DEFAULT_PORT = 25;
+  private static final String DEFAULT_HOST = "localhost";
   private String hostname;
   private int port;
   /**
@@ -31,24 +35,24 @@ public class MailConfig {
   private boolean ssl;
 
   public MailConfig() {
-    this.hostname = "localhost";
-    this.port = 25;
-    this.starttls = StarttlsOption.OPTIONAL;
-    this.login = LoginOption.NONE;
+    this.hostname = DEFAULT_HOST;
+    this.port = DEFAULT_PORT;
+    this.starttls = DEFAULT_TLS;
+    this.login = DEFAULT_LOGIN;
   }
 
   public MailConfig(String hostname) {
     this.hostname = hostname;
-    this.port = 25;
-    this.starttls = StarttlsOption.OPTIONAL;
-    this.login = LoginOption.NONE;
+    this.port = DEFAULT_PORT;
+    this.starttls = DEFAULT_TLS;
+    this.login = DEFAULT_LOGIN;
   }
 
   public MailConfig(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
-    this.starttls = StarttlsOption.OPTIONAL;
-    this.login = LoginOption.NONE;
+    this.starttls = DEFAULT_TLS;
+    this.login = DEFAULT_LOGIN;
   }
 
   public MailConfig(String hostname, int port, StarttlsOption starttls, LoginOption login) {
@@ -69,8 +73,8 @@ public class MailConfig {
   }
 
   public MailConfig(JsonObject config) {
-    hostname = config.getString("hostname");
-    port = config.getInteger("port");
+    hostname = config.getString("hostname", DEFAULT_HOST);
+    port = config.getInteger("port", DEFAULT_PORT);
     String starttlsOption = config.getString("starttls");
     if (starttlsOption != null) {
       starttls = StarttlsOption.valueOf(starttlsOption.toUpperCase());
@@ -161,7 +165,9 @@ public class MailConfig {
     if (password != null) {
       json.put("password", password);
     }
-    json.put("ssl", ssl);
+    if(ssl) {
+      json.put("ssl", ssl);
+    }
 
     return json;
   }

@@ -2,14 +2,11 @@ package io.vertx.ext.mail;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 import javax.mail.MessagingException;
@@ -28,7 +25,6 @@ import org.subethamail.wiser.WiserMessage;
  */
 public class MailLocalTest extends VertxTestBase {
 
-  Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
 
   CountDownLatch latch;

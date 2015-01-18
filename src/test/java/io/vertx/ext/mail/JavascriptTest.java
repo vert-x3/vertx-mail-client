@@ -12,7 +12,7 @@ import org.junit.Test;
  */
 public class JavascriptTest {
 
-  @Ignore
+//  @Ignore
   @Test
   public void runJavascriptTest() throws Exception {
     new JSRunner().run("javascript/mailtest.js", "*");
