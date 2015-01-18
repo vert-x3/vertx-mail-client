@@ -1,6 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -21,7 +20,6 @@ import org.junit.Test;
  */
 public class HeloTest extends VertxTestBase {
 
-  Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(HeloTest.class);
 
   CountDownLatch latch;

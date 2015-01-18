@@ -10,7 +10,7 @@ public class MailConfigTest {
   @Test
   public void toJsonTest() {
     MailConfig mailConfig=new MailConfig();
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"ssl\":false}",mailConfig.toJson().toString());
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}",mailConfig.toJson().toString());
   }
 
   @Test
@@ -19,6 +19,13 @@ public class MailConfigTest {
     MailConfig mailConfig=new MailConfig(json);
     assertEquals("somehost", mailConfig.getHostname());
     assertEquals(StarttlsOption.OPTIONAL, mailConfig.getStarttls());
+  }
+
+  @Test
+  public void newJsonEmptyTest() {
+    JsonObject json=new JsonObject("{}");
+    MailConfig mailConfig = new MailConfig(json);
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25}", mailConfig.toJson().encode());
   }
 
 }

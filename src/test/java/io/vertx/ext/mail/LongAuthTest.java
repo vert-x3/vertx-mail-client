@@ -28,7 +28,6 @@ import org.subethamail.wiser.WiserMessage;
  */
 public class LongAuthTest extends VertxTestBase {
 
-  Vertx vertx = Vertx.vertx();
   private static final Logger log = LoggerFactory.getLogger(LongAuthTest.class);
 
   CountDownLatch latch;

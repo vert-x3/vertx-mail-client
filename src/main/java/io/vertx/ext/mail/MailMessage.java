@@ -26,6 +26,7 @@ public class MailMessage {
   }
 
   public MailMessage(MailMessage other) {
+    Objects.requireNonNull(other);
     this.bounceAddress=other.bounceAddress;
     this.from=other.from;
     this.to=other.to;
