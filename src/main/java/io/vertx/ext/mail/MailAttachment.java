@@ -1,9 +1,9 @@
 package io.vertx.ext.mail;
 
-import java.util.Objects;
-
 import io.vertx.codegen.annotations.Options;
 import io.vertx.core.json.JsonObject;
+
+import java.util.Objects;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>

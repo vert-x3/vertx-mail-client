@@ -38,7 +38,7 @@ import org.bouncycastle.crypto.params.KeyParameter;
 /*
  first implementation of a SMTP client
  */
-// TODO: this is not really a verticle yet
+// TODO: this is not really a verticle, the verticle is MailServiceVerticle
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
