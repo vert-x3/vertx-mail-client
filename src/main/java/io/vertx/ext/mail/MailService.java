@@ -12,7 +12,6 @@ import io.vertx.serviceproxy.ProxyHelper;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-// this is not yet working
 @VertxGen
 @ProxyGen
 public interface MailService {
