@@ -1,6 +1,6 @@
 package io.vertx.ext.mail;
 
-import io.vertx.codegen.annotations.Options;
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-@Options
+@DataObject
 public class MailMessage {
 
   private String bounceAddress;

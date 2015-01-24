@@ -1,9 +1,9 @@
 package io.vertx.ext.mail;
 
-import io.vertx.codegen.annotations.Options;
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
-@Options
+@DataObject
 public class MailConfig {
 
   private static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;

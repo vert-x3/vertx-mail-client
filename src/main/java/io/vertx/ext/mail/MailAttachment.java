@@ -1,6 +1,6 @@
 package io.vertx.ext.mail;
 
-import io.vertx.codegen.annotations.Options;
+import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Objects;
@@ -9,7 +9,7 @@ import java.util.Objects;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 
-@Options
+@DataObject
 public class MailAttachment {
 
   // note that this must be a String only containing chars 0-255
