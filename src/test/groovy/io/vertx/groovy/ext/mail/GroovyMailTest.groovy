@@ -59,7 +59,7 @@ public class GroovyMailTest extends VertxTestBase {
     mailService.sendMail(email.toJson().map, { result ->
       log.info("mail finished");
       if (result.succeeded()) {
-        log.info(result.result().toString());
+        log.info(result.result());
         latch.countDown();
       } else {
         log.warn("got exception", result.cause());
@@ -69,7 +69,7 @@ public class GroovyMailTest extends VertxTestBase {
 
     awaitLatch(latch);
 
-    final WiserMessage message = wiser.messages.get(0);
+    final WiserMessage message = wiser.messages[0];
     String sender = message.envelopeSender;
     final MimeMessage mimeMessage = message.mimeMessage;
     assertEquals("user@example.com", sender);

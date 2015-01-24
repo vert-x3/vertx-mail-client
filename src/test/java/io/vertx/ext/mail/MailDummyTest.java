@@ -8,7 +8,6 @@ import io.vertx.test.core.VertxTestBase;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.After;
 import org.junit.Before;
@@ -25,13 +24,9 @@ public class MailDummyTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailDummyTest.class);
 
-  CountDownLatch latch;
-
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
 
@@ -48,21 +43,19 @@ public class MailDummyTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
 
-    awaitLatch(latch);
+    await();
   }
 
   @Test
   public void mailHtml() throws InterruptedException, UnsupportedEncodingException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
 
@@ -100,14 +93,14 @@ public class MailDummyTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
 
-    awaitLatch(latch);
+    await();
   }
 
   private TestSmtpServer smtpServer;
