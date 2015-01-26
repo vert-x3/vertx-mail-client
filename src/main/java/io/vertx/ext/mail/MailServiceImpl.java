@@ -70,33 +70,33 @@ public class MailServiceImpl implements MailService {
   }
 
   private Email createPlainMail(MailMessage message) throws EmailException {
-    MySimpleEmail email=new MySimpleEmail();
-    String text=message.getText();
-    if(text!=null) {
+    MySimpleEmail email = new MySimpleEmail();
+    String text = message.getText();
+    if (text != null) {
       email.setMsg(text);
     }
     return email;
   }
 
   private Email createHtmlMail(MailMessage message) throws EmailException {
-    MyHtmlEmail email=new MyHtmlEmail();
-    String text=message.getText();
-    String html=message.getHtml();
-    if(text!=null) {
+    MyHtmlEmail email = new MyHtmlEmail();
+    String text = message.getText();
+    String html = message.getHtml();
+    if (text != null) {
       email.setTextMsg(text);
     }
-    if(html!=null) {
+    if (html != null) {
       email.setHtmlMsg(html);
     }
 
-    List<MailAttachment> list=message.getAttachment();
-    if(list!=null) {
-      for(MailAttachment attachment: list) {
-        DataSource attachmentDS=createDS(attachment);
-        final String disposition=attachment.getDisposition();
+    List<MailAttachment> list = message.getAttachment();
+    if (list != null) {
+      for (MailAttachment attachment : list) {
+        DataSource attachmentDS = createDS(attachment);
+        final String disposition = attachment.getDisposition();
         final String name = attachment.getName();
         final String description = attachment.getDescription();
-        if(disposition!=null) {
+        if (disposition != null) {
           email.attach(attachmentDS, name, description, disposition);
         } else {
           email.attach(attachmentDS, name, description);
@@ -108,15 +108,15 @@ public class MailServiceImpl implements MailService {
   }
 
   private boolean isPlainMail(MailMessage message) {
-    return message.getHtml()==null && message.getAttachment()==null;
+    return message.getHtml() == null && message.getAttachment() == null;
   }
 
   private DataSource createDS(MailAttachment attachment) {
-    final String name=attachment.getName()==null ? "" : attachment.getName();
-    final String contentType=attachment.getContentType()==null ? "application/octet-stream" : attachment.getContentType();
+    final String name = attachment.getName() == null ? "" : attachment.getName();
+    final String contentType = attachment.getContentType() == null ? "application/octet-stream" : attachment
+        .getContentType();
 
-    //byte[] bytes=attachment.getData().getBytes("iso-8859-1");
-    String bytes=attachment.getData();
+    String bytes = attachment.getData();
 
     return new DataSource() {
 
@@ -148,45 +148,45 @@ public class MailServiceImpl implements MailService {
       String bounceAddress = message.getBounceAddress();
       String from = message.getFrom();
       List<InternetAddress> tos = new ArrayList<InternetAddress>();
-      if(message.getTo()!=null) {
+      if (message.getTo() != null) {
         for (String r : message.getTo()) {
           tos.add(new InternetAddress(r));
         }
       }
       List<InternetAddress> ccs = new ArrayList<InternetAddress>();
-      if(message.getCc()!=null) {
+      if (message.getCc() != null) {
         for (String r : message.getCc()) {
           ccs.add(new InternetAddress(r));
         }
       }
       List<InternetAddress> bccs = new ArrayList<InternetAddress>();
-      if(message.getBcc()!=null) {
+      if (message.getBcc() != null) {
         for (String r : message.getBcc()) {
           bccs.add(new InternetAddress(r));
         }
       }
 
-      if (from == null || tos.size() == 0 && ccs.size() == 0 && bccs.size() == 0 ) {
+      if (from == null || tos.isEmpty() && ccs.isEmpty() && bccs.isEmpty()) {
         throw new EmailException("from or to addresses missing");
       }
 
       Email email;
 
       // create a Email object that can handle the elements we want
-      if(isPlainMail(message)) {
-        email=createPlainMail(message);
+      if (isPlainMail(message)) {
+        email = createPlainMail(message);
       } else {
-        email=createHtmlMail(message);
+        email = createHtmlMail(message);
       }
       // the rest of the settings are all available in the Email base class
       email.setFrom(from);
-      if(tos.size()>0) {
+      if (tos.isEmpty()) {
         email.setTo(tos);
       }
-      if(ccs.size()>0) {
+      if (ccs.isEmpty()) {
         email.setCc(ccs);
       }
-      if(bccs.size()>0) {
+      if (bccs.isEmpty()) {
         email.setBcc(bccs);
       }
       email.setSubject(message.getSubject());

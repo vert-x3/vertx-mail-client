@@ -27,70 +27,67 @@ public class MailMessage {
 
   public MailMessage(MailMessage other) {
     Objects.requireNonNull(other);
-    this.bounceAddress=other.bounceAddress;
-    this.from=other.from;
-    this.to=other.to;
-    this.cc=other.cc;
-    this.bcc=other.bcc;
-    this.subject=other.subject;
-    this.text=other.text;
-    this.html=other.html;
+    this.bounceAddress = other.bounceAddress;
+    this.from = other.from;
+    this.to = other.to;
+    this.cc = other.cc;
+    this.bcc = other.bcc;
+    this.subject = other.subject;
+    this.text = other.text;
+    this.html = other.html;
     // TODO: create new list with new instances?
-    this.attachment=other.attachment;
+    this.attachment = other.attachment;
   }
 
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
-    this.bounceAddress=json.getString("bounceAddress");
-    this.from=json.getString("from");
-    this.to=getKeyAsStringOrList(json, "to");
-    this.cc=getKeyAsStringOrList(json, "cc");
-    this.bcc=getKeyAsStringOrList(json, "bcc");
-    this.subject=json.getString("subject");
-    this.text=json.getString("text");
-    this.html=json.getString("html");
-    if(json.containsKey("attachment")) {
+    this.bounceAddress = json.getString("bounceAddress");
+    this.from = json.getString("from");
+    this.to = getKeyAsStringOrList(json, "to");
+    this.cc = getKeyAsStringOrList(json, "cc");
+    this.bcc = getKeyAsStringOrList(json, "bcc");
+    this.subject = json.getString("subject");
+    this.text = json.getString("text");
+    this.html = json.getString("html");
+    if (json.containsKey("attachment")) {
       List<MailAttachment> list;
-      Object object=json.getValue("attachment");
-      if(object instanceof JsonObject) {
-        list=Arrays.asList(new MailAttachment((JsonObject) object));
-      }
-      else if(object instanceof JsonArray) {
-        list=new ArrayList<MailAttachment>();
-        for(Object attach:(JsonArray)object) {
-          list.add(new MailAttachment((JsonObject)attach));
+      Object object = json.getValue("attachment");
+      if (object instanceof JsonObject) {
+        list = Arrays.asList(new MailAttachment((JsonObject) object));
+      } else if (object instanceof JsonArray) {
+        list = new ArrayList<MailAttachment>();
+        for (Object attach : (JsonArray) object) {
+          list.add(new MailAttachment((JsonObject) attach));
         }
-      }
-      else {
+      } else {
         throw new IllegalArgumentException("invalid attachment type");
       }
-      this.attachment=list;
+      this.attachment = list;
     }
   }
 
   @SuppressWarnings("unchecked")
   private List<String> getKeyAsStringOrList(JsonObject json, String key) {
-    Object value=json.getValue(key);
-    if(value==null) {
+    Object value = json.getValue(key);
+    if (value == null) {
       return null;
     } else {
-      if(value instanceof String) {
+      if (value instanceof String) {
         return Arrays.asList((String) value);
-      }
-      else if(value instanceof JsonArray) {
-        return (List<String>) ((JsonArray)value).getList();
+      } else if (value instanceof JsonArray) {
+        return (List<String>) ((JsonArray) value).getList();
       } else {
         throw new IllegalArgumentException("invalid attachment type");
       }
     }
   }
-  
+
   // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
-    this.from=from;
-    this.to=Arrays.asList(to);
-    this.subject=subject;
-    this.text=text;
+    this.from = from;
+    this.to = Arrays.asList(to);
+    this.subject = subject;
+    this.text = text;
   }
 
   public String getBounceAddress() {
@@ -199,33 +196,33 @@ public class MailMessage {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if(bounceAddress!=null) {
+    if (bounceAddress != null) {
       json.put("bounceAddress", bounceAddress);
     }
-    if(from!=null) {
+    if (from != null) {
       json.put("from", from);
     }
-    if(to!=null) {
+    if (to != null) {
       json.put("to", to);
     }
-    if(cc!=null) {
+    if (cc != null) {
       json.put("cc", cc);
     }
-    if(bcc!=null) {
+    if (bcc != null) {
       json.put("bcc", bcc);
     }
-    if(subject!=null) {
+    if (subject != null) {
       json.put("subject", subject);
     }
-    if(text!=null) {
+    if (text != null) {
       json.put("text", text);
     }
-    if(html!=null) {
+    if (html != null) {
       json.put("html", html);
     }
-    if(attachment!=null) {
-      JsonArray array=new JsonArray();
-      for(MailAttachment a:attachment) {
+    if (attachment != null) {
+      JsonArray array = new JsonArray();
+      for (MailAttachment a : attachment) {
         array.add(a.toJson());
       }
       json.put("attachment", array);

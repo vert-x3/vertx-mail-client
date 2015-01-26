@@ -1,5 +1,7 @@
 package io.vertx.ext.mail;
 
+import java.util.Locale;
+
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
@@ -77,11 +79,11 @@ public class MailConfig {
     port = config.getInteger("port", DEFAULT_PORT);
     String starttlsOption = config.getString("starttls");
     if (starttlsOption != null) {
-      starttls = StarttlsOption.valueOf(starttlsOption.toUpperCase());
+      starttls = StarttlsOption.valueOf(starttlsOption.toUpperCase(Locale.ENGLISH));
     }
     String loginOption = config.getString("login");
     if (loginOption != null) {
-      login = LoginOption.valueOf(loginOption.toUpperCase());
+      login = LoginOption.valueOf(loginOption.toUpperCase(Locale.ENGLISH));
     }
     username = config.getString("username");
     password = config.getString("password");
@@ -165,7 +167,7 @@ public class MailConfig {
     if (password != null) {
       json.put("password", password);
     }
-    if(ssl) {
+    if (ssl) {
       json.put("ssl", ssl);
     }
 
