@@ -56,20 +56,20 @@ public class MailAttachment {
 
   public MailAttachment(MailAttachment other) {
     Objects.requireNonNull(other);
-    this.data=other.data;
-    this.name=other.name;
-    this.contentType=other.contentType;
-    this.disposition=other.disposition;
-    this.description=other.description;
+    this.data = other.data;
+    this.name = other.name;
+    this.contentType = other.contentType;
+    this.disposition = other.disposition;
+    this.description = other.description;
   }
 
   public MailAttachment(JsonObject json) {
     Objects.requireNonNull(json);
-    this.data=json.getString("data");
-    this.name=json.getString("name");
-    this.contentType=json.getString("content-type");
-    this.disposition=json.getString("disposition");
-    this.description=json.getString("description");
+    this.data = json.getString("data");
+    this.name = json.getString("name");
+    this.contentType = json.getString("content-type");
+    this.disposition = json.getString("disposition");
+    this.description = json.getString("description");
   }
 
   public String getData() {
@@ -147,10 +147,10 @@ public class MailAttachment {
   }
 
   private boolean equalsNull(Object o1, Object o2) {
-    if(o1 == null && o2 == null) {
+    if (o1 == null && o2 == null) {
       return true;
     }
-    if(o1 == null || o2 == null) {
+    if (o1 == null || o2 == null) {
       return false;
     }
     return o1.equals(o2);
@@ -161,7 +161,7 @@ public class MailAttachment {
   }
 
   private void putIfNotNull(JsonObject json, String key, Object value) {
-    if(value!=null) {
+    if (value != null) {
       json.put(key, value);
     }
   }
