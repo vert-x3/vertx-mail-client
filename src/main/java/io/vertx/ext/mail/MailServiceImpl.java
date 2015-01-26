@@ -180,13 +180,13 @@ public class MailServiceImpl implements MailService {
       }
       // the rest of the settings are all available in the Email base class
       email.setFrom(from);
-      if (tos.isEmpty()) {
+      if (!tos.isEmpty()) {
         email.setTo(tos);
       }
-      if (ccs.isEmpty()) {
+      if (!ccs.isEmpty()) {
         email.setCc(ccs);
       }
-      if (bccs.isEmpty()) {
+      if (!bccs.isEmpty()) {
         email.setBcc(bccs);
       }
       email.setSubject(message.getSubject());
