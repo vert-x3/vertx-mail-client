@@ -35,8 +35,13 @@ public class MailMessage {
     this.subject = other.subject;
     this.text = other.text;
     this.html = other.html;
-    // TODO: create new list with new instances?
-    this.attachment = other.attachment;
+    if (other.attachment != null) {
+      List<MailAttachment> newList = new ArrayList<MailAttachment>();
+      for (MailAttachment a : other.attachment) {
+        newList.add(new MailAttachment(a));
+      }
+      this.attachment = newList;
+    }
   }
 
   public MailMessage(JsonObject json) {
@@ -230,6 +235,11 @@ public class MailMessage {
     return json;
   }
 
+  private List<Object> getList() {
+    final List<Object> objects = Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment);
+    return objects;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -238,62 +248,13 @@ public class MailMessage {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
-    MailMessage other = (MailMessage) o;
-
-    if (!equalsNull(bounceAddress, other.bounceAddress)) {
-      return false;
-    }
-    if (!equalsNull(from, other.from)) {
-      return false;
-    }
-    if (!equalsNull(to, other.to)) {
-      return false;
-    }
-    if (!equalsNull(cc, other.cc)) {
-      return false;
-    }
-    if (!equalsNull(bcc, other.bcc)) {
-      return false;
-    }
-    if (!equalsNull(subject, other.subject)) {
-      return false;
-    }
-    if (!equalsNull(text, other.text)) {
-      return false;
-    }
-    if (!equalsNull(html, other.html)) {
-      return false;
-    }
-    return equalsNull(attachment, other.attachment);
+    final MailMessage message = (MailMessage) o;
+    return getList().equals(message.getList());
   }
 
   @Override
   public int hashCode() {
-    int result = hashCodeNull(bounceAddress);
-    result = 31 * result + hashCodeNull(from);
-    result = 31 * result + hashCodeNull(to);
-    result = 31 * result + hashCodeNull(cc);
-    result = 31 * result + hashCodeNull(bcc);
-    result = 31 * result + hashCodeNull(subject);
-    result = 31 * result + hashCodeNull(text);
-    result = 31 * result + hashCodeNull(html);
-    result = 31 * result + hashCodeNull(attachment);
-    return result;
-  }
-
-  private boolean equalsNull(Object o1, Object o2) {
-    if(o1 == null && o2 == null) {
-      return true;
-    }
-    if(o1 == null || o2 == null) {
-      return false;
-    }
-    return o1.equals(o2);
-  }
-
-  private int hashCodeNull(Object o) {
-    return o == null ? 0 : o.hashCode();
+    return getList().hashCode();
   }
 
 }

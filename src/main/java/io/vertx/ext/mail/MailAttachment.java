@@ -3,6 +3,8 @@ package io.vertx.ext.mail;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -17,7 +19,7 @@ public class MailAttachment {
   private String data;
   // if filename is set, data will be read from the filesystem
   // TODO: this is not yet implemented
-//  private String filename;
+  // private String filename;
   // name is the descriptive filename that will be put into the mail
   // i.e. usually a local filename without path
   // will be filled based on filename if not set
@@ -30,17 +32,18 @@ public class MailAttachment {
   /**
    * @return the filename
    */
-//  public String getFilename() {
-//    return filename;
-//  }
+  // public String getFilename() {
+  // return filename;
+  // }
 
   /**
-   * @param filename the filename to set
+   * @param filename
+   *          the filename to set
    */
-//  public MailAttachment setFilename(String filename) {
-//    this.filename = filename;
-//    return this;
-//  }
+  // public MailAttachment setFilename(String filename) {
+  // this.filename = filename;
+  // return this;
+  // }
 
   public String getName() {
     return name;
@@ -118,6 +121,11 @@ public class MailAttachment {
     return json;
   }
 
+  private List<Object> getList() {
+    final List<Object> objects = Arrays.asList(data, name, disposition, description);
+    return objects;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -126,38 +134,13 @@ public class MailAttachment {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
-    MailAttachment other = (MailAttachment) o;
-
-    return equalsNull(data, other.data) &&
-      equalsNull(name, other.name) &&
-      equalsNull(contentType, other.contentType) &&
-      equalsNull(disposition, other.disposition) &&
-      equalsNull(description, other.description);
+    final MailAttachment attachment = (MailAttachment) o;
+    return getList().equals(attachment.getList());
   }
 
   @Override
   public int hashCode() {
-    int result = hashCodeNull(data);
-    result = 31 * result + hashCodeNull(name);
-    result = 31 * result + hashCodeNull(contentType);
-    result = 31 * result + hashCodeNull(disposition);
-    result = 31 * result + hashCodeNull(description);
-    return result;
-  }
-
-  private boolean equalsNull(Object o1, Object o2) {
-    if (o1 == null && o2 == null) {
-      return true;
-    }
-    if (o1 == null || o2 == null) {
-      return false;
-    }
-    return o1.equals(o2);
-  }
-
-  private int hashCodeNull(Object o) {
-    return o == null ? 0 : o.hashCode();
+    return getList().hashCode();
   }
 
   private void putIfNotNull(JsonObject json, String key, Object value) {
