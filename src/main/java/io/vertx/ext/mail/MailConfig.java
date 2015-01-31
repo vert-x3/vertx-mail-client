@@ -1,5 +1,7 @@
 package io.vertx.ext.mail;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import io.vertx.codegen.annotations.DataObject;
@@ -97,56 +99,63 @@ public class MailConfig {
     return hostname;
   }
 
-  public void setHostname(String hostname) {
+  public MailConfig setHostname(String hostname) {
     this.hostname = hostname;
+    return this;
   }
 
   public int getPort() {
     return port;
   }
 
-  public void setPort(int port) {
+  public MailConfig setPort(int port) {
     this.port = port;
+    return this;
   }
 
   public StarttlsOption getStarttls() {
     return starttls;
   }
 
-  public void setStarttls(StarttlsOption starttls) {
+  public MailConfig setStarttls(StarttlsOption starttls) {
     this.starttls = starttls;
+    return this;
   }
 
   public LoginOption getLogin() {
     return login;
   }
 
-  public void setLogin(LoginOption login) {
+  public MailConfig setLogin(LoginOption login) {
     this.login = login;
+    return this;
   }
 
   public String getUsername() {
     return username;
   }
 
-  public void setUsername(String username) {
+  public MailConfig setUsername(String username) {
     this.username = username;
+    return this;
   }
 
   public String getPassword() {
     return password;
   }
 
-  public void setPassword(String password) {
+  public MailConfig setPassword(String password) {
     this.password = password;
+    return this;
   }
 
   public boolean isSsl() {
     return ssl;
   }
 
-  public void setSsl(boolean ssl) {
+  public MailConfig setSsl(boolean ssl) {
     this.ssl = ssl;
+    return this;
   }
 
   public JsonObject toJson() {
@@ -174,6 +183,11 @@ public class MailConfig {
     return json;
   }
 
+  private List<Object> getList() {
+    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl);
+    return objects;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -182,44 +196,13 @@ public class MailConfig {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-
-    MailConfig config = (MailConfig) o;
-
-    if (!hostname.equals(config.hostname)) {
-      return false;
-    }
-    if (port != config.port) {
-      return false;
-    }
-    if (starttls != config.starttls) {
-      return false;
-    }
-    if (login != config.login) {
-      return false;
-    }
-    if (!username.equals(config.username)) {
-      return false;
-    }
-    if (!password.equals(config.password)) {
-      return false;
-    }
-    return ssl == config.ssl;
+    final MailConfig config = (MailConfig) o;
+    return getList().equals(config.getList());
   }
 
   @Override
   public int hashCode() {
-    int result = hashCodeNull(hostname);
-    result = 31 * result + port;
-    result = 31 * result + hashCodeNull(starttls);
-    result = 31 * result + hashCodeNull(login);
-    result = 31 * result + hashCodeNull(username);
-    result = 31 * result + hashCodeNull(password);
-    result = 31 * result + (ssl ? 1 : 0);
-    return result;
-  }
-
-  private int hashCodeNull(Object o) {
-    return o == null ? 0 : o.hashCode();
+    return getList().hashCode();
   }
 
 }

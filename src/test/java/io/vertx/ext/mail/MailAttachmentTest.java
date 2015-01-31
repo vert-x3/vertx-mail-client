@@ -37,12 +37,12 @@ public class MailAttachmentTest {
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
-    new MailAttachment((JsonObject)null);
+    new MailAttachment((JsonObject) null);
   }
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromMailAttachmentNull() {
-    new MailAttachment((MailAttachment)null);
+    new MailAttachment((MailAttachment) null);
   }
 
   @Test
