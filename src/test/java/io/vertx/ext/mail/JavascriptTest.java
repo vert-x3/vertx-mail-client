@@ -16,6 +16,7 @@ public class JavascriptTest {
   @Test
   public void runJavascriptTest() throws Exception {
     new JSRunner().run("javascript/mailtest.js", "*");
+    // TODO: have to synchronize that to the js execution
     Thread.sleep(10000);
   }
 

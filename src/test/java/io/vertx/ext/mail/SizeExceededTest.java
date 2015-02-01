@@ -20,13 +20,9 @@ public class SizeExceededTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(SizeExceededTest.class);
 
-  CountDownLatch latch;
-
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
 
@@ -52,11 +48,11 @@ public class SizeExceededTest extends VertxTestBase {
         fail("this test should throw an Exception");
       } else {
         log.info("got exception", result.cause());
-        latch.countDown();
+        testComplete();
       }
     });
 
-    awaitLatch(latch);
+    await();
   }
 
   TestSmtpServer smtpServer;

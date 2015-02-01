@@ -23,13 +23,9 @@ public class MailEBTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailEBTest.class);
 
-  CountDownLatch latch;
-
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
 
@@ -44,14 +40,14 @@ public class MailEBTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
 
-    awaitLatch(latch);
+    await();
   }
 
   private TestSmtpServer smtpServer;
