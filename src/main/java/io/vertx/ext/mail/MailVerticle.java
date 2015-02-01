@@ -38,7 +38,8 @@ import org.bouncycastle.crypto.params.KeyParameter;
 /*
  first implementation of a SMTP client
  */
-// TODO: this is not really a verticle, the verticle is MailServiceVerticle
+// TODO: this is not a verticle, the verticle is MailServiceVerticle
+// this class should probably be renamed
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -78,6 +79,9 @@ public class MailVerticle {
    */
   private void write(String str, int blank, Handler<AsyncResult<String>> commandResultHandler) {
     this.commandResultHandler = commandResultHandler;
+    if(socketClosed) {
+      throwAsyncResult("connection was closed by server");
+    }
     if (log.isDebugEnabled()) {
       String logStr;
       if (blank >= 0) {
@@ -101,6 +105,7 @@ public class MailVerticle {
 
   private static final Logger log = LoggerFactory.getLogger(MailVerticle.class);
   NetSocket ns;
+  boolean socketClosed;
 
   Handler<AsyncResult<String>> commandResultHandler;
 
@@ -132,6 +137,15 @@ public class MailVerticle {
     client.connect(Integer.parseInt(email.getSmtpPort()), email.getHostName(), asyncResult -> {
       if (asyncResult.succeeded()) {
         ns = asyncResult.result();
+        socketClosed = false;
+        ns.exceptionHandler(e -> {
+          log.debug("got an exception on the netsocket", e);
+          throwAsyncResult(e);
+        });
+        ns.closeHandler(v -> {
+          log.debug("socket has been closed");
+          socketClosed = true;
+        });
         commandResultHandler = (result -> serverGreeting(result));
         final Handler<Buffer> mlp = new MultilineParser(buffer -> {
           if (commandResultHandler == null) {

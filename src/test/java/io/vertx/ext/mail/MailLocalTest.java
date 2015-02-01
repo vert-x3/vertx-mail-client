@@ -27,13 +27,9 @@ public class MailLocalTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
 
-  CountDownLatch latch;
-
   @Test
   public void mailTest() throws MessagingException, InterruptedException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
 
@@ -56,14 +52,14 @@ public class MailLocalTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
 
-    awaitLatch(latch);
+    await();
 
     final WiserMessage message = wiser.getMessages().get(0);
     String sender = message.getEnvelopeSender();

@@ -28,14 +28,10 @@ public class MailTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailTest.class);
 
-  CountDownLatch latch;
-
   @Ignore
   @Test
   public void mailTest() throws IOException, InterruptedException {
     log.info("starting");
-
-    latch = new CountDownLatch(1);
 
     // this is a hack to avoid putting an actual account into the test
     // script, you will have to put your own account into the file
@@ -106,12 +102,12 @@ public class MailTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
-    awaitLatch(latch);
+    await();
   }
 }

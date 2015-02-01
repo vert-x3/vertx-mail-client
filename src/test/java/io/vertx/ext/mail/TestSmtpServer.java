@@ -14,6 +14,7 @@ public class TestSmtpServer {
 
   private NetServer netServer;
   private String answers;
+  private boolean closeImmediately=false;
 
   /*
    * set up server with a default reply
@@ -51,7 +52,12 @@ public class TestSmtpServer {
     netServer.connectHandler(socket -> {
       socket.write(answers);
       // wait 10 seconds for the protocol to finish
-      vertx.setTimer(10000, v -> socket.close());
+      // unless we want to simulate protocol errors
+      if(closeImmediately) {
+        socket.close();
+      } else {
+        vertx.setTimer(10000, v -> socket.close());
+      }
     });
     CountDownLatch latch = new CountDownLatch(1);
     netServer.listen(r -> latch.countDown());
@@ -70,6 +76,11 @@ public class TestSmtpServer {
     this.answers = String.join("\r\n", answers) + "\r\n";
   }
 
+  public void setCloseImmediately(boolean close) {
+    closeImmediately = close;
+  }
+
+  // TODO: this assumes we are in a @After method of junit
   public void stop() {
     if (netServer != null) {
       CountDownLatch latch = new CountDownLatch(1);

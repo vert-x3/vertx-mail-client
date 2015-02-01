@@ -4,8 +4,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
-import java.util.concurrent.CountDownLatch;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -22,12 +20,8 @@ public class HeloTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(HeloTest.class);
 
-  CountDownLatch latch;
-
   @Test
-  public void mailEhloMissingTest() throws InterruptedException {
-    log.info("starting");
-
+  public void mailEhloMissingTest() {
     smtpServer.setAnswers("220 example.com ESMTP",
         "402 4.5.2 Error: command not recognized", 
         "250 example.com",
@@ -36,33 +30,13 @@ public class HeloTest extends VertxTestBase {
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
 
-    latch = new CountDownLatch(1);
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage email = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(email, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        latch.countDown();
-      } else {
-        log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
-      }
-    });
-
-    awaitLatch(latch);
+    runTestSuccess(mailServiceDefault());
   }
 
   @Test
-  public void mailNoEsmtpTest() throws InterruptedException {
-    log.info("starting");
-
+  public void mailNoEsmtpTest() {
     smtpServer.setAnswers("220 example.com",
         "250 example.com",
         "250 2.1.0 Ok", 
@@ -70,38 +44,23 @@ public class HeloTest extends VertxTestBase {
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
 
-    latch = new CountDownLatch(1);
+    runTestSuccess(mailServiceDefault());
+  }
 
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        latch.countDown();
-      } else {
-        log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
-      }
-    });
-
-    awaitLatch(latch);
+  /**
+   * @return
+   */
+  private MailService mailServiceDefault() {
+    return MailService.create(vertx, defaultConfig());
   }
 
   /*
    * Test what happens when a reply is sent after the QUIT reply
-   * I got a "Result has already been set" exception before
-   * but I cannot reproduce this right now
    */
   @Test
-  public void replyAfterQuitTest() throws InterruptedException {
-    log.info("starting");
-
+  public void replyAfterQuitTest() {
     smtpServer.setAnswers("220 example.com ESMTP",
         // EHLO
         "250-example.com", 
@@ -120,87 +79,26 @@ public class HeloTest extends VertxTestBase {
         // this should not happen:
         "this is unexpected"
         );
+    smtpServer.setCloseImmediately(false);
 
-    latch = new CountDownLatch(1);
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        latch.countDown();
-      } else {
-        log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
-      }
-    });
-
-    awaitLatch(latch);
+    runTestSuccess(mailServiceDefault());
   }
 
   @Test
-  public void serverUnavailableTest() throws InterruptedException {
-    log.info("starting");
+  public void serverUnavailableTest() {
+    smtpServer.setAnswers("400 cannot talk to you right now\r\n");
+    smtpServer.setCloseImmediately(true);
 
-    smtpServer.setAnswers("400 cannot talk to you right now\n");
-
-    latch = new CountDownLatch(1);
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        latch.countDown();
-      }
-    });
-
-    awaitLatch(latch);
+    runTestException(mailServiceDefault());
   }
 
   @Test
-  public void connectionRefusedTest() throws InterruptedException {
-    log.info("starting");
-
-    latch = new CountDownLatch(1);
-
-    MailConfig mailConfig = new MailConfig("localhost", 1588);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        latch.countDown();
-      }
-    });
-
-    awaitLatch(latch);
+  public void connectionRefusedTest() {
+    runTestException(MailService.create(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test
-  public void tlsMissingTest() throws InterruptedException {
-    log.info("starting");
-
+  public void tlsMissingTest() {
     smtpServer.setAnswers("220 example.com ESMTP multiline",
         "250-example.com", 
         "250-SIZE 48000000", 
@@ -210,56 +108,68 @@ public class HeloTest extends VertxTestBase {
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
 
-    latch = new CountDownLatch(1);
+    runTestException(mailServiceTLS());
+  }
 
-    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
+  /**
+   * @param mailService
+   */
+  private void runTestException(final MailService mailService) {
+    mailService.sendMail(exampleMessage(), result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
-        latch.countDown();
+        testComplete();
       }
     });
 
-    awaitLatch(latch);
+    await();
+  }
+
+  /**
+   * @return
+   */
+  private MailService mailServiceTLS() {
+    return MailService.create(vertx, defaultConfigTLS());
+  }
+
+  /**
+   * @return
+   */
+  private MailConfig defaultConfigTLS() {
+    return new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
   }
 
   @Ignore
   @Test
-  public void closeOnConnectTest() throws InterruptedException {
-    log.info("starting");
-
+  public void closeOnConnectTest() {
     smtpServer.setAnswers("");
+    smtpServer.setCloseImmediately(true);
 
-    latch = new CountDownLatch(1);
+    runTestSuccess(mailServiceDefault());
+  }
 
-    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
-
-    mailService.sendMail(message, result -> {
+  /**
+   * 
+   */
+  private void runTestSuccess(MailService mailService) {
+    mailService.sendMail(exampleMessage(), result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
-        latch.countDown();
+        testComplete();
       } else {
         log.warn("got exception", result.cause());
         throw new RuntimeException(result.cause());
       }
     });
 
-    awaitLatch(latch);
+    await();
   }
 
   /*
@@ -269,11 +179,9 @@ public class HeloTest extends VertxTestBase {
    * capabilities
    */
   @Test
-  public void mailMultilineWelcomeTest() throws InterruptedException {
-    log.info("starting");
-
+  public void mailMultilineWelcomeTest() {
     smtpServer.setAnswers("220-example.com ESMTP multiline",
-        "220-this server uses a long welcome message",
+        "220-this server uses a multi-line welcome message",
         "220 this is supposed to confuse spammers",
         "250-example.com", 
         "250-SIZE 48000000", 
@@ -283,27 +191,35 @@ public class HeloTest extends VertxTestBase {
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
 
-    latch = new CountDownLatch(1);
+    runTestSuccess(mailServiceDefault());
+  }
 
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
+  /*
+   * simulate the server closes the connection immediately after the
+   * banner message
+   */
+  @Test
+  public void closeAfterBannerTest() {
+    smtpServer.setAnswers("220 example.com ESMTP\r\n");
+    smtpServer.setCloseImmediately(true);
 
-    MailService mailService = MailService.create(vertx, mailConfig);
+    runTestException(mailServiceDefault());
+  }
 
-    MailMessage message = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
+  /**
+   * @return
+   */
+  private MailConfig defaultConfig() {
+    return new MailConfig("localhost", 1587);
+  }
 
-    mailService.sendMail(message, result -> {
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        latch.countDown();
-      } else {
-        log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
-      }
-    });
-
-    awaitLatch(latch);
+  /**
+   * @return
+   */
+  private MailMessage exampleMessage() {
+    return new MailMessage("from@example.com", "user@example.com", "Subject", "Message");
   }
 
   TestSmtpServer smtpServer;
