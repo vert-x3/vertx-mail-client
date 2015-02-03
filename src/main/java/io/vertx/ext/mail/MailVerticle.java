@@ -57,6 +57,7 @@ public class MailVerticle {
 
   private void shutdown() {
     commandResultHandler = null;
+    socketShutDown = true;
     if (ns != null) {
       ns.close();
       ns = null;
@@ -106,6 +107,7 @@ public class MailVerticle {
   private static final Logger log = LoggerFactory.getLogger(MailVerticle.class);
   NetSocket ns;
   boolean socketClosed;
+  boolean socketShutDown;
 
   Handler<AsyncResult<String>> commandResultHandler;
 
@@ -139,12 +141,19 @@ public class MailVerticle {
         ns = asyncResult.result();
         socketClosed = false;
         ns.exceptionHandler(e -> {
-          log.debug("got an exception on the netsocket", e);
-          throwAsyncResult(e);
+          // avoid returning two exceptions
+          if(!socketClosed && !socketShutDown) {
+            log.debug("got an exception on the netsocket", e);
+            throwAsyncResult(e);
+          }
         });
         ns.closeHandler(v -> {
-          log.debug("socket has been closed");
-          socketClosed = true;
+          // avoid exception if we regularly shut down the socket on our side
+          if(!socketShutDown) {
+            log.debug("socket has been closed");
+            socketClosed = true;
+            throwAsyncResult("connection has been closed by the server");
+          }
         });
         commandResultHandler = (result -> serverGreeting(result));
         final Handler<Buffer> mlp = new MultilineParser(buffer -> {

@@ -145,13 +145,12 @@ public class HeloTest extends VertxTestBase {
     return new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
   }
 
-  @Ignore
   @Test
   public void closeOnConnectTest() {
     smtpServer.setAnswers("");
     smtpServer.setCloseImmediately(true);
 
-    runTestSuccess(mailServiceDefault());
+    runTestException(mailServiceDefault());
   }
 
   /**
