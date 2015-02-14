@@ -10,7 +10,7 @@ import io.vertx.core.parsetools.RecordParser;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MultilineParser implements Handler<Buffer> {
+class MultilineParser implements Handler<Buffer> {
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   private boolean initialized = false;
   private Buffer result;
