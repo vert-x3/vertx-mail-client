@@ -1,6 +1,7 @@
 package io.vertx.ext.mail;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import io.vertx.core.json.JsonObject;
 
 import org.junit.Test;
@@ -32,7 +33,7 @@ public class MailAttachmentTest {
   public void testConstructorFromClass() {
     MailAttachment message=new MailAttachment();
 
-    assertEquals(message, new MailAttachment());
+    assertEquals(message, new MailAttachment(message));
   }
 
   @Test(expected = NullPointerException.class)
@@ -58,6 +59,56 @@ public class MailAttachmentTest {
     MailAttachment message = new MailAttachment(json);
 
     assertEquals(jsonString, message.toJson().encode());
+  }
+
+  @Test
+  public void testEquals() {
+    MailAttachment mailAttachment = new MailAttachment();
+    assertEquals(mailAttachment, mailAttachment);
+    assertEquals(mailAttachment, new MailAttachment());
+    assertFalse(mailAttachment.equals(null));
+    assertFalse(mailAttachment.equals(""));
+  }
+
+  @Test
+  public void testHashcode() {
+    MailAttachment mailAttachment = new MailAttachment();
+    assertEquals(mailAttachment.hashCode(), new MailAttachment().hashCode());
+  }
+
+  @Test
+  public void testName() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setName("file.jpg");
+    assertEquals("file.jpg", mailMessage.getName());
+  }
+
+  @Test
+  public void testData() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setData("xxxx");
+    assertEquals("xxxx", mailMessage.getData());
+  }
+
+  @Test
+  public void testContentType() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setContentType("text/plain");
+    assertEquals("text/plain", mailMessage.getContentType());
+  }
+
+  @Test
+  public void testDescription() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setDescription("attachment");
+    assertEquals("attachment", mailMessage.getDescription());
+  }
+
+  @Test
+  public void testDispostion() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setDisposition("inline");
+    assertEquals("inline", mailMessage.getDisposition());
   }
 
 }

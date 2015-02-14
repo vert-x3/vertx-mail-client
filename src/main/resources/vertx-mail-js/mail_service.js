@@ -35,25 +35,6 @@ var MailService = function(j_val) {
   /**
 
    @public
-   @param email {string} 
-   @param resultHandler {function} 
-   */
-  this.sendMailString = function(email, resultHandler) {
-    var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
-      j_mailService.sendMailString(email, function(ar) {
-      if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result()), null);
-      } else {
-        resultHandler(null, ar.cause());
-      }
-    });
-    } else utils.invalidArgs();
-  };
-
-  /**
-
-   @public
    @param email {Object} 
    @param resultHandler {function} 
    */

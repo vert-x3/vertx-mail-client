@@ -1,9 +1,12 @@
 package io.vertx.ext.mail;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.junit.Test;
@@ -79,6 +82,21 @@ public class MailMessageTest {
   public void testConstructorFromJsonAttachment() {
     final String jsonString = "{\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"},{\"data\":\"xxxxx\",\"name\":\"file2.txt\"}]}";
     assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
+    final String jsonString2 = "{\"attachment\":{\"data\":\"asdfasdf\",\"name\":\"file.txt\"}}";
+    final String jsonString3 = "{\"attachment\":[{\"data\":\"asdfasdf\",\"name\":\"file.txt\"}]}";
+    assertEquals(jsonString3, new MailMessage(new JsonObject(jsonString2)).toJson().encode());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorFromJsonAttachmentError() {
+    final String jsonString = "{\"attachment\":true}";
+    new MailMessage(new JsonObject(jsonString));
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testConstructorFromJsonToError() {
+    final String jsonString = "{\"to\":true}";
+    new MailMessage(new JsonObject(jsonString));
   }
 
   @Test
@@ -106,7 +124,73 @@ public class MailMessageTest {
 
   @Test
   public void testEquals() {
-    assertEquals(true, new MailMessage().equals(new MailMessage()));
-    assertEquals(false, new MailMessage().setFrom("user@example.com").equals(new MailMessage().setFrom("user2@example.com")));
+    MailMessage mailMessage = new MailMessage();
+    assertEquals(mailMessage, mailMessage);
+    assertFalse(new MailMessage().setFrom("user@example.com").equals(new MailMessage().setFrom("user2@example.com")));
+    assertFalse(mailMessage.equals(null));
+    assertFalse(mailMessage.equals(""));
   }
+
+  @Test
+  public void testBounceAddress() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setBounceAddress("user@example.com");
+    assertEquals("user@example.com", mailMessage.getBounceAddress());
+  }
+
+  @Test
+  public void testFrom() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setFrom("user@example.com");
+    assertEquals("user@example.com", mailMessage.getFrom());
+  }
+
+  @Test
+  public void testTo() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setTo("user@example.com");
+    assertEquals(Arrays.asList("user@example.com"), mailMessage.getTo());
+    mailMessage.setTo(Arrays.asList("user@example.com", "user@example.org"));
+    assertEquals(Arrays.asList("user@example.com", "user@example.org"), mailMessage.getTo());
+  }
+
+  @Test
+  public void testCc() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setCc("user@example.com");
+    assertEquals(Arrays.asList("user@example.com"), mailMessage.getCc());
+    mailMessage.setCc(Arrays.asList("user@example.com", "user@example.org"));
+    assertEquals(Arrays.asList("user@example.com", "user@example.org"), mailMessage.getCc());
+  }
+
+  @Test
+  public void testBcc() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setBcc("user@example.com");
+    assertEquals(Arrays.asList("user@example.com"), mailMessage.getBcc());
+    mailMessage.setBcc(Arrays.asList("user@example.com", "user@example.org"));
+    assertEquals(Arrays.asList("user@example.com", "user@example.org"), mailMessage.getBcc());
+  }
+
+  @Test
+  public void testSubject() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setSubject("this is a subject");
+    assertEquals("this is a subject", mailMessage.getSubject());
+  }
+
+  @Test
+  public void testText() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setText("mail text");
+    assertEquals("mail text", mailMessage.getText());
+  }
+
+  @Test
+  public void testHtml() {
+    MailMessage mailMessage = new MailMessage();
+    mailMessage.setHtml("<a href=\"http://vertx.io/\">link</a>");
+    assertEquals("<a href=\"http://vertx.io/\">link</a>", mailMessage.getHtml());
+  }
+
 }

@@ -50,11 +50,6 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public void sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler) {
-    // not yet implemented
-  }
-
-  @Override
   public void start() {
     // may take care of validating the options
     // and configure a queue if we implement one

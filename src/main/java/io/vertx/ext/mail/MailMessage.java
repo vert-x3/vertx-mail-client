@@ -201,30 +201,14 @@ public class MailMessage {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if (bounceAddress != null) {
-      json.put("bounceAddress", bounceAddress);
-    }
-    if (from != null) {
-      json.put("from", from);
-    }
-    if (to != null) {
-      json.put("to", to);
-    }
-    if (cc != null) {
-      json.put("cc", cc);
-    }
-    if (bcc != null) {
-      json.put("bcc", bcc);
-    }
-    if (subject != null) {
-      json.put("subject", subject);
-    }
-    if (text != null) {
-      json.put("text", text);
-    }
-    if (html != null) {
-      json.put("html", html);
-    }
+    putIfNotNull(json, "bounceAddress", bounceAddress);
+    putIfNotNull(json, "from", from);
+    putIfNotNull(json, "to", to);
+    putIfNotNull(json, "cc", cc);
+    putIfNotNull(json, "bcc", bcc);
+    putIfNotNull(json, "subject", subject);
+    putIfNotNull(json, "text", text);
+    putIfNotNull(json, "html", html);
     if (attachment != null) {
       JsonArray array = new JsonArray();
       for (MailAttachment a : attachment) {
@@ -255,6 +239,12 @@ public class MailMessage {
   @Override
   public int hashCode() {
     return getList().hashCode();
+  }
+
+  private void putIfNotNull(JsonObject json, String key, Object value) {
+    if (value != null) {
+      json.put(key, value);
+    }
   }
 
 }
