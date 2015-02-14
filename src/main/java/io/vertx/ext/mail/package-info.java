@@ -20,29 +20,7 @@
  *
  * [source,java]
  * ----
- * import io.vertx.ext.mail.MailConfig;
- * import io.vertx.ext.mail.MailMessage;
- * import io.vertx.ext.mail.MailService;
- *
- * MailConfig mailConfig = ServerConfigs.configSendgrid()
- *   .setUsername(username)
- *   .setPassword(password);
- *
- * MailService mailService = MailService.create(vertx, mailConfig);
- *
- * MailMessage email = new MailMessage()
- *   .setFrom("address@example.com")
- *   .setTo("address@example.com")
- *   .setSubject("meaningful subject")
- *   .setText("this is a message");
- *
- * mailService.sendMail(email, result -> {
- *   if(result.succeeded()) {
- *     log.info(result.result().toString());
- *   } else {
- *     log.warn("got exception", result.cause());
- *   }
- * });
+ * {@link examples.Examples#example1}
  * ----
  */
 @Document(fileName = "index.adoc")
