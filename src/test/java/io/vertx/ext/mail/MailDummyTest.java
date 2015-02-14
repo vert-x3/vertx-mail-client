@@ -25,7 +25,7 @@ public class MailDummyTest extends VertxTestBase {
   private static final Logger log = LoggerFactory.getLogger(MailDummyTest.class);
 
   @Test
-  public void mailTest() throws InterruptedException {
+  public void mailTest() {
     log.info("starting");
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
@@ -33,9 +33,9 @@ public class MailDummyTest extends VertxTestBase {
     MailService mailService = MailService.create(vertx, mailConfig);
 
     MailMessage email=new MailMessage()
-      .setFrom("lehmann333@arcor.de")
-      .setBounceAddress("nobody@lehmann.cx")
-      .setTo("lehmann333@arcor.de")
+      .setFrom("user@example.com")
+      .setBounceAddress("bounce@example.com")
+      .setTo("user@example.com")
       .setSubject("Test email with HTML")
       .setText("this is a message");
 
@@ -54,7 +54,7 @@ public class MailDummyTest extends VertxTestBase {
   }
 
   @Test
-  public void mailHtml() throws InterruptedException, UnsupportedEncodingException {
+  public void mailHtml() throws UnsupportedEncodingException {
     log.info("starting");
 
     MailConfig mailConfig = new MailConfig("localhost", 1587);
@@ -64,9 +64,9 @@ public class MailDummyTest extends VertxTestBase {
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
-      .setFrom("lehmann333@arcor.de")
-      .setTo("lehmann333@arcor.de")
-      .setBounceAddress("nobody@lehmann.cx")
+      .setFrom("user@example.com")
+      .setTo("user@example.com")
+      .setBounceAddress("bounce@example.com")
       .setSubject("Test email with HTML")
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");

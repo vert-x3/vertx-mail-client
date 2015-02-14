@@ -7,7 +7,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
 import java.util.Arrays;
-import java.util.concurrent.CountDownLatch;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -28,7 +27,7 @@ public class MailLocalTest extends VertxTestBase {
   private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
 
   @Test
-  public void mailTest() throws MessagingException, InterruptedException {
+  public void mailTest() throws MessagingException {
     log.info("starting");
 
     MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
@@ -40,10 +39,10 @@ public class MailLocalTest extends VertxTestBase {
 
     MailMessage email = new MailMessage();
 
-    email.setFrom("lehmann333@arcor.de");
+    email.setFrom("user@example.com");
     email.setTo(Arrays.asList(
-        "lehmann333@arcor.de (User Name)",
-        "user@example.com (Another User)"));
+        "user@example.com (User Name)",
+        "other@example.com (Another User)"));
     email.setBounceAddress("user@example.com");
     email.setSubject("Test email with HTML");
     email.setText("this is a test email");

@@ -7,8 +7,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.mailutil.MyHtmlEmail;
-import io.vertx.ext.mail.mailutil.MySimpleEmail;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
