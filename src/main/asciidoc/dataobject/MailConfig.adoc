@@ -1,0 +1,21 @@
+== MailConfig
+
+
+|===
+|Name | Type | Description
+
+|hostname
+|String
+|-
+|port
+|Number
+|-
+|username
+|String
+|-
+|password
+|String
+|-
+|ssl
+|Boolean
+|-|===

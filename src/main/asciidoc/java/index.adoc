@@ -1,8 +1,29 @@
 = Vert.x Mail (SMTP client implementation)
 
-link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
+`link:apidocs/io/vertx/ext/mail/MailService.html[MailService]` simple example:
 
 [source,java]
 ----
-`link:apidocs/examples/Examples.html#example1-io.vertx.core.Vertx-[example1]`
+MailConfig mailConfig = new MailConfig()
+    .setUsername(username)
+    .setPassword(password);
+
+MailService mailService = MailService.create(vertx, mailConfig);
+
+MailMessage email = new MailMessage()
+    .setFrom("address@example.com")
+    .setTo("address@example.com")
+    .setSubject("meaningful subject")
+    .setText("this is a message");
+
+mailService.sendMail(email, result -> {
+  if (result.succeeded()) {
+    System.out.println(result.result());
+  } else {
+    System.out.println("got exception");
+    result.cause().printStackTrace();
+  }
+});
 ----
+
+zfzeezf

@@ -16,9 +16,9 @@
 /**
  * = Vert.x Mail (SMTP client implementation)
  *
- * link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
+ * {@link io.vertx.ext.mail.MailService} simple example:
  *
- * [source,java]
+ * [source,$lang]
  * ----
  * {@link examples.Examples#example1}
  * ----
