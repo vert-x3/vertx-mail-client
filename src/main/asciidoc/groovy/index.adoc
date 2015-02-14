@@ -1,8 +1,33 @@
 = Vert.x Mail (SMTP client implementation)
 
-link:apidocs/io/vertx/ext/mail/MailService.html[`MailService`] simple example:
+`link:groovydoc/io/vertx/groovy/ext/mail/MailService.html[MailService]` simple example:
 
-[source,java]
+[source,groovy]
 ----
-`link:groovydoc/examples/Examples.html#example1(io.vertx.core.Vertx)[example1]`
+import io.vertx.groovy.ext.mail.MailService
+def mailConfig = [
+  username:username,
+  password:password
+]
+
+def mailService = MailService.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"meaningful subject",
+  text:"this is a message"
+]
+
+mailService.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
 ----
+
+zfzeezf

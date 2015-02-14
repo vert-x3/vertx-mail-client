@@ -1,37 +1,36 @@
 package examples;
 
 import io.vertx.core.Vertx;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.docgen.Source;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailService;
 
 /**
- * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
  */
+@Source
 public class Examples {
 
-  Logger log=LoggerFactory.getLogger(Examples.class);
-
-  public void example1(Vertx vertx) {
-    MailConfig mailConfig = new MailConfig("localhost", 587)
-        .setUsername("username")
-        .setPassword("password");
+  public void example1(Vertx vertx, String username, String password) {
+    MailConfig mailConfig = new MailConfig()
+        .setUsername(username)
+        .setPassword(password);
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
-      .setFrom("address@example.com")
-      .setTo("address@example.com")
-      .setSubject("meaningful subject")
-      .setText("this is a message");
+        .setFrom("address@example.com")
+        .setTo("address@example.com")
+        .setSubject("meaningful subject")
+        .setText("this is a message");
 
     mailService.sendMail(email, result -> {
-      if(result.succeeded()) {
-        log.info(result.result().toString());
+      if (result.succeeded()) {
+        System.out.println(result.result());
       } else {
-        log.warn("got exception", result.cause());
+        System.out.println("got exception");
+        result.cause().printStackTrace();
       }
     });
   }
