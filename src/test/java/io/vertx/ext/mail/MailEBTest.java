@@ -30,9 +30,9 @@ public class MailEBTest extends VertxTestBase {
     MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
 
     MailMessage email=new MailMessage()
-    .setFrom("lehmann333@arcor.de")
-    .setBounceAddress("nobody@lehmann.cx")
-    .setTo("lehmann333@arcor.de")
+    .setFrom("user@example.com")
+    .setBounceAddress("bounce@example.com")
+    .setTo("user@example.com")
     .setSubject("Test email with HTML")
     .setText("this is a message");
 

@@ -11,7 +11,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
-import io.vertx.ext.mail.mailutil.BounceGetter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;

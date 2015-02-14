@@ -4,8 +4,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
-import java.util.concurrent.CountDownLatch;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -39,7 +37,7 @@ public class SizeExceededTest extends VertxTestBase {
 
     log.info("message size is " + message.length());
 
-    MailMessage email = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", message);
+    MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", message);
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

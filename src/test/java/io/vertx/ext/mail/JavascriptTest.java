@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.test.lang.js.JSRunner;
 
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**

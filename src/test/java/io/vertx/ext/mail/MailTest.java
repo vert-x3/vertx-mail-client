@@ -12,7 +12,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CountDownLatch;
 
 import org.junit.Ignore;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class MailTest extends VertxTestBase {
 
   @Ignore
   @Test
-  public void mailTest() throws IOException, InterruptedException {
+  public void mailTest() throws IOException {
     log.info("starting");
 
     // this is a hack to avoid putting an actual account into the test
@@ -108,6 +107,7 @@ public class MailTest extends VertxTestBase {
         throw new RuntimeException(result.cause());
       }
     });
+
     await();
   }
 }

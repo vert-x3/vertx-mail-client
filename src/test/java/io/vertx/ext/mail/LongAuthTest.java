@@ -2,12 +2,9 @@ package io.vertx.ext.mail;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.hamcrest.core.StringContains.containsString;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
-
-import java.util.concurrent.CountDownLatch;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -31,9 +28,7 @@ public class LongAuthTest extends VertxTestBase {
   private static final Logger log = LoggerFactory.getLogger(LongAuthTest.class);
 
   @Test
-  public void mailTest() throws MessagingException, InterruptedException {
-    log.info("starting");
-
+  public void mailTest() throws MessagingException {
     MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
 
     mailConfig.setUsername("*************************************************");
@@ -41,7 +36,7 @@ public class LongAuthTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    MailMessage email = new MailMessage("lehmann333@arcor.de", "lehmann333@arcor.de", "Subject", "Message");
+    MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", "Message");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
@@ -60,7 +55,7 @@ public class LongAuthTest extends VertxTestBase {
     final WiserMessage message = wiser.getMessages().get(0);
     String sender = message.getEnvelopeSender();
     final MimeMessage mimeMessage = message.getMimeMessage();
-    assertEquals("lehmann333@arcor.de", sender);
+    assertEquals("user@example.com", sender);
     assertThat(mimeMessage.getContentType(), containsString("text/plain"));
     assertThat(mimeMessage.getSubject(), equalTo("Subject"));
   }
