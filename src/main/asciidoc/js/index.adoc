@@ -29,5 +29,3 @@ mailService.sendMail(email, function (result, result_err) {
 });
 
 ----
-
-zfzeezf
