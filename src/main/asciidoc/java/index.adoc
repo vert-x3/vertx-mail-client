@@ -5,8 +5,10 @@
 [source,java]
 ----
 MailConfig mailConfig = new MailConfig()
-    .setUsername(username)
-    .setPassword(password);
+    .setHostname("mail.example.com")
+    .setPort(587)
+    .setUsername("user")
+    .setPassword("pw");
 
 MailService mailService = MailService.create(vertx, mailConfig);
 
