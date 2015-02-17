@@ -12,10 +12,12 @@ import io.vertx.ext.mail.MailService;
 @Source
 public class Examples {
 
-  public void example1(Vertx vertx, String username, String password) {
+  public void example1(Vertx vertx) {
     MailConfig mailConfig = new MailConfig()
-        .setUsername(username)
-        .setPassword(password);
+        .setHostname("mail.example.com")
+        .setPort(587)
+        .setUsername("user")
+        .setPassword("pw");
 
     MailService mailService = MailService.create(vertx, mailConfig);
 

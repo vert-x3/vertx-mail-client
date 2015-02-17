@@ -6,8 +6,10 @@
 ----
 import io.vertx.groovy.ext.mail.MailService
 def mailConfig = [
-  username:username,
-  password:password
+  hostname:"mail.example.com",
+  port:587,
+  username:"user",
+  password:"pw"
 ]
 
 def mailService = MailService.create(vertx, mailConfig)

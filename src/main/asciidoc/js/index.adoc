@@ -6,8 +6,10 @@
 ----
 var MailService = require("vertx-mail-js/mail_service");
 var mailConfig = {
-  "username" : username,
-  "password" : password
+  "hostname" : "mail.example.com",
+  "port" : 587,
+  "username" : "user",
+  "password" : "pw"
 };
 
 var mailService = MailService.create(vertx, mailConfig);
