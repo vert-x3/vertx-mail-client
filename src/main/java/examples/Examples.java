@@ -25,7 +25,8 @@ public class Examples {
         .setFrom("address@example.com")
         .setTo("address@example.com")
         .setSubject("meaningful subject")
-        .setText("this is a message");
+        .setText("this is a message")
+        .setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
 
     mailService.sendMail(email, result -> {
       if (result.succeeded()) {

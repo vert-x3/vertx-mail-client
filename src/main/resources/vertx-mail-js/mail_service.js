@@ -37,6 +37,7 @@ var MailService = function(j_val) {
    @public
    @param email {Object} 
    @param resultHandler {function} 
+   @return {MailService}
    */
   this.sendMail = function(email, resultHandler) {
     var __args = arguments;
@@ -48,6 +49,7 @@ var MailService = function(j_val) {
         resultHandler(null, ar.cause());
       }
     });
+      return that;
     } else utils.invalidArgs();
   };
 

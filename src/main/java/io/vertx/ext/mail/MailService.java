@@ -1,5 +1,6 @@
 package io.vertx.ext.mail;
 
+import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
@@ -24,7 +25,8 @@ public interface MailService {
     return ProxyHelper.createProxy(MailService.class, vertx, address);
   }
 
-  void sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
+  @Fluent
+  MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @ProxyIgnore
   void start();

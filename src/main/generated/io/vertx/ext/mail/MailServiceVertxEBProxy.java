@@ -46,10 +46,10 @@ public class MailServiceVertxEBProxy implements MailService {
     this._address = address;
   }
 
-  public void sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
-      return;
+      return this;
     }
     JsonObject _json = new JsonObject();
     _json.put("email", email.toJson());
@@ -62,6 +62,7 @@ public class MailServiceVertxEBProxy implements MailService {
         resultHandler.handle(Future.succeededFuture(res.result().body()));
       }
     });
+    return this;
   }
 
   public void start() {

@@ -35,21 +35,21 @@ import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 
 /*
- first implementation of a SMTP client
+ * main operation of the smtp client
+ * this class takes care of the different smtp steps, AUTH etc
+ * and generates the mail text by using the Email object
  */
-// TODO: this is not a verticle, the verticle is MailServiceVerticle
-// this class should probably be renamed
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MailVerticle {
+public class MailMain {
 
   private Vertx vertx;
   private Handler<AsyncResult<JsonObject>> finishedHandler;
 
-  public MailVerticle(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
+  public MailMain(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
     this.finishedHandler = finishedHandler;
   }
@@ -103,7 +103,7 @@ public class MailVerticle {
     ns.write(str + "\r\n");
   }
 
-  private static final Logger log = LoggerFactory.getLogger(MailVerticle.class);
+  private static final Logger log = LoggerFactory.getLogger(MailMain.class);
   NetSocket ns;
   boolean socketClosed;
   boolean socketShutDown;
