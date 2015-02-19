@@ -43,7 +43,7 @@ public class MailService {
     def ret= MailService.FACTORY.apply(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
     return ret;
   }
-  public void sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+  public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
@@ -55,6 +55,7 @@ public class MailService {
         resultHandler.handle(f)
       }
     });
+    return this;
   }
   public void start() {
     this.delegate.start();

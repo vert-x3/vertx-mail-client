@@ -10,10 +10,11 @@ import io.vertx.core.json.JsonObject;
 @DataObject
 public class MailConfig {
 
-  private static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
-  private static final StarttlsOption DEFAULT_TLS = StarttlsOption.OPTIONAL;
-  private static final int DEFAULT_PORT = 25;
-  private static final String DEFAULT_HOST = "localhost";
+  public static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
+  public static final StarttlsOption DEFAULT_TLS = StarttlsOption.OPTIONAL;
+  public static final int DEFAULT_PORT = 25;
+  public static final String DEFAULT_HOST = "localhost";
+
   private String hostname;
   private int port;
   /**

@@ -136,7 +136,7 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public void sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
     try {
       String bounceAddress = message.getBounceAddress();
       String from = message.getFrom();
@@ -202,11 +202,12 @@ public class MailServiceImpl implements MailService {
       email.setHostName(hostname);
       email.setSmtpPort(port);
 
-      MailVerticle mailVerticle = new MailVerticle(vertx, resultHandler);
+      MailMain mailVerticle = new MailMain(vertx, resultHandler);
       mailVerticle.sendMail(email, username, password, config.getLogin());
     } catch (EmailException | AddressException e) {
       resultHandler.handle(Future.failedFuture(e));
     }
+    return this;
   }
 
 }
