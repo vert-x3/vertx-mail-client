@@ -60,7 +60,6 @@ public class MailTest extends VertxTestBase {
       log.warn("auth account unavailable");
     }
 
-    // MailConfig mailConfig = ServerConfigs.configSendgrid();
     MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);

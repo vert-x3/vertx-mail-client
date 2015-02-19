@@ -16,23 +16,23 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.crypto.Mac;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.mail.Email;
-import org.bouncycastle.crypto.Mac;
-import org.bouncycastle.crypto.digests.MD5Digest;
-import org.bouncycastle.crypto.macs.HMac;
-import org.bouncycastle.crypto.params.KeyParameter;
 
 /*
  * main operation of the smtp client
@@ -391,20 +391,27 @@ public class MailMain {
   }
 
   private String hmacMD5hex(String message, String pw) {
-    KeyParameter keyparameter;
     try {
-      keyparameter = new KeyParameter(pw.getBytes("utf-8"));
-      Mac mac = new HMac(new MD5Digest());
-      mac.init(keyparameter);
-      byte[] messageBytes = message.getBytes("utf-8");
-      mac.update(messageBytes, 0, messageBytes.length);
-      byte[] outBytes = new byte[mac.getMacSize()];
-      mac.doFinal(outBytes, 0);
-      return Hex.encodeHexString(outBytes);
-    } catch (UnsupportedEncodingException e) {
+      SecretKey key = new SecretKeySpec(pw.getBytes("utf-8"), "HmacMD5");
+      Mac mac = Mac.getInstance(key.getAlgorithm());
+      mac.init(key);
+      return encodeHex(mac.doFinal(message.getBytes("utf-8")));
+    } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
       // doesn't happen, auth will fail in that case
       return "";
     }
+  }
+
+  /**
+   * @param outBytes
+   * @return
+   */
+  private String encodeHex(byte[] bytes) {
+    StringBuilder sb = new StringBuilder(bytes.length * 2);
+    for (byte b : bytes) {
+      sb.append(String.format("%02x", b));
+    }
+    return sb.toString();
   }
 
   private void cramMD5Step2(String message) {
@@ -581,7 +588,7 @@ public class MailMain {
       // this call does not create multi-line base64 data
       // (if someone uses a password longer than 57 chars or
       // one of the other SASL replies is longer than 76 chars)
-      return Base64.encodeBase64String(string.getBytes("UTF-8"));
+      return Base64.getEncoder().encodeToString(string.getBytes("UTF-8"));
     } catch (UnsupportedEncodingException e) {
       // doesn't happen
       return "";
@@ -590,7 +597,7 @@ public class MailMain {
 
   private String decodeb64(String string) {
     try {
-      return new String(Base64.decodeBase64(string), "UTF-8");
+      return new String(Base64.getDecoder().decode(string), "UTF-8");
     } catch (UnsupportedEncodingException e) {
       // doesn't happen
       return "";
