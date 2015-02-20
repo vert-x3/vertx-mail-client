@@ -1,0 +1,34 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:jsdoc/mail_service-MailService.html[MailService]` simple example:
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var mailConfig = {
+  "hostname" : "mail.example.com",
+  "port" : 587,
+  "username" : "user",
+  "password" : "pw"
+};
+
+var mailService = MailService.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "meaningful subject",
+  "text" : "this is a message",
+  "html" : "HTML message <a href=\"http://vertx.io\">vertx</a>"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  if ((result != null)) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
