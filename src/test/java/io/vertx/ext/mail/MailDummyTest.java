@@ -103,6 +103,35 @@ public class MailDummyTest extends VertxTestBase {
     await();
   }
 
+  @Test
+  public void mailTestNoBody() {
+    log.info("starting");
+
+    MailConfig mailConfig = new MailConfig("localhost", 1587);
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    MailMessage email=new MailMessage()
+      .setFrom("user@example.com")
+      .setBounceAddress("bounce@example.com")
+      .setTo("user@example.com")
+      .setAttachment(new MailAttachment()
+        .setData("\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff"));
+
+    mailService.sendMail(email, result -> {
+      log.info("mail finished");
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+        testComplete();
+      } else {
+        log.warn("got exception", result.cause());
+        throw new RuntimeException(result.cause());
+      }
+    });
+
+    await();
+  }
+
   private TestSmtpServer smtpServer;
 
   @Before
