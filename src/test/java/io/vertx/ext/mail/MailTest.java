@@ -94,6 +94,13 @@ public class MailTest extends VertxTestBase {
       .setDisposition("attachment")
       .setDescription("some text"));
 
+    list.add(new MailAttachment()
+    .setData("\u00d0\u2014\u00d0\u00bd\u00d0\u00b0\u00d0\u00bc\u00d0\u00b5\u00d0\u00bd\u00d0\u00b8\u00d1\u201a\u00d0\u00be\u00d1\u0081\u00d1\u201a\u00d0\u00b8")
+    .setName("file.txt")
+    .setContentType("text/plain; charset=utf-8")
+    .setDisposition("attachment")
+    .setDescription("russian text"));
+
     email.setAttachment(list);
 
     mailService.sendMail(email, result -> {
