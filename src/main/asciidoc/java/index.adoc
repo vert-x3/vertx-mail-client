@@ -28,3 +28,31 @@ mailService.sendMail(email, result -> {
   }
 });
 ----
+attachments can be added by converting them to String representation of the bytes
+
+[source,java]
+----
+MailConfig mailConfig = new MailConfig();
+
+MailService mailService = MailService.create(vertx, mailConfig);
+
+MailMessage email = new MailMessage()
+    .setFrom("address@example.com")
+    .setTo("address@example.com")
+    .setSubject("your file")
+    .setText("please take a look at the attached file");
+
+MailAttachment attachment = new MailAttachment()
+    .setName("file.txt")
+    .setData("ASDF1234\n");
+email.setAttachment(attachment);
+
+mailService.sendMail(email, result -> {
+  if (result.succeeded()) {
+    System.out.println(result.result());
+  } else {
+    System.out.println("got exception");
+    result.cause().printStackTrace();
+  }
+});
+----
