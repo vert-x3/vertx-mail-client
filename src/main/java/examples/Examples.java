@@ -2,6 +2,7 @@ package examples;
 
 import io.vertx.core.Vertx;
 import io.vertx.docgen.Source;
+import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailService;
@@ -27,6 +28,33 @@ public class Examples {
         .setSubject("meaningful subject")
         .setText("this is a message")
         .setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
+
+    mailService.sendMail(email, result -> {
+      if (result.succeeded()) {
+        System.out.println(result.result());
+      } else {
+        System.out.println("got exception");
+        result.cause().printStackTrace();
+      }
+    });
+  }
+
+  public void example2(Vertx vertx) {
+    // default config will use localhost:25
+    MailConfig mailConfig = new MailConfig();
+
+    MailService mailService = MailService.create(vertx, mailConfig);
+
+    MailMessage email = new MailMessage()
+        .setFrom("address@example.com")
+        .setTo("address@example.com")
+        .setSubject("your file")
+        .setText("please take a look at the attached file");
+
+    MailAttachment attachment = new MailAttachment()
+        .setName("file.txt")
+        .setData("ASDF1234\n");
+    email.setAttachment(attachment);
 
     mailService.sendMail(email, result -> {
       if (result.succeeded()) {

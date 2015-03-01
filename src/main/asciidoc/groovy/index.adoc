@@ -32,3 +32,36 @@ mailService.sendMail(email, { result ->
 })
 
 ----
+attachments can be added by converting them to String representation of the bytes
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailService
+// default config will use localhost:25
+def mailConfig = [:]
+
+def mailService = MailService.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"your file",
+  text:"please take a look at the attached file"
+]
+
+def attachment = [
+  name:"file.txt",
+  data:"ASDF1234\n"
+]
+email.attachment = attachment
+
+mailService.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----

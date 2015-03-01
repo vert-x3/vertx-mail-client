@@ -32,3 +32,37 @@ mailService.sendMail(email, function (result, result_err) {
 });
 
 ----
+attachments can be added by converting them to String representation of the bytes
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+// default config will use localhost:25
+var mailConfig = {
+};
+
+var mailService = MailService.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "your file",
+  "text" : "please take a look at the attached file"
+};
+
+var attachment = {
+  "name" : "file.txt",
+  "data" : "ASDF1234\n"
+};
+email.attachment = attachment;
+
+mailService.sendMail(email, function (result, result_err) {
+  if ((result != null)) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----

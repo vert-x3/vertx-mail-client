@@ -22,6 +22,12 @@
  * ----
  * {@link examples.Examples#example1}
  * ----
+ * attachments can be added by converting them to String representation of the bytes
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example2}
+ * ----
  */
 @Document(fileName = "index.adoc")
 @GenModule(name = "vertx-mail")
