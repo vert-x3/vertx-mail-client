@@ -18,8 +18,8 @@ console.log("starting");
 var service = MailService.create(vertx, config);
 
 var email = {
-  "from" : "user@exmample.com",
-  "to" : "user@exmample.com",
+  "from" : "user@example.com",
+  "to" : "user@example.com",
   "subject" : "Test email",
   "text" : "this is a mail message",
   "attachment" : [ {

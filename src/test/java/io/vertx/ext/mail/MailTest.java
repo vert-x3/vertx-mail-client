@@ -27,7 +27,7 @@ public class MailTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailTest.class);
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() throws IOException {
     log.info("starting");
@@ -61,6 +61,7 @@ public class MailTest extends VertxTestBase {
     }
 
     MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+//    MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);
 
@@ -95,11 +96,11 @@ public class MailTest extends VertxTestBase {
       .setDescription("some text"));
 
     list.add(new MailAttachment()
-    .setData("\u00d0\u2014\u00d0\u00bd\u00d0\u00b0\u00d0\u00bc\u00d0\u00b5\u00d0\u00bd\u00d0\u00b8\u00d1\u201a\u00d0\u00be\u00d1\u0081\u00d1\u201a\u00d0\u00b8")
-    .setName("file.txt")
-    .setContentType("text/plain; charset=utf-8")
-    .setDisposition("attachment")
-    .setDescription("russian text"));
+      .setData("\u00D0\u0097\u00D0\u00BD\u00D0\u00B0\u00D0\u00BC\u00D0\u00B5\u00D0\u00BD\u00D0\u00B8\u00D1\u0082\u00D0\u00BE\u00D1\u0081\u00D1\u0082\u00D0\u00B8")
+      .setName("file2.txt")
+      .setContentType("text/plain; charset=utf-8")
+      .setDisposition("attachment")
+      .setDescription("russian text"));
 
     email.setAttachment(list);
 
@@ -110,7 +111,7 @@ public class MailTest extends VertxTestBase {
         testComplete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        fail("got exception "+result.cause());
       }
     });
 

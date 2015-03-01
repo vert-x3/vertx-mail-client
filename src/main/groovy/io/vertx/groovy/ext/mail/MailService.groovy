@@ -57,6 +57,20 @@ public class MailService {
     });
     return this;
   }
+  public MailService sendMailString(String email, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.sendMailString(email, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
+      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result(event.result()?.getMap())
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
+    return this;
+  }
   public void start() {
     this.delegate.start();
   }

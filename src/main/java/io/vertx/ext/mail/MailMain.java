@@ -11,8 +11,9 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.core.net.NetSocket;
+import io.vertx.ext.mail.mailencoder.EmailAddress;
+import io.vertx.ext.mail.mailencoder.MailEncoder;
 
-import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -29,10 +30,6 @@ import java.util.Set;
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import javax.mail.internet.AddressException;
-import javax.mail.internet.InternetAddress;
-
-import org.apache.commons.mail.Email;
 
 /*
  * main operation of the smtp client
@@ -48,9 +45,11 @@ public class MailMain {
 
   private Vertx vertx;
   private Handler<AsyncResult<JsonObject>> finishedHandler;
+  private MailConfig config;
 
-  public MailMain(Vertx vertx, Handler<AsyncResult<JsonObject>> finishedHandler) {
+  public MailMain(Vertx vertx, MailConfig config, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
+    this.config = config;
     this.finishedHandler = finishedHandler;
   }
 
@@ -119,23 +118,20 @@ public class MailMain {
 //  private boolean capaPipelining = false;
   private int capaSize = 0;
 
-  Email email;
+  MailMessage email;
   String mailMessage;
-  String username;
-  String pw;
-  LoginOption login;
+//  String username;
+//  String pw;
+//  LoginOption login;
   NetClient client;
 
-  public void sendMail(Email email, String username, String password, LoginOption login) {
+  public void sendMail(MailMessage email) {
     this.email = email;
-    this.username = username;
-    pw = password;
-    this.login = login;
 
-    NetClientOptions netClientOptions = new NetClientOptions().setSsl(email.isSSLOnConnect());
+    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
     client = vertx.createNetClient(netClientOptions);
 
-    client.connect(Integer.parseInt(email.getSmtpPort()), email.getHostName(), asyncResult -> {
+    client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
         ns = asyncResult.result();
         socketClosed = false;
@@ -228,20 +224,20 @@ public class MailMain {
         if (capaSize > 0 && mailMessage.length() > capaSize) {
           throwAsyncResult("message exceeds allowed size limit");
         } else {
-          if (capaStartTLS && !ns.isSsl() && (email.isStartTLSRequired() || email.isStartTLSEnabled())) {
+          if (capaStartTLS && !ns.isSsl() && (config.getStarttls()==StarttlsOption.REQUIRED || config.getStarttls()==StarttlsOption.OPTIONAL)) {
             // do not start TLS if we are connected with SSL
             // or are already in TLS
             startTLSCmd();
           } else {
-            if (!ns.isSsl() && email.isStartTLSRequired()) {
+            if (!ns.isSsl() && config.getStarttls()==StarttlsOption.REQUIRED) {
               log.warn("STARTTLS required but not supported by server");
               throwAsyncResult("STARTTLS required but not supported by server");
             } else {
-              if (login != LoginOption.DISABLED && username != null && pw != null && !capaAuth.isEmpty()) {
+              if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null && !capaAuth.isEmpty()) {
                 authCmd();
               } else {
-                if (login == LoginOption.REQUIRED) {
-                  if (username != null && pw != null) {
+                if (config.getLogin() == LoginOption.REQUIRED) {
+                  if (config.getUsername() != null && config.getPassword() != null) {
                     throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
                   } else {
                     throwAsyncResult("login is required, but no credentials supplied");
@@ -356,7 +352,7 @@ public class MailMain {
         cramMD5Step1(message.substring(4));
       });
     } else if (capaAuth.contains("PLAIN")) {
-      String authdata = base64("\0" + username + "\0" + pw);
+      String authdata = base64("\0" + config.getUsername() + "\0" + config.getPassword());
       write("AUTH PLAIN " + authdata, 10, result -> {
         String message = result.result();
         log.debug("AUTH result: " + message);
@@ -382,8 +378,8 @@ public class MailMain {
   private void cramMD5Step1(String string) {
     String message = decodeb64(string);
     log.debug("message " + message);
-    String reply = hmacMD5hex(message, pw);
-    write(base64(username + " " + reply), 0, result -> {
+    String reply = hmacMD5hex(message, config.getPassword());
+    write(base64(config.getUsername() + " " + reply), 0, result -> {
       String message2 = result.result();
       log.debug("AUTH step 2 result: " + message2);
       cramMD5Step2(message2);
@@ -425,7 +421,7 @@ public class MailMain {
   }
 
   private void sendUsername() {
-    write(base64(username), 0, result -> {
+    write(base64(config.getUsername()), 0, result -> {
       String message = result.result();
       log.debug("username result: " + message);
       sendPw();
@@ -433,7 +429,7 @@ public class MailMain {
   }
 
   private void sendPw() {
-    write(base64(pw), 0, result -> {
+    write(base64(config.getPassword()), 0, result -> {
       String message = result.result();
       log.debug("pw result: " + message);
       if (isStatusOk(message)) {
@@ -447,17 +443,12 @@ public class MailMain {
 
   private void mailFromCmd() {
     try {
-      // prefer bounce address over from address
-      // currently (1.3.3) commons mail is missing the getter for bounceAddress
-      // I have requested that https://issues.apache.org/jira/browse/EMAIL-146
-      String fromAddr = email.getFromAddress().getAddress();
-      if (email instanceof BounceGetter) {
-        String bounceAddr = ((BounceGetter) email).getBounceAddress();
-        if (bounceAddr != null && !bounceAddr.isEmpty()) {
-          fromAddr = bounceAddr;
-        }
+      String fromAddr = email.getFrom();
+      String bounceAddr = email.getBounceAddress();
+      if (bounceAddr != null && !bounceAddr.isEmpty()) {
+        fromAddr = bounceAddr;
       }
-      InternetAddress.parse(fromAddr, true);
+      new EmailAddress(fromAddr);
       write("MAIL FROM:<" + fromAddr + ">", result -> {
         String message = result.result();
         log.debug("MAIL FROM result: " + message);
@@ -468,23 +459,30 @@ public class MailMain {
           throwAsyncResult("sender address not accepted: " + message);
         }
       });
-    } catch (AddressException e) {
+    } catch (IllegalArgumentException e) {
       log.error("address exception", e);
       throwAsyncResult(e);
     }
   }
 
   private void rcptToCmd() {
-    List<InternetAddress> recipientAddrs = email.getToAddresses();
-    recipientAddrs.addAll(email.getCcAddresses());
-    recipientAddrs.addAll(email.getBccAddresses());
+    List<String> recipientAddrs = new ArrayList<String>();
+    if(email.getTo()!=null) {
+      recipientAddrs.addAll(email.getTo());
+    }
+    if(email.getCc()!=null) {
+      recipientAddrs.addAll(email.getCc());
+    }
+    if(email.getBcc()!=null) {
+      recipientAddrs.addAll(email.getBcc());
+    }
     rcptToCmd(recipientAddrs, 0);
   }
 
-  private void rcptToCmd(List<InternetAddress> recipientAddrs, int i) {
+  private void rcptToCmd(List<String> recipientAddrs, int i) {
     try {
-      String toAddr = recipientAddrs.get(i).getAddress();
-      InternetAddress.parse(toAddr, true);
+      String toAddr = recipientAddrs.get(i);
+      new EmailAddress(toAddr);
       write("RCPT TO:<" + toAddr + ">", result -> {
         String message = result.result();
         log.debug("RCPT TO result: " + message);
@@ -499,7 +497,7 @@ public class MailMain {
           throwAsyncResult("recipient address not accepted: " + message);
         }
       });
-    } catch (AddressException e) {
+    } catch (IllegalArgumentException e) {
       log.error("address exception", e);
       throwAsyncResult(e);
     }
@@ -541,15 +539,8 @@ public class MailMain {
    */
   private void createMailMessage() {
     if(mailMessage==null) {
-      ByteArrayOutputStream bos = new ByteArrayOutputStream();
-      try {
-        email.buildMimeMessage();
-        email.getMimeMessage().writeTo(bos);
-        mailMessage = bos.toString();
-      } catch (Exception e) {
-        log.error("cannot create mime message", e);
-        throwAsyncResult(e);
-      }
+      MailEncoder encoder = new MailEncoder(email);
+      mailMessage = encoder.encode();
     }
   }
 
