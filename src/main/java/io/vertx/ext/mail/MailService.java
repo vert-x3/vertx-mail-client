@@ -28,6 +28,9 @@ public interface MailService {
   @Fluent
   MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
+  @Fluent
+  MailService sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler);
+
   @ProxyIgnore
   void start();
 

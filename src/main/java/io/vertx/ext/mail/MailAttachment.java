@@ -17,33 +17,13 @@ public class MailAttachment {
   // note that this must be a String only containing chars 0-255
   // to represent the binary file data
   private String data;
-  // if filename is set, data will be read from the filesystem
-  // TODO: this is not yet implemented
-  // private String filename;
   // name is the descriptive filename that will be put into the mail
   // i.e. usually a local filename without path
-  // will be filled based on filename if not set
   // this can be set to "" to omit the filename attribute
   private String name;
   private String contentType;
   private String disposition;
   private String description;
-
-  /**
-   * @return the filename
-   */
-  // public String getFilename() {
-  // return filename;
-  // }
-
-  /**
-   * @param filename
-   *          the filename to set
-   */
-  // public MailAttachment setFilename(String filename) {
-  // this.filename = filename;
-  // return this;
-  // }
 
   public String getName() {
     return name;

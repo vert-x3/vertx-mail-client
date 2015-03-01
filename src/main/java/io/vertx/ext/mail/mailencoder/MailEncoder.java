@@ -1,6 +1,8 @@
 package io.vertx.ext.mail.mailencoder;
 
 import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 
@@ -9,6 +11,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class MailEncoder {
+
+  private static final Logger log = LoggerFactory.getLogger(MailEncoder.class);
 
   private MailMessage message;
 
@@ -20,9 +24,21 @@ public class MailEncoder {
 
     CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
 
-    headers.set("Subject", message.getSubject());
+    if(message.getSubject()!=null) {
+      headers.set("Subject", Utils.encodeHeader(message.getSubject()));
+    }
     headers.set("MIME-Version", "1.0");
-    headers.set("Message-ID", "<12345@mail.vertx.io>");
+    headers.set("Message-ID", Utils.generateMessageId());
+
+    if(message.getFrom()!=null) {
+      headers.set("From", Utils.encodeHeaderEmail(message.getFrom()));
+    }
+    if(message.getTo()!=null) {
+      headers.set("To", Utils.encodeEmailList(message.getTo()));
+    }
+    if(message.getCc()!=null) {
+      headers.set("Cc", Utils.encodeEmailList(message.getCc()));
+    }
 
     EncodedPart completeParts;
     EncodedPart mainPart;
@@ -31,7 +47,7 @@ public class MailEncoder {
     String html = message.getHtml();
 
     if (text != null && html != null) {
-      mainPart = new MultiPart(Arrays.asList(new PlainPart(text), new HtmlPart(html)));
+      mainPart = new MultiPart(Arrays.asList(new PlainPart(text), new HtmlPart(html)), "alternative");
     } else if (text != null) {
       mainPart = new PlainPart(text);
     } else if (html != null) {
@@ -50,16 +66,14 @@ public class MailEncoder {
       for (MailAttachment a : attachments) {
         parts.add(new AttachmentPart(a));
       }
-      completeParts = new MultiPart(parts);
+      completeParts = new MultiPart(parts, "mixed");
     } else {
       completeParts = mainPart;
     }
 
-    // TODO: may be easier to construct a part with all headers
-    // and convert that to String
-    headers.addAll(completeParts.headers);
+    completeParts.headers=headers.addAll(completeParts.headers);
 
-    return headers.toString() + "\n" + completeParts.part;
+    return completeParts.asString();
   }
 
 }

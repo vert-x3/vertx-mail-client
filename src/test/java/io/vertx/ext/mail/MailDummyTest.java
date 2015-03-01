@@ -113,7 +113,6 @@ public class MailDummyTest extends VertxTestBase {
 
     MailMessage email=new MailMessage()
       .setFrom("user@example.com")
-      .setBounceAddress("bounce@example.com")
       .setTo("user@example.com")
       .setAttachment(new MailAttachment()
         .setData("\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff"));
