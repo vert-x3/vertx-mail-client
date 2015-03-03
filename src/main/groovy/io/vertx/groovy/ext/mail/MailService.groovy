@@ -25,7 +25,7 @@ import io.vertx.core.Handler
 import io.vertx.ext.mail.MailMessage
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- */
+*/
 @CompileStatic
 public class MailService {
   final def io.vertx.ext.mail.MailService delegate;

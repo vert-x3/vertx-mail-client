@@ -23,7 +23,7 @@ var email = {
 };
 
 mailService.sendMail(email, function (result, result_err) {
-  if ((result != null)) {
+  if (result_err == null) {
     console.log(result);
   } else {
     console.log("got exception");
@@ -51,13 +51,13 @@ var email = {
 };
 
 var attachment = {
-  "name" : "file.txt",
-  "data" : "ASDF1234\n"
+  "name" : "file.dat",
+  "data" : "ASDF1234\u0000\u0001\u0080\u00FF\n"
 };
 email.attachment = attachment;
 
 mailService.sendMail(email, function (result, result_err) {
-  if ((result != null)) {
+  if (result_err == null) {
     console.log(result);
   } else {
     console.log("got exception");
