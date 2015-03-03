@@ -1,0 +1,27 @@
+== MailAttachment
+
+++++
+ @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|`name`
+|`String`
+|-
+|`data`
+|`String`
+|-
+|`contentType`
+|`String`
+|-
+|`disposition`
+|`String`
+|-
+|`description`
+|`String`
+|-|===

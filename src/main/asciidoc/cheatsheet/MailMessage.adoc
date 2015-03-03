@@ -1,0 +1,35 @@
+== MailMessage
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|`bounceAddress`
+|`String`
+|-
+|`from`
+|`String`
+|-
+|`to`
+|`String`
+|-
+|`cc`
+|`String`
+|-
+|`bcc`
+|`String`
+|-
+|`subject`
+|`String`
+|-
+|`text`
+|`String`
+|-
+|`html`
+|`String`
+|-
+|`attachment`
+|`link:MailAttachment.html[MailAttachment]`
+|-|===

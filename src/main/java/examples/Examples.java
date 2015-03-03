@@ -52,8 +52,8 @@ public class Examples {
         .setText("please take a look at the attached file");
 
     MailAttachment attachment = new MailAttachment()
-        .setName("file.txt")
-        .setData("ASDF1234\n");
+        .setName("file.dat")
+        .setData("ASDF1234\0\u0001\u0080\u00ff\n");
     email.setAttachment(attachment);
 
     mailService.sendMail(email, result -> {

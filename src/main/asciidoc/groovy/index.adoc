@@ -50,8 +50,8 @@ def email = [
 ]
 
 def attachment = [
-  name:"file.txt",
-  data:"ASDF1234\n"
+  name:"file.dat",
+  data:"ASDF1234\u0000\u0001\u0080\u00FF\n"
 ]
 email.attachment = attachment
 
