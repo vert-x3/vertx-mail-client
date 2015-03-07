@@ -15,8 +15,8 @@ public class EmailAddressTest {
     new EmailAddress("user@example.com (\\\"User Name\\\")");
     new EmailAddress("user@example.com (Lastname, Firstname)");
     new EmailAddress("user@example.com (\"User Name\")");
-    new EmailAddress("\"Username\" <user@example.com>");
-    new EmailAddress("Mailer <>");
+//    new EmailAddress("\"Username\" <user@example.com>");
+//    new EmailAddress("Mailer <>");
   }
 
   @Test(expected = IllegalArgumentException.class)
