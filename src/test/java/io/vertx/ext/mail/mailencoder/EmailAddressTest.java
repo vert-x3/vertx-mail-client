@@ -8,7 +8,15 @@ public class EmailAddressTest {
   public void testEmail() {
     new EmailAddress("user@example.com");
     new EmailAddress("user@example.com (a user)");
-    new EmailAddress("user@example.com (äöü)");
+    new EmailAddress("user@example.com (\u00e4\u00f6\u00fc)");
+    // emails with angle brackets are valid, TODO
+//    new EmailAddress("User Name <user@example.com>");
+    // a few quirky examples, all valid though :-)
+    new EmailAddress("user@example.com (\\\"User Name\\\")");
+    new EmailAddress("user@example.com (Lastname, Firstname)");
+    new EmailAddress("user@example.com (\"User Name\")");
+    new EmailAddress("\"Username\" <user@example.com>");
+    new EmailAddress("Mailer <>");
   }
 
   @Test(expected = IllegalArgumentException.class)

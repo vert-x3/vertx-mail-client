@@ -71,7 +71,14 @@ public class MailEncoder {
       completeParts = mainPart;
     }
 
-    completeParts.headers=headers.addAll(completeParts.headers);
+    if(completeParts==null) {
+      // if we have either a text part nor attachments, create
+      // an empty message with the headers
+      completeParts=new PlainPart("");
+      completeParts.headers=headers.addAll(completeParts.headers);
+    } else {
+      completeParts.headers=headers.addAll(completeParts.headers);
+    }
 
     return completeParts.asString();
   }

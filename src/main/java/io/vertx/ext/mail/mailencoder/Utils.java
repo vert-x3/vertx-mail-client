@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Base64;
 import java.util.List;
+import java.util.StringJoiner;
 
 class Utils {
 
@@ -22,17 +23,21 @@ class Utils {
         if (ch == '\n') {
           column = 0;
         } else {
-          if (column > 76) {
-            sb.append("=\n");
-            column = 0;
+          boolean nextIsEOL = (i == utf8.length - 1 || utf8[i + 1] == '\n');
+          String encChar;
+          if (mustEncode(ch) || nextIsEOL && ch==' ') {
+            encChar = encodeChar(ch);
+          } else {
+            encChar = String.valueOf(ch);
           }
-        }
-        if (mustEncode(ch)) {
-          sb.append(encodeChar(ch));
-          column += 3;
-        } else {
-          sb.append(ch);
-          column++;
+          int newColumn = column + encChar.length();
+          if (newColumn <= 75 || nextIsEOL && newColumn == 76) {
+            sb.append(encChar);
+            column = newColumn;
+          } else {
+            sb.append("=\n").append(encChar);
+            column = encChar.length();
+          }
         }
       }
       return sb.toString();
@@ -102,8 +107,8 @@ class Utils {
         StringBuilder sb = new StringBuilder();
         sb.append("=?UTF-8?Q?");
         for (int i = 0; i < utf8.length; i++) {
-          char ch = (char)utf8[i];
-          if (mustEncode(ch) || ch == '_') {
+          char ch = (char) utf8[i];
+          if (mustEncode(ch) || ch == '_' || ch == '?') {
             sb.append(encodeChar(ch));
           } else if (ch == ' ') {
             sb.append('_');
@@ -122,22 +127,21 @@ class Utils {
   }
 
   static String encodeHeaderEmail(String address) {
-    EmailAddress adr=new EmailAddress(address);
+    EmailAddress adr = new EmailAddress(address);
 
-    if(mustEncode(adr.getName())) {
-      return adr.getAddress()+" ("+encodeHeader(adr.getName())+")";
+    if (mustEncode(adr.getName())) {
+      return adr.getAddress() + " (" + encodeHeader(adr.getName()) + ")";
     } else {
       return address;
     }
   }
 
   static String encodeEmailList(List<String> addresses) {
-    StringBuilder sb = new StringBuilder();
+    StringJoiner joiner = new StringJoiner(",");
     for (String addr : addresses) {
-      sb.append(encodeHeaderEmail(addr));
-      sb.append(',');
+      joiner.add(encodeHeaderEmail(addr));
     }
-    return sb.toString();
+    return joiner.toString();
   }
 
 }

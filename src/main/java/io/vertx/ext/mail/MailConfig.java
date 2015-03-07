@@ -100,6 +100,12 @@ public class MailConfig {
     return hostname;
   }
 
+  /**
+   * Set the hostname of the smtp server.
+   *
+   * @param hostname the hostname (default is localhost)
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setHostname(String hostname) {
     this.hostname = hostname;
     return this;
@@ -109,6 +115,12 @@ public class MailConfig {
     return port;
   }
 
+  /**
+   * Set the port of the smtp server.
+   *
+   * @param port the port (default is 25)
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setPort(int port) {
     this.port = port;
     return this;
@@ -118,6 +130,14 @@ public class MailConfig {
     return starttls;
   }
 
+  /**
+   * Set the tlssecurity mode for the connection.
+   *
+   * Either NONE, OPTIONAL or REQUIRED
+   *
+   * @param starttls (default is OPTIONAL)
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setStarttls(StarttlsOption starttls) {
     this.starttls = starttls;
     return this;
@@ -127,6 +147,14 @@ public class MailConfig {
     return login;
   }
 
+  /**
+   * Set the login mode for the connection.
+   *
+   * Either DISABLED, OPTIONAL or REQUIRED
+   *
+   * @param login (default is OPTIONAL)
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setLogin(LoginOption login) {
     this.login = login;
     return this;
@@ -136,6 +164,12 @@ public class MailConfig {
     return username;
   }
 
+  /**
+   * Set the username for the login.
+   *
+   * @param username the username
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setUsername(String username) {
     this.username = username;
     return this;
@@ -145,6 +179,12 @@ public class MailConfig {
     return password;
   }
 
+  /**
+   * Set the password for the login.
+   *
+   * @param password the password
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setPassword(String password) {
     this.password = password;
     return this;
@@ -154,6 +194,12 @@ public class MailConfig {
     return ssl;
   }
 
+  /**
+   * Set the sslOnConnect mode for the connection.
+   * 
+   * @param ssl true is ssl is used
+   * @return a reference to this, so the API can be used fluently
+   */
   public MailConfig setSsl(boolean ssl) {
     this.ssl = ssl;
     return this;
