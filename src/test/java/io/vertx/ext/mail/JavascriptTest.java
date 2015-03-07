@@ -2,6 +2,7 @@ package io.vertx.ext.mail;
 
 import io.vertx.test.lang.js.JSRunner;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -11,7 +12,7 @@ import org.junit.Test;
  */
 public class JavascriptTest {
 
-//  @Ignore
+  @Ignore
   @Test
   public void runJavascriptTest() throws Exception {
     new JSRunner().run("javascript/mailtest.js", "*");
