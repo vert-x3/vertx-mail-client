@@ -1,5 +1,6 @@
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -21,37 +22,18 @@ public class MailEncoder {
   }
 
   public String encode() {
-
-    CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
-
-    if(message.getSubject()!=null) {
-      headers.set("Subject", Utils.encodeHeader(message.getSubject()));
-    }
-    headers.set("MIME-Version", "1.0");
-    headers.set("Message-ID", Utils.generateMessageId());
-
-    if(message.getFrom()!=null) {
-      headers.set("From", Utils.encodeHeaderEmail(message.getFrom()));
-    }
-    if(message.getTo()!=null) {
-      headers.set("To", Utils.encodeEmailList(message.getTo()));
-    }
-    if(message.getCc()!=null) {
-      headers.set("Cc", Utils.encodeEmailList(message.getCc()));
-    }
-
-    EncodedPart completeParts;
+    EncodedPart completeMessage;
     EncodedPart mainPart;
 
     String text = message.getText();
     String html = message.getHtml();
 
     if (text != null && html != null) {
-      mainPart = new MultiPart(Arrays.asList(new PlainPart(text), new HtmlPart(html)), "alternative");
+      mainPart = new MultiPart(Arrays.asList(new TextPart(text, "plain"), new TextPart(html, "html")), "alternative");
     } else if (text != null) {
-      mainPart = new PlainPart(text);
+      mainPart = new TextPart(text, "plain");
     } else if (html != null) {
-      mainPart = new HtmlPart(html);
+      mainPart = new TextPart(html, "html");
     } else {
       // message with only attachments
       mainPart = null;
@@ -66,21 +48,46 @@ public class MailEncoder {
       for (MailAttachment a : attachments) {
         parts.add(new AttachmentPart(a));
       }
-      completeParts = new MultiPart(parts, "mixed");
+      completeMessage = new MultiPart(parts, "mixed");
     } else {
-      completeParts = mainPart;
+      completeMessage = mainPart;
     }
 
-    if(completeParts==null) {
-      // if we have either a text part nor attachments, create
-      // an empty message with the headers
-      completeParts=new PlainPart("");
-      completeParts.headers=headers.addAll(completeParts.headers);
-    } else {
-      completeParts.headers=headers.addAll(completeParts.headers);
+    if (completeMessage == null) {
+      // if we have neither a text part nor attachments, create
+      // an empty message with the default headers
+      completeMessage = new TextPart("", "plain");
+    }
+    completeMessage.headers = createHeaders(completeMessage.headers);
+
+    return completeMessage.asString();
+  }
+
+  /**
+   * @return
+   */
+  private MultiMap createHeaders(MultiMap additionalHeaders) {
+    CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
+
+    if (message.getSubject() != null) {
+      headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+    }
+    headers.set("MIME-Version", "1.0");
+    headers.set("Message-ID", Utils.generateMessageId());
+
+    if (message.getFrom() != null) {
+      headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));
+    }
+    if (message.getTo() != null) {
+      headers.set("To", Utils.encodeEmailList(message.getTo(), 4));
+    }
+    if (message.getCc() != null) {
+      headers.set("Cc", Utils.encodeEmailList(message.getCc(), 4));
     }
 
-    return completeParts.asString();
+    headers.addAll(additionalHeaders);
+
+    return headers;
   }
 
 }
