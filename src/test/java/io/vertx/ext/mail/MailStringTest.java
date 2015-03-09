@@ -22,18 +22,15 @@ import org.subethamail.wiser.WiserMessage;
  *
  *         this test uses a local smtp server mockup
  */
-public class MailLocalTest extends VertxTestBase {
+public class MailStringTest extends VertxTestBase {
 
-  private static final Logger log = LoggerFactory.getLogger(MailLocalTest.class);
+  private static final Logger log = LoggerFactory.getLogger(MailStringTest.class);
 
   @Test
   public void mailTest() throws MessagingException {
     log.info("starting");
 
-    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
-
-    mailConfig.setUsername("username");
-    mailConfig.setPassword("asdf");
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.DISABLED);
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
@@ -43,11 +40,24 @@ public class MailLocalTest extends VertxTestBase {
       .setTo(Arrays.asList(
         "user@example.com (User Name)",
         "other@example.com (Another User)"))
-      .setBounceAddress("user@example.com")
-      .setSubject("Test email with HTML")
-      .setText("this is a test email");
+      .setBounceAddress("user@example.org");
 
-    mailService.sendMail(email, result -> {
+    String messageString = "Message-ID: <12345@example.com>\n" + 
+        "Date: Mon, 09 Mar 2015 22:10:48 +0100\n" + 
+        "From: User Name <user@example.com>\n" + 
+        "MIME-Version: 1.0\n" + 
+        "To: User Name <user@example.com>\n" + 
+        "Subject: pregenerated message\n" + 
+        "Content-Type: text/plain; charset=US-ASCII\n" + 
+        "Content-Transfer-Encoding: 7bit\n" + 
+        "\n" + 
+        "this is an example mail\n" + 
+        "\n";
+
+    // note that the to and from fields from the string are not
+    // evaluated at all
+
+    mailService.sendMailString(email, messageString, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
@@ -63,9 +73,9 @@ public class MailLocalTest extends VertxTestBase {
     final WiserMessage message = wiser.getMessages().get(0);
     String sender = message.getEnvelopeSender();
     final MimeMessage mimeMessage = message.getMimeMessage();
-    assertEquals("user@example.com", sender);
+    assertEquals("user@example.org", sender);
     assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-    assertThat(mimeMessage.getSubject(), equalTo("Test email with HTML"));
+    assertThat(mimeMessage.getSubject(), equalTo("pregenerated message"));
   }
 
   Wiser wiser;

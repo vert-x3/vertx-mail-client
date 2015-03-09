@@ -10,18 +10,18 @@
 |===
 ^|Name | Type ^| Description
 
-|`name`
+|[[name]]`name`
 |`String`
 |-
-|`data`
+|[[data]]`data`
 |`String`
 |-
-|`contentType`
+|[[contentType]]`contentType`
 |`String`
 |-
-|`disposition`
+|[[disposition]]`disposition`
 |`String`
 |-
-|`description`
+|[[description]]`description`
 |`String`
 |-|===

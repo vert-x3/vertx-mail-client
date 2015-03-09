@@ -19,7 +19,7 @@ public class EmailAddressTest {
     checkAddress("\"Username\" <user@example.com>", "[user@example.com,\"Username\"]");
     // TODO: should we consider this valid?
     // <> can be used as MAIL FROM address
-//    checkAddress("Mailer <>", "");
+    // checkAddress("Mailer <>", "");
   }
 
   private void checkAddress(String input, String string) {
@@ -60,6 +60,16 @@ public class EmailAddressTest {
   @Test(expected = IllegalArgumentException.class)
   public void testEmailInvalid7() {
     new EmailAddress("user1@domain,user2@domain");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmailInvalid8() {
+    new EmailAddress("user@example.com (");
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmailInvalid9() {
+    new EmailAddress("<user@example.com");
   }
 
 }

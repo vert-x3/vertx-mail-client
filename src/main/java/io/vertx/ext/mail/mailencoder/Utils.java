@@ -3,8 +3,11 @@ package io.vertx.ext.mail.mailencoder;
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
 import java.util.Base64;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 class Utils {
 
@@ -212,6 +215,11 @@ class Utils {
       }
     }
     return sb.toString();
+  }
+
+  static String generateDate() {
+    SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z (z)", Locale.ENGLISH);
+    return format.format(new Date());
   }
 
 }

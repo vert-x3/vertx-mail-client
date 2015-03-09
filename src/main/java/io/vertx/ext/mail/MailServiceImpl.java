@@ -44,8 +44,9 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public MailService sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler) {
-    // TODO Auto-generated method stub
+  public MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler) {
+    MailMain mailVerticle = new MailMain(vertx, config, resultHandler);
+    mailVerticle.sendMail(email, message);
     return null;
   }
 

@@ -29,7 +29,7 @@ public interface MailService {
   MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @Fluent
-  MailService sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler);
+  MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler);
 
   @ProxyIgnore
   void start();
