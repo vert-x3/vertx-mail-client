@@ -65,13 +65,14 @@ public class MailServiceVertxEBProxy implements MailService {
     return this;
   }
 
-  public MailService sendMailString(String email, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
     }
     JsonObject _json = new JsonObject();
-    _json.put("email", email);
+    _json.put("email", email.toJson());
+    _json.put("message", message);
     DeliveryOptions _deliveryOptions = new DeliveryOptions();
     _deliveryOptions.addHeader("action", "sendMailString");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {

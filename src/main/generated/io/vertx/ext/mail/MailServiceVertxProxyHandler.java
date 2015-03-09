@@ -66,7 +66,7 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
         break;
       }
       case "sendMailString": {
-        service.sendMailString((java.lang.String)json.getValue("email"), createHandler(msg));
+        service.sendMailString(new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), (java.lang.String)json.getValue("message"), createHandler(msg));
         break;
       }
       case "start": {

@@ -69,11 +69,13 @@ public class MailEncoder {
   private MultiMap createHeaders(MultiMap additionalHeaders) {
     CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
 
+    headers.set("MIME-Version", "1.0");
+    headers.set("Message-ID", Utils.generateMessageId());
+    headers.set("Date", Utils.generateDate());
+    
     if (message.getSubject() != null) {
       headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
     }
-    headers.set("MIME-Version", "1.0");
-    headers.set("Message-ID", Utils.generateMessageId());
 
     if (message.getFrom() != null) {
       headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));

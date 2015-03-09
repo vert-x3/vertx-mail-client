@@ -22,6 +22,7 @@ var JsonObject = io.vertx.core.json.JsonObject;
 var JMailService = io.vertx.ext.mail.MailService;
 var MailConfig = io.vertx.ext.mail.MailConfig;
 var MailMessage = io.vertx.ext.mail.MailMessage;
+var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
 
@@ -56,14 +57,15 @@ var MailService = function(j_val) {
   /**
 
    @public
-   @param email {string} 
+   @param email {Object} 
+   @param message {string} 
    @param resultHandler {function} 
    @return {MailService}
    */
-  this.sendMailString = function(email, resultHandler) {
+  this.sendMailString = function(email, message, resultHandler) {
     var __args = arguments;
-    if (__args.length === 2 && typeof __args[0] === 'string' && typeof __args[1] === 'function') {
-      j_mailService.sendMailString(email, function(ar) {
+    if (__args.length === 3 && typeof __args[0] === 'object' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
+      j_mailService.sendMailString(email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, message, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

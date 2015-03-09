@@ -41,11 +41,30 @@ import javax.crypto.spec.SecretKeySpec;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MailMain {
+class MailMain {
 
   private Vertx vertx;
   private Handler<AsyncResult<JsonObject>> finishedHandler;
   private MailConfig config;
+  private static final Logger log = LoggerFactory.getLogger(MailMain.class);
+  private NetSocket ns;
+  private boolean socketClosed;
+  private boolean socketShutDown;
+
+  private Handler<AsyncResult<String>> commandResultHandler;
+
+  private MailMessage email;
+  private String mailMessage;
+  private NetClient client;
+
+  private Set<String> capaAuth = Collections.emptySet();
+  private boolean capaStartTLS = false;
+  private int capaSize = 0;
+  // 8BITMIME can be used if the server supports it, currently this is not
+  // implemented
+//  private boolean capa8BitMime = false;
+  // PIPELINING is not yet used
+//  private boolean capaPipelining = false;
 
   public MailMain(Vertx vertx, MailConfig config, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
@@ -102,32 +121,28 @@ public class MailMain {
     ns.write(str + "\r\n");
   }
 
-  private static final Logger log = LoggerFactory.getLogger(MailMain.class);
-  NetSocket ns;
-  boolean socketClosed;
-  boolean socketShutDown;
-
-  Handler<AsyncResult<String>> commandResultHandler;
-
-  private boolean capaStartTLS = false;
-  private Set<String> capaAuth = Collections.emptySet();
-  // 8BITMIME can be used if the server supports it, currently this is not
-  // implemented
-//  private boolean capa8BitMime = false;
-  // PIPELINING is not yet used
-//  private boolean capaPipelining = false;
-  private int capaSize = 0;
-
-  MailMessage email;
-  String mailMessage;
-//  String username;
-//  String pw;
-//  LoginOption login;
-  NetClient client;
-
-  public void sendMail(MailMessage email) {
+  /**
+   * start a mail send operation using the MailMessage object
+   * @param email the mail to send
+   */
+  void sendMail(MailMessage email) {
     this.email = email;
+    sendMail();
+  }
 
+  /**
+   * start a mail send operation using the parameters from MailMessage object
+   * and the pregenerated message provided as String
+   * @param email the mail parameters (from, to, etc)
+   * @param message the message to send
+   */
+  void sendMail(MailMessage email, String message) {
+    this.email = email;
+    mailMessage = message;
+    sendMail();
+  }
+
+  private void sendMail() {
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
     client = vertx.createNetClient(netClientOptions);
 
@@ -203,9 +218,9 @@ public class MailMain {
     return statusCode >= 200 && statusCode < 400;
   }
 
-  private boolean isStatusFatal(String message) {
-    return getStatusCode(message) >= 500;
-  }
+//  private boolean isStatusFatal(String message) {
+//    return getStatusCode(message) >= 500;
+//  }
 
   private boolean isStatusTemporary(String message) {
     int statusCode = getStatusCode(message);
