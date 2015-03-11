@@ -229,7 +229,7 @@ public class MailMessage {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || !(o instanceof MailMessage)) {
       return false;
     }
     final MailMessage message = (MailMessage) o;

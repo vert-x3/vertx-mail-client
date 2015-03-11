@@ -111,7 +111,7 @@ public class MailAttachment {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || !(o instanceof MailAttachment)) {
       return false;
     }
     final MailAttachment attachment = (MailAttachment) o;

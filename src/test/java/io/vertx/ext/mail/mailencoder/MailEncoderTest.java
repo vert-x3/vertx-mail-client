@@ -4,7 +4,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.mailencoder.MailEncoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;

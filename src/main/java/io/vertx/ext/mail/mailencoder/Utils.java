@@ -181,10 +181,10 @@ class Utils {
             hadSpace = true;
           }
           if (!hadSpace) {
-            sb.append(" ");
+            sb.append(' ');
             index++;
           }
-          sb.append("(");
+          sb.append('(');
           index++;
           String encoded = encodeHeader(name, index);
           sb.append(encoded);
@@ -193,7 +193,7 @@ class Utils {
           } else {
             index += encoded.length();
           }
-          sb.append(")");
+          sb.append(')');
           index++;
         } else {
           boolean hadSpace = false;
@@ -203,13 +203,13 @@ class Utils {
             hadSpace = true;
           }
           if (!hadSpace) {
-            sb.append(" ");
+            sb.append(' ');
             index++;
           }
-          sb.append("(");
+          sb.append('(');
           index++;
           sb.append(name);
-          sb.append(")");
+          sb.append(')');
           index += email.length() + 3;
         }
       }

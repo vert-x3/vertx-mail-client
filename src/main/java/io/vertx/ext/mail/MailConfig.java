@@ -240,7 +240,7 @@ public class MailConfig {
     if (this == o) {
       return true;
     }
-    if (o == null || getClass() != o.getClass()) {
+    if (o == null || !(o instanceof MailConfig)) {
       return false;
     }
     final MailConfig config = (MailConfig) o;
