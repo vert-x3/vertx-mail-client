@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
