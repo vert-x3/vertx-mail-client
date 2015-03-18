@@ -261,38 +261,38 @@ class MailMain {
               && (config.getStarttls() == StarttlsOption.REQUIRED || config.getStarttls() == StarttlsOption.OPTIONAL)) {
             // do not start TLS if we are connected with SSL
             // or are already in TLS
-        startTLSCmd();
-      } else {
-        if (!ns.isSsl() && config.getStarttls() == StarttlsOption.REQUIRED) {
-          log.warn("STARTTLS required but not supported by server");
-          throwAsyncResult("STARTTLS required but not supported by server");
-        } else {
-          if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-              && !capaAuth.isEmpty()) {
-            authCmd();
+            startTLSCmd();
           } else {
-            if (config.getLogin() == LoginOption.REQUIRED) {
-              if (config.getUsername() != null && config.getPassword() != null) {
-                throwAsyncResult("login is required, but no AUTH methods available. You may need to do STARTTLS");
-              } else {
-                throwAsyncResult("login is required, but no credentials supplied");
-              }
+            if (!ns.isSsl() && config.getStarttls() == StarttlsOption.REQUIRED) {
+              log.warn("STARTTLS required but not supported by server");
+              throwAsyncResult("STARTTLS required but not supported by server");
             } else {
-              mailFromCmd();
+              if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
+                  && !capaAuth.isEmpty()) {
+                authCmd();
+              } else {
+                if (config.getLogin() == LoginOption.REQUIRED) {
+                  if (config.getUsername() != null && config.getPassword() != null) {
+                    throwAsyncResult("login is required, but no AUTH methods available. You may need to do STARTTLS");
+                  } else {
+                    throwAsyncResult("login is required, but no credentials supplied");
+                  }
+                } else {
+                  mailFromCmd();
+                }
+              }
             }
           }
         }
+      } else {
+        // if EHLO fails, assume we have to do HELO
+        if (isStatusTemporary(message)) {
+          heloCmd();
+        } else {
+          throwAsyncResult("EHLO failed with " + message);
+        }
       }
-    }
-  } else {
-    // if EHLO fails, assume we have to do HELO
-    if (isStatusTemporary(message)) {
-      heloCmd();
-    } else {
-      throwAsyncResult("EHLO failed with " + message);
-    }
-  }
-}   );
+    });
   }
 
   /**
@@ -384,11 +384,11 @@ class MailMain {
     String resultCode = message.substring(0, 3);
 
     List<String> lines = new ArrayList<String>();
-    int index=0;
+    int index = 0;
     int newIndex;
-    while((newIndex = message.indexOf('\n', index))!=-1) {
-      lines.add(message.substring(index,newIndex));
-      index=newIndex+1;
+    while ((newIndex = message.indexOf('\n', index)) != -1) {
+      lines.add(message.substring(index, newIndex));
+      index = newIndex + 1;
     }
     for (String l : lines) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
