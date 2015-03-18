@@ -17,6 +17,9 @@ public class EmailAddressTest {
     checkAddress("user@example.com (Lastname, Firstname)", "[user@example.com,Lastname, Firstname]");
     checkAddress("user@example.com (\"User Name\")", "[user@example.com,\"User Name\"]");
     checkAddress("\"Username\" <user@example.com>", "[user@example.com,\"Username\"]");
+    checkAddress("\"Last, First\" <user@example.com>", "[user@example.com,\"Last, First\"]");
+    checkAddress("Last, First <user@example.com>", "[user@example.com,Last, First]");
+    checkAddress("user@example.com (Last, First)", "[user@example.com,Last, First]");
     // TODO: should we consider this valid?
     // <> can be used as MAIL FROM address
     // checkAddress("Mailer <>", "");

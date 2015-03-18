@@ -1,5 +1,7 @@
 package io.vertx.ext.mail;
 
+import java.util.regex.Pattern;
+
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
@@ -11,6 +13,7 @@ import io.vertx.core.parsetools.RecordParser;
  *
  */
 class MultilineParser implements Handler<Buffer> {
+  private static final Pattern STATUS_LINE_CONTINUE = Pattern.compile("^\\d{3}-.*");
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   private boolean initialized = false;
   private Buffer result;
@@ -52,7 +55,7 @@ class MultilineParser implements Handler<Buffer> {
 
       private boolean isFinalLine(final Buffer buffer) {
         String line = buffer.toString();
-        return !line.matches("^\\d+-.*");
+        return !STATUS_LINE_CONTINUE.matcher(line).matches();
       }
 
     };

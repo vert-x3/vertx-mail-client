@@ -90,10 +90,7 @@ public class MailConfig {
     }
     username = config.getString("username");
     password = config.getString("password");
-    Boolean sslOption = config.getBoolean("ssl");
-    if (sslOption != null) {
-      ssl = sslOption;
-    }
+    ssl = config.getBoolean("ssl", false);
   }
 
   public String getHostname() {

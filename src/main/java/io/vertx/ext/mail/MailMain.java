@@ -20,7 +20,6 @@ import java.net.UnknownHostException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashSet;
@@ -60,11 +59,12 @@ class MailMain {
   private Set<String> capaAuth = Collections.emptySet();
   private boolean capaStartTLS = false;
   private int capaSize = 0;
+
   // 8BITMIME can be used if the server supports it, currently this is not
   // implemented
-//  private boolean capa8BitMime = false;
+  // private boolean capa8BitMime = false;
   // PIPELINING is not yet used
-//  private boolean capaPipelining = false;
+  // private boolean capaPipelining = false;
 
   public MailMain(Vertx vertx, MailConfig config, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.vertx = vertx;
@@ -97,7 +97,7 @@ class MailMain {
    */
   private void write(String str, int blank, Handler<AsyncResult<String>> commandResultHandler) {
     this.commandResultHandler = commandResultHandler;
-    if(socketClosed) {
+    if (socketClosed) {
       throwAsyncResult("connection was closed by server");
     }
     if (log.isDebugEnabled()) {
@@ -123,7 +123,9 @@ class MailMain {
 
   /**
    * start a mail send operation using the MailMessage object
-   * @param email the mail to send
+   * 
+   * @param email
+   *          the mail to send
    */
   void sendMail(MailMessage email) {
     this.email = email;
@@ -133,8 +135,11 @@ class MailMain {
   /**
    * start a mail send operation using the parameters from MailMessage object
    * and the pregenerated message provided as String
-   * @param email the mail parameters (from, to, etc)
-   * @param message the message to send
+   * 
+   * @param email
+   *          the mail parameters (from, to, etc)
+   * @param message
+   *          the message to send
    */
   void sendMail(MailMessage email, String message) {
     this.email = email;
@@ -143,6 +148,9 @@ class MailMain {
   }
 
   private void sendMail() {
+    // do a bit of validation before we open the connection
+    validateHeaders();
+
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
     client = vertx.createNetClient(netClientOptions);
 
@@ -152,14 +160,14 @@ class MailMain {
         socketClosed = false;
         ns.exceptionHandler(e -> {
           // avoid returning two exceptions
-          if(!socketClosed && !socketShutDown) {
+          if (!socketClosed && !socketShutDown) {
             log.debug("got an exception on the netsocket", e);
             throwAsyncResult(e);
           }
         });
         ns.closeHandler(v -> {
           // avoid exception if we regularly shut down the socket on our side
-          if(!socketShutDown) {
+          if (!socketShutDown) {
             log.debug("socket has been closed");
             socketClosed = true;
             throwAsyncResult("connection has been closed by the server");
@@ -179,6 +187,16 @@ class MailMain {
         throwAsyncResult(asyncResult.cause());
       }
     });
+  }
+
+  private void validateHeaders() {
+    if (email.getBounceAddress() == null && email.getFrom() == null) {
+      throwAsyncResult("sender address is not present");
+    } else if ((email.getTo() == null || email.getTo().size() == 0)
+        && (email.getCc() == null || email.getCc().size() == 0)
+        && (email.getBcc() == null || email.getBcc().size() == 0)) {
+      throwAsyncResult("no recipient addresses are present");
+    }
   }
 
   private void serverGreeting(AsyncResult<String> result) {
@@ -203,7 +221,7 @@ class MailMain {
     if (message.length() < 4) {
       return 500;
     }
-    if (!message.substring(3, 4).equals(" ") && !message.substring(3, 4).equals("-")) {
+    if (message.charAt(3) != ' ' && message.charAt(3) != '-') {
       return 500;
     }
     try {
@@ -218,9 +236,9 @@ class MailMain {
     return statusCode >= 200 && statusCode < 400;
   }
 
-//  private boolean isStatusFatal(String message) {
-//    return getStatusCode(message) >= 500;
-//  }
+  // private boolean isStatusFatal(String message) {
+  // return getStatusCode(message) >= 500;
+  // }
 
   private boolean isStatusTemporary(String message) {
     int statusCode = getStatusCode(message);
@@ -239,40 +257,42 @@ class MailMain {
         if (capaSize > 0 && mailMessage.length() > capaSize) {
           throwAsyncResult("message exceeds allowed size limit");
         } else {
-          if (capaStartTLS && !ns.isSsl() && (config.getStarttls()==StarttlsOption.REQUIRED || config.getStarttls()==StarttlsOption.OPTIONAL)) {
+          if (capaStartTLS && !ns.isSsl()
+              && (config.getStarttls() == StarttlsOption.REQUIRED || config.getStarttls() == StarttlsOption.OPTIONAL)) {
             // do not start TLS if we are connected with SSL
             // or are already in TLS
-            startTLSCmd();
+        startTLSCmd();
+      } else {
+        if (!ns.isSsl() && config.getStarttls() == StarttlsOption.REQUIRED) {
+          log.warn("STARTTLS required but not supported by server");
+          throwAsyncResult("STARTTLS required but not supported by server");
+        } else {
+          if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
+              && !capaAuth.isEmpty()) {
+            authCmd();
           } else {
-            if (!ns.isSsl() && config.getStarttls()==StarttlsOption.REQUIRED) {
-              log.warn("STARTTLS required but not supported by server");
-              throwAsyncResult("STARTTLS required but not supported by server");
-            } else {
-              if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null && !capaAuth.isEmpty()) {
-                authCmd();
+            if (config.getLogin() == LoginOption.REQUIRED) {
+              if (config.getUsername() != null && config.getPassword() != null) {
+                throwAsyncResult("login is required, but no AUTH methods available. You may need to do STARTTLS");
               } else {
-                if (config.getLogin() == LoginOption.REQUIRED) {
-                  if (config.getUsername() != null && config.getPassword() != null) {
-                    throwAsyncResult("login is required, but no AUTH methods available. You may need do to STARTTLS");
-                  } else {
-                    throwAsyncResult("login is required, but no credentials supplied");
-                  }
-                } else {
-                  mailFromCmd();
-                }
+                throwAsyncResult("login is required, but no credentials supplied");
               }
+            } else {
+              mailFromCmd();
             }
           }
         }
-      } else {
-        // if EHLO fails, assume we have to do HELO
-        if (isStatusTemporary(message)) {
-          heloCmd();
-        } else {
-          throwAsyncResult("EHLO failed with " + message);
-        }
       }
-    });
+    }
+  } else {
+    // if EHLO fails, assume we have to do HELO
+    if (isStatusTemporary(message)) {
+      heloCmd();
+    } else {
+      throwAsyncResult("EHLO failed with " + message);
+    }
+  }
+}   );
   }
 
   /**
@@ -285,11 +305,11 @@ class MailMain {
         capaStartTLS = true;
       }
       if (c.startsWith("AUTH ")) {
-        capaAuth = new HashSet<String>(Arrays.asList(c.substring(5).split(" ")));
+        capaAuth = parseCapaAuth(c);
       }
-//      if (c.equals("8BITMIME")) {
-//        capa8BitMime = true;
-//      }
+      // if (c.equals("8BITMIME")) {
+      // capa8BitMime = true;
+      // }
       if (c.startsWith("SIZE ")) {
         try {
           capaSize = Integer.parseInt(c.substring(5));
@@ -298,6 +318,22 @@ class MailMain {
         }
       }
     }
+  }
+
+  /**
+   * @param c
+   * @return
+   */
+  private Set<String> parseCapaAuth(String c) {
+    Set<String> authSet = new HashSet<String>();
+    int index = 5;
+    int newIndex;
+    while ((newIndex = c.indexOf(' ', index)) != -1) {
+      authSet.add(c.substring(index, newIndex));
+      index = newIndex + 1;
+    }
+    authSet.add(c.substring(index));
+    return authSet;
   }
 
   private void heloCmd() {
@@ -347,7 +383,14 @@ class MailMain {
 
     String resultCode = message.substring(0, 3);
 
-    for (String l : message.split("\n")) {
+    List<String> lines = new ArrayList<String>();
+    int index=0;
+    int newIndex;
+    while((newIndex = message.indexOf('\n', index))!=-1) {
+      lines.add(message.substring(index,newIndex));
+      index=newIndex+1;
+    }
+    for (String l : lines) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
         log.error("format error in multiline response");
         throwAsyncResult("format error in multiline response");
@@ -371,7 +414,7 @@ class MailMain {
       write("AUTH PLAIN " + authdata, 10, result -> {
         String message = result.result();
         log.debug("AUTH result: " + message);
-        if (!message.toString().startsWith("2")) {
+        if (!isStatusOk(message)) {
           log.warn("authentication failed");
           throwAsyncResult("authentication failed");
         } else {
@@ -403,10 +446,10 @@ class MailMain {
 
   private String hmacMD5hex(String message, String pw) {
     try {
-      SecretKey key = new SecretKeySpec(pw.getBytes("utf-8"), "HmacMD5");
+      SecretKey key = new SecretKeySpec(pw.getBytes("UTF-8"), "HmacMD5");
       Mac mac = Mac.getInstance(key.getAlgorithm());
       mac.init(key);
-      return encodeHex(mac.doFinal(message.getBytes("utf-8")));
+      return encodeHex(mac.doFinal(message.getBytes("UTF-8")));
     } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
       // doesn't happen, auth will fail in that case
       return "";
@@ -420,7 +463,10 @@ class MailMain {
   private String encodeHex(byte[] bytes) {
     StringBuilder sb = new StringBuilder(bytes.length * 2);
     for (byte b : bytes) {
-      sb.append(String.format("%02x", b));
+      if (b < 16) {
+        sb.append('0');
+      }
+      sb.append(Integer.toHexString(b).toUpperCase());
     }
     return sb.toString();
   }
@@ -482,13 +528,13 @@ class MailMain {
 
   private void rcptToCmd() {
     List<String> recipientAddrs = new ArrayList<String>();
-    if(email.getTo()!=null) {
+    if (email.getTo() != null) {
       recipientAddrs.addAll(email.getTo());
     }
-    if(email.getCc()!=null) {
+    if (email.getCc() != null) {
       recipientAddrs.addAll(email.getCc());
     }
-    if(email.getBcc()!=null) {
+    if (email.getBcc() != null) {
       recipientAddrs.addAll(email.getBcc());
     }
     rcptToCmd(recipientAddrs, 0);
@@ -553,7 +599,7 @@ class MailMain {
    * @return
    */
   private void createMailMessage() {
-    if(mailMessage==null) {
+    if (mailMessage == null) {
       MailEncoder encoder = new MailEncoder(email);
       mailMessage = encoder.encode();
     }

@@ -36,11 +36,11 @@ public class MailService {
     return delegate;
   }
   public static MailService create(Vertx vertx, Map<String, Object> config) {
-    def ret= MailService.FACTORY.apply(io.vertx.ext.mail.MailService.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
+    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
     return ret;
   }
   public static MailService createEventBusProxy(Vertx vertx, String address) {
-    def ret= MailService.FACTORY.apply(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
+    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
     return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
@@ -77,8 +77,4 @@ public class MailService {
   public void stop() {
     this.delegate.stop();
   }
-
-  static final java.util.function.Function<io.vertx.ext.mail.MailService, MailService> FACTORY = io.vertx.lang.groovy.Factories.createFactory() {
-    io.vertx.ext.mail.MailService arg -> new MailService(arg);
-  };
 }

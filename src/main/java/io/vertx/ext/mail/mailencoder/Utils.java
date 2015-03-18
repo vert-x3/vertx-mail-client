@@ -54,11 +54,15 @@ class Utils {
    * @return
    */
   private static String encodeChar(char ch) {
-    return String.format("=%02X", ch & 0xff);
+    if (ch < 16) {
+      return "=0" + Integer.toHexString(ch).toUpperCase();
+    } else {
+      return '=' + Integer.toHexString((ch&0xff)).toUpperCase();
+    }
   }
 
   static boolean mustEncode(char ch) {
-    return (ch & 0xff) >= 128 || ch >= 0 && ch < 10 || ch >= 11 && ch < 32 || ch == '=';
+    return ch >= 128 || ch < 10 || ch >= 11 && ch < 32 || ch == '=';
   }
 
   static boolean mustEncode(String s) {

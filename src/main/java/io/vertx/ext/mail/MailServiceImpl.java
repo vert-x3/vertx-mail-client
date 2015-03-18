@@ -38,16 +38,16 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
-    MailMain mailVerticle = new MailMain(vertx, config, resultHandler);
-    mailVerticle.sendMail(message);
+    MailMain mailMain = new MailMain(vertx, config, resultHandler);
+    mailMain.sendMail(message);
     return this;
   }
 
   @Override
-  public MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler) {
-    MailMain mailVerticle = new MailMain(vertx, config, resultHandler);
-    mailVerticle.sendMail(email, message);
-    return null;
+  public MailService sendMailString(MailMessage message, String messageText, Handler<AsyncResult<JsonObject>> resultHandler) {
+    MailMain mailMain = new MailMain(vertx, config, resultHandler);
+    mailMain.sendMail(message, messageText);
+    return this;
   }
 
 }
