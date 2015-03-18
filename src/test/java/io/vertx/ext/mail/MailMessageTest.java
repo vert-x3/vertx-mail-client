@@ -54,6 +54,16 @@ public class MailMessageTest {
     assertEquals(message, new MailMessage(message));
   }
 
+  @Test
+  public void testConstructorFromClassCopy() {
+    MailMessage message = new MailMessage();
+    message.setTo("user@example.com");
+    MailMessage message2 = new MailMessage(message);
+    assertEquals(message, message2);
+    message2.getTo().add("user@example.net");
+    assertEquals("[user@example.com]", message.getTo().toString());
+  }
+
   @Test(expected = NullPointerException.class)
   public void testConstructorFromClassNull() {
     new MailMessage((MailMessage) null);

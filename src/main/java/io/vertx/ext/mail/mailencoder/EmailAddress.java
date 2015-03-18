@@ -5,16 +5,16 @@ import java.util.regex.Pattern;
 
 public class EmailAddress {
 
-  private static final String PATTERN_EMAIL = "([^(\\s]+) *\\((.*)\\)";
-  private static final String PATTERN_EMAIL_ALT = "([^<]*[^< ])? *\\<([^>]*)\\>";
+  private static final Pattern PATTERN_EMAIL = Pattern.compile("([^(\\s]+) *\\((.*)\\)");
+  private static final Pattern PATTERN_EMAIL_ANGLE = Pattern.compile("([^<]*[^< ])? *\\<([^>]*)\\>");
+  private static final Pattern PATTERN_EMAIL_INVALID = Pattern.compile("[^\\s,<>]+@[^\\s,<>]+");
   private String email;
   private String name;
 
   public EmailAddress(String fullAddress) {
 
     if (fullAddress.contains("(")) {
-      Pattern RE = Pattern.compile(PATTERN_EMAIL);
-      Matcher matcher = RE.matcher(fullAddress);
+      Matcher matcher = PATTERN_EMAIL.matcher(fullAddress);
       if (matcher.matches()) {
         email = matcher.group(1);
         name = matcher.group(2);
@@ -22,8 +22,7 @@ public class EmailAddress {
         throw new IllegalArgumentException("invalid email address");
       }
     } else if (fullAddress.contains("<")) {
-      Pattern RE = Pattern.compile(PATTERN_EMAIL_ALT);
-      Matcher matcher = RE.matcher(fullAddress);
+      Matcher matcher = PATTERN_EMAIL_ANGLE.matcher(fullAddress);
       if (matcher.matches()) {
         name = matcher.group(1);
         if (name == null) {
@@ -40,7 +39,7 @@ public class EmailAddress {
 
     // this only catches very simple errors
     // mostly to avoid protocol errors due to spaces and newlines
-    if (!email.matches("[^\\s,<>]+@[^\\s,<>]+")) {
+    if (!PATTERN_EMAIL_INVALID.matcher(email).matches()) {
       throw new IllegalArgumentException("invalid email address");
     }
 

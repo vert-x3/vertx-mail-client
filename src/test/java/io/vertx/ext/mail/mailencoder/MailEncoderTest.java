@@ -341,4 +341,12 @@ public class MailEncoderTest {
     assertThat(mime, containsString("Content-Disposition: attachment; filename=file.txt"));
   }
 
+  @Test
+  public void testRealnameComma() {
+    MailMessage message = new MailMessage();
+    message.setTo("Last, First <user@example.com>");
+    String mime = new MailEncoder(message).encode();
+    assertThat(mime, containsString("user@example.com (Last, First)"));
+  }
+
 }

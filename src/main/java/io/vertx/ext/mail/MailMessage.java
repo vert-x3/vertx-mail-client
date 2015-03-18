@@ -14,9 +14,9 @@ public class MailMessage {
 
   private String bounceAddress;
   private String from;
-  private List<String> to;
-  private List<String> cc;
-  private List<String> bcc;
+  private List<String> to = null;
+  private List<String> cc = null;
+  private List<String> bcc = null;
   private String subject;
   private String text;
   private String html;
@@ -29,14 +29,14 @@ public class MailMessage {
     Objects.requireNonNull(other);
     this.bounceAddress = other.bounceAddress;
     this.from = other.from;
-    this.to = other.to;
-    this.cc = other.cc;
-    this.bcc = other.bcc;
+    this.to = copyList(other.to);
+    this.cc = copyList(other.cc);
+    this.bcc = copyList(other.bcc);
     this.subject = other.subject;
     this.text = other.text;
     this.html = other.html;
     if (other.attachment != null) {
-      List<MailAttachment> newList = new ArrayList<MailAttachment>();
+      List<MailAttachment> newList = new ArrayList<MailAttachment>(other.attachment.size());
       for (MailAttachment a : other.attachment) {
         newList.add(new MailAttachment(a));
       }
@@ -78,7 +78,7 @@ public class MailMessage {
       return null;
     } else {
       if (value instanceof String) {
-        return Arrays.asList((String) value);
+        return asList((String) value);
       } else if (value instanceof JsonArray) {
         return (List<String>) ((JsonArray) value).getList();
       } else {
@@ -90,7 +90,7 @@ public class MailMessage {
   // construct a simple message with text/plain
   public MailMessage(String from, String to, String subject, String text) {
     this.from = from;
-    this.to = Arrays.asList(to);
+    this.to = asList(to);
     this.subject = subject;
     this.text = text;
   }
@@ -124,7 +124,7 @@ public class MailMessage {
 
   // helper method for single recipient
   public MailMessage setTo(String to) {
-    this.to = Arrays.asList(to);
+    this.to = asList(to);
     return this;
   }
 
@@ -139,7 +139,7 @@ public class MailMessage {
 
   // helper method for single recipient
   public MailMessage setCc(String cc) {
-    this.cc = Arrays.asList(cc);
+    this.cc = asList(cc);
     return this;
   }
 
@@ -154,7 +154,7 @@ public class MailMessage {
 
   // helper method for single recipient
   public MailMessage setBcc(String bcc) {
-    this.bcc = Arrays.asList(bcc);
+    this.bcc = asList(bcc);
     return this;
   }
 
@@ -247,4 +247,19 @@ public class MailMessage {
     }
   }
 
+  private List<String> copyList(List<String> list) {
+    if(list == null) {
+      return null;
+    } else {
+      List<String> newList = new ArrayList<String>(list.size());
+      newList.addAll(list);
+      return newList;
+    }
+  }
+
+  private List<String> asList(String to) {
+    List<String> list = new ArrayList<String>(1);
+    list.add(to);
+    return list;
+  }
 }
