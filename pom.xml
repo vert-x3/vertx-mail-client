@@ -100,8 +100,12 @@
       <scope>test</scope>
       <version>4.12</version>
     </dependency>
-    <!-- <dependency> <groupId>io.vertx</groupId> <artifactId>vertx-unit</artifactId> 
-      <scope>test</scope> <version>3.0.0-SNAPSHOT</version> </dependency> -->
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-unit</artifactId>
+      <version>${stack.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
