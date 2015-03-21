@@ -251,9 +251,7 @@ public class MailMessage {
     if(list == null) {
       return null;
     } else {
-      List<String> newList = new ArrayList<String>(list.size());
-      newList.addAll(list);
-      return newList;
+      return new ArrayList<String>(list);
     }
   }
 
