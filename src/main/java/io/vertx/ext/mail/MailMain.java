@@ -326,13 +326,9 @@ class MailMain {
    */
   private Set<String> parseCapaAuth(String c) {
     Set<String> authSet = new HashSet<String>();
-    int index = 5;
-    int newIndex;
-    while ((newIndex = c.indexOf(' ', index)) != -1) {
-      authSet.add(c.substring(index, newIndex));
-      index = newIndex + 1;
+    for (String a : splitByChar(c.substring(5), ' ')) {
+      authSet.add(a);
     }
-    authSet.add(c.substring(index));
     return authSet;
   }
 
@@ -383,14 +379,7 @@ class MailMain {
 
     String resultCode = message.substring(0, 3);
 
-    List<String> lines = new ArrayList<String>();
-    int index = 0;
-    int newIndex;
-    while ((newIndex = message.indexOf('\n', index)) != -1) {
-      lines.add(message.substring(index, newIndex));
-      index = newIndex + 1;
-    }
-    for (String l : lines) {
+    for (String l : splitByChar(message, '\n')) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
         log.error("format error in multiline response");
         throwAsyncResult("format error in multiline response");
@@ -400,6 +389,27 @@ class MailMain {
     }
 
     return v;
+  }
+
+  /**
+   * split string at each occurrence of a character (e.g. \n)
+   * 
+   * @param message
+   *          the string to split
+   * @param ch
+   *          the char between which we split
+   * @return List<String> of the split lines
+   */
+  private List<String> splitByChar(String message, char ch) {
+    List<String> lines = new ArrayList<String>();
+    int index = 0;
+    int nextIndex;
+    while ((nextIndex = message.indexOf(ch, index)) != -1) {
+      lines.add(message.substring(index, nextIndex));
+      index = nextIndex + 1;
+    }
+    lines.add(message.substring(index));
+    return lines;
   }
 
   private void authCmd() {
