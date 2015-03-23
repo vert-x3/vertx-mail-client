@@ -43,7 +43,7 @@ var MailService = function(j_val) {
   this.sendMail = function(email, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mailService.sendMail(email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
+      j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -65,7 +65,7 @@ var MailService = function(j_val) {
   this.sendMailString = function(email, message, resultHandler) {
     var __args = arguments;
     if (__args.length === 3 && typeof __args[0] === 'object' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
-      j_mailService.sendMailString(email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, message, function(ar) {
+      j_mailService["sendMailString(io.vertx.ext.mail.MailMessage,java.lang.String,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, message, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {
@@ -84,7 +84,7 @@ var MailService = function(j_val) {
   this.start = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_mailService.start();
+      j_mailService["start()"]();
     } else utils.invalidArgs();
   };
 
@@ -96,7 +96,7 @@ var MailService = function(j_val) {
   this.stop = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_mailService.stop();
+      j_mailService["stop()"]();
     } else utils.invalidArgs();
   };
 
@@ -116,7 +116,7 @@ var MailService = function(j_val) {
 MailService.create = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
-    return new MailService(JMailService.create(vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null));
+    return new MailService(JMailService["create(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null));
   } else utils.invalidArgs();
 };
 
@@ -130,7 +130,7 @@ MailService.create = function(vertx, config) {
 MailService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return new MailService(JMailService.createEventBusProxy(vertx._jdel, address));
+    return new MailService(JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address));
   } else utils.invalidArgs();
 };
 
