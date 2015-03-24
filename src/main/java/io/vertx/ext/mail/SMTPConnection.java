@@ -27,6 +27,25 @@ class SMTPConnection {
     // TODO Auto-generated constructor stub
   }
 
+  private Capabilities capa = new Capabilities();
+  
+  /**
+   * @return the capabilities object
+   */
+  Capabilities getCapa() {
+    return capa;
+  }
+
+  /**
+   * parse capabilities from the ehlo reply string
+   *
+   * @param message the capabilities to set
+   */
+  void parseCapabilities(String message) {
+    capa = new Capabilities();
+    capa.parseCapabilities(message);
+  }
+
   private NetSocket ns;
   private boolean socketClosed;
   private boolean socketShutDown;
@@ -84,14 +103,14 @@ class SMTPConnection {
   }
 
   private void throwError(String message) {
-    errorHandler.handle(new NoStackTraceThrowable(message));
+    throwError(new NoStackTraceThrowable(message));
   }
 
   private void throwError(Throwable throwable) {
     errorHandler.handle(throwable);
   }
 
-  public void initializeConnection(Vertx vertx, MailConfig config, Handler<String> initialReplyHandler,
+  public void openConnection(Vertx vertx, MailConfig config, Handler<String> initialReplyHandler,
       Handler<Throwable> errorHandler) {
     this.errorHandler = errorHandler;
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
