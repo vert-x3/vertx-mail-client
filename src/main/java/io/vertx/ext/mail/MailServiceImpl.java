@@ -15,11 +15,14 @@ public class MailServiceImpl implements MailService {
 
   private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
-  private Vertx vertx;
   private MailConfig config;
 
+  private ConnectionPool connectionPool;
+  
   public MailServiceImpl(Vertx vertx, MailConfig config) {
-    this.vertx = vertx;
+    if(connectionPool == null) {
+      connectionPool = new ConnectionPool(vertx);
+    }
     this.config = config;
   }
 
@@ -38,14 +41,14 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
-    MailMain mailMain = new MailMain(vertx, config, resultHandler);
+    MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
     mailMain.sendMail(message);
     return this;
   }
 
   @Override
   public MailService sendMailString(MailMessage message, String messageText, Handler<AsyncResult<JsonObject>> resultHandler) {
-    MailMain mailMain = new MailMain(vertx, config, resultHandler);
+    MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
     mailMain.sendMail(message, messageText);
     return this;
   }

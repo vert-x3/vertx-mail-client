@@ -84,7 +84,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
   @Ignore
   @Test
   public void testServiceMavenError() {
-    JsonObject config = new JsonObject("{}");
+    JsonObject config = new JsonObject("{\"config\":{}}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
     vertx.deployVerticle("service:io.vertx.mail-service", deploymentOptions, r -> {
       if (r.succeeded()) {
