@@ -26,7 +26,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
     JsonObject config = new JsonObject(
         "{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
-    vertx.deployVerticle("io.vertx.ext.mail.MailServiceVerticle", deploymentOptions, r -> {
+    vertx.deployVerticle("service:io.vertx.mail-service", deploymentOptions, r -> {
       if (r.succeeded()) {
         log.info(r.result());
         testComplete();
@@ -43,7 +43,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
   public void testServiceError() throws InterruptedException {
     JsonObject config = new JsonObject("{}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
-    vertx.deployVerticle("io.vertx.ext.mail.MailServiceVerticle", deploymentOptions, r -> {
+    vertx.deployVerticle("service:io.vertx.mail-service", deploymentOptions, r -> {
       if (r.succeeded()) {
         log.info(r.result());
         fail("operation should fail");
