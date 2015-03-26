@@ -3,7 +3,6 @@ package io.vertx.ext.mail;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -23,7 +22,6 @@ class MailMain {
 
   private static final Logger log = LoggerFactory.getLogger(MailMain.class);
 
-  private Vertx vertx;
   private Handler<AsyncResult<JsonObject>> finishedHandler;
   private MailConfig config;
 
@@ -32,9 +30,11 @@ class MailMain {
 
   private SMTPConnection connection = null;
 
-  public MailMain(Vertx vertx, MailConfig config, Handler<AsyncResult<JsonObject>> finishedHandler) {
-    this.vertx = vertx;
+  private ConnectionPool connectionPool;
+
+  public MailMain(MailConfig config, ConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.config = config;
+    this.connectionPool = connectionPool;
     this.finishedHandler = finishedHandler;
   }
 
@@ -66,8 +66,7 @@ class MailMain {
 
   private void doSend() {
     validateHeaders();
-    connection = new SMTPConnection();
-    connection.openConnection(vertx, config, this::serverGreeting, this::throwError);
+    connectionPool.getConnection(config, this::sendMessage, this::throwError);
   }
 
   // do some validation before we open the connection
@@ -82,20 +81,14 @@ class MailMain {
     }
   }
 
-  private void serverGreeting(String message) {
-    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::throwError).serverGreeting(message);
-  }
-
-  private void doAuthentication(Void v) {
-    new SMTPAuthentication(connection, config, this::sendMessage, this::throwError).startAuthentication();
-  }
-
-  private void sendMessage(Void v) {
+  private void sendMessage(SMTPConnection connection) {
+    log.info("got a connection");
+    this.connection=connection;
     new SMTPSendMail(connection, email, mailMessage, this::finishMail, this::throwError).startMail();
   }
 
   private void finishMail(Void v) {
-    new SMTPQuit(connection).quitCmd();
+//    new SMTPQuit(connection).quitCmd();
     JsonObject result = new JsonObject();
     result.put("result", "success");
     returnResult(Future.succeededFuture(result));
@@ -111,7 +104,7 @@ class MailMain {
 
   private void returnResult(Future<JsonObject> result) {
     if (connection != null) {
-      connection.shutdown();
+      connection.returnToPool();
     }
     finishedHandler.handle(result);
   }

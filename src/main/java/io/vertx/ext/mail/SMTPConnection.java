@@ -23,12 +23,13 @@ class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
 
-  public SMTPConnection() {
-    // TODO Auto-generated constructor stub
+  SMTPConnection() {
+    active = false;
+    idle = false;
   }
 
   private Capabilities capa = new Capabilities();
-  
+
   /**
    * @return the capabilities object
    */
@@ -39,7 +40,8 @@ class SMTPConnection {
   /**
    * parse capabilities from the ehlo reply string
    *
-   * @param message the capabilities to set
+   * @param message
+   *          the capabilities to set
    */
   void parseCapabilities(String message) {
     capa = new Capabilities();
@@ -52,6 +54,8 @@ class SMTPConnection {
   private NetClient client;
   private Handler<String> commandReplyHandler;
   private Handler<Throwable> errorHandler;
+  private boolean active;
+  private boolean idle;
 
   void shutdown() {
     commandReplyHandler = null;
@@ -79,6 +83,7 @@ class SMTPConnection {
   void write(String str, int blank, Handler<String> commandResultHandler) {
     this.commandReplyHandler = commandResultHandler;
     if (socketClosed) {
+      log.debug("connection was closed by server");
       throwError("connection was closed by server");
     }
     if (log.isDebugEnabled()) {
@@ -94,9 +99,9 @@ class SMTPConnection {
       }
       // avoid logging large mail body
       if (logStr.length() < 1000) {
-        log.debug("command: " + logStr);
+        log.debug("write on STMPConnection "+this.toString()+" command: " + logStr);
       } else {
-        log.debug("command: " + logStr.substring(0, 1000) + "...");
+        log.debug("write on STMPConnection "+this.toString()+" command: " + logStr.substring(0, 1000) + "...");
       }
     }
     ns.write(str + "\r\n");
@@ -113,6 +118,8 @@ class SMTPConnection {
   public void openConnection(Vertx vertx, MailConfig config, Handler<String> initialReplyHandler,
       Handler<Throwable> errorHandler) {
     this.errorHandler = errorHandler;
+    active = true;
+    idle = false;
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
     client = vertx.createNetClient(netClientOptions);
 
@@ -122,16 +129,20 @@ class SMTPConnection {
         socketClosed = false;
         ns.exceptionHandler(e -> {
           // avoid returning two exceptions
-          if (!socketClosed && !socketShutDown) {
+          log.debug("exceptionHandler called");
+          if (!socketClosed && !socketShutDown && !idle) {
+            active = false;
             log.debug("got an exception on the netsocket", e);
             throwError(e);
           }
         });
         ns.closeHandler(v -> {
+          log.debug("closeHandler called");
+          log.debug("socket has been closed");
+          socketClosed = true;
+          active = false;
           // avoid exception if we regularly shut down the socket on our side
-          if (!socketShutDown) {
-            log.debug("socket has been closed");
-            socketClosed = true;
+          if (!socketShutDown && !idle) {
             throwError("connection has been closed by the server");
           }
         });
@@ -158,5 +169,29 @@ class SMTPConnection {
   void upgradeToSsl(Handler<Void> handler) {
     ns.upgradeToSsl(handler);
   }
+
+  public boolean isActive() {
+    return active;
+  }
+
+  public boolean isIdle() {
+    return idle;
+  }
+
+  public void returnToPool() {
+    idle = true;
+    commandReplyHandler = null;
+  }
+
+  /**
+   * mark a connection as being used again
+   */
+  public void useConnection() {
+    idle = false;
+  }
+
+  // public NetSocket getNetSocket() {
+  // return ns;
+  // }
 
 }
