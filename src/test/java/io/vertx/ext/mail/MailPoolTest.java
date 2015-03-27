@@ -1,6 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -10,7 +9,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.subethamail.wiser.Wiser;
@@ -27,11 +25,10 @@ public class MailPoolTest {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolTest.class);
 
-  @Ignore
+  Vertx vertx = Vertx.vertx();
+
   @Test
   public void mailTest(TestContext context) {
-    Vertx vertx = Vertx.vertx();
-
     log.info("starting");
 
     Async async = context.async();
@@ -62,11 +59,8 @@ public class MailPoolTest {
     });
   }
 
-  @Ignore
   @Test
   public void mailConcurrentTest(TestContext context) {
-    Vertx vertx = Vertx.vertx();
-
     log.info("starting");
 
     Async mail1 = context.async();
@@ -102,8 +96,6 @@ public class MailPoolTest {
 
   @Test
   public void mailConcurrent2Test(TestContext context) {
-    Vertx vertx = Vertx.vertx();
-
     Async mail1 = context.async();
     Async mail2 = context.async();
 
@@ -181,8 +173,6 @@ public class MailPoolTest {
     if (wiser != null) {
       wiser.stop();
     }
-    //    // TODO: ugly hack to make the unit tests work independent of each other
-    //    MailServiceImpl.resetConnectionPool();
   }
 
 }
