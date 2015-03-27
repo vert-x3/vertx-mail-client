@@ -99,9 +99,9 @@ class SMTPConnection {
       }
       // avoid logging large mail body
       if (logStr.length() < 1000) {
-        log.debug("write on STMPConnection "+this.toString()+" command: " + logStr);
+        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr);
       } else {
-        log.debug("write on STMPConnection "+this.toString()+" command: " + logStr.substring(0, 1000) + "...");
+        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr.substring(0, 1000) + "...");
       }
     }
     ns.write(str + "\r\n");
@@ -130,7 +130,7 @@ class SMTPConnection {
         ns.exceptionHandler(e -> {
           // avoid returning two exceptions
           log.debug("exceptionHandler called");
-          if (!socketClosed && !socketShutDown && !idle) {
+          if (!socketClosed && !socketShutDown && !idle && active) {
             active = false;
             log.debug("got an exception on the netsocket", e);
             throwError(e);
@@ -140,9 +140,10 @@ class SMTPConnection {
           log.debug("closeHandler called");
           log.debug("socket has been closed");
           socketClosed = true;
-          active = false;
           // avoid exception if we regularly shut down the socket on our side
-          if (!socketShutDown && !idle) {
+          if (!socketShutDown && !idle && active) {
+            active = false;
+            log.debug("throwing: connection has been closed by the server");
             throwError("connection has been closed by the server");
           }
         });
@@ -190,8 +191,27 @@ class SMTPConnection {
     idle = false;
   }
 
-  // public NetSocket getNetSocket() {
-  // return ns;
-  // }
+  /*
+   * set error handler to a "local" handler to be reset later
+   */
+  private Handler<Throwable> prevErrorHandler = null;
 
+  public void setErrorHandler(Handler<Throwable> newHandler) {
+    if (prevErrorHandler == null) {
+      prevErrorHandler = errorHandler;
+    }
+
+    errorHandler = newHandler;
+  }
+
+  /*
+   * reset error handler to default
+   */
+  public void resetErrorHandler() {
+    errorHandler = prevErrorHandler;
+  }
+
+  public void setInactive() {
+    active = false;
+  }
 }

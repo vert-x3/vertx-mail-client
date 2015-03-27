@@ -88,7 +88,6 @@ class MailMain {
   }
 
   private void finishMail(Void v) {
-//    new SMTPQuit(connection).quitCmd();
     JsonObject result = new JsonObject();
     result.put("result", "success");
     returnResult(Future.succeededFuture(result));

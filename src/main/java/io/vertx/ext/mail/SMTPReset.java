@@ -29,8 +29,16 @@ class SMTPReset {
   }
 
   public void rsetCmd() {
+    connection.setErrorHandler(th -> {
+      log.info("exception on RSET "+th);
+      connection.resetErrorHandler();
+      connection.setInactive();
+      connection.shutdown();
+      throwError("exception on RSET "+th);
+    });
     connection.write("RSET", message -> {
       log.debug("RSET result: " + message);
+      connection.resetErrorHandler();
       if (!StatusCode.isStatusOk(message)) {
         log.warn("RSET failed: " + message);
         throwError("reset command failed: " + message);
