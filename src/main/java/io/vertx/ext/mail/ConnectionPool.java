@@ -67,6 +67,8 @@ public class ConnectionPool {
         new SMTPReset(conn, config, v -> {
           foundHandler.handle(conn);
         }, v -> {
+          // make sure we do not get confused by a close event later
+          conn.setInactive();
           findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
         }).rsetCmd();
       } else {
