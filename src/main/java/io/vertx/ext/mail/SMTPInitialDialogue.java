@@ -17,7 +17,7 @@ import java.net.UnknownHostException;
  */
 class SMTPInitialDialogue {
 
-  private static final Logger log = LoggerFactory.getLogger(SMTPAuthentication.class);
+  private static final Logger log = LoggerFactory.getLogger(SMTPInitialDialogue.class);
 
   private SMTPConnection connection;
 
@@ -91,6 +91,7 @@ class SMTPInitialDialogue {
   }
 
   private void throwError(String message) {
+    log.debug("throwError:"+message);
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 

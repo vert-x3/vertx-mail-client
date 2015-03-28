@@ -39,14 +39,19 @@ public class MailPoolServerClosesTest {
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
           .setSubject("Test email").setText("this is a message");
 
+      PassOnce pass1 = new PassOnce(s -> context.fail(s));
+      PassOnce pass2 = new PassOnce(s -> context.fail(s));
+
       log.info("starting mail 1");
       mailService.sendMail(email, result -> {
         log.info("mail finished 1");
+        pass1.passOnce();
         if (result.succeeded()) {
           log.info(result.result().toString());
           mail1.complete();
           log.info("starting mail 2");
           mailService.sendMail(email, result2 -> {
+            pass2.passOnce();
             log.info("mail finished 2");
             if (result2.succeeded()) {
               log.info(result2.result().toString());
@@ -79,14 +84,19 @@ public class MailPoolServerClosesTest {
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
           .setSubject("Test email").setText("this is a message");
 
+      PassOnce pass1 = new PassOnce(s -> context.fail(s));
+      PassOnce pass2 = new PassOnce(s -> context.fail(s));
+
       log.info("starting mail 1");
       mailService.sendMail(email, result -> {
+        pass1.passOnce();
         log.info("mail finished 1");
         if (result.succeeded()) {
           log.info(result.result().toString());
           mail1.complete();
           log.info("starting mail 2");
           mailService.sendMail(email, result2 -> {
+            pass2.passOnce();
             log.info("mail finished 2");
             if (result2.succeeded()) {
               log.info(result2.result().toString());
@@ -129,14 +139,19 @@ public class MailPoolServerClosesTest {
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
           .setSubject("Test email").setText("this is a message");
 
+      PassOnce pass1 = new PassOnce(s -> context.fail(s));
+      PassOnce pass2 = new PassOnce(s -> context.fail(s));
+
       log.info("starting mail 1");
       mailService.sendMail(email, result -> {
+        pass1.passOnce();
         log.info("mail finished 1");
         if (result.succeeded()) {
           log.info(result.result().toString());
           mail1.complete();
           log.info("starting mail 2");
           mailService.sendMail(email, result2 -> {
+            pass2.passOnce();
             log.info("mail finished 2");
             if (result2.succeeded()) {
               log.info(result2.result().toString());

@@ -88,23 +88,34 @@ class MailMain {
   }
 
   private void finishMail(Void v) {
+    log.debug("finishMail");
+    if (connection != null) {
+      connection.returnToPool();
+    }
     JsonObject result = new JsonObject();
     result.put("result", "success");
     returnResult(Future.succeededFuture(result));
   }
 
   private void throwError(Throwable throwable) {
+    log.debug("throwError:"+throwable);
+    if (connection != null) {
+      log.debug("connection.setInactive");
+      connection.setInactive();
+    }
     returnResult(Future.failedFuture(throwable));
   }
 
   private void throwError(String message) {
+    log.debug("throwError:"+message);
+    if (connection != null) {
+      log.debug("connection.setInactive");
+      connection.setInactive();
+    }
     returnResult(Future.failedFuture(message));
   }
 
   private void returnResult(Future<JsonObject> result) {
-    if (connection != null) {
-      connection.returnToPool();
-    }
     finishedHandler.handle(result);
   }
 
