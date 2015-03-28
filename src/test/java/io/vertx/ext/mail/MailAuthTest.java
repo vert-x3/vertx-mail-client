@@ -38,7 +38,10 @@ public class MailAuthTest extends VertxTestBase {
    * @param mailService
    */
   private void runTestSuccess(MailService mailService) {
+    PassOnce pass = new PassOnce(s -> fail(s));
+
     mailService.sendMail(exampleMessage(), result -> {
+      pass.passOnce();
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
@@ -46,7 +49,7 @@ public class MailAuthTest extends VertxTestBase {
       } else {
         final Throwable cause = result.cause();
         log.warn("got exception", cause);
-        throw new RuntimeException("unexpected exception", cause);
+        fail(cause.toString());
       }
     });
 
@@ -69,8 +72,8 @@ public class MailAuthTest extends VertxTestBase {
    */
   private MailConfig defaultConfigLogin() {
     return new MailConfig("localhost", 1587)
-    .setUsername("username")
-    .setPassword("password");
+      .setUsername("username")
+      .setPassword("password");
   }
 
   @Test
@@ -140,7 +143,9 @@ public class MailAuthTest extends VertxTestBase {
    * @param mailService
    */
   private void runTestException(MailService mailService) {
+    PassOnce pass = new PassOnce(s -> fail(s));
     mailService.sendMail(exampleMessage(), result -> {
+      pass.passOnce();
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
