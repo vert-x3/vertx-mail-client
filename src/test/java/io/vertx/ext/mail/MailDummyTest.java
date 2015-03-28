@@ -32,24 +32,26 @@ public class MailDummyTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    MailMessage email=new MailMessage()
+    MailMessage email = new MailMessage()
       .setFrom("user@example.com")
       .setBounceAddress("bounce@example.com")
       .setTo("user@example.com")
-      .setSubject("Test email with HTML")
+      .setSubject("Test email")
       .setText("this is a message");
+
+    PassOnce pass = new PassOnce(s -> fail(s));
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        fail(result.cause().toString());
       }
     });
-
     await();
   }
 
@@ -61,7 +63,7 @@ public class MailDummyTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
+    Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
       .setFrom("user@example.com")
@@ -71,7 +73,7 @@ public class MailDummyTest extends VertxTestBase {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    List<MailAttachment> list = new ArrayList<MailAttachment>();
 
     list.add(new MailAttachment()
       .setData(new String(image.getBytes(), "ISO-8859-1"))
@@ -89,14 +91,16 @@ public class MailDummyTest extends VertxTestBase {
 
     email.setAttachment(list);
 
+    PassOnce pass = new PassOnce(s -> fail(s));
     mailService.sendMail(email, result -> {
+      pass.passOnce();
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        fail(result.cause().toString());
       }
     });
 
@@ -111,20 +115,23 @@ public class MailDummyTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    MailMessage email=new MailMessage()
+    MailMessage email = new MailMessage()
       .setFrom("user@example.com")
       .setTo("user@example.com")
       .setAttachment(new MailAttachment()
-        .setData("\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff"));
+      .setData("\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff"));
+
+    PassOnce pass = new PassOnce(s -> fail(s));
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        fail(result.cause().toString());
       }
     });
 
