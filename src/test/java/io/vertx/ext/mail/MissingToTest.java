@@ -25,12 +25,14 @@ public class MissingToTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    MailMessage email=new MailMessage()
-    .setFrom("user@example.com");
+    MailMessage email = new MailMessage().setFrom("user@example.com");
+
+    PassOnce pass = new PassOnce(s -> fail(s));
 
     mailService.sendMail(email, result -> {
+      pass.passOnce();
       log.info("mail finished");
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
       } else {
@@ -50,12 +52,14 @@ public class MissingToTest extends VertxTestBase {
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
-    MailMessage email=new MailMessage()
-      .setTo("user@example.com");
+    MailMessage email = new MailMessage().setTo("user@example.com");
+
+    PassOnce pass = new PassOnce(s -> fail(s));
 
     mailService.sendMail(email, result -> {
+      pass.passOnce();
       log.info("mail finished");
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
       } else {

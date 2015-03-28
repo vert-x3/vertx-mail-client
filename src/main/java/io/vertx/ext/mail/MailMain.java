@@ -65,19 +65,25 @@ class MailMain {
   }
 
   private void doSend() {
-    validateHeaders();
-    connectionPool.getConnection(config, this::sendMessage, this::throwError);
+    if(validateHeaders()) {
+      connectionPool.getConnection(config, this::sendMessage, this::throwError);
+    }
   }
 
   // do some validation before we open the connection
-  private void validateHeaders() {
+  // return true on successful validation so we can stop processing above
+  private boolean validateHeaders() {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
       throwError("sender address is not present");
+      return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
         && (email.getCc() == null || email.getCc().size() == 0)
         && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
       throwError("no recipient addresses are present");
+      return false;
+    } else {
+      return true;
     }
   }
 
