@@ -39,8 +39,11 @@ public class SizeExceededTest extends VertxTestBase {
 
     MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", message);
 
+    PassOnce pass = new PassOnce(s -> fail(s));
+
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");

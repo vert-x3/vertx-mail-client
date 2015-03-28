@@ -31,13 +31,30 @@ public class SMTPSendMail {
   }
 
   void startMail() {
+    if(checkSize()) {
+      mailFromCmd();
+    }
+  }
+
+  /**
+   * Check if message size is allowed if size is supported.
+   *
+   * returns true if the message is allowed, have to make sure
+   * that when returning from the throwError method it doesn't continue with the mailfrom
+   * operation
+   */
+  private boolean checkSize() {
     if (connection.getCapa().getSize() > 0) {
       createMailMessage();
       if (mailMessage.length() > connection.getCapa().getSize()) {
         throwError("message exceeds allowed size limit");
+        return false;
+      } else {
+        return true;
       }
+    } else {
+      return true;
     }
-    mailFromCmd();
   }
 
   private void mailFromCmd() {
