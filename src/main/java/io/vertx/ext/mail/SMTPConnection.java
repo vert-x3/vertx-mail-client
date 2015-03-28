@@ -215,5 +215,6 @@ class SMTPConnection {
   public void setInactive() {
     log.debug("setting connection to inactive/broken");
     active = false;
+    commandReplyHandler = null;
   }
 }

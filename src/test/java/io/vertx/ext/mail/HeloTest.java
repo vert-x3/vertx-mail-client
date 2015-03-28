@@ -97,7 +97,7 @@ public class HeloTest extends VertxTestBase {
   }
 
   @Test
-  public void tlsMissingTest() {
+  public void stlsMissingTest() {
     smtpServer.setAnswers("220 example.com ESMTP multiline",
         "250-example.com", 
         "250-SIZE 48000000", 
