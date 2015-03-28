@@ -4,6 +4,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -18,16 +20,19 @@ public class MissingAuthTest extends VertxTestBase {
 
   @Test
   public void mailTest() {
-    MailConfig mailConfig = new MailConfig("smtp.googlemail.com", 587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
     mailConfig.setUsername("xxx")
-      .setPassword("xxx");
+    .setPassword("xxx");
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", "Message");
 
+    PassOnce pass = new PassOnce(s -> fail(s));
+
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass.passOnce();
       if(result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
@@ -39,4 +44,17 @@ public class MissingAuthTest extends VertxTestBase {
 
     await();
   }
+
+  private TestSmtpServer smtpServer;
+
+  @Before
+  public void startSMTP() {
+    smtpServer = new TestSmtpServer(vertx);
+  }
+
+  @After
+  public void stopSMTP() {
+    smtpServer.stop();
+  }
+
 }
