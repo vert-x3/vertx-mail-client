@@ -180,6 +180,7 @@ class SMTPConnection {
   }
 
   public void returnToPool() {
+    log.debug("returning connection to pool");
     idle = true;
     commandReplyHandler = null;
   }
@@ -212,6 +213,7 @@ class SMTPConnection {
   }
 
   public void setInactive() {
+    log.debug("setting connection to inactive/broken");
     active = false;
   }
 }

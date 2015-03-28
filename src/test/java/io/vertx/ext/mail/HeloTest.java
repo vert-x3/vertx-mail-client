@@ -116,8 +116,11 @@ public class HeloTest extends VertxTestBase {
    * @param mailService
    */
   private void runTestException(final MailService mailService) {
+    PassOnce pass = new PassOnce(s -> fail(s));
+
     mailService.sendMail(exampleMessage(), result -> {
       log.info("mail finished");
+      pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
@@ -156,8 +159,11 @@ public class HeloTest extends VertxTestBase {
    * 
    */
   private void runTestSuccess(MailService mailService) {
+    PassOnce pass = new PassOnce(s -> fail(s));
+
     mailService.sendMail(exampleMessage(), result -> {
       log.info("mail finished");
+      pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
