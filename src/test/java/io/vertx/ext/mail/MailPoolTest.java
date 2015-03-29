@@ -141,12 +141,12 @@ public class MailPoolTest {
               mail2.complete();
             } else {
               log.warn("got exception", result2.cause());
-              throw new RuntimeException(result2.cause());
+              context.fail(result2.cause());
             }
           });
         } else {
           log.warn("got exception", result.cause());
-          throw new RuntimeException(result.cause());
+          context.fail(result.cause());
         }
       });
     });

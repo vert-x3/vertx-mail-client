@@ -66,7 +66,7 @@ class MailMain {
 
   private void doSend() {
     if(validateHeaders()) {
-      connectionPool.getConnection(config, this::sendMessage, this::throwError);
+      connectionPool.getConnection(config, this::sendMessage, this::handleError);
     }
   }
 
@@ -74,13 +74,13 @@ class MailMain {
   // return true on successful validation so we can stop processing above
   private boolean validateHeaders() {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
-      throwError("sender address is not present");
+      handleError("sender address is not present");
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
         && (email.getCc() == null || email.getCc().size() == 0)
         && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
-      throwError("no recipient addresses are present");
+      handleError("no recipient addresses are present");
       return false;
     } else {
       return true;
@@ -88,9 +88,9 @@ class MailMain {
   }
 
   private void sendMessage(SMTPConnection connection) {
-    log.info("got a connection");
+    log.debug("got a connection");
     this.connection=connection;
-    new SMTPSendMail(connection, email, mailMessage, this::finishMail, this::throwError).startMail();
+    new SMTPSendMail(connection, email, mailMessage, this::finishMail, this::handleError).startMail();
   }
 
   private void finishMail(Void v) {
@@ -103,20 +103,20 @@ class MailMain {
     returnResult(Future.succeededFuture(result));
   }
 
-  private void throwError(Throwable throwable) {
-    log.debug("throwError:"+throwable);
+  private void handleError(Throwable throwable) {
+    log.debug("handleError:"+throwable);
     if (connection != null) {
       log.debug("connection.setInactive");
-      connection.setInactive();
+      connection.setBroken();
     }
     returnResult(Future.failedFuture(throwable));
   }
 
-  private void throwError(String message) {
-    log.debug("throwError:"+message);
+  private void handleError(String message) {
+    log.debug("handleError:"+message);
     if (connection != null) {
       log.debug("connection.setInactive");
-      connection.setInactive();
+      connection.setBroken();
     }
     returnResult(Future.failedFuture(message));
   }

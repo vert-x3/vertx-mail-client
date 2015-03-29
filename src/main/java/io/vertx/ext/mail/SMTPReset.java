@@ -32,16 +32,16 @@ class SMTPReset {
     connection.setErrorHandler(th -> {
       log.info("exception on RSET "+th);
       connection.resetErrorHandler();
-      connection.setInactive();
+      connection.setBroken();
       connection.shutdown();
-      throwError("exception on RSET "+th);
+      handleError("exception on RSET "+th);
     });
     connection.write("RSET", message -> {
       log.debug("RSET result: " + message);
       connection.resetErrorHandler();
       if (!StatusCode.isStatusOk(message)) {
         log.warn("RSET failed: " + message);
-        throwError("reset command failed: " + message);
+        handleError("reset command failed: " + message);
       } else {
         finished();
       }
@@ -55,11 +55,11 @@ class SMTPReset {
     finishedHandler.handle(null);
   }
 
-  private void throwError(String message) {
+  private void handleError(String message) {
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-//  private void throwError(Throwable throwable) {
+//  private void handleError(Throwable throwable) {
 //    errorHandler.handle(throwable);
 //  }
 

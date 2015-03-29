@@ -21,10 +21,20 @@ import io.vertx.core.net.NetSocket;
  */
 class SMTPConnection {
 
+  private NetSocket ns;
+  private boolean socketClosed;
+  private boolean socketShutDown;
+  private NetClient client;
+  private Handler<String> commandReplyHandler;
+  private Handler<Throwable> errorHandler;
+  //  private boolean active;
+  private boolean broken;
+  private boolean idle;
+
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
 
   SMTPConnection() {
-    active = false;
+    broken = true;
     idle = false;
   }
 
@@ -47,15 +57,6 @@ class SMTPConnection {
     capa = new Capabilities();
     capa.parseCapabilities(message);
   }
-
-  private NetSocket ns;
-  private boolean socketClosed;
-  private boolean socketShutDown;
-  private NetClient client;
-  private Handler<String> commandReplyHandler;
-  private Handler<Throwable> errorHandler;
-  private boolean active;
-  private boolean idle;
 
   void shutdown() {
     commandReplyHandler = null;
@@ -84,7 +85,7 @@ class SMTPConnection {
     this.commandReplyHandler = commandResultHandler;
     if (socketClosed) {
       log.debug("connection was closed by server");
-      throwError("connection was closed by server");
+      handleError("connection was closed by server");
     }
     if (log.isDebugEnabled()) {
       String logStr;
@@ -107,18 +108,18 @@ class SMTPConnection {
     ns.write(str + "\r\n");
   }
 
-  private void throwError(String message) {
-    throwError(new NoStackTraceThrowable(message));
+  private void handleError(String message) {
+    handleError(new NoStackTraceThrowable(message));
   }
 
-  private void throwError(Throwable throwable) {
+  private void handleError(Throwable throwable) {
     errorHandler.handle(throwable);
   }
 
   public void openConnection(Vertx vertx, MailConfig config, Handler<String> initialReplyHandler,
       Handler<Throwable> errorHandler) {
     this.errorHandler = errorHandler;
-    active = true;
+    broken = false;
     idle = false;
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
     client = vertx.createNetClient(netClientOptions);
@@ -130,10 +131,10 @@ class SMTPConnection {
         ns.exceptionHandler(e -> {
           // avoid returning two exceptions
           log.debug("exceptionHandler called");
-          if (!socketClosed && !socketShutDown && !idle && active) {
-            active = false;
+          if (!socketClosed && !socketShutDown && !idle && !broken) {
+            broken = true;
             log.debug("got an exception on the netsocket", e);
-            throwError(e);
+            handleError(e);
           }
         });
         ns.closeHandler(v -> {
@@ -141,10 +142,10 @@ class SMTPConnection {
           log.debug("socket has been closed");
           socketClosed = true;
           // avoid exception if we regularly shut down the socket on our side
-          if (!socketShutDown && !idle && active) {
-            active = false;
+          if (!socketShutDown && !idle && !broken) {
+            broken = true;
             log.debug("throwing: connection has been closed by the server");
-            throwError("connection has been closed by the server");
+            handleError("connection has been closed by the server");
           }
         });
         commandReplyHandler = initialReplyHandler;
@@ -158,7 +159,7 @@ class SMTPConnection {
         ns.handler(mlp);
       } else {
         log.error("exception on connect", asyncResult.cause());
-        throwError(asyncResult.cause());
+        handleError(asyncResult.cause());
       }
     });
   }
@@ -171,8 +172,12 @@ class SMTPConnection {
     ns.upgradeToSsl(handler);
   }
 
-  public boolean isActive() {
-    return active;
+  //  public boolean isActive() {
+  //    return active;
+  //  }
+
+  public boolean isBroken() {
+    return broken;
   }
 
   public boolean isIdle() {
@@ -212,9 +217,13 @@ class SMTPConnection {
     errorHandler = prevErrorHandler;
   }
 
-  public void setInactive() {
-    log.debug("setting connection to inactive/broken");
-    active = false;
+  /**
+   * set connection to broken, it will not be used again
+   * TODO: (and shut down and closed async)
+   */
+  public void setBroken() {
+    log.debug("setting connection to broken");
+    broken = true;
     commandReplyHandler = null;
   }
 }

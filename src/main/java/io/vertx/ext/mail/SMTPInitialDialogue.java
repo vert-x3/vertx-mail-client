@@ -43,7 +43,7 @@ class SMTPInitialDialogue {
         heloCmd();
       }
     } else {
-      throwError("got error response " + message);
+      handleError("got error response " + message);
     }
   }
 
@@ -73,7 +73,7 @@ class SMTPInitialDialogue {
                 if (StatusCode.isStatusTemporary(message)) {
                   heloCmd();
                 } else {
-                  throwError("EHLO failed with " + message);
+                  handleError("EHLO failed with " + message);
                 }
               }
             });
@@ -85,17 +85,17 @@ class SMTPInitialDialogue {
       if(StatusCode.isStatusOk(message)) {
         finished();
       } else {
-        throwError("HELO failed with " + message);
+        handleError("HELO failed with " + message);
       }
     });
   }
 
-  private void throwError(String message) {
-    log.debug("throwError:"+message);
+  private void handleError(String message) {
+    log.debug("handleError:"+message);
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-//  private void throwError(Throwable throwable) {
+//  private void handleError(Throwable throwable) {
 //    errorHandler.handle(throwable);
 //  }
 

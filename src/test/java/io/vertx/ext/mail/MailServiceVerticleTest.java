@@ -36,7 +36,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
         testComplete();
       } else {
         log.info("exception", r.cause());
-        throw new RuntimeException(r.cause());
+        fail(r.cause().toString());
       }
     });
 
@@ -71,7 +71,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
         testComplete();
       } else {
         log.info("exception", r.cause());
-        throw new RuntimeException(r.cause());
+        fail(r.cause().toString());
       }
     });
 

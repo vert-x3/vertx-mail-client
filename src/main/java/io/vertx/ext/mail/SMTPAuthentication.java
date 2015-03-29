@@ -40,7 +40,7 @@ class SMTPAuthentication {
   public void startAuthentication() {
     if (!connection.isSsl() && config.getStarttls() == StarttlsOption.REQUIRED) {
       log.warn("STARTTLS required but not supported by server");
-      throwError("STARTTLS required but not supported by server");
+      handleError("STARTTLS required but not supported by server");
     } else {
       if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null
           && config.getPassword() != null && !connection.getCapa().getCapaAuth().isEmpty()) {
@@ -48,9 +48,9 @@ class SMTPAuthentication {
       } else {
         if (config.getLogin() == LoginOption.REQUIRED) {
           if (connection.getCapa().getCapaAuth().isEmpty()) {
-            throwError("login is required, but no AUTH methods available. You may need to do STARTTLS");
+            handleError("login is required, but no AUTH methods available. You may need to do STARTTLS");
           } else {
-            throwError("login is required, but no credentials supplied");
+            handleError("login is required, but no credentials supplied");
           }
         } else {
           finished();
@@ -71,7 +71,7 @@ class SMTPAuthentication {
         log.debug("AUTH result: " + message);
         if (!StatusCode.isStatusOk(message)) {
           log.warn("authentication failed");
-          throwError("authentication failed");
+          handleError("authentication failed");
         } else {
           finished();
         }
@@ -83,7 +83,7 @@ class SMTPAuthentication {
       });
     } else {
       log.warn("cannot find supported auth method");
-      throwError("cannot find supported auth method");
+      handleError("cannot find supported auth method");
     }
   }
 
@@ -137,7 +137,7 @@ class SMTPAuthentication {
       finished();
     } else {
       log.warn("authentication failed");
-      throwError("authentication failed");
+      handleError("authentication failed");
     }
   }
 
@@ -155,7 +155,7 @@ class SMTPAuthentication {
         finished();
       } else {
         log.warn("authentication failed");
-        throwError("authentication failed");
+        handleError("authentication failed");
       }
     });
   }
@@ -181,11 +181,11 @@ class SMTPAuthentication {
     }
   }
 
-  private void throwError(String message) {
+  private void handleError(String message) {
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-//  private void throwError(Throwable throwable) {
+//  private void handleError(Throwable throwable) {
 //    errorHandler.handle(throwable);
 //  }
 

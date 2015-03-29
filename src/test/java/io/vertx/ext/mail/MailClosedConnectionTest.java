@@ -48,7 +48,7 @@ public class MailClosedConnectionTest {
         async.complete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        context.fail(result.cause());
       }
     });
   }
@@ -74,7 +74,7 @@ public class MailClosedConnectionTest {
         async.complete();
       } else {
         log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
+        context.fail(result.cause());
       }
     });
   }

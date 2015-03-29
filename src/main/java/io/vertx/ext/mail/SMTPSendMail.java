@@ -40,14 +40,14 @@ public class SMTPSendMail {
    * Check if message size is allowed if size is supported.
    *
    * returns true if the message is allowed, have to make sure
-   * that when returning from the throwError method it doesn't continue with the mailfrom
+   * that when returning from the handleError method it doesn't continue with the mail from
    * operation
    */
   private boolean checkSize() {
     if (connection.getCapa().getSize() > 0) {
       createMailMessage();
       if (mailMessage.length() > connection.getCapa().getSize()) {
-        throwError("message exceeds allowed size limit");
+        handleError("message exceeds allowed size limit");
         return false;
       } else {
         return true;
@@ -73,12 +73,12 @@ public class SMTPSendMail {
           rcptToCmd();
         } else {
           log.warn("sender address not accepted: " + message);
-          throwError("sender address not accepted: " + message);
+          handleError("sender address not accepted: " + message);
         }
       });
     } catch (IllegalArgumentException e) {
       log.error("address exception", e);
-      throwError(e);
+      handleError(e);
     }
   }
 
@@ -109,21 +109,21 @@ public class SMTPSendMail {
           }
         } else {
           log.warn("recipient address not accepted: " + message);
-          throwError("recipient address not accepted: " + message);
+          handleError("recipient address not accepted: " + message);
         }
       });
     } catch (IllegalArgumentException e) {
       log.error("address exception", e);
-      throwError(e);
+      handleError(e);
     }
   }
 
-  private void throwError(Throwable throwable) {
+  private void handleError(Throwable throwable) {
     exceptionHandler.handle(throwable);
   }
 
-  private void throwError(String message) {
-    throwError(new NoStackTraceThrowable(message));
+  private void handleError(String message) {
+    handleError(new NoStackTraceThrowable(message));
   }
 
   private void dataCmd() {
@@ -133,7 +133,7 @@ public class SMTPSendMail {
         sendMaildata();
       } else {
         log.warn("DATA command not accepted: " + message);
-        throwError("DATA command not accepted: " + message);
+        handleError("DATA command not accepted: " + message);
       }
     });
   }
@@ -152,7 +152,7 @@ public class SMTPSendMail {
         finishedHandler.handle(null);
       } else {
         log.warn("sending data failed: " + message);
-        throwError("sending data failed: " + message);
+        handleError("sending data failed: " + message);
       }
     });
   }
