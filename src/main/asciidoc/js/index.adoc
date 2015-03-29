@@ -72,5 +72,23 @@ on other machine in the cluster
 
 [source,js]
 ----
-todo
+var MailService = require("vertx-mail-js/mail_service");
+var mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
+
+var email = {
+  "from" : "user@example.com",
+  "bounceAddress" : "bounce@example.com",
+  "to" : "user@example.com"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  console.log("mail finished");
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
 ----

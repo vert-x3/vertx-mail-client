@@ -65,8 +65,8 @@ mailService.sendMail(email, result -> {
 });
 ~~~~
 
-the service can send mails via the eventbus if the service is running on
-other machine in the cluster
+the service interface can send mails via the eventbus if the service is
+running on other machine in the cluster
 
 ~~~~ {.java}
 MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");

@@ -72,7 +72,7 @@ MailMessage email=new MailMessage()
 mailService.sendMail(email, result -> {
   System.out.println("mail finished");
   if (result.succeeded()) {
-    System.out.println(result.result().toString());
+    System.out.println(result.result());
   } else {
     System.out.println("got exception");
     result.cause().printStackTrace();
