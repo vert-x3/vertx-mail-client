@@ -23,7 +23,19 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    testSuccess();
+    testSuccess(mailServiceLogin());
+  }
+
+  @Test
+  public void authLoginFailTest() {
+    smtpServer.setAnswers("220 example.com ESMTP",
+        "250-example.com",
+        "250 AUTH LOGIN",
+        "334 VXNlcm5hbWU6",
+        "334 UGFzc3dvcmQ6",
+        "435 4.7.8 Error: authentication failed: authentication failure");
+
+    testException(mailServiceLogin());
   }
 
   @Test
@@ -38,7 +50,17 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    testSuccess();
+    testSuccess(mailServiceLogin());
+  }
+
+  @Test
+  public void authPlainFailTest() {
+    smtpServer.setAnswers("220 example.com ESMTP",
+        "250-example.com",
+        "250 AUTH PLAIN",
+        "435 4.7.8 Error: authentication failed: bad protocol / cancel");
+
+    testException(mailServiceLogin());
   }
 
   @Test
@@ -54,7 +76,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    testSuccess();
+    testSuccess(mailServiceLogin());
   }
 
   @Test
@@ -70,16 +92,25 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    testException();
+    testException(mailServiceLogin());
   }
 
   @Test
-  public void authJunkTest() throws InterruptedException {
+  public void authJunkTest() {
     smtpServer.setAnswers("220 example.com ESMTP",
         "250-example.com",
         "250 AUTH JUNK");
 
-    testException();
+    testException(mailServiceLogin());
+  }
+
+  @Test
+  public void authLoginMissingTest() {
+    smtpServer.setAnswers("220 example.com ESMTP",
+        "250-example.com",
+        "250 AUTH PLAIN");
+
+    testException(MailService.create(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
   }
 
 }

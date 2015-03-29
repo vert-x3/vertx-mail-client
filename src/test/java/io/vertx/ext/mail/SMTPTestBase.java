@@ -76,7 +76,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
-  private MailConfig defaultConfig() {
+  protected MailConfig defaultConfig() {
     return new MailConfig("localhost", 1587);
   }
 
@@ -163,6 +163,10 @@ public abstract class SMTPTestBase extends VertxTestBase {
 
   protected void testException(MailMessage email) {
     testException(mailServiceDefault(), email);
+  }
+
+  protected void testException(MailService mailService) {
+    testException(mailService, exampleMessage());
   }
 
   protected void testSuccess(MailMessage email) {
