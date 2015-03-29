@@ -2,10 +2,7 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -14,17 +11,13 @@ import org.junit.Test;
  *         this test uses a message that exceeds the SIZE limit of the smtp
  *         server (uses the mockup server that just plays a file)
  */
-public class SizeExceededTest extends VertxTestBase {
+public class SizeExceededTest extends SMTPTestDummy {
 
   private static final Logger log = LoggerFactory.getLogger(SizeExceededTest.class);
 
   @Test
   public void mailTest() throws InterruptedException {
     log.info("starting");
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
 
     // message to exceed SIZE limit (1000000 for our server)
     // 32 Bytes
@@ -37,35 +30,7 @@ public class SizeExceededTest extends VertxTestBase {
 
     log.info("message size is " + message.length());
 
-    MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", message);
-
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(email, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.info("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
-  }
-
-  TestSmtpServer smtpServer;
-
-  @Before
-  public void startSMTP() {
-    smtpServer = new TestSmtpServer(vertx);
-  }
-
-  @After
-  public void stopSMTP() {
-    smtpServer.stop();
+    testException(new MailMessage("user@example.com", "user@example.com", "Subject", message));
   }
 
 }

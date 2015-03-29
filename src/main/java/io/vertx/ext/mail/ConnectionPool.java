@@ -22,18 +22,18 @@ public class ConnectionPool {
   }
 
   void getConnection(MailConfig config, Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
-    log.info("getConnection()");
+    log.debug("getConnection()");
     Vector<SMTPConnection> connections = connectionsByConfig.get(config);
     if (connections == null) {
-      log.info("create connections Vector");
+      log.debug("create connections Vector");
       connections = new Vector<SMTPConnection>();
       connectionsByConfig.put(config, connections);
-      log.info("createNewConnection()");
+      log.debug("createNewConnection()");
       createNewConnection(config, resultHandler, errorHandler);
     } else {
-      log.info("findUsableConnection()");
+      log.debug("findUsableConnection()");
       findUsableConnection(connections, config, 0, resultHandler, v -> {
-        log.info("no usable connection found, createNewConnection()");
+        log.debug("no usable connection found, createNewConnection()");
         createNewConnection(config, resultHandler, errorHandler);
       });
     }
@@ -47,7 +47,7 @@ public class ConnectionPool {
    */
   private void createNewConnection(MailConfig config, Handler<SMTPConnection> resultHandler,
       Handler<Throwable> errorHandler) {
-    log.info("creating new connection");
+    log.debug("creating new connection");
     SMTPConnection conn = new SMTPConnection();
     connectionsByConfig.get(config).add(conn);
     new SMTPStarter(vertx, conn, config, v -> {
@@ -60,15 +60,15 @@ public class ConnectionPool {
     if (i == connections.size()) {
       notFoundHandler.handle(null);
     } else {
-      log.info("findUsableConnection("+i+")");
+      log.debug("findUsableConnection("+i+")");
       SMTPConnection conn = connections.get(i);
-      if (conn.isActive() && conn.isIdle()) {
+      if (!conn.isBroken() && conn.isIdle()) {
         conn.useConnection();
         new SMTPReset(conn, config, v -> {
           foundHandler.handle(conn);
         }, v -> {
           // make sure we do not get confused by a close event later
-          conn.setInactive();
+          conn.setBroken();
           findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
         }).rsetCmd();
       } else {

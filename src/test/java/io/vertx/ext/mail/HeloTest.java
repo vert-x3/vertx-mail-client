@@ -1,11 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /*
@@ -15,9 +9,7 @@ import org.junit.Test;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class HeloTest extends VertxTestBase {
-
-  private static final Logger log = LoggerFactory.getLogger(HeloTest.class);
+public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void mailEhloMissingTest() {
@@ -31,7 +23,7 @@ public class HeloTest extends VertxTestBase {
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
-    runTestSuccess(mailServiceDefault());
+    testSuccess();
   }
 
   @Test
@@ -45,14 +37,7 @@ public class HeloTest extends VertxTestBase {
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
-    runTestSuccess(mailServiceDefault());
-  }
-
-  /**
-   * @return
-   */
-  private MailService mailServiceDefault() {
-    return MailService.create(vertx, defaultConfig());
+    testSuccess();
   }
 
   /*
@@ -80,7 +65,7 @@ public class HeloTest extends VertxTestBase {
         );
     smtpServer.setCloseImmediately(false);
 
-    runTestSuccess(mailServiceDefault());
+    testSuccess();
   }
 
   @Test
@@ -88,7 +73,7 @@ public class HeloTest extends VertxTestBase {
     smtpServer.setAnswers("400 cannot talk to you right now\r\n");
     smtpServer.setCloseImmediately(true);
 
-    runTestException(mailServiceDefault());
+    testException();
   }
 
   @Test
@@ -112,68 +97,12 @@ public class HeloTest extends VertxTestBase {
     runTestException(mailServiceTLS());
   }
 
-  /**
-   * @param mailService
-   */
-  private void runTestException(final MailService mailService) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(exampleMessage(), result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
-  }
-
-  /**
-   * @return
-   */
-  private MailService mailServiceTLS() {
-    return MailService.create(vertx, defaultConfigTLS());
-  }
-
-  /**
-   * @return
-   */
-  private MailConfig defaultConfigTLS() {
-    return new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED);
-  }
-
   @Test
   public void closeOnConnectTest() {
     smtpServer.setAnswers("");
     smtpServer.setCloseImmediately(true);
 
-    runTestException(mailServiceDefault());
-  }
-
-  /**
-   * 
-   */
-  private void runTestSuccess(MailService mailService) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(exampleMessage(), result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        testComplete();
-      } else {
-        log.warn("got exception", result.cause());
-        throw new RuntimeException(result.cause());
-      }
-    });
-
-    await();
+    testException();
   }
 
   /*
@@ -197,7 +126,7 @@ public class HeloTest extends VertxTestBase {
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
-    runTestSuccess(mailServiceDefault());
+    testSuccess();
   }
 
   /*
@@ -209,33 +138,7 @@ public class HeloTest extends VertxTestBase {
     smtpServer.setAnswers("220 example.com ESMTP\r\n");
     smtpServer.setCloseImmediately(true);
 
-    runTestException(mailServiceDefault());
-  }
-
-  /**
-   * @return
-   */
-  private MailConfig defaultConfig() {
-    return new MailConfig("localhost", 1587);
-  }
-
-  /**
-   * @return
-   */
-  private MailMessage exampleMessage() {
-    return new MailMessage("from@example.com", "user@example.com", "Subject", "Message");
-  }
-
-  TestSmtpServer smtpServer;
-
-  @Before
-  public void startSMTP() {
-    smtpServer=new TestSmtpServer(vertx);
-  }
-
-  @After
-  public void stopSMTP() {
-    smtpServer.stop();
+    testException();
   }
 
 }

@@ -1,11 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -13,9 +7,7 @@ import org.junit.Test;
  *
  * auth examples with failures mostly 
  */
-public class MailAuthTest extends VertxTestBase {
-
-  private static final Logger log = LoggerFactory.getLogger(MailAuthTest.class);
+public class MailAuthTest extends SMTPTestDummy {
 
   @Test
   public void authLoginTest() {
@@ -31,49 +23,7 @@ public class MailAuthTest extends VertxTestBase {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    runTestSuccess(mailServiceDefault());
-  }
-
-  /**
-   * @param mailService
-   */
-  private void runTestSuccess(MailService mailService) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(exampleMessage(), result -> {
-      pass.passOnce();
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        testComplete();
-      } else {
-        final Throwable cause = result.cause();
-        log.warn("got exception", cause);
-        fail(cause.toString());
-      }
-    });
-
-    await();
-  }
-
-  /**
-   * @return
-   */
-  private MailMessage exampleMessage() {
-    return new MailMessage()
-      .setFrom("user@example.com")
-      .setTo("user@example.com")
-      .setSubject("Test email")
-      .setText("this is a message");
-  }
-
-  /**
-   * @return
-   */
-  private MailConfig defaultConfigLogin() {
-    return new MailConfig("localhost", 1587)
-      .setUsername("username")
-      .setPassword("password");
+    testSuccess();
   }
 
   @Test
@@ -88,7 +38,7 @@ public class MailAuthTest extends VertxTestBase {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    runTestSuccess(mailServiceDefault());
+    testSuccess();
   }
 
   @Test
@@ -104,7 +54,7 @@ public class MailAuthTest extends VertxTestBase {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    runTestSuccess(mailServiceDefault());
+    testSuccess();
   }
 
   @Test
@@ -120,14 +70,7 @@ public class MailAuthTest extends VertxTestBase {
         "250 2.0.0 Ok: queued as ABCD",
         "221 2.0.0 Bye");
 
-    runTestException(mailServiceDefault());
-  }
-
-  /**
-   * @return
-   */
-  private MailService mailServiceDefault() {
-    return MailService.create(vertx, defaultConfigLogin());
+    testException();
   }
 
   @Test
@@ -136,39 +79,7 @@ public class MailAuthTest extends VertxTestBase {
         "250-example.com",
         "250 AUTH JUNK");
 
-    runTestException(mailServiceDefault());
-  }
-
-  /**
-   * @param mailService
-   */
-  private void runTestException(MailService mailService) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-    mailService.sendMail(exampleMessage(), result -> {
-      pass.passOnce();
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("expected an exception");
-      } else {
-        log.warn("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
-  }
-
-  private TestSmtpServer smtpServer;
-
-  @Before
-  public void startSMTP() {
-    smtpServer = new TestSmtpServer(vertx);
-  }
-
-  @After
-  public void stopSMTP() {
-    smtpServer.stop();
+    testException();
   }
 
 }

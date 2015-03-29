@@ -1,74 +1,23 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
-
 import org.junit.Test;
 
-/*
- first implementation of a SMTP client
- */
 /**
+ * test sending message with either missing from or to
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MissingToTest extends VertxTestBase {
-
-  private static final Logger log = LoggerFactory.getLogger(MissingToTest.class);
+public class MissingToTest extends SMTPTestDummy {
 
   @Test
   public void mailMissingToTest() {
-    log.info("starting");
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage email = new MailMessage().setFrom("user@example.com");
-
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(email, result -> {
-      pass.passOnce();
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
+    testException(new MailMessage().setFrom("user@example.com"));
   }
 
   @Test
   public void mailMissingFromTest() {
-    log.info("starting");
-
-    MailConfig mailConfig = new MailConfig("localhost", 1587);
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage email = new MailMessage().setTo("user@example.com");
-
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(email, result -> {
-      pass.passOnce();
-      log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
+    testException(new MailMessage().setTo("user@example.com"));
   }
 
 }

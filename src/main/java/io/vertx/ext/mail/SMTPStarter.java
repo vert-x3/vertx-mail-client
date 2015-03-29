@@ -26,28 +26,28 @@ public class SMTPStarter {
 
   void connect() {
     log.debug("connection.openConnection");
-    connection.openConnection(vertx, config, this::serverGreeting, this::throwError);
+    connection.openConnection(vertx, config, this::serverGreeting, this::handleError);
   }
   
   private void serverGreeting(String message) {
     log.debug("SMTPInitialDialogue");
-    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::throwError).serverGreeting(message);
+    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::handleError).serverGreeting(message);
   }
 
   private void doAuthentication(Void v) {
     log.debug("SMTPAuthentication");
-    new SMTPAuthentication(connection, config, finishedHandler, this::throwError).startAuthentication();
+    new SMTPAuthentication(connection, config, finishedHandler, this::handleError).startAuthentication();
   }
 
-//  private void throwError(String message) {
+//  private void handleError(String message) {
 //    errorHandler.handle(new NoStackTraceThrowable(message));
 //  }
 
-  private void throwError(Throwable throwable) {
-    log.debug("throwError:"+throwable);
+  private void handleError(Throwable throwable) {
+    log.debug("handleError:"+throwable);
     if (connection != null) {
       log.debug("connection.setInactive");
-      connection.setInactive();
+      connection.setBroken();
     }
     errorHandler.handle(throwable);
   }

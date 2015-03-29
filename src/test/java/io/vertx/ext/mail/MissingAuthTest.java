@@ -1,60 +1,20 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
-
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * this test requires login but connects to a server that doesn't support AUTH
+ * this tests the behaviour of some services which announce AUTH only when
+ * connected with TLS e.g. gmail.com
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses google but connects without tls
- * the EHLO will not contain AUTH in this case
  */
-public class MissingAuthTest extends VertxTestBase {
-
-  private static final Logger log = LoggerFactory.getLogger(MissingAuthTest.class);
+public class MissingAuthTest extends SMTPTestDummy {
 
   @Test
   public void mailTest() {
-    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED);
-    mailConfig.setUsername("xxx")
-    .setPassword("xxx");
-
-    MailService mailService = MailService.create(vertx, mailConfig);
-
-    MailMessage email = new MailMessage("user@example.com", "user@example.com", "Subject", "Message");
-
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMail(email, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      if(result.succeeded()) {
-        log.info(result.result().toString());
-        fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        testComplete();
-      }
-    });
-
-    await();
-  }
-
-  private TestSmtpServer smtpServer;
-
-  @Before
-  public void startSMTP() {
-    smtpServer = new TestSmtpServer(vertx);
-  }
-
-  @After
-  public void stopSMTP() {
-    smtpServer.stop();
+    runTestException(mailServiceLogin());
   }
 
 }

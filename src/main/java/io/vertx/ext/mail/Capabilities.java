@@ -88,7 +88,7 @@ class Capabilities {
     for (String l : splitByChar(message, '\n')) {
       if (!l.startsWith(resultCode) || l.charAt(3) != '-' && l.charAt(3) != ' ') {
         log.error("format error in multiline response");
-        throwError("format error in multiline response");
+        handleError("format error in multiline response");
       } else {
         v.add(l.substring(4));
       }
@@ -118,8 +118,8 @@ class Capabilities {
     return lines;
   }
 
-  private void throwError(String msg) {
+  private void handleError(String msg) {
     log.error(msg);
   }
-  
+
 }
