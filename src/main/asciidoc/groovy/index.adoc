@@ -71,5 +71,23 @@ on other machine in the cluster
 
 [source,groovy]
 ----
-todo
+import io.vertx.groovy.ext.mail.MailService
+def mailService = MailService.createEventBusProxy(vertx, "vertx.mail")
+
+def email = [
+  from:"user@example.com",
+  bounceAddress:"bounce@example.com",
+  to:"user@example.com"
+]
+
+mailService.sendMail(email, { result ->
+  println("mail finished")
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
 ----
