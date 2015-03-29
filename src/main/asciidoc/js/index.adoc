@@ -54,6 +54,7 @@ var attachment = {
   "name" : "file.dat",
   "data" : "ASDF1234\u0000\u0001\u0080\u00FF\n"
 };
+
 email.attachment = attachment;
 
 mailService.sendMail(email, function (result, result_err) {
@@ -65,4 +66,11 @@ mailService.sendMail(email, function (result, result_err) {
   };
 });
 
+----
+the service interface can send mails via the eventbus if the service is running
+on other machine in the cluster
+
+[source,js]
+----
+todo
 ----

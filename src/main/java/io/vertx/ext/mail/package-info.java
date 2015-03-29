@@ -28,6 +28,13 @@
  * ----
  * {@link examples.Examples#example2}
  * ----
+ * the service interface can send mails via the eventbus if the service is running
+ * on other machine in the cluster
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#example3}
+ * ----
  */
 @Document(fileName = "index.adoc")
 @GenModule(name = "vertx-mail")
