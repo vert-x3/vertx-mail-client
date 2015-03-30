@@ -1,5 +1,6 @@
 package io.vertx.ext.mail;
 
+import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
@@ -22,8 +23,11 @@ class SMTPQuit {
 
   private SMTPConnection connection;
 
-  SMTPQuit(SMTPConnection connection) {
+  private Handler<Void> finishedHandler;
+
+  SMTPQuit(SMTPConnection connection, Handler<Void> finishedHandler) {
     this.connection = connection;
+    this.finishedHandler = finishedHandler;
   }
 
   void quitCmd() {
@@ -32,6 +36,7 @@ class SMTPQuit {
       if (!StatusCode.isStatusOk(message)) {
         log.warn("quit failed: " + message);
       }
+      finishedHandler.handle(null);
     });
   }
 

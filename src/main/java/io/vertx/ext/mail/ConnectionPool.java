@@ -85,11 +85,30 @@ class ConnectionPool {
       finishedHandler.handle(null);
     } else {
       log.debug("STMPConnection.shutdown(" + i + ")");
-      SMTPConnection conn = connections.get(i);
-      if (!conn.isBroken() && conn.isIdle()) {
-        conn.shutdown();
+      SMTPConnection connection = connections.get(i);
+      if(connection.isBroken()) {
+        log.debug("connection is broken");
       }
-      shutdownConnections(i + 1, finishedHandler);
+      if(connection.isIdle()) {
+        log.debug("connection is idle");
+      }
+      // TODO: have to wait for connections still running
+      if (connection.isIdle()) {
+        if (connection.isBroken()) {
+          connection.shutdown();
+          shutdownConnections(i + 1, finishedHandler);
+        } else {
+          connection.setBroken();
+          log.debug("shutting down connection");
+          new SMTPQuit(connection, v -> {
+            connection.shutdown();
+            log.debug("connection is shut down");
+            shutdownConnections(i + 1, finishedHandler);
+          }).quitCmd();
+        }
+      } else {
+        shutdownConnections(i + 1, finishedHandler);
+      }
     }
   }
 
