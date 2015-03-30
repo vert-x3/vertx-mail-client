@@ -38,11 +38,11 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public void stop() {
-    log.debug("mail service stopped");
     if (!stopped) {
       stopped = true;
       connectionPool.stop();
     }
+    log.debug("mail service stopped");
   }
 
   @Override
