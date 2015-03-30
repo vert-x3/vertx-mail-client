@@ -47,8 +47,8 @@ public class HeloTest extends SMTPTestDummy {
   public void replyAfterQuitTest() {
     smtpServer.setAnswers("220 example.com ESMTP",
         // EHLO
-        "250-example.com", 
-        "250-SIZE 48000000", 
+        "250-example.com\n" + 
+        "250-SIZE 48000000\n" + 
         "250 PIPELINING",
         // MAIL FROM
         "250 2.1.0 Ok",
@@ -84,8 +84,8 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void stlsMissingTest() {
     smtpServer.setAnswers("220 example.com ESMTP multiline",
-        "250-example.com", 
-        "250-SIZE 48000000", 
+        "250-example.com\n" + 
+        "250-SIZE 48000000\n" + 
         "250 PIPELINING",
         "250 2.1.0 Ok", 
         "250 2.1.5 Ok",
@@ -113,11 +113,11 @@ public class HeloTest extends SMTPTestDummy {
    */
   @Test
   public void mailMultilineWelcomeTest() {
-    smtpServer.setAnswers("220-example.com ESMTP multiline",
-        "220-this server uses a multi-line welcome message",
+    smtpServer.setAnswers("220-example.com ESMTP multiline\n" +
+        "220-this server uses a multi-line welcome message\n" +
         "220 this is supposed to confuse spammers",
-        "250-example.com", 
-        "250-SIZE 48000000", 
+        "250-example.com\n" + 
+        "250-SIZE 48000000\n" + 
         "250 PIPELINING",
         "250 2.1.0 Ok", 
         "250 2.1.5 Ok",

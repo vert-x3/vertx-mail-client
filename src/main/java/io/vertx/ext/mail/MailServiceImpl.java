@@ -17,6 +17,7 @@ public class MailServiceImpl implements MailService {
 
   private Vertx vertx;
   private MailConfig config;
+  private boolean stopped = false;
 
   private ConnectionPool connectionPool;
 
@@ -37,8 +38,11 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public void stop() {
-    // may shut down the queue, if we implement one
     log.debug("mail service stopped");
+    if (!stopped) {
+      stopped = true;
+      connectionPool.stop();
+    }
   }
 
   @Override

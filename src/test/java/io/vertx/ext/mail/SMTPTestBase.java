@@ -109,6 +109,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
     mailService.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
+      mailService.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
@@ -127,6 +128,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
     mailService.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
+      mailService.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
@@ -145,6 +147,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
     mailService.sendMailString(email, message, result -> {
       log.info("mail finished");
       pass.passOnce();
+      mailService.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();

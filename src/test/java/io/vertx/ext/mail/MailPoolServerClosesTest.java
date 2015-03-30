@@ -120,8 +120,8 @@ public class MailPoolServerClosesTest {
 
     smtpServer.setCloseImmediately(false);
     smtpServer.setAnswers("220 example.com ESMTP",
-        "250-example.com",
-        "250-SIZE 1000000",
+        "250-example.com\n" +
+        "250-SIZE 1000000\n" +
         "250 PIPELINING",
         "250 2.1.0 Ok",
         "250 2.1.5 Ok",
@@ -182,8 +182,8 @@ public class MailPoolServerClosesTest {
   public void startSMTP() {
     smtpServer = new TestSmtpServer(vertx);
     smtpServer.setAnswers("220 example.com ESMTP",
-        "250-example.com",
-        "250-SIZE 1000000",
+        "250-example.com\n" +
+        "250-SIZE 1000000\n" +
         "250 PIPELINING",
         "250 2.1.0 Ok",
         "250 2.1.5 Ok",
