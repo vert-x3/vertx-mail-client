@@ -16,7 +16,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class SMTPQuit {
+class SMTPQuit {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPQuit.class);
 

@@ -15,7 +15,7 @@ import org.subethamail.wiser.Wiser;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public abstract class SMTPTestWiser extends SMTPTestBase {
+public class SMTPTestWiser extends SMTPTestBase {
 
   protected Wiser wiser;
 

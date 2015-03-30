@@ -5,7 +5,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
-public class SMTPStarter {
+class SMTPStarter {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPStarter.class);
 
@@ -46,7 +46,6 @@ public class SMTPStarter {
   private void handleError(Throwable throwable) {
     log.debug("handleError:"+throwable);
     if (connection != null) {
-      log.debug("connection.setInactive");
       connection.setBroken();
     }
     errorHandler.handle(throwable);

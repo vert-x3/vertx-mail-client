@@ -1,6 +1,6 @@
 package io.vertx.ext.mail;
 
-public class StatusCode {
+class StatusCode {
 
   private StatusCode() {
   }
