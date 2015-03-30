@@ -9,12 +9,10 @@ import org.junit.Before;
  * the server is currently a rather simple fake server that
  * just writes the replies to the socket and exits after 10 seconds
  *
- * TODO: the class currently isn't really abstract, maybe it would be better to make is regular class
- *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public abstract class SMTPTestDummy extends SMTPTestBase {
+public class SMTPTestDummy extends SMTPTestBase {
 
   protected TestSmtpServer smtpServer;
 

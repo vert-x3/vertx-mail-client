@@ -7,13 +7,13 @@ import io.vertx.test.core.VertxTestBase;
 /**
  * Support functions for SMTP tests
  *
- * this is an abstract class, the actual tests should extend a subclass
+ * the actual tests should extend a subclass
  * that starts and stops a fake smtp server
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public abstract class SMTPTestBase extends VertxTestBase {
+public class SMTPTestBase extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
 
@@ -183,9 +183,5 @@ public abstract class SMTPTestBase extends VertxTestBase {
   protected void testException() {
     runTestException(mailServiceDefault());
   }
-
-  public abstract void startSMTP();
-
-  public abstract void stopSMTP();
 
 }

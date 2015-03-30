@@ -10,7 +10,7 @@ import io.vertx.ext.mail.mailencoder.MailEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SMTPSendMail {
+class SMTPSendMail {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
 

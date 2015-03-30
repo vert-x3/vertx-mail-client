@@ -8,7 +8,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.util.Vector;
 
-public class ConnectionPool {
+class ConnectionPool {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
