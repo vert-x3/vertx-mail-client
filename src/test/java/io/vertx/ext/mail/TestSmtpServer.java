@@ -36,11 +36,6 @@ public class TestSmtpServer {
     startServer(vertx);
   }
 
-  public TestSmtpServer(Vertx vertx, String answers) {
-    setAnswers(answers);
-    startServer(vertx);
-  }
-
   public TestSmtpServer(Vertx vertx, String... answers) {
     setAnswers(answers);
     startServer(vertx);
