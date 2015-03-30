@@ -1,10 +1,12 @@
 package io.vertx.ext.mail;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import io.vertx.core.Vertx;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.parsetools.RecordParser;
 
 /*
  * really dumb mock test server that just replays a number of lines
@@ -13,7 +15,7 @@ import io.vertx.core.net.NetServerOptions;
 public class TestSmtpServer {
 
   private NetServer netServer;
-  private String answers;
+  private String[] answers;
   private boolean closeImmediately=false;
 
   /*
@@ -23,8 +25,8 @@ public class TestSmtpServer {
    */
   public TestSmtpServer(Vertx vertx) {
     setAnswers("220 example.com ESMTP",
-        "250-example.com",
-        "250-SIZE 1000000",
+        "250-example.com\n" +
+        "250-SIZE 1000000\n" +
         "250 PIPELINING",
         "250 2.1.0 Ok",
         "250 2.1.5 Ok",
@@ -50,14 +52,21 @@ public class TestSmtpServer {
     netServer = vertx.createNetServer(nsOptions);
 
     netServer.connectHandler(socket -> {
-      socket.write(answers);
-      // wait 10 seconds for the protocol to finish
-      // unless we want to simulate protocol errors
-      if(closeImmediately) {
-        socket.close();
-      } else {
-        vertx.setTimer(10000, v -> socket.close());
-      }
+      socket.write(answers[0]+"\r\n");
+      AtomicInteger lines= new AtomicInteger(1);
+      socket.handler(RecordParser.newDelimited("\n", buffer -> {
+        if(lines.get() < answers.length) {
+          socket.write(answers[lines.getAndIncrement()]+"\r\n");
+        } else {
+          // wait 10 seconds for the protocol to finish
+          // unless we want to simulate protocol errors
+          if(closeImmediately) {
+            socket.close();
+          } else {
+            vertx.setTimer(10000, v -> socket.close());
+          }
+        }
+      }));
     });
     CountDownLatch latch = new CountDownLatch(1);
     netServer.listen(r -> latch.countDown());
@@ -69,11 +78,11 @@ public class TestSmtpServer {
   }
 
   public void setAnswers(String answers) {
-    this.answers = answers;
+    this.answers = new String[] {answers};
   }
 
   public void setAnswers(String... answers) {
-    this.answers = String.join("\r\n", answers) + "\r\n";
+    this.answers = answers;
   }
 
   public void setCloseImmediately(boolean close) {

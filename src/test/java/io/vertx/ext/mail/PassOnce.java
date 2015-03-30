@@ -19,7 +19,7 @@ import io.vertx.core.Handler;
 
 class PassOnce {
 
-  boolean passed;
+  private boolean passed;
   private final Handler<String> fail;
 
   public PassOnce(Handler<String> fail) {

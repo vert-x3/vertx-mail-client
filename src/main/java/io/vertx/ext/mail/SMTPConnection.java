@@ -27,7 +27,6 @@ class SMTPConnection {
   private NetClient client;
   private Handler<String> commandReplyHandler;
   private Handler<Throwable> errorHandler;
-  //  private boolean active;
   private boolean broken;
   private boolean idle;
 
@@ -153,7 +152,10 @@ class SMTPConnection {
           if (commandReplyHandler == null) {
             log.debug("dropping reply arriving after we stopped processing \"" + buffer.toString() + "\"");
           } else {
-            commandReplyHandler.handle(buffer.toString());
+            // make sure we only call the handler once
+            Handler<String> currentHandler = commandReplyHandler;
+            commandReplyHandler = null;
+            currentHandler.handle(buffer.toString());
           }
         });
         ns.handler(mlp);
@@ -171,10 +173,6 @@ class SMTPConnection {
   void upgradeToSsl(Handler<Void> handler) {
     ns.upgradeToSsl(handler);
   }
-
-  //  public boolean isActive() {
-  //    return active;
-  //  }
 
   public boolean isBroken() {
     return broken;

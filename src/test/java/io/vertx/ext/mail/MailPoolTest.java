@@ -27,6 +27,8 @@ public class MailPoolTest {
 
   Vertx vertx = Vertx.vertx();
 
+  MailService mailService;
+
   @Test
   public void mailTest(TestContext context) {
     log.info("starting");
@@ -35,15 +37,20 @@ public class MailPoolTest {
 
     MailService mailService = MailService.create(vertx, mailConfig());
 
-    MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-        .setSubject("Test email").setText("this is a message");
+    MailMessage email = exampleMessage();
+
+    PassOnce pass1 = new PassOnce(s -> context.fail(s));
+    PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         mailService.sendMail(email, result2 -> {
           log.info("mail finished");
+          pass2.passOnce();
+          mailService.stop();
           if (result2.succeeded()) {
             log.info(result2.result().toString());
             async.complete();
@@ -59,6 +66,14 @@ public class MailPoolTest {
     });
   }
 
+  /**
+   * @return
+   */
+  private MailMessage exampleMessage() {
+    return new MailMessage().setFrom("user@example.com").setTo("user@example.com")
+        .setSubject("Test email").setText("this is a message");
+  }
+
   @Test
   public void mailConcurrentTest(TestContext context) {
     log.info("starting");
@@ -68,11 +83,14 @@ public class MailPoolTest {
 
     MailService mailService = MailService.create(vertx, mailConfig());
 
-    MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-        .setSubject("Test email").setText("this is a message");
+    MailMessage email = exampleMessage();
+
+    PassOnce pass1 = new PassOnce(s -> context.fail(s));
+    PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
+      pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         mail1.complete();
@@ -84,6 +102,7 @@ public class MailPoolTest {
 
     mailService.sendMail(email, result2 -> {
       log.info("mail finished");
+      pass2.passOnce();
       if (result2.succeeded()) {
         log.info(result2.result().toString());
         mail2.complete();
@@ -105,16 +124,22 @@ public class MailPoolTest {
 
       MailService mailService = MailService.create(vertx, mailConfig());
 
-      MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-          .setSubject("Test email").setText("this is a message");
+      MailMessage email = exampleMessage();
+
+      PassOnce pass1 = new PassOnce(s -> context.fail(s));
+      PassOnce pass2 = new PassOnce(s -> context.fail(s));
+      PassOnce pass3 = new PassOnce(s -> context.fail(s));
+      PassOnce pass4 = new PassOnce(s -> context.fail(s));
 
       log.info("starting mail 1");
       mailService.sendMail(email, result -> {
         log.info("mail finished");
+        pass1.passOnce();
         if (result.succeeded()) {
           log.info(result.result().toString());
           mailService.sendMail(email, result2 -> {
             log.info("mail finished");
+            pass2.passOnce();
             if (result2.succeeded()) {
               log.info(result2.result().toString());
               mail1.complete();
@@ -132,10 +157,12 @@ public class MailPoolTest {
       log.info("starting mail 2");
       mailService.sendMail(email, result -> {
         log.info("mail finished");
+        pass3.passOnce();
         if (result.succeeded()) {
           log.info(result.result().toString());
           mailService.sendMail(email, result2 -> {
             log.info("mail finished");
+            pass4.passOnce();
             if (result2.succeeded()) {
               log.info(result2.result().toString());
               mail2.complete();
@@ -163,6 +190,7 @@ public class MailPoolTest {
 
   @Before
   public void startSMTP() {
+    mailService = MailService.create(vertx, mailConfig());
     wiser = new Wiser();
     wiser.setPort(1587);
     wiser.start();
@@ -170,6 +198,7 @@ public class MailPoolTest {
 
   @After
   public void stopSMTP() {
+    mailService.stop();
     if (wiser != null) {
       wiser.stop();
     }
