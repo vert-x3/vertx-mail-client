@@ -33,12 +33,9 @@ public class UtilsTest {
   }
 
   // convert windows style line endings
+  // TODO: not sure why the java8 base64 classes use CRLF
   private String conv2nl(String string) {
-    if(System.lineSeparator().equals("\n")) {
-      return string;
-    } else {
-      return string.replace(System.lineSeparator(), "\n");
-    }
+      return string.replace("\r\n", "\n");
   }
   
 }
