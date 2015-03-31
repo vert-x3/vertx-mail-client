@@ -20,7 +20,7 @@ public class TestSmtpServer {
   private static final Logger log = LoggerFactory.getLogger(TestSmtpServer.class);
 
   private NetServer netServer;
-  private String[] answers;
+  private String[] dialogue;
   private boolean closeImmediately = false;
 
   /*
@@ -28,20 +28,25 @@ public class TestSmtpServer {
    * one recipient
    */
   public TestSmtpServer(Vertx vertx) {
-    setAnswers("220 example.com ESMTP",
+    setDialogue("220 example.com ESMTP",
+        "EHLO",
         "250-example.com\n" +
-            "250-SIZE 1000000\n" +
-            "250 PIPELINING",
-            "250 2.1.0 Ok",
-            "250 2.1.5 Ok",
-            "354 End data with <CR><LF>.<CR><LF>",
-            "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "250-SIZE 1000000\n" +
+        "250 PIPELINING",
+        "MAIL FROM:",
+        "250 2.1.0 Ok",
+        "RCPT TO:",
+        "250 2.1.5 Ok",
+        "DATA",
+        "354 End data with <CR><LF>.<CR><LF>",
+        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
         "221 2.0.0 Bye");
     startServer(vertx);
   }
 
   public TestSmtpServer(Vertx vertx, String... answers) {
-    setAnswers(answers);
+    setDialogue(answers);
     startServer(vertx);
   }
 
@@ -51,25 +56,34 @@ public class TestSmtpServer {
     netServer = vertx.createNetServer(nsOptions);
 
     netServer.connectHandler(socket -> {
-      socket.write(answers[0] + "\r\n");
-      log.debug("S:" + answers[0]);
+      socket.write(dialogue[0] + "\r\n");
+      log.debug("S:" + dialogue[0]);
       final AtomicInteger lines = new AtomicInteger(1);
       final AtomicInteger skipUntilDot = new AtomicInteger(0);
       socket.handler(RecordParser.newDelimited("\r\n", buffer -> {
-        log.debug("C:" + buffer);
+        final String inputLine = buffer.toString();
         if(skipUntilDot.get() == 1) {
-          if(buffer.toString().equals(".")) {
+          if(inputLine.equals(".")) {
             skipUntilDot.set(0);
-            log.debug("S:" + answers[lines.get()]);
-            socket.write(answers[lines.getAndIncrement()] + "\r\n");
+            log.debug("S:" + dialogue[lines.get()]);
+            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
           }
         } else {
-          if(buffer.toString().toUpperCase(Locale.ENGLISH).equals("DATA")) {
+          log.debug("C:" + inputLine);
+          int currentLine = lines.getAndIncrement();
+          if(currentLine < dialogue.length) {
+            if(!inputLine.contains(dialogue[currentLine])) {
+              socket.write("500 didn't expect that command");
+            }
+          } else {
+            socket.write("500 out of lines");
+          }
+          if(inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);
           }
-          if (lines.get() < answers.length) {
-            log.debug("S:" + answers[lines.get()]);
-            socket.write(answers[lines.getAndIncrement()] + "\r\n");
+          if (lines.get() < dialogue.length) {
+            log.debug("S:" + dialogue[lines.get()]);
+            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
           } else {
             // wait 10 seconds for the protocol to finish
             // unless we want to simulate protocol errors
@@ -91,12 +105,12 @@ public class TestSmtpServer {
     }
   }
 
-  public void setAnswers(String answers) {
-    this.answers = new String[] { answers };
-  }
+//  public void setDialogue(String dialogue) {
+//    this.dialogue = new String[] { dialogue };
+//  }
 
-  public void setAnswers(String... answers) {
-    this.answers = answers;
+  public void setDialogue(String... dialogue) {
+    this.dialogue = dialogue;
   }
 
   public void setCloseImmediately(boolean close) {

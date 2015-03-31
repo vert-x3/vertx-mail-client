@@ -13,13 +13,19 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void mailEhloMissingTest() {
-    smtpServer.setAnswers("220 example.com ESMTP",
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "",
         "402 4.5.2 Error: command not recognized", 
+        "",
         "250 example.com",
+        "",
         "250 2.1.0 Ok", 
+        "",
         "250 2.1.5 Ok",
+        "",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
@@ -28,12 +34,17 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void mailNoEsmtpTest() {
-    smtpServer.setAnswers("220 example.com",
+    smtpServer.setDialogue("220 example.com",
+        "",
         "250 example.com",
+        "",
         "250 2.1.0 Ok", 
+        "",
         "250 2.1.5 Ok",
+        "",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
@@ -45,21 +56,22 @@ public class HeloTest extends SMTPTestDummy {
    */
   @Test
   public void replyAfterQuitTest() {
-    smtpServer.setAnswers("220 example.com ESMTP",
-        // EHLO
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
         "250-example.com\n" + 
         "250-SIZE 48000000\n" + 
         "250 PIPELINING",
-        // MAIL FROM
+        "MAIL FROM",
         "250 2.1.0 Ok",
-        // RCPT TO
+        "RCPT TO",
         "250 2.1.5 Ok",
-        // DATA
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         // message data
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-        // QUIT
+        "QUIT",
         "221 2.0.0 Bye",
+        "",
         // this should not happen:
         "this is unexpected"
         );
@@ -70,7 +82,7 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void serverUnavailableTest() {
-    smtpServer.setAnswers("400 cannot talk to you right now\r\n");
+    smtpServer.setDialogue("400 cannot talk to you right now");
     smtpServer.setCloseImmediately(true);
 
     testException();
@@ -83,14 +95,19 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void stlsMissingTest() {
-    smtpServer.setAnswers("220 example.com ESMTP multiline",
+    smtpServer.setDialogue("220 example.com ESMTP multiline",
+        "EHLO",
         "250-example.com\n" + 
         "250-SIZE 48000000\n" + 
         "250 PIPELINING",
+        "MAIL FROM",
         "250 2.1.0 Ok", 
+        "RCPT TO",
         "250 2.1.5 Ok",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
@@ -99,7 +116,7 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void closeOnConnectTest() {
-    smtpServer.setAnswers("");
+    smtpServer.setDialogue("");
     smtpServer.setCloseImmediately(true);
 
     testException();
@@ -113,16 +130,21 @@ public class HeloTest extends SMTPTestDummy {
    */
   @Test
   public void mailMultilineWelcomeTest() {
-    smtpServer.setAnswers("220-example.com ESMTP multiline\n" +
+    smtpServer.setDialogue("220-example.com ESMTP multiline\n" +
         "220-this server uses a multi-line welcome message\n" +
         "220 this is supposed to confuse spammers",
+        "EHLO",
         "250-example.com\n" + 
         "250-SIZE 48000000\n" + 
         "250 PIPELINING",
+        "MAIL FROM",
         "250 2.1.0 Ok", 
+        "RCPT TO",
         "250 2.1.5 Ok",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
@@ -135,7 +157,7 @@ public class HeloTest extends SMTPTestDummy {
    */
   @Test
   public void closeAfterBannerTest() {
-    smtpServer.setAnswers("220 example.com ESMTP\r\n");
+    smtpServer.setDialogue("220 example.com ESMTP");
     smtpServer.setCloseImmediately(true);
 
     testException();

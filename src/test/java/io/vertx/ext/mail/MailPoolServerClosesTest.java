@@ -119,14 +119,19 @@ public class MailPoolServerClosesTest {
     log.info("starting");
 
     smtpServer.setCloseImmediately(false);
-    smtpServer.setAnswers("220 example.com ESMTP",
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
         "250-example.com\n" +
         "250-SIZE 1000000\n" +
         "250 PIPELINING",
+        "MAIL FROM",
         "250 2.1.0 Ok",
+        "RCPT TO",
         "250 2.1.5 Ok",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "RSET",
         "500 xxx");
 
     Async mail1 = context.async();
@@ -181,14 +186,20 @@ public class MailPoolServerClosesTest {
   @Before
   public void startSMTP() {
     smtpServer = new TestSmtpServer(vertx);
-    smtpServer.setAnswers("220 example.com ESMTP",
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
         "250-example.com\n" +
         "250-SIZE 1000000\n" +
         "250 PIPELINING",
+        "MAIL FROM",
         "250 2.1.0 Ok",
+        "RCPT TO",
         "250 2.1.5 Ok",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789");
+        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
+        "221 2.0.0 Bye");
   }
 
   @After

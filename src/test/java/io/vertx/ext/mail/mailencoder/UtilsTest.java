@@ -22,5 +22,23 @@ public class UtilsTest {
   public void testDate() {
     System.out.println(Utils.generateDate());
   }
+
+  @Test
+  public void testBase64() {
+    assertEquals("", Utils.base64(""));
+    assertEquals("Kg==", Utils.base64("*"));
+    assertEquals("KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq\n" + 
+        "KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg==",
+        conv2nl(Utils.base64("**********************************************************************************************")));
+  }
+
+  // convert windows style line endings
+  private String conv2nl(String string) {
+    if(System.lineSeparator().equals("\n")) {
+      return string;
+    } else {
+      return string.replace(System.lineSeparator(), "\n");
+    }
+  }
   
 }
