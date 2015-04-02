@@ -1,5 +1,9 @@
 == MailConfig
 
+++++
+ represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
+++++
+'''
 
 [cols=">25%,^25%,50%"]
 [frame="topbot"]
