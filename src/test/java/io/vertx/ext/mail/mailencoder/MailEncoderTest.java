@@ -1,5 +1,6 @@
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
@@ -33,20 +34,19 @@ public class MailEncoderTest {
     List<MailAttachment> attachments = new ArrayList<MailAttachment>();
 
     attachments
-        .add(new MailAttachment().setData(
-            "****************************************************************************************").setName(
-            "file.txt"));
-
-    attachments.add(new MailAttachment().setData("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"));
-
-    // this one is incorrect since the data has to be only values between
-    // 0x00-0xff
-    attachments.add(new MailAttachment()
-        .setData("испытание"));
-
-    attachments
         .add(new MailAttachment()
-            .setData("\u00D0\u00B8\u00D1\u0081\u00D0\u00BF\u00D1\u008B\u00D1\u0082\u00D0\u00B0\u00D0\u00BD\u00D0\u00B8\u00D0\u00B5"));
+          .setData(Buffer.buffer("****************************************************************************************"))
+          .setName("file.txt"));
+
+    attachments.add(new MailAttachment().setData(Buffer.buffer("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")));
+
+    attachments.add(new MailAttachment()
+        .setData(Buffer.buffer("испытание", "UTF-8")));
+
+    attachments.add(new MailAttachment().setData(
+        Buffer.buffer(new byte[] { (byte) 0xD0, (byte) 0xB8, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xBF,
+            (byte) 0xD1, (byte) 0x8B, (byte) 0xD1, (byte) 0x82, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xBD,
+            (byte) 0xD0, (byte) 0xB8, (byte) 0xD0, (byte) 0xB5 })));
 
     message.setAttachment(attachments);
 
@@ -55,8 +55,8 @@ public class MailEncoderTest {
   }
 
   /*
-   * test completely empty message doesn't make much sense but should not give a
-   * NPE of course
+   * test completely empty message, doesn't make much sense but should not give a
+   * NPE at least
    */
   @Test
   public void testEmptyMsg() {
@@ -330,7 +330,7 @@ public class MailEncoderTest {
     MailMessage message = new MailMessage();
     MailAttachment attachment = new MailAttachment();
     attachment.setContentType("application/x-something")
-      .setData("***")
+      .setData(Buffer.buffer("***"))
       .setDescription("description")
       .setDisposition("attachment")
       .setName("file.txt");

@@ -13,9 +13,6 @@
 |[[name]]`name`
 |`String`
 |-
-|[[data]]`data`
-|`String`
-|-
 |[[contentType]]`contentType`
 |`String`
 |-

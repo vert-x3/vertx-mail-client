@@ -32,11 +32,12 @@ mailService.sendMail(email, function (result, result_err) {
 });
 
 ----
-attachments can be added by converting them to String representation of the bytes
+attachments can be added as Buffer object
 
 [source,js]
 ----
 var MailService = require("vertx-mail-js/mail_service");
+var Buffer = require("vertx-js/buffer");
 // default config will use localhost:25
 var mailConfig = {
 };
@@ -52,7 +53,7 @@ var email = {
 
 var attachment = {
   "name" : "file.dat",
-  "data" : "ASDF1234\u0000\u0001\u0080\u00FF\n"
+  "data" : Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
 };
 
 email.attachment = attachment;

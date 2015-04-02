@@ -20,4 +20,9 @@ public class MissingToTest extends SMTPTestDummy {
     testException(new MailMessage().setTo("user@example.com"));
   }
 
+  @Test
+  public void mailBounceAddrOnlyTest() {
+    testSuccess(new MailMessage().setBounceAddress("from@example.com").setBcc("user@example.com"));
+  }
+
 }

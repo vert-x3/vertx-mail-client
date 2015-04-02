@@ -32,11 +32,12 @@ mailService.sendMail(email, { result ->
 })
 
 ----
-attachments can be added by converting them to String representation of the bytes
+attachments can be added as Buffer object
 
 [source,groovy]
 ----
 import io.vertx.groovy.ext.mail.MailService
+import io.vertx.groovy.core.buffer.Buffer
 // default config will use localhost:25
 def mailConfig = [:]
 
@@ -51,7 +52,7 @@ def email = [
 
 def attachment = [
   name:"file.dat",
-  data:"ASDF1234\u0000\u0001\u0080\u00FF\n"
+  data:Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
 ]
 
 email.attachment = attachment

@@ -82,21 +82,21 @@ public class MailTest extends VertxTestBase {
     List<MailAttachment> list=new ArrayList<MailAttachment>();
 
     list.add(new MailAttachment()
-      .setData(new String(image.getBytes(), "ISO-8859-1"))
+      .setData(image)
       .setName("logo-white-big.png")
       .setContentType("image/png")
       .setDisposition("inline")
       .setDescription("logo of vert.x web page"));
 
     list.add(new MailAttachment()
-      .setData("this is a text attachment")
+      .setData(Buffer.buffer("this is a text attachment"))
       .setName("file.txt")
       .setContentType("text/plain")
       .setDisposition("attachment")
       .setDescription("some text"));
 
     list.add(new MailAttachment()
-      .setData("\u00D0\u0097\u00D0\u00BD\u00D0\u00B0\u00D0\u00BC\u00D0\u00B5\u00D0\u00BD\u00D0\u00B8\u00D1\u0082\u00D0\u00BE\u00D1\u0081\u00D1\u0082\u00D0\u00B8")
+      .setData(Buffer.buffer("\u00D0\u0097\u00D0\u00BD\u00D0\u00B0\u00D0\u00BC\u00D0\u00B5\u00D0\u00BD\u00D0\u00B8\u00D1\u0082\u00D0\u00BE\u00D1\u0081\u00D1\u0082\u00D0\u00B8"))
       .setName("file2.txt")
       .setContentType("text/plain; charset=utf-8")
       .setDisposition("attachment")

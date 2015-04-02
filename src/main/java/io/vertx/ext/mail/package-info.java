@@ -22,7 +22,7 @@
  * ----
  * {@link examples.Examples#example1}
  * ----
- * attachments can be added by converting them to String representation of the bytes
+ * attachments can be added as Buffer object
  *
  * [source,$lang]
  * ----

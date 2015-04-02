@@ -30,10 +30,10 @@ suite.test("mail_test_case", function(context) {
       "subject" : "Test email",
       "text" : "this is a mail message",
       "attachment" : [ {
-        "data" : "attachment file content",
+        "data" : "YXR0YWNobWVudCBmaWxlIGNvbnRlbnQ=",
         "content-type" : "text/plain"
       }, {
-        "data" : "\0\0\0\0"
+        "data" : "AAAA"
           // "content-type": "application/octet-stream"
       } ]
   };

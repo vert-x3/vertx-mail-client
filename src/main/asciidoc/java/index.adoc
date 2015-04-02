@@ -28,7 +28,7 @@ mailService.sendMail(email, result -> {
   }
 });
 ----
-attachments can be added by converting them to String representation of the bytes
+attachments can be added as Buffer object
 
 [source,java]
 ----
@@ -44,7 +44,7 @@ MailMessage email = new MailMessage()
 
 MailAttachment attachment = new MailAttachment()
 .setName("file.dat")
-.setData("ASDF1234\0\u0001\u0080\u00ff\n");
+.setData(Buffer.buffer("ASDF1234\0\u0001\u0080\u00ff\n"));
 
 email.setAttachment(attachment);
 
