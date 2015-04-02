@@ -9,6 +9,12 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+/**
+ * represent a mail message that can be sent via the MailService
+ *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ */
 @DataObject
 public class MailMessage {
 
@@ -22,9 +28,16 @@ public class MailMessage {
   private String html;
   private List<MailAttachment> attachment;
 
+  /**
+   * construct empty mail message that can be used with the setters
+   */
   public MailMessage() {
   }
 
+  /**
+   * copy object to another @link MailMessage object
+   * @param other object to copy
+   */
   public MailMessage(MailMessage other) {
     Objects.requireNonNull(other);
     this.bounceAddress = other.bounceAddress;
@@ -44,6 +57,10 @@ public class MailMessage {
     }
   }
 
+  /**
+   * construct object from a JsonObject representation
+   * @param json json object to copy
+   */
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
     this.bounceAddress = json.getString("bounceAddress");
@@ -87,7 +104,13 @@ public class MailMessage {
     }
   }
 
-  // construct a simple message with text/plain
+  /**
+   * construct a simple message with text/plain
+   * @param from from email address
+   * @param to string to email address
+   * @param subject subject of the mail
+   * @param text plain text of the message body
+   */
   public MailMessage(String from, String to, String subject, String text) {
     this.from = from;
     this.to = asList(to);
@@ -95,110 +118,214 @@ public class MailMessage {
     this.text = text;
   }
 
+  /**
+   * get bounce address of this mail
+   * @return bounce address
+   */
   public String getBounceAddress() {
     return bounceAddress;
   }
 
+  /**
+   * set bounce address of this mail
+   * @param bounceAddress bounce address
+   * @return this to be able to use it fluently
+   */
   public MailMessage setBounceAddress(String bounceAddress) {
     this.bounceAddress = bounceAddress;
     return this;
   }
 
+  /**
+   * get from address of this mail
+   * @return from address
+   */
   public String getFrom() {
     return from;
   }
 
+  /**
+   * set from address of this mail
+   * @param from from addrss
+   * @return this to be able to use it fluently
+   */
   public MailMessage setFrom(String from) {
     this.from = from;
     return this;
   }
 
+  /**
+   * get list of to addresses
+   * @return List of to addresses
+   */
   public List<String> getTo() {
     return to;
   }
 
+  /**
+   * set list of to addresses
+   * @param to List of to addresses
+   * @return this to be able to use it fluently
+   */
   public MailMessage setTo(List<String> to) {
     this.to = to;
     return this;
   }
 
-  // helper method for single recipient
+  /**
+   * helper method for single recipient
+   * @param to to address
+   * @return this to be able to use it fluently
+   */
   public MailMessage setTo(String to) {
     this.to = asList(to);
     return this;
   }
 
+  /**
+   * get list of cc addresses
+   * @return List of cc addresses
+   */
   public List<String> getCc() {
     return cc;
   }
 
+  /**
+   * set list of cc addresses
+   * @param cc List of cc addresses
+   * @return this to be able to use it fluently
+   */
   public MailMessage setCc(List<String> cc) {
     this.cc = cc;
     return this;
   }
 
-  // helper method for single recipient
+  /**
+   * helper method for single recipient
+   * @param cc cc address
+   * @return this to be able to use it fluently
+   */
   public MailMessage setCc(String cc) {
     this.cc = asList(cc);
     return this;
   }
 
+  /**
+   * get list of bcc addresses
+   * @return List of bcc addresses
+   */
   public List<String> getBcc() {
     return bcc;
   }
 
+  /**
+   * set list of bcc addresses
+   * @param to List of bcc addresses
+   * @return this to be able to use it fluently
+   */
   public MailMessage setBcc(List<String> bcc) {
     this.bcc = bcc;
     return this;
   }
 
-  // helper method for single recipient
+  /**
+   * helper method for single recipient
+   * @param bcc bcc address
+   * @return this to be able to use it fluently
+   */
   public MailMessage setBcc(String bcc) {
     this.bcc = asList(bcc);
     return this;
   }
 
+  /**
+   * get the subject of this mail
+   * @return the subject
+   */
   public String getSubject() {
     return subject;
   }
 
+  /**
+   * set the subject of this mail
+   * @param subject the subject
+   * @return this to be able to use it fluently
+   */
   public MailMessage setSubject(String subject) {
     this.subject = subject;
     return this;
   }
 
+  /**
+   * get the plain text of this mail
+   * @return the text
+   */
   public String getText() {
     return text;
   }
 
+  /**
+   * set the plain text of this mail
+   * @param text the text
+   * @return this to be able to use it fluently
+   */
   public MailMessage setText(String text) {
     this.text = text;
     return this;
   }
 
+  /**
+   * get the html text of this mail
+   * @return the text
+   */
   public String getHtml() {
     return html;
   }
 
+  /**
+   * set the html text of this mail
+   * @param text the text
+   * @return this to be able to use it fluently
+   */
   public MailMessage setHtml(String html) {
     this.html = html;
     return this;
   }
 
+  /**
+   * get the list of attachments of this mail
+   * @return List of attachment
+   */
   public List<MailAttachment> getAttachment() {
     return attachment;
   }
 
+  /**
+   * set the list of attachments of this mail
+   * @param attachment List of attachment
+   * @return
+   */
   public MailMessage setAttachment(List<MailAttachment> attachment) {
     this.attachment = attachment;
     return this;
   }
 
+  /**
+   * set a single attachment of this mail
+   * the result of getAttachment when using this method returns an unmodifiable list, if you want to
+   * be able to add attachments later, please use {@code setAttachment(new ArrayList<MailAttachment>())} instead 
+   * @param attachment the attachment to add
+   * @return this to be able to use it fluently
+   */
   public MailMessage setAttachment(MailAttachment attachment) {
     this.attachment = Arrays.asList(attachment);
     return this;
   }
 
+  /**
+   * convert the mail message to Json representation
+   * @return the json object
+   */
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     putIfNotNull(json, "bounceAddress", bounceAddress);
@@ -224,6 +351,9 @@ public class MailMessage {
     return objects;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -236,6 +366,9 @@ public class MailMessage {
     return getList().equals(message.getList());
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     return getList().hashCode();

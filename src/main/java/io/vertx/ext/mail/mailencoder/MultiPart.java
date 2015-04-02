@@ -4,7 +4,7 @@ import java.util.List;
 
 import io.vertx.core.http.CaseInsensitiveHeaders;
 
-public class MultiPart extends EncodedPart {
+class MultiPart extends EncodedPart {
 
   public MultiPart(List<EncodedPart> parts, String mode) {
 

@@ -7,6 +7,12 @@ import java.util.Locale;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
+ * 
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ */
 @DataObject
 public class MailConfig {
 
@@ -39,6 +45,9 @@ public class MailConfig {
    */
   private boolean ssl;
 
+  /**
+   * construct a config object with default options
+   */
   public MailConfig() {
     this.hostname = DEFAULT_HOST;
     this.port = DEFAULT_PORT;
@@ -46,6 +55,10 @@ public class MailConfig {
     this.login = DEFAULT_LOGIN;
   }
 
+  /**
+   * construct a config object with hostname and default options
+   * @param hostname the hostname of the mail server
+   */
   public MailConfig(String hostname) {
     this.hostname = hostname;
     this.port = DEFAULT_PORT;
@@ -53,6 +66,11 @@ public class MailConfig {
     this.login = DEFAULT_LOGIN;
   }
 
+  /**
+   * construct a config object with hostname/port and default options
+   * @param hostname the hostname of the mail server
+   * @param port the port of the mail server
+   */
   public MailConfig(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
@@ -60,6 +78,13 @@ public class MailConfig {
     this.login = DEFAULT_LOGIN;
   }
 
+  /**
+   * construct a config object with hostname/port and security and login options
+   * @param hostname the hostname of the mail server
+   * @param port the port of the mail server
+   * @param starttls whether to use TLS or not
+   * @param login whether to use Login or not
+   */
   public MailConfig(String hostname, int port, StarttlsOption starttls, LoginOption login) {
     this.hostname = hostname;
     this.port = port;
@@ -67,6 +92,10 @@ public class MailConfig {
     this.login = login;
   }
 
+  /**
+   * copy config object from another MailConfig object 
+   * @param other the object to be copied
+   */
   public MailConfig(MailConfig other) {
     this.hostname = other.hostname;
     this.port = other.port;
@@ -77,6 +106,10 @@ public class MailConfig {
     this.ssl = other.ssl;
   }
 
+  /**
+   * construct config object from Json representation
+   * @param config the config to copy
+   */
   public MailConfig(JsonObject config) {
     hostname = config.getString("hostname", DEFAULT_HOST);
     port = config.getInteger("port", DEFAULT_PORT);
@@ -93,6 +126,10 @@ public class MailConfig {
     ssl = config.getBoolean("ssl", false);
   }
 
+  /**
+   * get the hostname of the mailserver
+   * @return hostname
+   */
   public String getHostname() {
     return hostname;
   }
@@ -108,6 +145,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get the port of the mailserver
+   * @return port
+   */
   public int getPort() {
     return port;
   }
@@ -123,12 +164,16 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get security (TLS) options
+   * @return the security options
+   */
   public StarttlsOption getStarttls() {
     return starttls;
   }
 
   /**
-   * Set the tlssecurity mode for the connection.
+   * Set the tls security mode for the connection.
    *
    * Either NONE, OPTIONAL or REQUIRED
    *
@@ -140,6 +185,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get login options
+   * @return the login options
+   */
   public LoginOption getLogin() {
     return login;
   }
@@ -157,6 +206,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get username
+   * @return username
+   */
   public String getUsername() {
     return username;
   }
@@ -172,6 +225,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get password
+   * @return password
+   */
   public String getPassword() {
     return password;
   }
@@ -187,6 +244,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * get whether ssl is used on connect
+   * @return ssl option
+   */
   public boolean isSsl() {
     return ssl;
   }
@@ -202,6 +263,10 @@ public class MailConfig {
     return this;
   }
 
+  /**
+   * convert config object to Json representation
+   * @return json object of the config
+   */
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     if (hostname != null) {
@@ -232,6 +297,9 @@ public class MailConfig {
     return objects;
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#equals(java.lang.Object)
+   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -244,6 +312,9 @@ public class MailConfig {
     return getList().equals(config.getList());
   }
 
+  /* (non-Javadoc)
+   * @see java.lang.Object#hashCode()
+   */
   @Override
   public int hashCode() {
     return getList().hashCode();

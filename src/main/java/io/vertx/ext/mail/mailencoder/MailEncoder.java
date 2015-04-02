@@ -11,16 +11,43 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * create MIME mail messages from a MailMessage object
+ * <p>
+ * example usage is:
+ * <pre>{@code
+ * MailMessage = new MailMessage();
+ * (set elements and attachments ...)
+ * String message = new MailEncoder(mailmessage).encode();
+ * }</pre>
+ *
+ * usually you are not using this class directly, rather it will be used by {@code sendMail()} in MailServiceImpl 
+ *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ */
 public class MailEncoder {
 
   private static final Logger log = LoggerFactory.getLogger(MailEncoder.class);
 
   private MailMessage message;
 
+  /**
+   * create a MailEncoder for the message
+   * <p>
+   * The class will probably get a few setters for optional features of the SMTP protocol later
+   * e.g. 8BIT or SMTPUTF (this is not yet supported)
+   * 
+   * @param message the message to encode later
+   */
   public MailEncoder(MailMessage message) {
     this.message = message;
   }
 
+  /**
+   * encode the MailMessage to a String
+   * @return the encoded message
+   */
   public String encode() {
     EncodedPart completeMessage;
     EncodedPart mainPart;

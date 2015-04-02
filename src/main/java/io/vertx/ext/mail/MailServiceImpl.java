@@ -8,6 +8,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 
 /**
+ * MailService implementation for sending mails inside the local JVM
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
@@ -21,6 +23,13 @@ public class MailServiceImpl implements MailService {
 
   private ConnectionPool connectionPool;
 
+  /**
+   * construct a MailService object with the vertx and config configuration
+   * <p>
+   * this is used by MailService.create
+   * @param vertx the Vertx instance the mails will be sent in
+   * @param config the configuration of the mailserver
+   */
   public MailServiceImpl(Vertx vertx, MailConfig config) {
     if (connectionPool == null) {
       connectionPool = new ConnectionPool(vertx);
