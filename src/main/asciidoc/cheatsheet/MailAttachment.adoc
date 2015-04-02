@@ -1,7 +1,7 @@
 == MailAttachment
 
 ++++
- @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ represent a mail attachment that can be used in a MailMessage
 ++++
 '''
 
@@ -12,13 +12,21 @@
 
 |[[name]]`name`
 |`String`
-|-
+|+++
+set the name+++
+
 |[[contentType]]`contentType`
 |`String`
-|-
+|+++
+set the Content-Type+++
+
 |[[disposition]]`disposition`
 |`String`
-|-
+|+++
+set the disposition field to be used in the attachment+++
+
 |[[description]]`description`
 |`String`
-|-|===
+|+++
+set the description field to be used in the attachment+++
+|===

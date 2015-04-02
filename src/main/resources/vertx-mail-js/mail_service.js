@@ -25,7 +25,8 @@ var MailMessage = io.vertx.ext.mail.MailMessage;
 var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
-
+ smtp mail service for vert.x
+ 
  @class
 */
 var MailService = function(j_val) {
@@ -34,11 +35,12 @@ var MailService = function(j_val) {
   var that = this;
 
   /**
+   send a single mail via MailService
 
    @public
-   @param email {Object} 
-   @param resultHandler {function} 
-   @return {MailService}
+   @param email {Object} MailMessage object containing the mail text, from/to, attachments etc 
+   @param resultHandler {function} will be called when the operation is finished or it fails the result JsonObject currently only contains {@code {"result":"success"}} 
+   @return {MailService} the MailService instance so the method can be used fluently
    */
   this.sendMail = function(email, resultHandler) {
     var __args = arguments;
@@ -55,12 +57,16 @@ var MailService = function(j_val) {
   };
 
   /**
+   send a single mail via MailService that has been pregenerated already
+   <p>
+   this makes it possible to create a mail message with Javamail for example to
+   supports elements that are not supported by the mail encoder in vertx-mail-service
 
    @public
-   @param email {Object} 
-   @param message {string} 
-   @param resultHandler {function} 
-   @return {MailService}
+   @param email {Object} MailMessage object containing from/to etc, the message content fields are not evaluated 
+   @param message {string} String object that contains the complete mail note that the From/To headers are not evaluated, rather they are taken from the MailMessage object 
+   @param resultHandler {function} will be called when the operation is finished or it fails the result JsonObject currently only contains {@code {"result":"success"}} 
+   @return {MailService} the MailService instance so the method can be used fluently
    */
   this.sendMailString = function(email, message, resultHandler) {
     var __args = arguments;
@@ -77,6 +83,7 @@ var MailService = function(j_val) {
   };
 
   /**
+   start the MailServer instance if it is running locally (this operation is currently a no-op)
 
    @public
 
@@ -89,6 +96,10 @@ var MailService = function(j_val) {
   };
 
   /**
+   stop the MailServer instance if it is running locally
+   <p>
+   this operation shuts down the connection pool but doesn't wait for completion
+   when the mail service is running on the event bus, this operation has no effect
 
    @public
 
@@ -107,11 +118,12 @@ var MailService = function(j_val) {
 };
 
 /**
+ create an instance of MailService that is running in the local JVM
 
  @memberof module:vertx-mail-js/mail_service
- @param vertx {Vertx} 
- @param config {Object} 
- @return {MailService}
+ @param vertx {Vertx} the Vertx instance the operation will be run in 
+ @param config {Object} MailConfig configuration to be used for sending mails 
+ @return {MailService} MailServer instance that can then be used to send multiple mails
  */
 MailService.create = function(vertx, config) {
   var __args = arguments;
@@ -121,11 +133,12 @@ MailService.create = function(vertx, config) {
 };
 
 /**
+ create an instance of  MailService that calls the mail service via the event bus running somewhere else
 
  @memberof module:vertx-mail-js/mail_service
- @param vertx {Vertx} 
- @param address {string} 
- @return {MailService}
+ @param vertx {Vertx} the Vertx instance the operation will be run in 
+ @param address {string} the eb address of the mail service running somewhere, default is "vertx.mail" 
+ @return {MailService} MailServer instance that can then be used to send multiple mails
  */
 MailService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
