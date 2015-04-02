@@ -1,6 +1,7 @@
 package examples;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.docgen.Source;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
@@ -53,7 +54,7 @@ public class Examples {
 
     MailAttachment attachment = new MailAttachment()
     .setName("file.dat")
-    .setData("ASDF1234\0\u0001\u0080\u00ff\n");
+    .setData(Buffer.buffer("ASDF1234\0\u0001\u0080\u00ff\n"));
 
     email.setAttachment(attachment);
 

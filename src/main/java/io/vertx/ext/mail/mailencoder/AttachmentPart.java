@@ -34,7 +34,7 @@ public class AttachmentPart extends EncodedPart {
     }
     headers.set("Content-Disposition", disposition);
 
-    part=Utils.base64(attachment.getData());
+    part=Utils.base64(attachment.getData().getBytes());
   }
 
 }

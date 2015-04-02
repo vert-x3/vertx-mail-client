@@ -226,4 +226,8 @@ class Utils {
     return format.format(new Date());
   }
 
+  public static String base64(byte[] bytes) {
+    return Base64.getMimeEncoder().encodeToString(bytes);
+  }
+
 }

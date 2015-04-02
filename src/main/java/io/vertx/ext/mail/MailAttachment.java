@@ -1,6 +1,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
@@ -16,7 +17,7 @@ public class MailAttachment {
 
   // note that this must be a String only containing chars 0-255
   // to represent the binary file data
-  private String data;
+  private Buffer data;
   // name is the descriptive filename that will be put into the mail
   // i.e. usually a local filename without path
   // this can be set to "" to omit the filename attribute
@@ -48,18 +49,18 @@ public class MailAttachment {
 
   public MailAttachment(JsonObject json) {
     Objects.requireNonNull(json);
-    this.data = json.getString("data");
+    this.data = json.getBinary("data") == null ? null : Buffer.buffer(json.getBinary("data"));
     this.name = json.getString("name");
     this.contentType = json.getString("content-type");
     this.disposition = json.getString("disposition");
     this.description = json.getString("description");
   }
 
-  public String getData() {
+  public Buffer getData() {
     return data;
   }
 
-  public MailAttachment setData(String data) {
+  public MailAttachment setData(Buffer data) {
     this.data = data;
     return this;
   }
@@ -93,7 +94,9 @@ public class MailAttachment {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    putIfNotNull(json, "data", data);
+    if(data != null) {
+      putIfNotNull(json, "data", data.getBytes());
+    }
     putIfNotNull(json, "name", name);
     putIfNotNull(json, "content-type", contentType);
     putIfNotNull(json, "disposition", disposition);

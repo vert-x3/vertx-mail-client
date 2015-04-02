@@ -2,6 +2,7 @@ package io.vertx.ext.mail;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 
 import org.junit.Test;
@@ -16,17 +17,17 @@ public class MailAttachmentTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailAttachment().toJson().encode());
-    assertEquals("{\"data\":\"data\",\"content-type\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\"}",
+    assertEquals("{\"data\":\"ZGF0YQ==\",\"content-type\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\"}",
         new MailAttachment()
-        .setData("data")
+        .setData(Buffer.buffer("data"))
         .setContentType("text/plain")
         .setDescription("description")
         .setDisposition("inline")
         .toJson().encode());
 
     JsonObject json=new MailAttachment()
-      .setData("hello\"\0\u0001\t\r\n\u00ffx\u00a0\u00a1<>").toJson();
-    assertEquals("{\"data\":\"hello\\\"\\u0000\\u0001\\t\\r\\n\u00ffx\u00a0\u00a1<>\"}", json.encode());
+      .setData(Buffer.buffer("hello\"\0\u0001\t\r\n\u00ffx\u00a0\u00a1<>")).toJson();
+    assertEquals("{\"data\":\"aGVsbG8iAAEJDQrDv3jCoMKhPD4=\"}", json.encode());
   }
 
   @Test
@@ -53,7 +54,7 @@ public class MailAttachmentTest {
 
   @Test
   public void testConstructorFromJson() {
-    final String jsonString = "{\"data\":\"asdfg\",\"name\":\"filename.jpg\"}";
+    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\"}";
     JsonObject json=new JsonObject(jsonString);
 
     MailAttachment message = new MailAttachment(json);
@@ -86,8 +87,8 @@ public class MailAttachmentTest {
   @Test
   public void testData() {
     MailAttachment mailMessage = new MailAttachment();
-    mailMessage.setData("xxxx");
-    assertEquals("xxxx", mailMessage.getData());
+    mailMessage.setData(Buffer.buffer("xxxx"));
+    assertEquals("xxxx", mailMessage.getData().toString());
   }
 
   @Test
