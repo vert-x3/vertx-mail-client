@@ -2,7 +2,7 @@ package io.vertx.ext.mail.mailencoder;
 
 import io.vertx.core.http.CaseInsensitiveHeaders;
 
-public class TextPart extends EncodedPart {
+class TextPart extends EncodedPart {
 
   public TextPart(String text, String mode) {
     if (Utils.mustEncode(text)) {
