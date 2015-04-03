@@ -96,7 +96,7 @@ public class MailTest extends VertxTestBase {
       .setDescription("some text"));
 
     list.add(new MailAttachment()
-      .setData(Buffer.buffer("\u00D0\u0097\u00D0\u00BD\u00D0\u00B0\u00D0\u00BC\u00D0\u00B5\u00D0\u00BD\u00D0\u00B8\u00D1\u0082\u00D0\u00BE\u00D1\u0081\u00D1\u0082\u00D0\u00B8"))
+      .setData(TestUtils.asBuffer(0xD0, 0x97, 0xD0, 0xBD, 0xD0, 0xB0, 0xD0, 0xBC, 0xD0, 0xB5, 0xD0, 0xBD, 0xD0, 0xB8, 0xD1, 0x82, 0xD0, 0xBE, 0xD1, 0x81, 0xD1, 0x82, 0xD0, 0xB8))
       .setName("file2.txt")
       .setContentType("text/plain; charset=utf-8")
       .setDisposition("attachment")

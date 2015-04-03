@@ -122,7 +122,15 @@ class MailMain {
   }
 
   private void returnResult(Future<JsonObject> result) {
-    finishedHandler.handle(result);
+    if(finishedHandler!=null) {
+      finishedHandler.handle(result);
+    } else {
+      if(result.succeeded()) {
+        log.debug("dropping sendMail result");
+      } else {
+        log.info("dropping sendMail failure", result.cause());
+      }
+    }
   }
 
 }

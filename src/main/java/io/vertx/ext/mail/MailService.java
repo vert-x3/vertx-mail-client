@@ -13,6 +13,9 @@ import io.vertx.serviceproxy.ProxyHelper;
 /**
  * smtp mail service for vert.x
  * 
+ * this Interface provides the methods to be used by the application program and is used to
+ * generate the service in other languages
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @VertxGen
@@ -24,7 +27,7 @@ public interface MailService {
    *
    * @param vertx the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails
-   * @return MailServer instance that can then be used to send multiple mails
+   * @return MailService instance that can then be used to send multiple mails
    */
   static MailService create(Vertx vertx, MailConfig config) {
     return new MailServiceImpl(vertx, config);
@@ -35,7 +38,7 @@ public interface MailService {
    *
    * @param vertx the Vertx instance the operation will be run in
    * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
-   * @return MailServer instance that can then be used to send multiple mails
+   * @return MailService instance that can then be used to send multiple mails
    */
   static MailService createEventBusProxy(Vertx vertx, String address) {
     return ProxyHelper.createProxy(MailService.class, vertx, address);
@@ -45,8 +48,9 @@ public interface MailService {
    * send a single mail via MailService
    * @param email MailMessage object containing the mail text, from/to, attachments etc
    * @param resultHandler will be called when the operation is finished or it fails
+   * (may be null to ignore the result)
    * the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return the MailService instance so the method can be used fluently
+   * @return this MailService instance so the method can be used fluently
    */
   @Fluent
   MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
@@ -61,8 +65,9 @@ public interface MailService {
    * @param message String object that contains the complete mail
    * note that the From/To headers are not evaluated, rather they are taken from the MailMessage object
    * @param resultHandler will be called when the operation is finished or it fails
+   * (may be null to ignore the result)
    * the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return the MailService instance so the method can be used fluently
+   * @return this MailService instance so the method can be used fluently
    */
   @Fluent
   MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler);
@@ -76,7 +81,7 @@ public interface MailService {
   /**
    * stop the MailServer instance if it is running locally
    * <p>
-   * this operation shuts down the connection pool but doesn't wait for completion
+   * this operation shuts down the connection pool, doesn't wait for completion of the close operations
    * when the mail service is running on the event bus, this operation has no effect
    */
   @ProxyIgnore

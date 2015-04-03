@@ -25,6 +25,9 @@ import io.vertx.core.Handler
 import io.vertx.ext.mail.MailMessage
 /**
  * smtp mail service for vert.x
+ * 
+ * this Interface provides the methods to be used by the application program and is used to
+ * generate the service in other languages
 */
 @CompileStatic
 public class MailService {
@@ -39,7 +42,7 @@ public class MailService {
    * create an instance of MailService that is running in the local JVM
    * @param vertx the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails (see <a href="../../../../../../../cheatsheet/MailConfig.html">MailConfig</a>)
-   * @return MailServer instance that can then be used to send multiple mails
+   * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService create(Vertx vertx, Map<String, Object> config) {
     def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
@@ -49,7 +52,7 @@ public class MailService {
    * create an instance of  MailService that calls the mail service via the event bus running somewhere else
    * @param vertx the Vertx instance the operation will be run in
    * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
-   * @return MailServer instance that can then be used to send multiple mails
+   * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService createEventBusProxy(Vertx vertx, String address) {
     def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
@@ -58,8 +61,8 @@ public class MailService {
   /**
    * send a single mail via MailService
    * @param email MailMessage object containing the mail text, from/to, attachments etc (see <a href="../../../../../../../cheatsheet/MailMessage.html">MailMessage</a>)
-   * @param resultHandler will be called when the operation is finished or it fails the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return the MailService instance so the method can be used fluently
+   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
+   * @return this MailService instance so the method can be used fluently
    */
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
@@ -82,8 +85,8 @@ public class MailService {
    * supports elements that are not supported by the mail encoder in vertx-mail-service
    * @param email MailMessage object containing from/to etc, the message content fields are not evaluated (see <a href="../../../../../../../cheatsheet/MailMessage.html">MailMessage</a>)
    * @param message String object that contains the complete mail note that the From/To headers are not evaluated, rather they are taken from the MailMessage object
-   * @param resultHandler will be called when the operation is finished or it fails the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return the MailService instance so the method can be used fluently
+   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
+   * @return this MailService instance so the method can be used fluently
    */
   public MailService sendMailString(Map<String, Object> email = [:], String message, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMailString(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, message, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
@@ -108,7 +111,7 @@ public class MailService {
   /**
    * stop the MailServer instance if it is running locally
    * <p>
-   * this operation shuts down the connection pool but doesn't wait for completion
+   * this operation shuts down the connection pool, doesn't wait for completion of the close operations
    * when the mail service is running on the event bus, this operation has no effect
    */
   public void stop() {

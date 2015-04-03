@@ -8,9 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-/*
- first implementation of a SMTP client
- */
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -61,9 +58,21 @@ public class MailDummyTest extends SMTPTestDummy {
       .setFrom("user@example.com")
       .setTo("user@example.com")
       .setAttachment(new MailAttachment()
-      .setData(Buffer.buffer("\u00ff\u00ff\u00ff\u00ff\u00ff\u00ff")));
+      .setData(TestUtils.asBuffer(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)));
 
     testSuccess(email);
+  }
+
+  /**
+   * pass null to ignore result
+   * this is not properly async since we do not have a result lambda
+   * @throws InterruptedException 
+   */
+  @Test
+  public void mailTestNoResult() throws InterruptedException {
+    mailServiceDefault().sendMail(exampleMessage(), null);
+
+    Thread.sleep(2000);
   }
 
 }
