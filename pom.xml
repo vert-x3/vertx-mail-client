@@ -15,7 +15,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>8</version>
+    <version>9</version>
   </parent>
 
   <artifactId>vertx-mail-service</artifactId>
@@ -108,7 +108,6 @@
     <dependency>
       <groupId>io.vertx</groupId>
       <artifactId>vertx-unit</artifactId>
-      <version>${stack.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
