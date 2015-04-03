@@ -1,9 +1,10 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
 

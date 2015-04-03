@@ -1,9 +1,10 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
 
 /**
  * Handle the reset command, this is mostly used to check if the connection is still active 

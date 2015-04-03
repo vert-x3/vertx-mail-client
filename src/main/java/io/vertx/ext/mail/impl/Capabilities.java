@@ -1,4 +1,4 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;

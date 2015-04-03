@@ -73,10 +73,10 @@ public class TestSmtpServer {
           int currentLine = lines.getAndIncrement();
           if(currentLine < dialogue.length) {
             if(!inputLine.contains(dialogue[currentLine])) {
-              socket.write("500 didn't expect that command");
+              socket.write("500 didn't expect that command\r\n");
             }
           } else {
-            socket.write("500 out of lines");
+            socket.write("500 out of lines\r\n");
           }
           if(inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);
