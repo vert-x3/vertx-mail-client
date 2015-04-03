@@ -19,16 +19,28 @@ class ConnectionPool {
 
   private final List<SMTPConnection> connections;
   private final Vertx vertx;
-  private final NetClient netClient;
+  private NetClient netClient = null;
   private final boolean stopped = false;
-  private Context context;
+  private final MailConfig config;
+  private final Context context;
 
   ConnectionPool(Vertx vertx, MailConfig config, Context context) {
     this.vertx = vertx;
     connections = new ArrayList<SMTPConnection>();
-    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
-    netClient = vertx.createNetClient(netClientOptions);
     this.context = context;
+    this.config = config;
+  }
+
+  /**
+   * @param vertx
+   * @param config
+   */
+  private void createNetclient(Handler<Void> finishedHandler) {
+    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
+    context.runOnContext(v -> {
+      netClient = vertx.createNetClient(netClientOptions);
+      finishedHandler.handle(null);
+    });
   }
 
   void getConnection(MailConfig config, Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
@@ -48,6 +60,8 @@ class ConnectionPool {
   }
 
   /**
+   * set up NetClient and create a connection.
+   * 
    * @param config
    * @param resultHandler
    * @param errorHandler
@@ -56,6 +70,25 @@ class ConnectionPool {
   private void createNewConnection(MailConfig config, Handler<SMTPConnection> resultHandler,
       Handler<Throwable> errorHandler) {
     log.debug("creating new connection");
+    // if we have not yet created the netclient, do that first
+    if(netClient == null) {
+      createNetclient(v -> {
+        createConnection(resultHandler, errorHandler);
+      });
+    } else {
+      createConnection(resultHandler, errorHandler);
+    }
+  }
+
+  /**
+   * really open the connection.
+   * 
+   * @param config
+   * @param resultHandler
+   * @param errorHandler
+   */
+  private void createConnection(Handler<SMTPConnection> resultHandler,
+      Handler<Throwable> errorHandler) {
     SMTPConnection conn = new SMTPConnection(netClient, context);
     connections.add(conn);
     new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).connect();
@@ -91,7 +124,9 @@ class ConnectionPool {
   }
 
   private void shutdownConnections(int i, Handler<Void> finishedHandler) {
-    netClient.close();
+    if(netClient != null) {
+      netClient.close();
+    }
     if (i == connections.size()) {
       finishedHandler.handle(null);
     } else {
