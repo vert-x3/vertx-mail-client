@@ -1,0 +1,95 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:jsdoc/mail_service-MailService.html[MailService]` simple example:
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var mailConfig = {
+  "hostname" : "mail.example.com",
+  "port" : 587,
+  "username" : "user",
+  "password" : "pw"
+};
+
+var mailService = MailService.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "meaningful subject",
+  "text" : "this is a message",
+  "html" : "HTML message <a href=\"http://vertx.io\">vertx</a>"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
+attachments can be added as Buffer object
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var Buffer = require("vertx-js/buffer");
+// default config will use localhost:25
+var mailConfig = {
+};
+
+var mailService = MailService.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "your file",
+  "text" : "please take a look at the attached file"
+};
+
+var attachment = {
+  "name" : "file.dat",
+  "data" : Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
+};
+
+email.attachment = attachment;
+
+mailService.sendMail(email, function (result, result_err) {
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
+the service interface can send mails via the eventbus if the service is running
+on other machine in the cluster
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
+
+var email = {
+  "from" : "user@example.com",
+  "bounceAddress" : "bounce@example.com",
+  "to" : "user@example.com"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  console.log("mail finished");
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----

@@ -1,0 +1,37 @@
+== MailConfig
+
+++++
+ represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[hostname]]`hostname`
+|`String`
+|+++
+Set the hostname of the smtp server.+++
+
+|[[port]]`port`
+|`Number`
+|+++
+Set the port of the smtp server.+++
+
+|[[username]]`username`
+|`String`
+|+++
+Set the username for the login.+++
+
+|[[password]]`password`
+|`String`
+|+++
+Set the password for the login.+++
+
+|[[ssl]]`ssl`
+|`Boolean`
+|+++
+Set the sslOnConnect mode for the connection.+++
+|===

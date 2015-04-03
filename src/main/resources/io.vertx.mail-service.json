@@ -1,0 +1,12 @@
+{
+  "main": "io.vertx.ext.mail.MailServiceVerticle",
+  "options": {
+    "worker": false,
+    "config": {
+      "address": "vertx.mail",
+      // we could leave that out and rely on the defaults
+      "hostname": "localhost",
+      "port": 25
+    }
+  }
+}
