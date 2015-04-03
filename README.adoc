@@ -1,15 +1,27 @@
 # Vert.x mail-service (SMTP client)
 
-A very preliminary version of a smtp client for vert.x.
+A first version of a smtp client for vert.x.
 
-The test classes shows how this could be used, the whole client is async and supports SSL, STARTTLS, a few methods of SASL.
+The test classes shows how this could be used, the whole client is async and
+supports SSL, STARTTLS, a few methods of SASL.
 
-For questions about the project, please write a message on the vert.x google group or drop by on irc.
+Supported are plaintext and html messages with UTF-8, binary attachments and
+multipart/alternative.
 
-`link:../../apidocs/io/vertx/ext/mail/MailService.html[MailService]`
-simple example:
+Using codegen, the service interface is available in different languages
+supported by vert.x
 
-~~~~ {.java}
+* link:src/main/asciidoc/java/index.adoc[Java in-source docs]
+* link:src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
+* link:src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
+
+For questions about the project, please write a message on the vert.x google
+group or drop by on irc.
+
+`link:../../apidocs/io/vertx/ext/mail/MailService.html[MailService]` simple example:
+
+[source,java]
+----
 MailConfig mailConfig = new MailConfig()
 .setHostname("mail.example.com")
 .setPort(587)
@@ -33,12 +45,11 @@ mailService.sendMail(email, result -> {
     result.cause().printStackTrace();
   }
 });
-~~~~
+----
+attachments can be added as Buffer object
 
-attachments can be added by converting them to String representation of
-the bytes
-
-~~~~ {.java}
+[source,java]
+----
 MailConfig mailConfig = new MailConfig();
 
 MailService mailService = MailService.create(vertx, mailConfig);
@@ -51,7 +62,7 @@ MailMessage email = new MailMessage()
 
 MailAttachment attachment = new MailAttachment()
 .setName("file.dat")
-.setData("ASDF1234\0\u0001\u0080\u00ff\n");
+.setData(Buffer.buffer("ASDF1234\0\u0001\u0080\u00ff\n"));
 
 email.setAttachment(attachment);
 
@@ -63,12 +74,12 @@ mailService.sendMail(email, result -> {
     result.cause().printStackTrace();
   }
 });
-~~~~
+----
+the service interface can send mails via the eventbus if the service is running
+on other machine in the cluster
 
-the service interface can send mails via the eventbus if the service is
-running on other machine in the cluster
-
-~~~~ {.java}
+[source,java]
+----
 MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
 
 MailMessage email=new MailMessage()
@@ -85,4 +96,4 @@ mailService.sendMail(email, result -> {
     result.cause().printStackTrace();
   }
 });
-~~~~
+----
