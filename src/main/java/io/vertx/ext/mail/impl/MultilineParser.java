@@ -1,4 +1,4 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import java.util.regex.Pattern;
 

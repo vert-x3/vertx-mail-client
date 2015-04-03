@@ -8,6 +8,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mail.impl.MailServiceImpl;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**

@@ -1,24 +1,34 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.net.NetClient;
+import io.vertx.core.net.NetClientOptions;
+import io.vertx.ext.mail.MailConfig;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 class ConnectionPool {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
-  private Vector<SMTPConnection> connections;
-  private Vertx vertx;
-  private boolean stopped = false;
+  private final List<SMTPConnection> connections;
+  private final Vertx vertx;
+  private final NetClient netClient;
+  private final boolean stopped = false;
+  private Context context;
 
-  ConnectionPool(Vertx vertx) {
+  ConnectionPool(Vertx vertx, MailConfig config, Context context) {
     this.vertx = vertx;
-    connections = new Vector<SMTPConnection>();
+    connections = new ArrayList<SMTPConnection>();
+    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
+    netClient = vertx.createNetClient(netClientOptions);
+    this.context = context;
   }
 
   void getConnection(MailConfig config, Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
@@ -46,12 +56,12 @@ class ConnectionPool {
   private void createNewConnection(MailConfig config, Handler<SMTPConnection> resultHandler,
       Handler<Throwable> errorHandler) {
     log.debug("creating new connection");
-    SMTPConnection conn = new SMTPConnection();
+    SMTPConnection conn = new SMTPConnection(netClient, context);
     connections.add(conn);
     new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).connect();
   }
 
-  private void findUsableConnection(Vector<SMTPConnection> connections, MailConfig config, int i,
+  private void findUsableConnection(List<SMTPConnection> connections, MailConfig config, int i,
       Handler<SMTPConnection> foundHandler, Handler<Void> notFoundHandler) {
     if (i == connections.size()) {
       notFoundHandler.handle(null);
@@ -81,18 +91,14 @@ class ConnectionPool {
   }
 
   private void shutdownConnections(int i, Handler<Void> finishedHandler) {
+    netClient.close();
     if (i == connections.size()) {
       finishedHandler.handle(null);
     } else {
       log.debug("STMPConnection.shutdown(" + i + ")");
       SMTPConnection connection = connections.get(i);
-      if(connection.isBroken()) {
-        log.debug("connection is broken");
-      }
-      if(connection.isIdle()) {
-        log.debug("connection is idle");
-      }
-      // TODO: have to wait for connections still running
+      // TODO: have to wait for active connections still running
+      // they will shut down when the operation is finished
       if (connection.isIdle()) {
         if (connection.isBroken()) {
           connection.shutdown();

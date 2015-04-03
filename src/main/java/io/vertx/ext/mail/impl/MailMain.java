@@ -1,4 +1,4 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
@@ -6,6 +6,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.MailMessage;
 
 /*
  * main operation of the smtp client

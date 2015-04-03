@@ -1,11 +1,16 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailService;
+import io.vertx.core.Future;
 
 /**
  * MailService implementation for sending mails inside the local JVM
@@ -17,11 +22,11 @@ public class MailServiceImpl implements MailService {
 
   private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
-  private Vertx vertx;
-  private MailConfig config;
+  private final MailConfig config;
+  private final Context context;
+  private final ConnectionPool connectionPool;
   private boolean stopped = false;
 
-  private ConnectionPool connectionPool;
 
   /**
    * construct a MailService object with the vertx and config configuration
@@ -31,11 +36,9 @@ public class MailServiceImpl implements MailService {
    * @param config the configuration of the mailserver
    */
   public MailServiceImpl(Vertx vertx, MailConfig config) {
-    if (connectionPool == null) {
-      connectionPool = new ConnectionPool(vertx);
-    }
-    this.vertx = vertx;
     this.config = config;
+    context = vertx.getOrCreateContext();
+    connectionPool = new ConnectionPool(vertx, config, context);
   }
 
   @Override
@@ -56,20 +59,28 @@ public class MailServiceImpl implements MailService {
 
   @Override
   public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
-    vertx.runOnContext(v -> {
-      MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
-      mailMain.sendMail(message);
-    });
+    if(!stopped) {
+      context.runOnContext(v -> {
+        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
+        mailMain.sendMail(message);
+      });
+    } else {
+      resultHandler.handle(Future.failedFuture("mail service has been stopped"));
+    }
     return this;
   }
 
   @Override
   public MailService sendMailString(MailMessage message, String messageText,
       Handler<AsyncResult<JsonObject>> resultHandler) {
-    vertx.runOnContext(v -> {
-      MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
-      mailMain.sendMail(message, messageText);
-    });
+    if(!stopped) {
+      context.runOnContext(v -> {
+        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
+        mailMain.sendMail(message, messageText);
+      });
+    } else {
+      resultHandler.handle(Future.failedFuture("mail service has been stopped"));
+    }
     return this;
   }
 
