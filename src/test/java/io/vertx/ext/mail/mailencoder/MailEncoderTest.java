@@ -5,6 +5,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.TestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,16 +44,15 @@ public class MailEncoderTest {
     attachments.add(new MailAttachment()
         .setData(Buffer.buffer("испытание", "UTF-8")));
 
-    attachments.add(new MailAttachment().setData(
-        Buffer.buffer(new byte[] { (byte) 0xD0, (byte) 0xB8, (byte) 0xD1, (byte) 0x81, (byte) 0xD0, (byte) 0xBF,
-            (byte) 0xD1, (byte) 0x8B, (byte) 0xD1, (byte) 0x82, (byte) 0xD0, (byte) 0xB0, (byte) 0xD0, (byte) 0xBD,
-            (byte) 0xD0, (byte) 0xB8, (byte) 0xD0, (byte) 0xB5 })));
+    attachments.add(new MailAttachment().setData(TestUtils.asBuffer(new int[] { 0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBF,
+        0xD1, 0x8B, 0xD1, 0x82, 0xD0, 0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD0, 0xB5 })));
 
     message.setAttachment(attachments);
 
     MailEncoder encoder = new MailEncoder(message);
     log.info(encoder.encode());
   }
+
 
   /*
    * test completely empty message, doesn't make much sense but should not give a

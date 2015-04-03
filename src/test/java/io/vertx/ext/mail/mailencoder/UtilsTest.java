@@ -4,6 +4,12 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+/**
+ * this are tests of the Utils class (as opposed to utils for our tests, that class is called TestUtils)
+ *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ */
 public class UtilsTest {
 
   @Test
