@@ -84,7 +84,7 @@ public class SMTPTestBase extends VertxTestBase {
    * @return
    */
   private MailConfig configLogin() {
-    return configLogin("xxx", "xxx");
+    return configLogin("xxx", "yyy");
   }
 
   /**
