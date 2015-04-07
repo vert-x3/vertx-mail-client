@@ -19,7 +19,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "334 VXNlcm5hbWU6",
         "eHh4",
         "334 UGFzc3dvcmQ6",
-        "eHh4",
+        "eXl5",
         "250 2.1.0 Ok",
         "MAIL FROM",
         "250 2.1.0 Ok",
@@ -42,10 +42,36 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 AUTH LOGIN",
         "AUTH LOGIN",
         "334 VXNlcm5hbWU6",
-        "AAAA",
+        "eHh4",
         "334 UGFzc3dvcmQ6",
-        "AAAA",
+        "eXl5",
         "435 4.7.8 Error: authentication failed: authentication failure");
+
+    testException(mailServiceLogin());
+  }
+
+  @Test
+  public void authLoginStartFailTest() {
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+        "250 AUTH LOGIN",
+        "AUTH LOGIN",
+        "555 login is not possible due to some error");
+
+    testException(mailServiceLogin());
+  }
+
+  @Test
+  public void authLoginUsernameFailTest() {
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+        "250 AUTH LOGIN",
+        "AUTH LOGIN",
+        "334 VXNlcm5hbWU6",
+        "eHh4",
+        "555 login is not possible due to some error");
 
     testException(mailServiceLogin());
   }
@@ -56,7 +82,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "EHLO",
         "250-example.com\n" +
         "250 AUTH PLAIN",
-        "AUTH PLAIN",
+        "AUTH PLAIN AHh4eAB5eXk=",
         "250 2.1.0 Ok",
         "MAIL FROM",
         "250 2.1.0 Ok",
@@ -77,7 +103,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "EHLO",
         "250-example.com\n" +
         "250 AUTH PLAIN",
-        "AUTH PLAIN",
+        "AUTH PLAIN AHh4eAB5eXk=",
         "435 4.7.8 Error: authentication failed: bad protocol / cancel");
 
     testException(mailServiceLogin());
@@ -91,7 +117,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 AUTH CRAM-MD5",
         "AUTH CRAM-MD5",
         "334 PDEyMzQuYWJjZEBleGFtcGxlLmNvbT4=",
-        "eHh4IDBGRkZGRkZDNzI3MEZGRkZGRkM4MEZGRkZGRjg4MDEyOTVGMjMwRkZGRkZGRkYwRkZGRkZGRTgwRkZGRkZGQTAxQTBGRkZGRkZERDBGRkZGRkZDNjBGRkZGRkZENTBGRkZGRkZGQg==",
+        "eHh4IDE2ZGEzMGQ5NmEwNTY4NWQ0MmQ4YzM5ZDlkMDgxOGIx",
         "250 2.1.0 Ok",
         "MAIL FROM",
         "250 2.1.0 Ok",
@@ -107,6 +133,18 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
+  public void authCramMD5StartFailTest() {
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+        "250 AUTH CRAM-MD5",
+        "AUTH CRAM-MD5",
+        "555 login is not possible due to some error");
+
+    testException(mailServiceLogin());
+  }
+
+  @Test
   public void authCramMD5FailTest() {
     smtpServer.setDialogue("220 example.com ESMTP",
         "EHLO",
@@ -114,17 +152,8 @@ public class MailAuthTest extends SMTPTestDummy {
         "250 AUTH CRAM-MD5",
         "AUTH CRAM-MD5",
         "334 PDEyMzQuYWJjZEBleGFtcGxlLmNvbT4=",
-        "AAAA",
-        "435 4.7.8 Error: authentication failed: bad protocol / cancel", 
-        "MAIL FROM",
-        "250 2.1.0 Ok",
-        "RCPT TO",
-        "250 2.1.5 Ok",
-        "DATA",
-        "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCD",
-        "QUIT",
-        "221 2.0.0 Bye");
+        "eHh4IDE2ZGEzMGQ5NmEwNTY4NWQ0MmQ4YzM5ZDlkMDgxOGIx",
+        "435 4.7.8 Error: authentication failed: bad protocol / cancel");
 
     testException(mailServiceLogin());
   }
@@ -139,8 +168,11 @@ public class MailAuthTest extends SMTPTestDummy {
     testException(mailServiceLogin());
   }
 
+  /**
+   * test we have Login REQUIRED but no login data in the config
+   */
   @Test
-  public void authLoginMissingTest() {
+  public void authAuthDataMissingTest() {
     smtpServer.setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n" +

@@ -66,11 +66,16 @@ class SMTPAuthentication {
     if (connection.getCapa().getCapaAuth().contains("CRAM-MD5")) {
       connection.write("AUTH CRAM-MD5", message -> {
         log.debug("AUTH result: " + message);
-        cramMD5Step1(message.substring(4));
+        if (!StatusCode.isStatusOk(message)) {
+          log.warn("authentication failed");
+          handleError("authentication failed");
+        } else {
+          cramMD5Step1(message.substring(4));
+        }
       });
     } else if (connection.getCapa().getCapaAuth().contains("PLAIN")) {
       String authdata = base64("\0" + config.getUsername() + "\0" + config.getPassword());
-      connection.write("AUTH PLAIN " + authdata, 10, message -> {
+      connection.write("AUTH PLAIN " + authdata, 11, message -> {
         log.debug("AUTH result: " + message);
         if (!StatusCode.isStatusOk(message)) {
           log.warn("authentication failed");
@@ -82,7 +87,12 @@ class SMTPAuthentication {
     } else if (connection.getCapa().getCapaAuth().contains("LOGIN")) {
       connection.write("AUTH LOGIN", message -> {
         log.debug("AUTH result: " + message);
-        sendUsername();
+        if (!StatusCode.isStatusOk(message)) {
+          log.warn("authentication failed");
+          handleError("authentication failed");
+        } else {
+          sendUsername();
+        }
       });
     } else {
       log.warn("cannot find supported auth method");
@@ -100,16 +110,16 @@ class SMTPAuthentication {
   private void cramMD5Step1(String string) {
     String message = decodeb64(string);
     log.debug("message " + message);
-    String reply = hmacMD5hex(message, config.getPassword());
+    String reply = hmacMD5hex(config.getPassword(), message);
     connection.write(base64(config.getUsername() + " " + reply), 0, message2 -> {
       log.debug("AUTH step 2 result: " + message2);
       cramMD5Step2(message2);
     });
   }
 
-  private String hmacMD5hex(String message, String pw) {
+  static String hmacMD5hex(String keyString, String message) {
     try {
-      SecretKey key = new SecretKeySpec(pw.getBytes("UTF-8"), "HmacMD5");
+      SecretKey key = new SecretKeySpec(keyString.getBytes("UTF-8"), "HmacMD5");
       Mac mac = Mac.getInstance(key.getAlgorithm());
       mac.init(key);
       return encodeHex(mac.doFinal(message.getBytes("UTF-8")));
@@ -123,13 +133,14 @@ class SMTPAuthentication {
    * @param outBytes
    * @return
    */
-  private String encodeHex(byte[] bytes) {
+  static String encodeHex(byte[] bytes) {
     StringBuilder sb = new StringBuilder(bytes.length * 2);
     for (byte b : bytes) {
-      if (b < 16) {
+      final int v = ((int) b) & 0xff;
+      if (v < 16) {
         sb.append('0');
       }
-      sb.append(Integer.toHexString(b).toUpperCase());
+      sb.append(Integer.toHexString(v));
     }
     return sb.toString();
   }
@@ -147,7 +158,12 @@ class SMTPAuthentication {
   private void sendUsername() {
     connection.write(base64(config.getUsername()), 0, message -> {
       log.debug("username result: " + message);
-      sendPw();
+      if (!StatusCode.isStatusOk(message)) {
+        log.warn("authentication failed");
+        handleError("authentication failed");
+      } else {
+        sendPw();
+      }
     });
   }
 
