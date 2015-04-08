@@ -93,7 +93,7 @@ class SMTPConnection {
         for (int i = blank; i < str.length(); i++) {
           sb.append('*');
         }
-        logStr = str.substring(0, blank + 1) + sb;
+        logStr = str.substring(0, blank) + sb;
       } else {
         logStr = str;
       }
