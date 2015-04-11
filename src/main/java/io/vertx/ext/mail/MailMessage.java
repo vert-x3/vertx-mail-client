@@ -400,7 +400,7 @@ public class MailMessage {
   }
 
   /**
-   * get whether our own headers should be added to the message
+   * get whether our own headers should be the only headers added to the message
    * @return the fixedHeaders
    */
   public boolean isFixedHeaders() {
@@ -408,7 +408,7 @@ public class MailMessage {
   }
 
   /**
-   * set whether our own headers should be stored in the message
+   * set whether our own headers should be the only headers added to the message
    *
    * @param fixedHeaders the fixedHeaders to set
    * @return this to be able to use it fluently

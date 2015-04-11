@@ -61,5 +61,5 @@ set a single attachment of this mail the result of getAttachment when using
 |[[fixedHeaders]]`fixedHeaders`
 |`Boolean`
 |+++
-set whether our own headers should be stored in the message+++
+set whether our own headers should be the only headers added to the message+++
 |===
