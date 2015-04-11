@@ -22,7 +22,6 @@ var JsonObject = io.vertx.core.json.JsonObject;
 var JMailService = io.vertx.ext.mail.MailService;
 var MailConfig = io.vertx.ext.mail.MailConfig;
 var MailMessage = io.vertx.ext.mail.MailMessage;
-var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
  smtp mail service for vert.x
@@ -49,32 +48,6 @@ var MailService = function(j_val) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
       j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
-      if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result()), null);
-      } else {
-        resultHandler(null, ar.cause());
-      }
-    });
-      return that;
-    } else utils.invalidArgs();
-  };
-
-  /**
-   send a single mail via MailService that has been pregenerated already
-   <p>
-   this makes it possible to create a mail message with Javamail for example to
-   supports elements that are not supported by the mail encoder in vertx-mail-service
-
-   @public
-   @param email {Object} MailMessage object containing from/to etc, the message content fields are not evaluated 
-   @param message {string} String object that contains the complete mail note that the From/To headers are not evaluated, rather they are taken from the MailMessage object 
-   @param resultHandler {function} will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}} 
-   @return {MailService} this MailService instance so the method can be used fluently
-   */
-  this.sendMailString = function(email, message, resultHandler) {
-    var __args = arguments;
-    if (__args.length === 3 && typeof __args[0] === 'object' && typeof __args[1] === 'string' && typeof __args[2] === 'function') {
-      j_mailService["sendMailString(io.vertx.ext.mail.MailMessage,java.lang.String,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, message, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnJson(ar.result()), null);
       } else {

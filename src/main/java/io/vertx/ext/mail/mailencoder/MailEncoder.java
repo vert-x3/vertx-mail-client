@@ -2,8 +2,6 @@ package io.vertx.ext.mail.mailencoder;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 
@@ -94,28 +92,32 @@ public class MailEncoder {
    * @return
    */
   private MultiMap createHeaders(MultiMap additionalHeaders) {
-    CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
-
-    headers.set("MIME-Version", "1.0");
-    headers.set("Message-ID", Utils.generateMessageId());
-    headers.set("Date", Utils.generateDate());
-    
-    if (message.getSubject() != null) {
-      headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+    MultiMap headers = new CaseInsensitiveHeaders();
+    if (message.getHeaders() != null) {
+      headers.addAll(message.getHeaders());
     }
 
-    if (message.getFrom() != null) {
-      headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));
-    }
-    if (message.getTo() != null) {
-      headers.set("To", Utils.encodeEmailList(message.getTo(), 4));
-    }
-    if (message.getCc() != null) {
-      headers.set("Cc", Utils.encodeEmailList(message.getCc(), 4));
-    }
+    if (!message.isFixedHeaders()) {
+      headers.set("MIME-Version", "1.0");
+      headers.set("Message-ID", Utils.generateMessageId());
+      headers.set("Date", Utils.generateDate());
 
-    headers.addAll(additionalHeaders);
+      if (message.getSubject() != null) {
+        headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+      }
 
+      if (message.getFrom() != null) {
+        headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));
+      }
+      if (message.getTo() != null) {
+        headers.set("To", Utils.encodeEmailList(message.getTo(), 4));
+      }
+      if (message.getCc() != null) {
+        headers.set("Cc", Utils.encodeEmailList(message.getCc(), 4));
+      }
+
+      headers.addAll(additionalHeaders);
+    }
     return headers;
   }
 

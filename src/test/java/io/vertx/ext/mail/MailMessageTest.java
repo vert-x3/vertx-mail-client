@@ -2,7 +2,9 @@ package io.vertx.ext.mail;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
@@ -131,7 +133,7 @@ public class MailMessageTest {
   @Test
   public void testHash() {
     assertEquals(new MailMessage().hashCode(), new MailMessage().hashCode());
-    assertEquals(593098263, new MailMessage().setFrom("user@example.com").hashCode());
+    assertEquals(-1263218388, new MailMessage().setFrom("user@example.com").hashCode());
   }
 
   @Test
@@ -203,6 +205,45 @@ public class MailMessageTest {
     MailMessage mailMessage = new MailMessage();
     mailMessage.setHtml("<a href=\"http://vertx.io/\">link</a>");
     assertEquals("<a href=\"http://vertx.io/\">link</a>", mailMessage.getHtml());
+  }
+
+  @Test
+  public void testHeadersEmpty() {
+    MailMessage mailMessage = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    mailMessage.setHeaders(headers);
+    assertEquals(0, mailMessage.getHeaders().size());
+    assertEquals("{\"headers\":{}}", mailMessage.toJson().encode());
+  }
+
+  @Test
+  public void testHeadersValue() {
+    MailMessage mailMessage = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.add("Header", "value");
+    mailMessage.setHeaders(headers);
+    assertEquals("{\"headers\":{\"Header\":[\"value\"]}}", mailMessage.toJson().encode());
+  }
+
+  @Test
+  public void testHeadersMultipleKeys() {
+    MailMessage mailMessage = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.add("Header", "value");
+    headers.add("Header2", "value2");
+    mailMessage.setHeaders(headers);
+    assertEquals("{\"headers\":{\"Header\":[\"value\"],\"Header2\":[\"value2\"]}}", mailMessage.toJson().encode());
+  }
+
+  @Test
+  public void testHeadersMultipleValues() {
+    MailMessage mailMessage = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.add("Header", "value1");
+    headers.add("Header", "value2");
+    headers.add("Header2", "value3");
+    mailMessage.setHeaders(headers);
+    assertEquals("{\"headers\":{\"Header\":[\"value1\",\"value2\"],\"Header2\":[\"value3\"]}}", mailMessage.toJson().encode());
   }
 
 }

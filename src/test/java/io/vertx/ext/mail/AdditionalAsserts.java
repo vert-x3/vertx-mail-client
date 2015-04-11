@@ -8,6 +8,6 @@ package io.vertx.ext.mail;
  *
  */
 @FunctionalInterface
-public interface AdditionalAsserts {
-  public void doAsserts() throws Exception;
+interface AdditionalAsserts {
+  void doAsserts() throws Exception;
 }

@@ -57,23 +57,6 @@ public interface MailService {
   MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
-   * send a single mail via MailService that has been pregenerated already
-   * <p>
-   * this makes it possible to create a mail message with Javamail for example to
-   * supports elements that are not supported by the mail encoder in vertx-mail-service
-   * 
-   * @param email MailMessage object containing from/to etc, the message content fields are not evaluated
-   * @param message String object that contains the complete mail
-   * note that the From/To headers are not evaluated, rather they are taken from the MailMessage object
-   * @param resultHandler will be called when the operation is finished or it fails
-   * (may be null to ignore the result)
-   * the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return this MailService instance so the method can be used fluently
-   */
-  @Fluent
-  MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler);
-
-  /**
    * start the MailServer instance if it is running locally (this operation is currently a no-op)
    */
   @ProxyIgnore

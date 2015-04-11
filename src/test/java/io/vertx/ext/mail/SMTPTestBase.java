@@ -1,6 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Handler;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -166,25 +165,6 @@ public class SMTPTestBase extends VertxTestBase {
             fail(e.toString());
           }
         }
-        testComplete();
-      } else {
-        log.warn("got exception", result.cause());
-        fail(result.cause().toString());
-      }
-    });
-
-    await();
-  }
-
-  protected void testSuccess(MailService mailService, MailMessage email, String message) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMailString(email, message, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      mailService.stop();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
         testComplete();
       } else {
         log.warn("got exception", result.cause());

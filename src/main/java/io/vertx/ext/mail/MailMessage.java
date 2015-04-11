@@ -1,6 +1,8 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.MultiMap;
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -27,6 +29,8 @@ public class MailMessage {
   private String text;
   private String html;
   private List<MailAttachment> attachment;
+  private MultiMap headers = null;
+  private boolean fixedHeaders = false;
 
   /**
    * construct empty mail message that can be used with the setters
@@ -57,6 +61,9 @@ public class MailMessage {
       }
       this.attachment = newList;
     }
+    if (other.headers != null) {
+      headers = new CaseInsensitiveHeaders().addAll(headers);
+    }
   }
 
   /**
@@ -67,14 +74,14 @@ public class MailMessage {
    */
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
-    this.bounceAddress = json.getString("bounceAddress");
-    this.from = json.getString("from");
-    this.to = getKeyAsStringOrList(json, "to");
-    this.cc = getKeyAsStringOrList(json, "cc");
-    this.bcc = getKeyAsStringOrList(json, "bcc");
-    this.subject = json.getString("subject");
-    this.text = json.getString("text");
-    this.html = json.getString("html");
+    bounceAddress = json.getString("bounceAddress");
+    from = json.getString("from");
+    to = getKeyAsStringOrList(json, "to");
+    cc = getKeyAsStringOrList(json, "cc");
+    bcc = getKeyAsStringOrList(json, "bcc");
+    subject = json.getString("subject");
+    text = json.getString("text");
+    html = json.getString("html");
     if (json.containsKey("attachment")) {
       List<MailAttachment> list;
       Object object = json.getValue("attachment");
@@ -88,7 +95,12 @@ public class MailMessage {
       } else {
         throw new IllegalArgumentException("invalid attachment type");
       }
-      this.attachment = list;
+      attachment = list;
+    }
+    if (json.containsKey("headers")) {
+      // TODO:
+//      headers = new CaseInsensitiveHeaders().addAll(json.getJsonObject("headers").getMap());
+      headers = null;
     }
   }
 
@@ -368,6 +380,45 @@ public class MailMessage {
   }
 
   /**
+   * get the headers to be set before filling our headers
+   *
+   * @return the headers
+   */
+  public MultiMap getHeaders() {
+    return headers;
+  }
+
+  /**
+   * set the headers to be set before filling our headers
+   *
+   * @param headers the headers to set
+   * @return this to be able to use it fluently
+   */
+  public MailMessage setHeaders(MultiMap headers) {
+    this.headers = headers;
+    return this;
+  }
+
+  /**
+   * get whether our own headers should be added to the message
+   * @return the fixedHeaders
+   */
+  public boolean isFixedHeaders() {
+    return fixedHeaders;
+  }
+
+  /**
+   * set whether our own headers should be stored in the message
+   *
+   * @param fixedHeaders the fixedHeaders to set
+   * @return this to be able to use it fluently
+   */
+  public MailMessage setFixedHeaders(boolean fixedHeaders) {
+    this.fixedHeaders = fixedHeaders;
+    return this;
+  }
+
+  /**
    * convert the mail message to Json representation
    * 
    * @return the json object
@@ -389,11 +440,29 @@ public class MailMessage {
       }
       json.put("attachment", array);
     }
+    if (headers != null) {
+      json.put("headers", multiMapJson(headers));
+    }
+    if (fixedHeaders) {
+      json.put("fixedheaders", true);
+    }
+    return json;
+  }
+
+  /**
+   * @param headers
+   * @return
+   */
+  private JsonObject multiMapJson(MultiMap headers) {
+    JsonObject json = new JsonObject();
+    for (String key : headers.names()) {
+      json.put(key, headers.getAll(key));
+    }
     return json;
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment);
+    final List<Object> objects = Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment, headers, fixedHeaders);
     return objects;
   }
 

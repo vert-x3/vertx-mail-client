@@ -79,30 +79,6 @@ public class MailService {
     return this;
   }
   /**
-   * send a single mail via MailService that has been pregenerated already
-   * <p>
-   * this makes it possible to create a mail message with Javamail for example to
-   * supports elements that are not supported by the mail encoder in vertx-mail-service
-   * @param email MailMessage object containing from/to etc, the message content fields are not evaluated (see <a href="../../../../../../../cheatsheet/MailMessage.html">MailMessage</a>)
-   * @param message String object that contains the complete mail note that the From/To headers are not evaluated, rather they are taken from the MailMessage object
-   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return this MailService instance so the method can be used fluently
-   */
-  public MailService sendMailString(Map<String, Object> email = [:], String message, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    this.delegate.sendMailString(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, message, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
-        AsyncResult<Map<String, Object>> f
-        if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result(event.result()?.getMap())
-        } else {
-          f = InternalHelper.<Map<String, Object>>failure(event.cause())
-        }
-        resultHandler.handle(f)
-      }
-    });
-    return this;
-  }
-  /**
    * start the MailServer instance if it is running locally (this operation is currently a no-op)
    */
   public void start() {

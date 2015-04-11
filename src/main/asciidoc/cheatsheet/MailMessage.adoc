@@ -57,4 +57,9 @@ set a single attachment of this mail the result of getAttachment when using
  this method returns an unmodifiable list, if you want to be able to add
  attachments later, please use
  <code>setAttachment(new ArrayList<MailAttachment>())</code> instead+++
+
+|[[fixedHeaders]]`fixedHeaders`
+|`Boolean`
+|+++
+set whether our own headers should be stored in the message+++
 |===

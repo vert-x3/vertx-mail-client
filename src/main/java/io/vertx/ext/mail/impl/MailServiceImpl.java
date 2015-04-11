@@ -70,18 +70,4 @@ public class MailServiceImpl implements MailService {
     return this;
   }
 
-  @Override
-  public MailService sendMailString(MailMessage message, String messageText,
-      Handler<AsyncResult<JsonObject>> resultHandler) {
-    if(!stopped) {
-      context.runOnContext(v -> {
-        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
-        mailMain.sendMail(message, messageText);
-      });
-    } else {
-      resultHandler.handle(Future.failedFuture("mail service has been stopped"));
-    }
-    return this;
-  }
-
 }
