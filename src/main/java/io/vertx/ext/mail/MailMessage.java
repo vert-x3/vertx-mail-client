@@ -98,10 +98,21 @@ public class MailMessage {
       attachment = list;
     }
     if (json.containsKey("headers")) {
-      // TODO:
-//      headers = new CaseInsensitiveHeaders().addAll(json.getJsonObject("headers").getMap());
-      headers = null;
+      headers = jsonToMultiMap(json);
     }
+  }
+
+  /**
+   * @param json
+   * @return
+   */
+  private MultiMap jsonToMultiMap(JsonObject json) {
+    JsonObject jsonHeaders = json.getJsonObject("headers");
+    MultiMap headers = new CaseInsensitiveHeaders();
+    for (String key : jsonHeaders.getMap().keySet()) {
+      headers.add(key, getKeyAsStringOrList(jsonHeaders, key));
+    }
+    return headers;
   }
 
   @SuppressWarnings("unchecked")

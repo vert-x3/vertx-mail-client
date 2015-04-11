@@ -114,6 +114,21 @@ public class MailMessageTest {
   }
 
   @Test
+  public void testConstructorFromJsonHeaders() {
+    final String jsonString = "{\"headers\":{}}";
+    assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
+    final String jsonString2 = "{\"headers\":{\"Header\":[\"value\"]}}";
+    assertEquals(jsonString2, new MailMessage(new JsonObject(jsonString2)).toJson().encode());
+    final String jsonString3 = "{\"headers\":{\"Header\":[\"value\",\"value2\"]}}";
+    assertEquals(jsonString3, new MailMessage(new JsonObject(jsonString3)).toJson().encode());
+    final String jsonString4 = "{\"headers\":{\"Header\":[\"value\"],\"Header2\":[\"value2\"]}}";
+    assertEquals(jsonString4, new MailMessage(new JsonObject(jsonString4)).toJson().encode());
+    final String jsonString5 = "{\"headers\":{\"Header\":\"value\",\"Header2\":\"value2\"}}";
+    final String jsonString6 = "{\"headers\":{\"Header\":[\"value\"],\"Header2\":[\"value2\"]}}";
+    assertEquals(jsonString6, new MailMessage(new JsonObject(jsonString5)).toJson().encode());
+  }
+
+  @Test
   public void testConstructorFromMailConfigCopy() {
     MailMessage message = new MailMessage();
 
