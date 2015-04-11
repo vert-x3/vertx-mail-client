@@ -12,6 +12,7 @@ import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Set;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
@@ -63,7 +64,14 @@ class SMTPAuthentication {
   }
 
   public void authCmd() {
-    if (connection.getCapa().getCapaAuth().contains("CRAM-MD5")) {
+    Set<String> allowedMethods;
+    if(config.getAuthMethods() != null && !config.getAuthMethods().isEmpty()) {
+      allowedMethods = Utils.parseCapaAuth(config.getAuthMethods());
+    } else {
+      allowedMethods = null;
+    }
+
+    if ((allowedMethods == null || allowedMethods.contains("CRAM-MD5")) && connection.getCapa().getCapaAuth().contains("CRAM-MD5")) {
       connection.write("AUTH CRAM-MD5", message -> {
         log.debug("AUTH result: " + message);
         if (!StatusCode.isStatusOk(message)) {
@@ -73,7 +81,7 @@ class SMTPAuthentication {
           cramMD5Step1(message.substring(4));
         }
       });
-    } else if (connection.getCapa().getCapaAuth().contains("PLAIN")) {
+    } else if ((allowedMethods == null || allowedMethods.contains("PLAIN")) && connection.getCapa().getCapaAuth().contains("PLAIN")) {
       String authdata = base64("\0" + config.getUsername() + "\0" + config.getPassword());
       connection.write("AUTH PLAIN " + authdata, 11, message -> {
         log.debug("AUTH result: " + message);
@@ -84,7 +92,7 @@ class SMTPAuthentication {
           finished();
         }
       });
-    } else if (connection.getCapa().getCapaAuth().contains("LOGIN")) {
+    } else if ((allowedMethods == null || allowedMethods.contains("LOGIN")) && connection.getCapa().getCapaAuth().contains("LOGIN")) {
       connection.write("AUTH LOGIN", message -> {
         log.debug("AUTH result: " + message);
         if (!StatusCode.isStatusOk(message)) {

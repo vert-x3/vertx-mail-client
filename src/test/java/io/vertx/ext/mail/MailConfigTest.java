@@ -11,41 +11,41 @@ public class MailConfigTest {
 
   @Test
   public void toJsonTest() {
-    MailConfig mailConfig=new MailConfig();
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}",mailConfig.toJson().toString());
+    MailConfig mailConfig = new MailConfig();
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}", mailConfig
+        .toJson().toString());
   }
 
   @Test
   public void toJsonTest2() {
-    MailConfig mailConfig=new MailConfig();
-    mailConfig.setUsername("username")
-      .setPassword("password")
-      .setSsl(true);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true}",mailConfig.toJson().toString());
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setUsername("username").setPassword("password").setSsl(true);
+    assertEquals(
+        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true}",
+        mailConfig.toJson().toString());
   }
 
   @Test
   public void toJsonTest3() {
-    MailConfig mailConfig=new MailConfig();
-    mailConfig.setHostname(null)
-      .setPort(0)
-      .setStarttls(null)
-      .setLogin(null);
-    assertEquals("{\"port\":0}",mailConfig.toJson().toString());
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setHostname(null).setPort(0).setStarttls(null).setLogin(null);
+    assertEquals("{\"port\":0}", mailConfig.toJson().toString());
   }
 
   @Test
   public void toJsonTest4() {
-    MailConfig mailConfig=new MailConfig();
+    MailConfig mailConfig = new MailConfig();
     mailConfig.setTrustAll(true);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true}",mailConfig.toJson().toString());
+    assertEquals(
+        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true}",
+        mailConfig.toJson().toString());
   }
 
   @Test
   public void newJsonTest() {
-    JsonObject json=new MailConfig("somehost",25).toJson();
+    JsonObject json = new MailConfig("somehost", 25).toJson();
     json.put("ssl", true);
-    MailConfig mailConfig=new MailConfig(json);
+    MailConfig mailConfig = new MailConfig(json);
     assertEquals("somehost", mailConfig.getHostname());
     assertEquals(StarttlsOption.OPTIONAL, mailConfig.getStarttls());
     assertTrue(mailConfig.isSsl());
@@ -53,7 +53,7 @@ public class MailConfigTest {
 
   @Test
   public void newJsonEmptyTest() {
-    JsonObject json=new JsonObject("{}");
+    JsonObject json = new JsonObject("{}");
     MailConfig mailConfig = new MailConfig(json);
     assertEquals("{\"hostname\":\"localhost\",\"port\":25}", mailConfig.toJson().encode());
   }
@@ -61,8 +61,7 @@ public class MailConfigTest {
   @Test
   public void testConstructorFromMailConfig() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setHostname("asdfasdf")
-      .setPort(1234);
+    mailConfig.setHostname("asdfasdf").setPort(1234);
     assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}",
         new MailConfig(mailConfig).toJson().encode());
   }
@@ -139,6 +138,13 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setTrustAll(true);
     assertTrue(mailConfig.isTrustAll());
+  }
+
+  @Test
+  public void testAuthMethods() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setAuthMethods("PLAIN CRAM-MD5");
+    assertEquals("PLAIN CRAM-MD5", mailConfig.getAuthMethods());
   }
 
   @Test

@@ -35,6 +35,15 @@ public class MailConfig {
    * effect
    */
   private LoginOption login;
+
+  /**
+   * String of allowed auth methods, if set only these methods will be used
+   * if the server supports them.
+   * 
+   * e.g. setting it to a single word will use this method and fail otherwise.
+   */
+  private String authMethods;
+
   // TODO: it might be better to put username/password into
   // an object since other auth mechanisms may have other data
   // e.g. XOAUTH for google
@@ -122,6 +131,7 @@ public class MailConfig {
     if(other.netClientOptions != null) {
       netClientOptions = new NetClientOptions(netClientOptions);
     }
+    authMethods = other.authMethods;
   }
 
   /**
@@ -147,6 +157,7 @@ public class MailConfig {
     if (options != null) {
       netClientOptions = new NetClientOptions(options);
     }
+    authMethods = config.getString("authMethods");
   }
 
   /**
@@ -327,6 +338,25 @@ public class MailConfig {
   }
 
   /**
+   * get string of allowed auth methods, if set only these methods will be used
+   * if the server supports them. If null or empty all supported methods may be used
+   * @return the authMethods
+   */
+  public String getAuthMethods() {
+    return authMethods;
+  }
+
+  /**
+   * set string of allowed auth methods
+   * @param authMethods the authMethods to set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setAuthMethods(String authMethods) {
+    this.authMethods = authMethods;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    * @return json object of the config
    */
@@ -358,12 +388,15 @@ public class MailConfig {
 //    if(netClientOptions != null) {
 //      json.put("netclientoptions", netClientOptions);
 //    }
+    if (authMethods != null) {
+      json.put("authMethods", authMethods);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions);
+    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions, authMethods);
     return objects;
   }
 
