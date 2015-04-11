@@ -76,7 +76,8 @@ public class TestSmtpServer {
               socket.write("500 didn't expect that command\r\n");
             }
           } else {
-            socket.write("500 out of lines\r\n");
+//            socket.write("500 out of lines\r\n");
+            log.info("out of lines, not sending additional reply");
           }
           if(inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);

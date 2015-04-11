@@ -88,7 +88,7 @@ public class MailAttachment {
 
   /**
    * set the data
-   * @param data Buffer of bytes to be used at attachmnet
+   * @param data Buffer of bytes to be used at attachment
    * @return this to be able to use it fluently
    */
   public MailAttachment setData(Buffer data) {
@@ -106,7 +106,7 @@ public class MailAttachment {
 
   /**
    * set the Content-Type
-   * @param the contentType
+   * @param contentType the contentType
    * @return this to be able to use it fluently
    */
   public MailAttachment setContentType(String contentType) {

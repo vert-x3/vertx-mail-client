@@ -3,7 +3,6 @@ package io.vertx.ext.mail;
 import static org.hamcrest.core.StringContains.containsString;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -23,14 +22,9 @@ public class MailStringTest extends SMTPTestWiser {
 
   @Test
   public void mailTest() throws MessagingException, IOException {
-    MailService mailService = mailServiceNoSSL();
+    MailService mailService = mailServiceTLSTrustAll();
 
-    MailMessage email = new MailMessage()
-    .setFrom("user@example.com")
-    .setTo(Arrays.asList(
-        "user@example.com (User Name)",
-        "other@example.com (Another User)"))
-        .setBounceAddress("user@example.org");
+    MailMessage email = exampleMessage();
 
     // note that the to and from fields from the string are not
     // evaluated at all
@@ -50,11 +44,11 @@ public class MailStringTest extends SMTPTestWiser {
     testSuccess(mailService, email, messageString);
 
     final WiserMessage message = wiser.getMessages().get(0);
-    assertEquals("user@example.org", message.getEnvelopeSender());
+    assertEquals("from@example.com", message.getEnvelopeSender());
     final MimeMessage mimeMessage = message.getMimeMessage();
     assertThat(mimeMessage.getContentType(), containsString("text/plain"));
     assertEquals("pregenerated message", mimeMessage.getSubject());
-    assertEquals("this is an example mail\n\n", inputStreamToString(mimeMessage.getInputStream()));
+    assertEquals("this is an example mail\n\n\n", TestUtils.conv2nl(inputStreamToString(mimeMessage.getInputStream())));
   }
 
 }

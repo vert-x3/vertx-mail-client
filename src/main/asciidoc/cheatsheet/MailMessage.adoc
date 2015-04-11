@@ -53,7 +53,8 @@ set the html text of this mail+++
 |[[attachment]]`attachment`
 |`link:MailAttachment.html[MailAttachment]`
 |+++
-set a single attachment of this mail
- the result of getAttachment when using this method returns an unmodifiable list, if you want to
- be able to add attachments later, please use <code>setAttachment(new ArrayList<MailAttachment>())</code> instead+++
+set a single attachment of this mail the result of getAttachment when using
+ this method returns an unmodifiable list, if you want to be able to add
+ attachments later, please use
+ <code>setAttachment(new ArrayList<MailAttachment>())</code> instead+++
 |===

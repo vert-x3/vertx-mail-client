@@ -1,46 +1,57 @@
 package io.vertx.ext.mail;
 
-import static org.hamcrest.core.StringContains.containsString;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.NetClientOptions;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 
 import org.junit.Test;
-import org.subethamail.wiser.WiserMessage;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses a local smtp server mockup
+ * this test uses a local SMTP server (wiser from subethasmtp)
+ * since this server supports SSL/TLS, the tests relating to that are here
  */
 public class MailLocalTest extends SMTPTestWiser {
 
   @Test
-  public void mailTest() throws MessagingException, IOException {
+  public void mailTest() {
 
-    MailService mailService = mailServiceLogin();
+    testSuccess(mailServiceLogin(), exampleMessage(), assertExampleMessage());
+  }
 
-    MailMessage email = new MailMessage();
+  @Test
+  public void mailTestTLSTrustAll() {
 
-    email.setFrom("user@example.com (Sender)")
-      .setTo(Arrays.asList(
-        "user@example.com (User Name)",
-        "other@example.com (Another User)"))
-      .setBounceAddress("user@example.com (Bounce)")
-      .setSubject("Test email")
-      .setText("this is a test email");
+    MailService mailService = MailService.create(vertx,
+        configLogin().setStarttls(StarttlsOption.REQUIRED).setTrustAll(true));
 
-    testSuccess(mailService, email);
+    testSuccess(mailService, exampleMessage(), assertExampleMessage());
+  }
 
-    final WiserMessage message = wiser.getMessages().get(0);
-    assertEquals("user@example.com", message.getEnvelopeSender());
-    final MimeMessage mimeMessage = message.getMimeMessage();
-    assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-    assertEquals("Test email", mimeMessage.getSubject());
-    assertEquals("this is a test email", inputStreamToString(mimeMessage.getInputStream()));
+  @Test
+  public void mailTestTLSNoTrust() throws MessagingException, IOException {
+
+    MailService mailService = MailService.create(vertx,
+        configLogin().setStarttls(StarttlsOption.REQUIRED));
+
+    testException(mailService, exampleMessage());
+  }
+
+  @Test
+  public void mailTestTLSCorrectCert() {
+    NetClientOptions netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(
+        "c:/Temp/keystore.data").setPassword("password"));
+
+    MailService mailService = MailService.create(vertx,
+        configLogin()
+          .setStarttls(StarttlsOption.REQUIRED)
+          .setNetClientOptions(netClientOptions));
+
+    testSuccess(mailService, exampleMessage(), assertExampleMessage());
   }
 
 }

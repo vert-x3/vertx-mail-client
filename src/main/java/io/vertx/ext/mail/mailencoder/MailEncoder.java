@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class MailEncoder {
 
-  private static final Logger log = LoggerFactory.getLogger(MailEncoder.class);
+//  private static final Logger log = LoggerFactory.getLogger(MailEncoder.class);
 
   private MailMessage message;
 

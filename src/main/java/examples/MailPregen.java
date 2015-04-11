@@ -34,25 +34,23 @@ public class MailPregen extends AbstractVerticle {
     // note that the from and to fields in the message string are not evaluated at all
     // (in fact an empty string would be a valid message)
 
-    String message = "MIME-Version: 1.0\n" + 
-        "Date: Fri, 3 Apr 2015 01:44:18 +0200\n" + 
-        "Message-ID: <CAOc7+6WZoDGRMTrGS6+qaN5wuUZmVrCkaea_Z0V3SUL-K7ebhQ@mail.example.com>\n" + 
-        "Subject: testmail\n" + 
-        "From: Alexander Lehmann <alexlehm@example.com>\n" + 
-        "To: Alexander Lehmann <alexlehm@example.com>\n" + 
-        "Content-Type: multipart/alternative; boundary=001a113dff8406b62e0512c6690d\n" + 
-        "\n" + 
-        "--001a113dff8406b62e0512c6690d\n" + 
-        "Content-Type: text/plain; charset=UTF-8\n" + 
-        "\n" + 
-        "this is a test mail from vertx <http://vertx.io/>\n" + 
-        "\n" + 
-        "--001a113dff8406b62e0512c6690d\n" + 
-        "Content-Type: text/html; charset=UTF-8\n" + 
-        "\n" + 
-        "<div dir=\"ltr\">this is a test mail from <a href=\"http://vertx.io/\">vertx</a><br><br><br></div>\n" + 
-        "\n" + 
-        "--001a113dff8406b62e0512c6690d--";
+    String message = "MIME-Version: 1.0\n" + "Date: Fri, 3 Apr 2015 01:44:18 +0200\n"
+        + "Message-ID: <CAOc7+6WZoDGRMTrGS6+qaN5wuUZmVrCkaea_Z0V3SUL-K7ebhQ@mail.example.com>\n"
+        + "Subject: testmail\n"
+        + "From: Alexander Lehmann <alexlehm@example.com>\n"
+        + "To: Alexander Lehmann <alexlehm@example.com>\n"
+        + "Content-Type: multipart/alternative; boundary=001a113dff8406b62e0512c6690d\n"
+        + "\n"
+        + "--001a113dff8406b62e0512c6690d\n" + "Content-Type: text/plain; charset=UTF-8\n"
+        + "\n"
+        + "this is a test mail from vertx <http://vertx.io/>\n"
+        + "\n"
+        + "--001a113dff8406b62e0512c6690d\n"
+        + "Content-Type: text/html; charset=UTF-8\n"
+        + "\n"
+        + "<div dir=\"ltr\">this is a test mail from <a href=\"http://vertx.io/\">vertx</a><br><br><br></div>\n"
+        + "\n"
+        + "--001a113dff8406b62e0512c6690d--";
 
     mailService.sendMailString(email, message, result -> {
       System.out.println("mail is finished");

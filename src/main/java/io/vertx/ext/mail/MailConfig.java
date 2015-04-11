@@ -1,11 +1,12 @@
 package io.vertx.ext.mail;
 
+import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
-import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.json.JsonObject;
 
 /**
  * represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
@@ -44,6 +45,19 @@ public class MailConfig {
    * use ssl on connect? (i.e. Port 465)
    */
   private boolean ssl;
+
+  /**
+   * trust all certificates
+   * this is applied to ssl connect or STARTTLS operation
+   */
+  private boolean trustAll;
+
+  
+  /**
+   * use NetClinetOptions if set instead of creating an options object based on the other options
+   * (this is mainly useful for ssl certs)
+   */
+  private NetClientOptions netClientOptions;
 
   /**
    * construct a config object with default options
@@ -97,13 +111,17 @@ public class MailConfig {
    * @param other the object to be copied
    */
   public MailConfig(MailConfig other) {
-    this.hostname = other.hostname;
-    this.port = other.port;
-    this.starttls = other.starttls;
-    this.login = other.login;
-    this.username = other.username;
-    this.password = other.password;
-    this.ssl = other.ssl;
+    hostname = other.hostname;
+    port = other.port;
+    starttls = other.starttls;
+    login = other.login;
+    username = other.username;
+    password = other.password;
+    ssl = other.ssl;
+    trustAll = other.trustAll;
+    if(other.netClientOptions != null) {
+      netClientOptions = new NetClientOptions(netClientOptions);
+    }
   }
 
   /**
@@ -124,6 +142,11 @@ public class MailConfig {
     username = config.getString("username");
     password = config.getString("password");
     ssl = config.getBoolean("ssl", false);
+    trustAll = config.getBoolean("trustall", false);
+    JsonObject options = config.getJsonObject("netclientoptions");
+    if (options != null) {
+      netClientOptions = new NetClientOptions(options);
+    }
   }
 
   /**
@@ -264,6 +287,46 @@ public class MailConfig {
   }
 
   /**
+   * get whether to trust all certificates on ssl connect
+   * @return trustAll option
+   */
+  public boolean isTrustAll() {
+    return trustAll;
+  }
+
+  /**
+   * set whether to trust all certificates on ssl connect
+   * the option is also applied to STARTTLS operation
+   * @param trustAll trust all certificates
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setTrustAll(boolean trustAll) {
+    this.trustAll = trustAll;
+    return this;
+  }
+
+  /**
+   * get the NetClientOptions to be used when opening SMTP connections
+   * @return the netClientOptions
+   */
+  public NetClientOptions getNetClientOptions() {
+    return netClientOptions;
+  }
+
+  /**
+   * set the NetClientOptions to be used when opening SMTP connections
+   *
+   * if not set, an options object will be created based on other settings
+   * (ssl and trustAll)
+   * @param netClientOptions the netClientOptions to set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setNetClientOptions(NetClientOptions netClientOptions) {
+    this.netClientOptions = netClientOptions;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    * @return json object of the config
    */
@@ -288,12 +351,19 @@ public class MailConfig {
     if (ssl) {
       json.put("ssl", ssl);
     }
+    if (trustAll) {
+      json.put("trustall", trustAll);
+    }
+// TODO: how do we do this, if it is necessary at all?
+//    if(netClientOptions != null) {
+//      json.put("netclientoptions", netClientOptions);
+//    }
 
     return json;
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl);
+    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions);
     return objects;
   }
 

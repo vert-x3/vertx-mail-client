@@ -38,6 +38,8 @@ public class MailServiceVerticle extends AbstractVerticle {
 
   @Override
   public void stop() {
-    service.stop();
+    if (service != null) {
+      service.stop();
+    }
   }
 }

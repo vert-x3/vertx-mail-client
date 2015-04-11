@@ -35,6 +35,13 @@ public class MailConfigTest {
   }
 
   @Test
+  public void toJsonTest4() {
+    MailConfig mailConfig=new MailConfig();
+    mailConfig.setTrustAll(true);
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true}",mailConfig.toJson().toString());
+  }
+
+  @Test
   public void newJsonTest() {
     JsonObject json=new MailConfig("somehost",25).toJson();
     json.put("ssl", true);
@@ -125,6 +132,13 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setPassword("secret");
     assertEquals("secret", mailConfig.getPassword());
+  }
+
+  @Test
+  public void testTrustAll() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setTrustAll(true);
+    assertTrue(mailConfig.isTrustAll());
   }
 
   @Test

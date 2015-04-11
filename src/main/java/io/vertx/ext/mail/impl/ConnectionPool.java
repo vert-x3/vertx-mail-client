@@ -36,7 +36,12 @@ class ConnectionPool {
    * @param config
    */
   private void createNetclient(Handler<Void> finishedHandler) {
-    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl());
+    NetClientOptions netClientOptions;
+    if(config.getNetClientOptions() == null)  {
+      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
+    } else {
+      netClientOptions = config.getNetClientOptions();
+    }
     context.runOnContext(v -> {
       netClient = vertx.createNetClient(netClientOptions);
       finishedHandler.handle(null);
@@ -48,7 +53,7 @@ class ConnectionPool {
     if (stopped) {
       errorHandler.handle(new NoStackTraceThrowable("connection pool is stopped"));
     } else {
-      if(connections.size()==0) {
+      if (connections.size() == 0) {
         createNewConnection(config, resultHandler, errorHandler);
       } else {
         findUsableConnection(connections, config, 0, resultHandler, v -> {
@@ -71,7 +76,7 @@ class ConnectionPool {
       Handler<Throwable> errorHandler) {
     log.debug("creating new connection");
     // if we have not yet created the netclient, do that first
-    if(netClient == null) {
+    if (netClient == null) {
       createNetclient(v -> {
         createConnection(resultHandler, errorHandler);
       });
@@ -87,8 +92,7 @@ class ConnectionPool {
    * @param resultHandler
    * @param errorHandler
    */
-  private void createConnection(Handler<SMTPConnection> resultHandler,
-      Handler<Throwable> errorHandler) {
+  private void createConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     SMTPConnection conn = new SMTPConnection(netClient, context);
     connections.add(conn);
     new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).connect();
@@ -105,9 +109,9 @@ class ConnectionPool {
         conn.useConnection();
         new SMTPReset(conn, config, v -> foundHandler.handle(conn), v -> {
           // make sure we do not get confused by a close event later
-          conn.setBroken();
-          findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
-        }).rsetCmd();
+            conn.setBroken();
+            findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
+          }).rsetCmd();
       } else {
         findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
       }
@@ -124,7 +128,7 @@ class ConnectionPool {
   }
 
   private void shutdownConnections(int i, Handler<Void> finishedHandler) {
-    if(netClient != null) {
+    if (netClient != null) {
       netClient.close();
     }
     if (i == connections.size()) {
