@@ -25,7 +25,6 @@ class MailMain {
   private static final Logger log = LoggerFactory.getLogger(MailMain.class);
 
   private Handler<AsyncResult<JsonObject>> finishedHandler;
-  private MailConfig config;
 
   private MailMessage email;
   private String mailMessage;
@@ -34,8 +33,7 @@ class MailMain {
 
   private ConnectionPool connectionPool;
 
-  public MailMain(MailConfig config, ConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
-    this.config = config;
+  public MailMain(ConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.connectionPool = connectionPool;
     this.finishedHandler = finishedHandler;
   }
@@ -68,7 +66,7 @@ class MailMain {
 
   private void doSend() {
     if(validateHeaders()) {
-      connectionPool.getConnection(config, this::sendMessage, this::handleError);
+      connectionPool.getConnection(this::sendMessage, this::handleError);
     }
   }
 

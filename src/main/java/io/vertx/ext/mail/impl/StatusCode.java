@@ -24,6 +24,11 @@ class StatusCode {
     return statusCode >= 200 && statusCode < 400;
   }
 
+  static boolean isStatusContinue(String message) {
+    int statusCode = getStatusCode(message);
+    return statusCode >= 300 && statusCode < 400;
+  }
+
   static boolean isStatusFatal(String message) {
     return getStatusCode(message) >= 500;
   }

@@ -22,7 +22,6 @@ public class MailServiceImpl implements MailService {
 
   private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
-  private final MailConfig config;
   private final Context context;
   private final ConnectionPool connectionPool;
   private boolean stopped = false;
@@ -36,7 +35,6 @@ public class MailServiceImpl implements MailService {
    * @param config the configuration of the mailserver
    */
   public MailServiceImpl(Vertx vertx, MailConfig config) {
-    this.config = config;
     context = vertx.getOrCreateContext();
     connectionPool = new ConnectionPool(vertx, config, context);
   }
@@ -44,7 +42,6 @@ public class MailServiceImpl implements MailService {
   @Override
   public void start() {
     // may take care of validating the options
-    // and configure a queue if we implement one
     log.debug("mail service started");
   }
 
@@ -61,7 +58,7 @@ public class MailServiceImpl implements MailService {
   public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
     if(!stopped) {
       context.runOnContext(v -> {
-        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
+        MailMain mailMain = new MailMain(connectionPool, resultHandler);
         mailMain.sendMail(message);
       });
     } else {

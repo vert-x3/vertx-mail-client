@@ -48,7 +48,7 @@ class ConnectionPool {
     });
   }
 
-  void getConnection(MailConfig config, Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
+  void getConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("getConnection()");
     if (stopped) {
       errorHandler.handle(new NoStackTraceThrowable("connection pool is stopped"));
