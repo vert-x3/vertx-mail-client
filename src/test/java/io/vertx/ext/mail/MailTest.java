@@ -60,23 +60,23 @@ public class MailTest extends VertxTestBase {
       log.warn("auth account unavailable");
     }
 
-    MailConfig mailConfig = new MailConfig("mail.c0nfig.de", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
+    MailConfig mailConfig = new MailConfig("smtp.aol.com", 587, StarttlsOption.REQUIRED, LoginOption.REQUIRED);
 //    MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);
-    mailConfig.setTrustAll(true);
-    mailConfig.setAuthMethods("DIGEST-MD5");
+//    mailConfig.setTrustAll(true);
+//    mailConfig.setAuthMethods("DIGEST-MD5");
 
     MailService mailService = MailService.create(vertx, mailConfig);
 
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
-      .setFrom("alex@lehmann.cx")
+      .setFrom("alexlehm1969@aol.com")
       .setTo("alexlehm1969@aol.com")
       .setCc("lehmann333@arcor.de")
       .setBcc("alexlehm@gmail.com")
-      .setBounceAddress("alex@lehmann.cx")
+      .setBounceAddress("alexlehm1969@aol.com")
       .setSubject("Test email with HTML")
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");

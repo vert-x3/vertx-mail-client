@@ -22,9 +22,6 @@ import javax.net.ssl.SSLSocketFactory;
  */
 public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
 
-  /**
-   * FIXME: put into test/resources/ssl
-   */
   private static final String KEY_STORE_FILE = "src/test/resources/certs/keystore.jks";
   private static final String KEY_STORE_PASSWORD = "password";
 

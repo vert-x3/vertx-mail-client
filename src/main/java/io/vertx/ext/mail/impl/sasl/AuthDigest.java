@@ -111,6 +111,8 @@ abstract class AuthDigest extends AuthBaseClass {
   }
 
   /**
+   * the digest implementation is directly from the rfc impl
+   *
    * @param user
    * @param realm
    * @param nonce
@@ -118,7 +120,8 @@ abstract class AuthDigest extends AuthBaseClass {
    * @param qop
    * @param nc
    * @param digestUri
-   * @return
+   *
+   * @return Digest-MD5 value of the input params
    */
   private String response(final String user, final String realm, final String nonce, final String cnonce, String qop, final String nc,
       final String digestUri, final String operation) {

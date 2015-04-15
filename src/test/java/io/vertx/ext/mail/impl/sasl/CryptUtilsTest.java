@@ -63,16 +63,6 @@ public class CryptUtilsTest {
   }
 
   @Test
-  public final void testHMacSHA512() {
-    assertEquals(
-        "b42af09057bac1e2d41708e48a902e09b5ff7f12ab428a4fe86653c73dd248fb82f948a549f7b791a5b41915ee4d1ec3935357e4e2317250d0372afa2ebeeb3a",
-        CryptUtils.hmacHex("key", "The quick brown fox jumps over the lazy dog", "HmacSHA512"));
-    assertEquals(
-        "84fa5aa0279bbc473267d05a53ea03310a987cecc4c1535ff29b6d76b8f1444a728df3aadb89d4a9a6709e1998f373566e8f824a8ca93b1821f0b69bc2a2f65e",
-        CryptUtils.hmacHex("key", "", "HmacSHA512"));
-  }
-
-  @Test
   public final void testBase64() {
     assertEquals("", CryptUtils.base64(""));
     assertEquals("Kg==", CryptUtils.base64("*"));
