@@ -3,10 +3,6 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.impl.Utils;
-
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -20,7 +16,7 @@ import java.util.Map;
  */
 abstract class AuthDigest extends AuthBaseClass {
 
-  private final static Logger log = LoggerFactory.getLogger(AuthDigest.class);
+//  private final static Logger log = LoggerFactory.getLogger(AuthDigest.class);
 
   private int counter;
   final MessageDigest digest;
@@ -55,7 +51,6 @@ abstract class AuthDigest extends AuthBaseClass {
         String reply = calcStep1(data);
         return reply;
       case 2:
-        System.out.println(data+" "+serverResponse);
         if(data.equals("rspauth="+serverResponse)) {
           return "";
         } else {
@@ -75,8 +70,6 @@ abstract class AuthDigest extends AuthBaseClass {
     String qop = digestChallenge.get("qop");
     String nonce = digestChallenge.get("nonce");
     String realm = digestChallenge.get("realm");
-
-    log.debug("digestChallenge " + digestChallenge.toString());
 
     Map<String, String> digestResponse = new HashMap<String, String>();
 
@@ -105,8 +98,6 @@ abstract class AuthDigest extends AuthBaseClass {
     digestResponse.put("response", response(user, realm, nonce, cnonce, qop, nc, digestUri, "AUTHENTICATE"));
     serverResponse = response(user, realm, nonce, cnonce, qop, nc, digestUri, "");
 
-    log.info(serverResponse);
-    
     return encodeMap(digestResponse);
   }
 
@@ -166,7 +157,6 @@ abstract class AuthDigest extends AuthBaseClass {
    * @return
    */
   private byte[] hash(byte[] data) {
-    System.out.println("hash -> " + new String(data));
     return digest.digest(data);
   }
 

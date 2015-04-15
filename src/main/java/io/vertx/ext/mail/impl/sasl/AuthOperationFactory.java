@@ -3,9 +3,6 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
@@ -15,8 +12,6 @@ import java.util.Set;
  *
  */
 public class AuthOperationFactory {
-
-  private final static Logger log = LoggerFactory.getLogger(AuthOperationFactory.class);
 
   final static Class<?>[] authList = new Class<?>[] {
     AuthDigestMD5.class,
@@ -50,7 +45,6 @@ public class AuthOperationFactory {
     }
     if (classToUse != null) {
       try {
-        log.info(classToUse.getName());
         return (AuthOperation) classToUse.getConstructor(String.class, String.class).newInstance(username, password);
       } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
           | NoSuchMethodException | SecurityException e) {
