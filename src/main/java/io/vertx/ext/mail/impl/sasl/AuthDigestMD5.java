@@ -8,19 +8,19 @@ package io.vertx.ext.mail.impl.sasl;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-class AuthCramSHA512 extends AuthCram {
+class AuthDigestMD5 extends AuthDigest {
 
   /**
    * 
    */
-  static final String AUTH_NAME = "CRAM-SHA512";
+  static final String AUTH_NAME = "DIGEST-MD5";
 
   /**
    * @param username
    * @param password
    */
-  public AuthCramSHA512(String username, String password) {
-    super(username, password, "HmacSHA512");
+  public AuthDigestMD5(String username, String password) {
+    super(username, password, "MD5");
   }
 
   /* (non-Javadoc)

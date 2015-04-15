@@ -44,7 +44,7 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTestTLSCorrectCert() {
     NetClientOptions netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(
-        "c:/Temp/keystore.data").setPassword("password"));
+        "src/test/resources/certs/keystore.jks").setPassword("password"));
 
     MailService mailService = MailService.create(vertx,
         configLogin()

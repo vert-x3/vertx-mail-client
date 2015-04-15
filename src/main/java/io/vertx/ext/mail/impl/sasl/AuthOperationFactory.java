@@ -19,7 +19,7 @@ public class AuthOperationFactory {
   private final static Logger log = LoggerFactory.getLogger(AuthOperationFactory.class);
 
   final static Class<?>[] authList = new Class<?>[] {
-    AuthCramSHA512.class,
+    AuthDigestMD5.class,
     AuthCramSHA256.class,
     AuthCramSHA1.class,
     AuthCramMD5.class,

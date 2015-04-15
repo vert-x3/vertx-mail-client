@@ -61,6 +61,10 @@ public class CryptUtils {
     }
   }
 
+  public static String base64(byte[] data) {
+    return Base64.getEncoder().encodeToString(data);
+  }
+
   public static String decodeb64(String string) {
     try {
       return new String(Base64.getDecoder().decode(string), "UTF-8");
