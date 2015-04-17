@@ -83,7 +83,7 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
-  private MailConfig configNoSSL() {
+  protected MailConfig configNoSSL() {
     return new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.DISABLED);
   }
 

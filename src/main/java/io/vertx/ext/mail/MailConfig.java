@@ -69,6 +69,11 @@ public class MailConfig {
   private NetClientOptions netClientOptions;
 
   /**
+   * use this hostname for HELO/EHLO command
+   */
+  private String ehloHostname;
+
+  /**
    * construct a config object with default options
    */
   public MailConfig() {
@@ -132,6 +137,7 @@ public class MailConfig {
       netClientOptions = new NetClientOptions(netClientOptions);
     }
     authMethods = other.authMethods;
+    ehloHostname = other.ehloHostname;
   }
 
   /**
@@ -157,7 +163,8 @@ public class MailConfig {
     if (options != null) {
       netClientOptions = new NetClientOptions(options);
     }
-    authMethods = config.getString("authMethods");
+    authMethods = config.getString("auth_methods");
+    ehloHostname = config.getString("ehlo_hostname");
   }
 
   /**
@@ -357,6 +364,24 @@ public class MailConfig {
   }
 
   /**
+   * get the hostname to be used for HELO/EHLO
+   * @return the ehloHostname
+   */
+  public String getEhloHostname() {
+    return ehloHostname;
+  }
+
+  /**
+   * set the hostname to be used for HELO/EHLO
+   * @param ehloHostname the ehloHostname to set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setEhloHostname(String ehloHostname) {
+    this.ehloHostname = ehloHostname;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    * @return json object of the config
    */
@@ -389,14 +414,18 @@ public class MailConfig {
 //      json.put("netclientoptions", netClientOptions);
 //    }
     if (authMethods != null) {
-      json.put("authMethods", authMethods);
+      json.put("auth_methods", authMethods);
+    }
+    if (ehloHostname != null) {
+      json.put("ehlo_hostname", ehloHostname);
     }
 
     return json;
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions, authMethods);
+    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll,
+        netClientOptions, authMethods, ehloHostname);
     return objects;
   }
 

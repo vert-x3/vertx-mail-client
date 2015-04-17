@@ -29,6 +29,7 @@ class SMTPConnection {
   private Handler<Throwable> errorHandler;
   private boolean broken;
   private boolean idle;
+  private boolean doShutdown;
   private final NetClient client;
   private final Context context;
 
@@ -37,6 +38,7 @@ class SMTPConnection {
   SMTPConnection(NetClient client, Context context) {
     broken = true;
     idle = false;
+    doShutdown = false;
     this.client = client;
     this.context = context;
   }
@@ -99,9 +101,9 @@ class SMTPConnection {
       }
       // avoid logging large mail body
       if (logStr.length() < 1000) {
-        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr);
+        log.debug("write on SMTPConnection " + this.toString() + " command: " + logStr);
       } else {
-        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr.substring(0, 1000) + "...");
+        log.debug("write on SMTPConnection " + this.toString() + " command: " + logStr.substring(0, 1000) + "...");
       }
     }
     ns.write(str + "\r\n");
@@ -183,9 +185,19 @@ class SMTPConnection {
   }
 
   public void returnToPool() {
-    log.debug("returning connection to pool");
-    idle = true;
-    commandReplyHandler = null;
+    if (doShutdown) {
+      useConnection();
+      setBroken();
+      log.debug("shutting down connection");
+      new SMTPQuit(this, v -> {
+      }).quitCmd();
+      shutdown();
+      log.debug("connection is shut down");
+    } else {
+      log.debug("returning connection to pool");
+      idle = true;
+      commandReplyHandler = null;
+    }
   }
 
   /**
@@ -223,5 +235,12 @@ class SMTPConnection {
     log.debug("setting connection to broken");
     broken = true;
     commandReplyHandler = null;
+  }
+
+  /**
+   * 
+   */
+  public void setDoShutdown() {
+    doShutdown = true;
   }
 }

@@ -102,15 +102,20 @@ class SMTPInitialDialogue {
 //  }
 
   /**
-   * @return
+   * get the hostname either from config or by resolving our own address
+   * @return the hostname
    */
   private String getMyHostname() {
-    try {
-      InetAddress ip = InetAddress.getLocalHost();
-      return ip.getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      // as a last resort, use localhost
-      return "localhost";
+    if(config.getEhloHostname() != null) {
+      return config.getEhloHostname();
+    } else {
+      try {
+        InetAddress ip = InetAddress.getLocalHost();
+        return ip.getCanonicalHostName();
+      } catch (UnknownHostException e) {
+        // as a last resort, use localhost
+        return "localhost";
+      }
     }
   }
 

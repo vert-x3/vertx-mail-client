@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
 
 import org.junit.Test;
 
@@ -36,8 +37,10 @@ public class MailConfigTest {
   public void toJsonTest4() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setTrustAll(true);
+    mailConfig.setAuthMethods("PLAIN");
+    mailConfig.setEhloHostname("example.com");
     assertEquals(
-        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true}",
+        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\"}",
         mailConfig.toJson().toString());
   }
 
@@ -145,6 +148,20 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setAuthMethods("PLAIN CRAM-MD5");
     assertEquals("PLAIN CRAM-MD5", mailConfig.getAuthMethods());
+  }
+
+  @Test
+  public void testNetClientOptions() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setNetClientOptions(new NetClientOptions());
+    assertEquals(new NetClientOptions(), mailConfig.getNetClientOptions());
+  }
+
+  @Test
+  public void testEhloHostname() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setEhloHostname("localhost.localdomain");
+    assertEquals("localhost.localdomain", mailConfig.getEhloHostname());
   }
 
   @Test

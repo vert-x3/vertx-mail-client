@@ -26,7 +26,6 @@ public class MailServiceImpl implements MailService {
   private final ConnectionPool connectionPool;
   private boolean stopped = false;
 
-
   /**
    * construct a MailService object with the vertx and config configuration
    * <p>
@@ -48,10 +47,10 @@ public class MailServiceImpl implements MailService {
   @Override
   public void stop() {
     if (!stopped) {
-      stopped = true;
+      log.debug("stopping mail service");
       connectionPool.stop();
+      stopped = true;
     }
-    log.debug("mail service stopped");
   }
 
   @Override

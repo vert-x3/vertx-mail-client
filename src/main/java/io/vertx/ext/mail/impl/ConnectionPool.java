@@ -20,7 +20,7 @@ class ConnectionPool {
   private final List<SMTPConnection> connections;
   private final Vertx vertx;
   private NetClient netClient = null;
-  private final boolean stopped = false;
+  private boolean stopped = false;
   private final MailConfig config;
   private final Context context;
 
@@ -109,9 +109,9 @@ class ConnectionPool {
         conn.useConnection();
         new SMTPReset(conn, config, v -> foundHandler.handle(conn), v -> {
           // make sure we do not get confused by a close event later
-            conn.setBroken();
-            findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
-          }).rsetCmd();
+          conn.setBroken();
+          findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
+        }).rsetCmd();
       } else {
         findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
       }
@@ -119,40 +119,50 @@ class ConnectionPool {
   }
 
   void stop() {
-    stop(v -> {
-    });
+    stop(v -> {});
   }
 
   void stop(Handler<Void> finishedHandler) {
+    if (netClient != null) {
+      netClient.close();
+    }
+    stopped = true;
     shutdownConnections(0, finishedHandler);
   }
 
   private void shutdownConnections(int i, Handler<Void> finishedHandler) {
-    if (netClient != null) {
-      netClient.close();
-    }
     if (i == connections.size()) {
       finishedHandler.handle(null);
     } else {
-      log.debug("STMPConnection.shutdown(" + i + ")");
+      log.debug("SMTPConnection.shutdown(" + i + ")");
       SMTPConnection connection = connections.get(i);
       // TODO: have to wait for active connections still running
       // they will shut down when the operation is finished
-      if (connection.isIdle()) {
-        if (connection.isBroken()) {
+      if (connection.isBroken()) {
+        connection.shutdown();
+        shutdownConnections(i + 1, finishedHandler);
+      } else {
+        if (connection.isIdle()) {
+          // TODO: this may be better in the SMTPConnection class
+          connection.useConnection();
+          log.debug("shutting down connection (QUIT)");
+          // TODO: this isn't working as expected since the QUIT reply is not received
+          new SMTPQuit(connection, v -> {
+            //            connection.shutdown();
+            //            log.debug("connection is shut down");
+            //            shutdownConnections(i + 1, finishedHandler);
+            log.debug("QUIT finished");
+          }).quitCmd();
+          // shut down the connection regardless of the reply
           connection.shutdown();
+          log.debug("connection is shut down");
           shutdownConnections(i + 1, finishedHandler);
         } else {
-          connection.setBroken();
-          log.debug("shutting down connection");
-          new SMTPQuit(connection, v -> {
-            connection.shutdown();
-            log.debug("connection is shut down");
-            shutdownConnections(i + 1, finishedHandler);
-          }).quitCmd();
+          // shut down the connection at the end of the current send operations
+          log.debug("will shut down connection after send operation finishes");
+          connection.setDoShutdown();
+          shutdownConnections(i + 1, finishedHandler);
         }
-      } else {
-        shutdownConnections(i + 1, finishedHandler);
       }
     }
   }
