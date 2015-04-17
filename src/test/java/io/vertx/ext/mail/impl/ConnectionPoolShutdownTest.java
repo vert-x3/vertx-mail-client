@@ -1,14 +1,13 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailService;
 import io.vertx.ext.mail.SMTPTestWiser;
-import io.vertx.ext.mail.StarttlsOption;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -29,39 +28,39 @@ public class ConnectionPoolShutdownTest extends SMTPTestWiser {
 
   @Test
   public final void testStopWhileMailActive(TestContext testContext) {
-
-    Vertx vertx = Vertx.vertx();
-    MailConfig config = configNoSSL();
-
-    MailService mailService = MailService.create(vertx, config);
-
     Async async = testContext.async();
+    Vertx vertx = Vertx.vertx();
 
-    StringBuilder sb = new StringBuilder();
-    sb.append("*************************************************\n");
-    for(int i=0; i<20;i++) {
-      sb.append(sb);
-    }
-    String text=sb.toString();
+    vertx.runOnContext(v -> {
+      MailConfig config = configNoSSL();
 
-    MailMessage email = new MailMessage("from@example.com", "user@example.com", "Subject", text);
+      MailService mailService = MailService.create(vertx, config);
 
-    mailService.sendMail(email, result -> {
-      log.info("mail finished");
-      mailService.stop();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        testContext.fail(result.cause().toString());
+      StringBuilder sb = new StringBuilder();
+      sb.append("*************************************************\n");
+      for(int i=0; i<20;i++) {
+        sb.append(sb);
       }
-    });
-    // wait a short while to allow the mail send to start
-    // otherwise we have shut down the connection pool before it even starts
-    vertx.setTimer(100, v -> {
-      log.info("stopping mailService");
-      mailService.stop();
+      String text=sb.toString();
+
+      MailMessage email = new MailMessage("from@example.com", "user@example.com", "Subject", text);
+
+      mailService.sendMail(email, result -> {
+        log.info("mail finished");
+        if (result.succeeded()) {
+          log.info(result.result().toString());
+          async.complete();
+        } else {
+          log.warn("got exception", result.cause());
+          testContext.fail(result.cause().toString());
+        }
+      });
+      // wait a short while to allow the mail send to start
+      // otherwise we have shut down the connection pool before it even starts
+      vertx.setTimer(100, v1 -> {
+        log.info("stopping mail service");
+        mailService.stop();
+      });
     });
   }
 

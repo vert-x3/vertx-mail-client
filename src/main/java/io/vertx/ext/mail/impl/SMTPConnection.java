@@ -39,6 +39,8 @@ class SMTPConnection {
     broken = true;
     idle = false;
     doShutdown = false;
+    socketClosed = false;
+    socketShutDown = false;
     this.client = client;
     this.context = context;
   }

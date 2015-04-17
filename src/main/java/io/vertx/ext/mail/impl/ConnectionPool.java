@@ -123,9 +123,9 @@ class ConnectionPool {
   }
 
   void stop(Handler<Void> finishedHandler) {
-    if (netClient != null) {
-      netClient.close();
-    }
+//    if (netClient != null) {
+//      netClient.close();
+//    }
     stopped = true;
     shutdownConnections(0, finishedHandler);
   }
