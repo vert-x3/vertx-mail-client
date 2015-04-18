@@ -22,6 +22,8 @@ import io.vertx.ext.mail.MailConfig;
  */
 class SMTPConnection {
 
+  private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+
   private NetSocket ns;
   private boolean socketClosed;
   private boolean socketShutDown;
@@ -32,8 +34,8 @@ class SMTPConnection {
   private boolean doShutdown;
   private final NetClient client;
   private final Context context;
-
-  private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+  private Capabilities capa = new Capabilities();
+  private ConnectionPool pool;
 
   SMTPConnection(NetClient client, Context context, ConnectionPool pool) {
     broken = true;
@@ -45,9 +47,6 @@ class SMTPConnection {
     this.context = context;
     this.pool = pool;
   }
-
-  private Capabilities capa = new Capabilities();
-  private ConnectionPool pool;
 
   /**
    * @return the capabilities object
@@ -92,26 +91,31 @@ class SMTPConnection {
     if (socketClosed) {
       log.debug("connection was closed by server");
       handleError("connection was closed by server");
-    }
-    if (log.isDebugEnabled()) {
-      String logStr;
-      if (blank >= 0) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = blank; i < str.length(); i++) {
-          sb.append('*');
+    } else {
+      if (ns != null) {
+        if (log.isDebugEnabled()) {
+          String logStr;
+          if (blank >= 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = blank; i < str.length(); i++) {
+              sb.append('*');
+            }
+            logStr = str.substring(0, blank) + sb;
+          } else {
+            logStr = str;
+          }
+          // avoid logging large mail body
+          if (logStr.length() < 1000) {
+            log.debug("command: " + logStr);
+          } else {
+            log.debug("command: " + logStr.substring(0, 1000) + "...");
+          }
         }
-        logStr = str.substring(0, blank) + sb;
+        ns.write(str + "\r\n");
       } else {
-        logStr = str;
-      }
-      // avoid logging large mail body
-      if (logStr.length() < 1000) {
-        log.debug("write on SMTPConnection " + this.toString() + " command: " + logStr);
-      } else {
-        log.debug("write on SMTPConnection " + this.toString() + " command: " + logStr.substring(0, 1000) + "...");
+        log.debug("not sending command " + str + " since the netsocket is null");
       }
     }
-    ns.write(str + "\r\n");
   }
 
   private void handleError(String message) {
@@ -137,7 +141,7 @@ class SMTPConnection {
             // avoid returning two exceptions
             log.debug("exceptionHandler called");
             if (!socketClosed && !socketShutDown && !idle && !broken) {
-              broken = true;
+              setBroken();
               log.debug("got an exception on the netsocket", e);
               handleError(e);
             } else {
@@ -149,17 +153,19 @@ class SMTPConnection {
             socketClosed = true;
             // avoid exception if we regularly shut down the socket on our side
             if (!socketShutDown && !idle && !broken) {
-              broken = true;
+              setBroken();
               log.debug("throwing: connection has been closed by the server");
               handleError("connection has been closed by the server");
             } else {
-              if(socketShutDown || broken) {
+              if (socketShutDown || broken) {
                 log.debug("close has been expected");
               } else {
                 log.debug("closed while connection has been idle (timeout on server?)");
               }
-              broken = true;
-              if(!socketShutDown) {
+              if (!broken) {
+                setBroken();
+              }
+              if (!socketShutDown) {
                 shutdown();
                 pool.removeFromPool(this);
               }
@@ -214,18 +220,20 @@ class SMTPConnection {
   }
 
   /**
-   * send quit and close the connection, this operation waits for the success of the quit
-   * command but will close the connection on exception as well 
+   * send quit and close the connection, this operation waits for the success of
+   * the quit command but will close the connection on exception as well
    */
   void quitCloseConnection() {
-    log.debug("shutting down connection");
-    new SMTPQuit(this, v -> {
-      shutdown();
-      log.debug("connection is shut down");
-    }, th -> {
-      shutdown();
-      log.debug("connection is shut down", th);
-    }).start();
+    if (!socketShutDown) {
+      log.debug("shutting down connection");
+      new SMTPQuit(this, v -> {
+        shutdown();
+        log.debug("connection is shut down");
+      }, th -> {
+        shutdown();
+        log.debug("connection is shut down", th);
+      }).start();
+    }
   }
 
   /**
@@ -256,13 +264,19 @@ class SMTPConnection {
   }
 
   /**
-   * set connection to broken, it will not be used again
-   * TODO: have to queue the shut down somehow
+   * set connection to broken and shut it down
    */
   public void setBroken() {
-    log.debug("setting connection to broken");
-    broken = true;
-    commandReplyHandler = null;
+    if (!broken) {
+      log.debug("setting connection to broken");
+      broken = true;
+      commandReplyHandler = null;
+      log.debug("closing connection");
+      shutdown();
+      pool.removeFromPool(this);
+    } else {
+      log.debug("connection is already set to broken");
+    }
   }
 
   /**

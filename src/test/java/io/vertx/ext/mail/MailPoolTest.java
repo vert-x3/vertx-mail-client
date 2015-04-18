@@ -1,6 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
@@ -10,9 +9,6 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/*
- first implementation of a SMTP client
- */
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -21,8 +17,6 @@ import org.junit.runner.RunWith;
 public class MailPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolTest.class);
-
-  Vertx vertx = Vertx.vertx();
 
   MailService mailService;
 

@@ -57,6 +57,7 @@ public class ConnectionPoolTest extends SMTPTestWiser {
     ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     Async async = testContext.async();
     pool.getConnection(conn -> {
+      log.debug("have got a connection");
       conn.returnToPool();
       pool.stop();
       async.complete();

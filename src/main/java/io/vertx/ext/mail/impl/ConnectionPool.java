@@ -106,11 +106,10 @@ class ConnectionPool {
         conn.useConnection();
         new SMTPReset(conn, config, v -> foundHandler.handle(conn), v -> {
           // make sure we do not get confused by a close event later
-            conn.setBroken();
-            removeFromPool(conn);
-            // at this point the current element is gone, so no i+1
-            findUsableConnection(i, foundHandler, notFoundHandler);
-          }).start();
+          conn.setBroken();
+          // at this point the current element is gone, so no i+1
+          findUsableConnection(i, foundHandler, notFoundHandler);
+        }).start();
       } else {
         findUsableConnection(i + 1, foundHandler, notFoundHandler);
       }
@@ -122,7 +121,15 @@ class ConnectionPool {
    */
   void removeFromPool(SMTPConnection conn) {
     connections.remove(conn);
-    log.debug("removed old connection, new size is "+connections.size());
+    log.debug("removed old connection, new size is " + connections.size());
+    if (stopped && connections.size() == 0) {
+      log.debug("final shutdown finished");
+      if (netClient != null) {
+        log.debug("closing netClient");
+        netClient.close();
+        netClient = null;
+      }
+    }
   }
 
   void stop() {
@@ -130,15 +137,12 @@ class ConnectionPool {
   }
 
   void stop(Handler<Void> finishedHandler) {
-//    if (netClient != null) {
-//      netClient.close();
-//    }
     stopped = true;
     shutdownConnections(0, finishedHandler);
   }
 
   private void shutdownConnections(int i, Handler<Void> finishedHandler) {
-    if (i == connections.size()) {
+    if (i >= connections.size()) {
       finishedHandler.handle(null);
     } else {
       log.debug("SMTPConnection.shutdown(" + i + ")");
