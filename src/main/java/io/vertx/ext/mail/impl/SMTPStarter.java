@@ -31,7 +31,7 @@ class SMTPStarter {
     this.errorHandler = errorHandler;
   }
 
-  void connect() {
+  void start() {
     log.debug("connection.openConnection");
     connection.openConnection(vertx, config, this::serverGreeting, this::handleError);
   }

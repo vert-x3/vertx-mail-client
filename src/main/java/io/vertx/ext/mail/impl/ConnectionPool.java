@@ -56,7 +56,7 @@ class ConnectionPool {
       if (connections.size() == 0) {
         createNewConnection(resultHandler, errorHandler);
       } else {
-        findUsableConnection(connections, config, 0, resultHandler, v -> {
+        findUsableConnection(0, resultHandler, v -> {
           log.debug("no usable connection found, createNewConnection()");
           createNewConnection(resultHandler, errorHandler);
         });
@@ -67,10 +67,8 @@ class ConnectionPool {
   /**
    * set up NetClient and create a connection.
    * 
-   * @param config
    * @param resultHandler
    * @param errorHandler
-   * @param connections
    */
   private void createNewConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("creating new connection");
@@ -92,13 +90,13 @@ class ConnectionPool {
    * @param errorHandler
    */
   private void createConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
-    SMTPConnection conn = new SMTPConnection(netClient, context);
+    SMTPConnection conn = new SMTPConnection(netClient, context, this);
     connections.add(conn);
-    new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).connect();
+    new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).start();
   }
 
-  private void findUsableConnection(List<SMTPConnection> connections, MailConfig config, int i,
-      Handler<SMTPConnection> foundHandler, Handler<Void> notFoundHandler) {
+  private void findUsableConnection(int i, Handler<SMTPConnection> foundHandler,
+      Handler<Void> notFoundHandler) {
     if (i == connections.size()) {
       notFoundHandler.handle(null);
     } else {
@@ -108,13 +106,23 @@ class ConnectionPool {
         conn.useConnection();
         new SMTPReset(conn, config, v -> foundHandler.handle(conn), v -> {
           // make sure we do not get confused by a close event later
-          conn.setBroken();
-          findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
-        }).start();
+            conn.setBroken();
+            removeFromPool(conn);
+            // at this point the current element is gone, so no i+1
+            findUsableConnection(i, foundHandler, notFoundHandler);
+          }).start();
       } else {
-        findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
+        findUsableConnection(i + 1, foundHandler, notFoundHandler);
       }
     }
+  }
+
+  /**
+   * @param conn
+   */
+  void removeFromPool(SMTPConnection conn) {
+    connections.remove(conn);
+    log.debug("removed old connection, new size is "+connections.size());
   }
 
   void stop() {
@@ -137,6 +145,8 @@ class ConnectionPool {
       SMTPConnection connection = connections.get(i);
       if (connection.isBroken()) {
         connection.shutdown();
+        removeFromPool(connection);
+        shutdownConnections(i, finishedHandler);
       } else {
         if (connection.isIdle()) {
           connection.quitCloseConnection();
@@ -144,8 +154,8 @@ class ConnectionPool {
           // shut down the connection at the end of current send operation
           connection.setDoShutdown();
         }
+        shutdownConnections(i + 1, finishedHandler);
       }
-      shutdownConnections(i + 1, finishedHandler);
     }
   }
 

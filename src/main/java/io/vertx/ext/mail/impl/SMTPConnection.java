@@ -35,7 +35,7 @@ class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
 
-  SMTPConnection(NetClient client, Context context) {
+  SMTPConnection(NetClient client, Context context, ConnectionPool pool) {
     broken = true;
     idle = false;
     doShutdown = false;
@@ -43,9 +43,11 @@ class SMTPConnection {
     socketShutDown = false;
     this.client = client;
     this.context = context;
+    this.pool = pool;
   }
 
   private Capabilities capa = new Capabilities();
+  private ConnectionPool pool;
 
   /**
    * @return the capabilities object
@@ -155,6 +157,11 @@ class SMTPConnection {
                 log.debug("close has been expected");
               } else {
                 log.debug("closed while connection has been idle (timeout on server?)");
+              }
+              broken = true;
+              if(!socketShutDown) {
+                shutdown();
+                pool.removeFromPool(this);
               }
             }
           });
