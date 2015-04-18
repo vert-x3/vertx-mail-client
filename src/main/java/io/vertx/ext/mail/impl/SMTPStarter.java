@@ -38,10 +38,10 @@ class SMTPStarter {
   
   private void serverGreeting(String message) {
     log.debug("SMTPInitialDialogue");
-    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::handleError).start(message);
+    new SMTPInitialDialogue(connection, config, v -> doAuthentication(), this::handleError).start(message);
   }
 
-  private void doAuthentication(Void v) {
+  private void doAuthentication() {
     log.debug("SMTPAuthentication");
     new SMTPAuthentication(connection, config, finishedHandler, this::handleError).start();
   }

@@ -94,7 +94,7 @@ class Utils {
     return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + getMyHostname() + ">";
   }
 
-  static private String getMyHostname() {
+  private static String getMyHostname() {
     try {
       InetAddress ip = InetAddress.getLocalHost();
       return ip.getCanonicalHostName();

@@ -5,17 +5,14 @@ import java.util.regex.Pattern;
 
 /**
  * represent a mail address with an email address part and an optional full name
- * e.g.
- * <br>
- * {@code user@example.com}
- * <br>
- * {@code user@example.com (This User)}
- * <br>
+ * e.g. <br>
+ * {@code user@example.com} <br>
+ * {@code user@example.com (This User)} <br>
  * {@code Another User <other@example.net>}
  * <p>
- * the constructor will validate the address catching format errors like excess spaces, newlines
- * the test is not very strict, for example an IDN address will be considered valid, even though
- * SMTP doesn't work with that yet
+ * the constructor will validate the address catching format errors like excess
+ * spaces, newlines the test is not very strict, for example an IDN address will
+ * be considered valid, even though SMTP doesn't work with that yet
  * 
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -31,8 +28,11 @@ public class EmailAddress {
 
   /**
    * parse and create an email address
-   * @param fullAddress full address string
-   * @throws IllegalArgumentException if an address is not valid
+   * 
+   * @param fullAddress
+   *          full address string
+   * @throws IllegalArgumentException
+   *           if an address is not valid
    */
   public EmailAddress(String fullAddress) {
 
@@ -70,6 +70,7 @@ public class EmailAddress {
 
   /**
    * get the email part of the address
+   * 
    * @return the email
    */
   public String getEmail() {
@@ -78,6 +79,7 @@ public class EmailAddress {
 
   /**
    * get the name part of the address
+   * 
    * @return the full name
    */
   public String getName() {
@@ -85,8 +87,8 @@ public class EmailAddress {
   }
 
   /**
-   * get a representation of the address
-   * (this is mostly for testing)
+   * get a representation of the address (this is mostly for testing)
+   * 
    * @return representation of the address
    */
   public String toString() {

@@ -3,7 +3,6 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
-
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -23,7 +22,9 @@ class AuthCramSHA1 extends AuthCram {
     super(username, password, "HmacSHA1");
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see io.vertx.ext.mail.impl.AuthBaseClass#getName()
    */
   @Override

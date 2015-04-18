@@ -13,14 +13,8 @@ import java.util.Set;
  */
 public class AuthOperationFactory {
 
-  final static Class<?>[] authList = new Class<?>[] {
-    AuthDigestMD5.class,
-    AuthCramSHA256.class,
-    AuthCramSHA1.class,
-    AuthCramMD5.class,
-    AuthPlain.class,
-    AuthLogin.class
-  };
+  final static Class<?>[] authList = new Class<?>[] { AuthDigestMD5.class, AuthCramSHA256.class, AuthCramSHA1.class,
+      AuthCramMD5.class, AuthPlain.class, AuthLogin.class };
 
   public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
     Class<?> classToUse = null;

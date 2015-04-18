@@ -23,12 +23,14 @@ class AuthLogin extends AuthBaseClass {
    */
   public AuthLogin(String username, String password) {
     super(username, password);
-    firstStep=true;
-    secondStep=true;
-    finished=false;
+    firstStep = true;
+    secondStep = true;
+    finished = false;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see io.vertx.ext.mail.impl.AuthBaseClass#getName()
    */
   @Override
@@ -36,19 +38,21 @@ class AuthLogin extends AuthBaseClass {
     return AUTH_NAME;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see io.vertx.ext.mail.impl.AuthBaseClass#nextStep(java.lang.String)
    */
   @Override
   public String nextStep(String data) {
-    if(finished) {
+    if (finished) {
       return null;
     }
-    if(firstStep) {
+    if (firstStep) {
       firstStep = false;
       return "";
-    } else if(secondStep) {
-      secondStep=false;
+    } else if (secondStep) {
+      secondStep = false;
       return username;
     } else {
       finished = true;

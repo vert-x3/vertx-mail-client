@@ -16,7 +16,8 @@ import java.util.Map;
  */
 abstract class AuthDigest extends AuthBaseClass {
 
-//  private final static Logger log = LoggerFactory.getLogger(AuthDigest.class);
+  // private final static Logger log =
+  // LoggerFactory.getLogger(AuthDigest.class);
 
   private int counter;
   final MessageDigest digest;
@@ -33,7 +34,7 @@ abstract class AuthDigest extends AuthBaseClass {
     try {
       digest = MessageDigest.getInstance(hash);
     } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("hash "+hash+" not found", e);
+      throw new IllegalStateException("hash " + hash + " not found", e);
     }
   }
 
@@ -51,7 +52,7 @@ abstract class AuthDigest extends AuthBaseClass {
         String reply = calcStep1(data);
         return reply;
       case 2:
-        if(data.equals("rspauth="+serverResponse)) {
+        if (data.equals("rspauth=" + serverResponse)) {
           return "";
         } else {
           return null;
@@ -114,8 +115,8 @@ abstract class AuthDigest extends AuthBaseClass {
    *
    * @return Digest-MD5 value of the input params
    */
-  private String response(final String user, final String realm, final String nonce, final String cnonce, String qop, final String nc,
-      final String digestUri, final String operation) {
+  private String response(final String user, final String realm, final String nonce, final String cnonce, String qop,
+      final String nc, final String digestUri, final String operation) {
     final byte[] colon = b(":");
 
     byte[] A1 = concatBytes(hash(concatBytes(b(user), colon, b(realm), colon, b(password))), colon, b(nonce), colon,
@@ -184,13 +185,13 @@ abstract class AuthDigest extends AuthBaseClass {
     StringBuilder sb = new StringBuilder();
 
     boolean first = true;
-    for (String key : digestResponse.keySet()) {
+    for (Map.Entry<String, String> entry : digestResponse.entrySet()) {
       if (first) {
         first = false;
       } else {
         sb.append(',');
       }
-      sb.append(key + "=" + digestResponse.get(key));
+      sb.append(entry.getKey() + "=" + entry.getValue());
     }
     return sb.toString();
   }

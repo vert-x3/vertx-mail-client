@@ -8,14 +8,14 @@ class MultiPart extends EncodedPart {
 
   public MultiPart(List<EncodedPart> parts, String mode) {
 
-    String boundary=Utils.generateBoundary();
+    String boundary = Utils.generateBoundary();
 
-    headers=new CaseInsensitiveHeaders();
-    headers.set("Content-Type", "multipart/"+mode+"; boundary=\""+boundary+"\"");
+    headers = new CaseInsensitiveHeaders();
+    headers.set("Content-Type", "multipart/" + mode + "; boundary=\"" + boundary + "\"");
 
     StringBuilder sb = new StringBuilder();
 
-    for(EncodedPart part : parts) {
+    for (EncodedPart part : parts) {
       sb.append("--");
       sb.append(boundary);
       sb.append('\n');
@@ -25,7 +25,7 @@ class MultiPart extends EncodedPart {
     sb.append("--");
     sb.append(boundary);
     sb.append("--\n");
-    part=sb.toString();
+    part = sb.toString();
   }
 
 }

@@ -5,7 +5,7 @@ class StatusCode {
   private StatusCode() {
   }
 
-  static private int getStatusCode(String message) {
+  private static int getStatusCode(String message) {
     if (message.length() < 4) {
       return 500;
     }

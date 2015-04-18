@@ -24,7 +24,9 @@ class AuthPlain extends AuthBaseClass {
     first = true;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see io.vertx.ext.mail.impl.AuthBaseClass#getName()
    */
   @Override
@@ -32,12 +34,14 @@ class AuthPlain extends AuthBaseClass {
     return AUTH_NAME;
   }
 
-  /* (non-Javadoc)
+  /*
+   * (non-Javadoc)
+   * 
    * @see io.vertx.ext.mail.impl.AuthBaseClass#nextStep(java.lang.String)
    */
   @Override
   public String nextStep(String data) {
-    if(first) {
+    if (first) {
       first = false;
       return "\0" + username + "\0" + password;
     } else {

@@ -54,11 +54,11 @@ class ConnectionPool {
       errorHandler.handle(new NoStackTraceThrowable("connection pool is stopped"));
     } else {
       if (connections.size() == 0) {
-        createNewConnection(config, resultHandler, errorHandler);
+        createNewConnection(resultHandler, errorHandler);
       } else {
         findUsableConnection(connections, config, 0, resultHandler, v -> {
           log.debug("no usable connection found, createNewConnection()");
-          createNewConnection(config, resultHandler, errorHandler);
+          createNewConnection(resultHandler, errorHandler);
         });
       }
     }
@@ -72,8 +72,7 @@ class ConnectionPool {
    * @param errorHandler
    * @param connections
    */
-  private void createNewConnection(MailConfig config, Handler<SMTPConnection> resultHandler,
-      Handler<Throwable> errorHandler) {
+  private void createNewConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("creating new connection");
     // if we have not yet created the netclient, do that first
     if (netClient == null) {
