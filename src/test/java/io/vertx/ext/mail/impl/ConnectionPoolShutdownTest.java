@@ -29,38 +29,19 @@ public class ConnectionPoolShutdownTest extends SMTPTestWiser {
   @Test
   public final void testStopWhileMailActive(TestContext testContext) {
     Async async = testContext.async();
-    Vertx vertx = Vertx.vertx();
 
     vertx.runOnContext(v -> {
       MailConfig config = configNoSSL();
 
-      MailService mailService = MailService.create(vertx, config);
+      ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
 
-      // send large mail so we some time to call the .stop() method
-      StringBuilder sb = new StringBuilder();
-      sb.append("*************************************************\n");
-      for(int i=0; i<20;i++) {
-        sb.append(sb);
-      }
-      String text=sb.toString();
-
-      MailMessage email = new MailMessage("from@example.com", "user@example.com", "Subject", text);
-
-      mailService.sendMail(email, result -> {
-        log.info("mail finished");
-        if (result.succeeded()) {
-          log.info(result.result().toString());
+      pool.getConnection(conn -> {
+        pool.stop(v1 -> {
+          conn.returnToPool();
           async.complete();
-        } else {
-          log.warn("got exception", result.cause());
-          testContext.fail(result.cause().toString());
-        }
-      });
-      // wait a short while to allow the mail send to start
-      // otherwise we shut down the connection pool before sending even starts
-      vertx.setTimer(100, v1 -> {
-        log.info("stopping mail service");
-        mailService.stop();
+        });
+      }, th -> {
+        log.info("exception", th);
       });
     });
   }

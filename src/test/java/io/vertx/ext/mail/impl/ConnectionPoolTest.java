@@ -24,15 +24,14 @@ public class ConnectionPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionPoolTest.class);
 
-  Context context = vertx.getOrCreateContext();
-  MailConfig config = configNoSSL();
+  private final MailConfig config = configNoSSL();
 
   /**
    * Test method for {@link io.vertx.ext.mail.impl.ConnectionPool#ConnectionPool(io.vertx.core.Vertx, io.vertx.ext.mail.MailConfig, io.vertx.core.Context)}.
    */
   @Test
   public final void testConnectionPool() {
-    ConnectionPool pool = new ConnectionPool(vertx, config, context);
+    ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     pool.stop();
   }
 
@@ -41,7 +40,7 @@ public class ConnectionPoolTest extends SMTPTestWiser {
    */
   @Test
   public final void testGetConnection(TestContext testContext) {
-    ConnectionPool pool = new ConnectionPool(vertx, config, context);
+    ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     Async async = testContext.async();
     pool.getConnection(r -> {
       async.complete();
@@ -55,7 +54,7 @@ public class ConnectionPoolTest extends SMTPTestWiser {
    */
   @Test
   public final void testStop(TestContext testContext) {
-    ConnectionPool pool = new ConnectionPool(vertx, config, context);
+    ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     Async async = testContext.async();
     pool.getConnection(conn -> {
       conn.returnToPool();
@@ -71,7 +70,7 @@ public class ConnectionPoolTest extends SMTPTestWiser {
    */
   @Test
   public final void testStopHandlerOfVoid(TestContext testContext) {
-    ConnectionPool pool = new ConnectionPool(vertx, config, context);
+    ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     Async async = testContext.async();
     pool.getConnection(conn -> {
       conn.returnToPool();
@@ -86,7 +85,7 @@ public class ConnectionPoolTest extends SMTPTestWiser {
 
   @Test
   public final void testStoppedGetConnection(TestContext testContext) {
-    ConnectionPool pool = new ConnectionPool(vertx, config, context);
+    ConnectionPool pool = new ConnectionPool(vertx, config, vertx.getOrCreateContext());
     pool.stop();
     Async async = testContext.async();
     pool.getConnection(conn -> {

@@ -6,7 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 
 /*
@@ -46,25 +45,6 @@ class MailMain {
    */
   void sendMail(MailMessage email) {
     this.email = email;
-    doSend();
-  }
-
-  /**
-   * start a mail send operation using the parameters from MailMessage object
-   * and a pregenerated message provided as String
-   * 
-   * @param email
-   *          the mail parameters (from, to, etc)
-   * @param message
-   *          the message to send
-   */
-  void sendMail(MailMessage email, String message) {
-    this.email = email;
-    mailMessage = message;
-    doSend();
-  }
-
-  private void doSend() {
     if(validateHeaders()) {
       connectionPool.getConnection(this::sendMessage, this::handleError);
     }

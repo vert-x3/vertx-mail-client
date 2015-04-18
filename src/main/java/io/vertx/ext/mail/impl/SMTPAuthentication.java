@@ -6,7 +6,6 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
-import io.vertx.ext.mail.StarttlsOption;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import io.vertx.ext.mail.impl.sasl.CryptUtils;
