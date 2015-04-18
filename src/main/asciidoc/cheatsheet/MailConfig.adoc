@@ -1,7 +1,8 @@
 == MailConfig
 
 ++++
- represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
+ represents the configuration of a mail service with mail server hostname,
+ port, security options, login options and login/password
 ++++
 '''
 
@@ -38,16 +39,16 @@ Set the sslOnConnect mode for the connection.+++
 |[[trustAll]]`trustAll`
 |`Boolean`
 |+++
-set whether to trust all certificates on ssl connect
- the option is also applied to STARTTLS operation+++
+set whether to trust all certificates on ssl connect the option is also
+ applied to STARTTLS operation+++
 
 |[[netClientOptions]]`netClientOptions`
 |`link:NetClientOptions.html[NetClientOptions]`
 |+++
 set the NetClientOptions to be used when opening SMTP connections
 
- if not set, an options object will be created based on other settings
- (ssl and trustAll)+++
+ if not set, an options object will be created based on other settings (ssl
+ and trustAll)+++
 
 |[[authMethods]]`authMethods`
 |`String`
