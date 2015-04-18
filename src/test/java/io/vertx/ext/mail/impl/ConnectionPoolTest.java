@@ -4,7 +4,6 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Context;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -25,7 +24,6 @@ public class ConnectionPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(ConnectionPoolTest.class);
 
-  Vertx vertx = Vertx.vertx();
   Context context = vertx.getOrCreateContext();
   MailConfig config = configNoSSL();
 

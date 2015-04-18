@@ -36,7 +36,7 @@ class SMTPInitialDialogue {
     this.errorHandler = errorHandler;
   }
 
-  public void serverGreeting(final String message) {
+  public void start(final String message) {
     log.debug("server greeting: " + message);
     if (StatusCode.isStatusOk(message)) {
       if (isEsmtpSupported(message)) {
@@ -136,7 +136,12 @@ class SMTPInitialDialogue {
   }
 
   private void finished() {
-    finishedHandler.handle(null);
+    if (connection.isSsl() || config.getStarttls() != StarttlsOption.REQUIRED) {
+      finishedHandler.handle(null);
+    } else {
+      log.warn("STARTTLS required but not supported by server");
+      handleError("STARTTLS required but not supported by server");
+    }
   }
 
 }

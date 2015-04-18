@@ -29,7 +29,7 @@ class SMTPReset {
     this.errorHandler = errorHandler;
   }
 
-  public void rsetCmd() {
+  public void start() {
     connection.setErrorHandler(th -> {
       log.info("exception on RSET "+th);
       connection.resetErrorHandler();

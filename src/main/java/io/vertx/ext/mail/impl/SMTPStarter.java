@@ -6,6 +6,12 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
 
+/**
+ * TODO: this encapsulates initial dialogue and authentication, might as well
+ * put authentication into the initial class
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ */
 class SMTPStarter {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPStarter.class);
@@ -32,12 +38,12 @@ class SMTPStarter {
   
   private void serverGreeting(String message) {
     log.debug("SMTPInitialDialogue");
-    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::handleError).serverGreeting(message);
+    new SMTPInitialDialogue(connection, config, this::doAuthentication, this::handleError).start(message);
   }
 
   private void doAuthentication(Void v) {
     log.debug("SMTPAuthentication");
-    new SMTPAuthentication(connection, config, finishedHandler, this::handleError).startAuthentication();
+    new SMTPAuthentication(connection, config, finishedHandler, this::handleError).start();
   }
 
 //  private void handleError(String message) {

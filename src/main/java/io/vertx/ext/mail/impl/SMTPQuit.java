@@ -1,18 +1,18 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Handler;
+import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-
 
 /**
  * handle connection quit
  *
- * There is not much point in encapsulating this
- * but its useful for the connection pool
+ * There is not much point in encapsulating this but its useful for the
+ * connection pool
  *
- * this operation does not throw any error, it just closes the connection
- * in the end
+ * this operation does not throw any error, it just closes the connection in the
+ * end
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -21,22 +21,30 @@ class SMTPQuit {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPQuit.class);
 
-  private SMTPConnection connection;
+  final private SMTPConnection connection;
 
-  private Handler<Void> finishedHandler;
+  final private Handler<Void> finishedHandler;
 
-  SMTPQuit(SMTPConnection connection, Handler<Void> finishedHandler) {
+  final private Handler<Throwable> exceptionHandler;
+
+  SMTPQuit(SMTPConnection connection, Handler<Void> finishedHandler, Handler<Throwable> exceptionHandler) {
     this.connection = connection;
     this.finishedHandler = finishedHandler;
+    this.exceptionHandler = exceptionHandler;
   }
 
-  void quitCmd() {
+  void start() {
+    connection.setBroken();
+    connection.setErrorHandler(exceptionHandler);
     connection.write("QUIT", message -> {
+      connection.resetErrorHandler();
       log.debug("QUIT result: " + message);
-      if (!StatusCode.isStatusOk(message)) {
+      if (StatusCode.isStatusOk(message)) {
+        finishedHandler.handle(null);
+      } else {
         log.warn("quit failed: " + message);
+        exceptionHandler.handle(new NoStackTraceThrowable("QUIT result " + message));
       }
-      finishedHandler.handle(null);
     });
   }
 

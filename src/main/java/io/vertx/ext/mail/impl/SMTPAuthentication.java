@@ -36,40 +36,47 @@ class SMTPAuthentication {
     this.errorHandler = errorHandler;
   }
 
-  public void startAuthentication() {
-    if (!connection.isSsl() && config.getStarttls() == StarttlsOption.REQUIRED) {
-      log.warn("STARTTLS required but not supported by server");
-      handleError("STARTTLS required but not supported by server");
+  public void start() {
+    final boolean foundAllowedMethods = !intersectAllowedMethods().isEmpty();
+    if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
+        && foundAllowedMethods) {
+      authCmd();
     } else {
-      if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-          && !connection.getCapa().getCapaAuth().isEmpty()) {
-        authCmd();
-      } else {
-        if (config.getLogin() == LoginOption.REQUIRED) {
-          if (connection.getCapa().getCapaAuth().isEmpty()) {
-            handleError("login is required, but no AUTH methods available. You may need to do STARTTLS");
-          } else {
-            handleError("login is required, but no credentials supplied");
-          }
+      if (config.getLogin() == LoginOption.REQUIRED) {
+        if (!foundAllowedMethods) {
+          handleError("login is required, but no allowed AUTH methods available. You may need to do STARTTLS");
         } else {
-          finished();
+          handleError("login is required, but no credentials supplied");
         }
+      } else {
+        finished();
       }
     }
   }
 
-  public void authCmd() {
-    Set<String> allowedMethods;
-    // if we have defined a choice of methods, only use these
-    // this works for example to avoid plain text pw methods with "CRAM-SHA1 CRAM-MD5"
-    if (config.getAuthMethods() == null || config.getAuthMethods().isEmpty()) {
-      allowedMethods = connection.getCapa().getCapaAuth();
+  /**
+   * find the auth methods we can use
+   * 
+   * @return
+   */
+  private Set<String> intersectAllowedMethods() {
+    final String authMethods = config.getAuthMethods();
+    Set<String> allowed;
+    if (authMethods == null || authMethods.isEmpty()) {
+      allowed = connection.getCapa().getCapaAuth();
     } else {
-      allowedMethods = Utils.parseCapaAuth(config.getAuthMethods());
-      allowedMethods.retainAll(connection.getCapa().getCapaAuth());
+      allowed = Utils.parseCapaAuth(authMethods);
+      allowed.retainAll(connection.getCapa().getCapaAuth());
     }
+    return allowed;
+  }
 
-    AuthOperation authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(), allowedMethods);
+  public void authCmd() {
+    // if we have defined a choice of methods, only use these
+    // this works for example to avoid plain text pw methods with
+    // "CRAM-SHA1 CRAM-MD5"
+    AuthOperation authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(),
+        intersectAllowedMethods());
 
     if (authOperation != null) {
       authCmdStep(authOperation, null);
@@ -82,9 +89,9 @@ class SMTPAuthentication {
   private void authCmdStep(AuthOperation authMethod, String message) {
     String nextLine;
     int blank;
-    if(message == null) {
-      String authParameter =  authMethod.nextStep(null);
-      if(!authParameter.isEmpty()) {
+    if (message == null) {
+      String authParameter = authMethod.nextStep(null);
+      if (!authParameter.isEmpty()) {
         nextLine = "AUTH " + authMethod.getName() + " " + CryptUtils.base64(authParameter);
         blank = authMethod.getName().length() + 6;
       } else {

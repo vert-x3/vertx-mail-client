@@ -111,7 +111,7 @@ class ConnectionPool {
           // make sure we do not get confused by a close event later
           conn.setBroken();
           findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
-        }).rsetCmd();
+        }).start();
       } else {
         findUsableConnection(connections, config, i + 1, foundHandler, notFoundHandler);
       }
@@ -136,34 +136,17 @@ class ConnectionPool {
     } else {
       log.debug("SMTPConnection.shutdown(" + i + ")");
       SMTPConnection connection = connections.get(i);
-      // TODO: have to wait for active connections still running
-      // they will shut down when the operation is finished
       if (connection.isBroken()) {
         connection.shutdown();
-        shutdownConnections(i + 1, finishedHandler);
       } else {
         if (connection.isIdle()) {
-          // TODO: this may be better in the SMTPConnection class
-          connection.useConnection();
-          log.debug("shutting down connection (QUIT)");
-          // TODO: this isn't working as expected since the QUIT reply is not received
-          new SMTPQuit(connection, v -> {
-            //            connection.shutdown();
-            //            log.debug("connection is shut down");
-            //            shutdownConnections(i + 1, finishedHandler);
-            log.debug("QUIT finished");
-          }).quitCmd();
-          // shut down the connection regardless of the reply
-          connection.shutdown();
-          log.debug("connection is shut down");
-          shutdownConnections(i + 1, finishedHandler);
+          connection.quitCloseConnection();
         } else {
-          // shut down the connection at the end of the current send operations
-          log.debug("will shut down connection after send operation finishes");
+          // shut down the connection at the end of current send operation
           connection.setDoShutdown();
-          shutdownConnections(i + 1, finishedHandler);
         }
       }
+      shutdownConnections(i + 1, finishedHandler);
     }
   }
 

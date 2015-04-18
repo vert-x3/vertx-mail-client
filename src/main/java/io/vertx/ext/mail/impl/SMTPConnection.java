@@ -66,6 +66,7 @@ class SMTPConnection {
   }
 
   void shutdown() {
+    broken = true;
     commandReplyHandler = null;
     socketShutDown = true;
     if (ns != null) {
@@ -137,10 +138,11 @@ class SMTPConnection {
               broken = true;
               log.debug("got an exception on the netsocket", e);
               handleError(e);
+            } else {
+              log.debug("not returning follow-up exception", e);
             }
           });
           ns.closeHandler(v -> {
-            log.debug("closeHandler called");
             log.debug("socket has been closed");
             socketClosed = true;
             // avoid exception if we regularly shut down the socket on our side
@@ -148,6 +150,12 @@ class SMTPConnection {
               broken = true;
               log.debug("throwing: connection has been closed by the server");
               handleError("connection has been closed by the server");
+            } else {
+              if(socketShutDown || broken) {
+                log.debug("close has been expected");
+              } else {
+                log.debug("closed while connection has been idle (timeout on server?)");
+              }
             }
           });
           commandReplyHandler = initialReplyHandler;
@@ -190,16 +198,27 @@ class SMTPConnection {
     if (doShutdown) {
       useConnection();
       setBroken();
-      log.debug("shutting down connection");
-      new SMTPQuit(this, v -> {
-      }).quitCmd();
-      shutdown();
-      log.debug("connection is shut down");
+      quitCloseConnection();
     } else {
       log.debug("returning connection to pool");
       idle = true;
       commandReplyHandler = null;
     }
+  }
+
+  /**
+   * send quit and close the connection, this operation waits for the success of the quit
+   * command but will close the connection on exception as well 
+   */
+  void quitCloseConnection() {
+    log.debug("shutting down connection");
+    new SMTPQuit(this, v -> {
+      shutdown();
+      log.debug("connection is shut down");
+    }, th -> {
+      shutdown();
+      log.debug("connection is shut down", th);
+    }).start();
   }
 
   /**
@@ -231,7 +250,7 @@ class SMTPConnection {
 
   /**
    * set connection to broken, it will not be used again
-   * TODO: (and shut down and closed async)
+   * TODO: have to queue the shut down somehow
    */
   public void setBroken() {
     log.debug("setting connection to broken");
@@ -243,6 +262,7 @@ class SMTPConnection {
    * 
    */
   public void setDoShutdown() {
+    log.debug("will shut down connection after send operation finishes");
     doShutdown = true;
   }
 }
