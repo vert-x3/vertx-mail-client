@@ -14,18 +14,18 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void mailEhloMissingTest() {
     smtpServer.setDialogue("220 example.com ESMTP",
-        "",
+        "EHLO",
         "402 4.5.2 Error: command not recognized", 
-        "",
+        "HELO",
         "250 example.com",
-        "",
+        "MAIL FROM",
         "250 2.1.0 Ok", 
-        "",
+        "RCPT TO",
         "250 2.1.5 Ok",
-        "",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-        "",
+        "QUIT",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
@@ -35,16 +35,16 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void mailNoEsmtpTest() {
     smtpServer.setDialogue("220 example.com",
-        "",
+        "HELO",
         "250 example.com",
-        "",
+        "MAIL FROM",
         "250 2.1.0 Ok", 
-        "",
+        "RCPT TO",
         "250 2.1.5 Ok",
-        "",
+        "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-        "",
+        "QUIT",
         "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 

@@ -71,12 +71,16 @@ public class TestSmtpServer {
         final AtomicInteger skipUntilDot = new AtomicInteger(0);
         socket.handler(RecordParser.newDelimited("\r\n", buffer -> {
           final String inputLine = buffer.toString();
+          log.debug("C:"+ inputLine);
           if(skipUntilDot.get() == 1) {
             if(inputLine.equals(".")) {
               skipUntilDot.set(0);
+              if (lines.get() < dialogue.length) {
+                log.debug("S:" + dialogue[lines.get()]);
+                socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+              }
             }
           } else {
-            log.debug("C:" + inputLine);
             int currentLine = lines.getAndIncrement();
             if(currentLine < dialogue.length) {
               if(!inputLine.contains(dialogue[currentLine])) {
@@ -89,10 +93,10 @@ public class TestSmtpServer {
             if(inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
               skipUntilDot.set(1);
             }
-          }
-          if (lines.get() < dialogue.length) {
-            log.debug("S:" + dialogue[lines.get()]);
-            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+            if (lines.get() < dialogue.length) {
+              log.debug("S:" + dialogue[lines.get()]);
+              socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+            }
           }
           if (lines.get() == dialogue.length) {
             if (closeImmediately) {
