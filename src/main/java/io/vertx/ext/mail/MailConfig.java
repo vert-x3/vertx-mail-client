@@ -71,6 +71,8 @@ public class MailConfig {
    * use this hostname for HELO/EHLO command
    */
   private String ehloHostname;
+  private int maxPoolSize;
+  private int idleTimeout;
 
   /**
    * construct a config object with default options
@@ -495,6 +497,30 @@ public class MailConfig {
   @Override
   public int hashCode() {
     return getList().hashCode();
+  }
+
+  /**
+   * @return
+   */
+  public int getMaxPoolSize() {
+    return maxPoolSize;
+  }
+
+  public MailConfig setMaxPoolSize(int maxPoolSize) {
+    this.maxPoolSize = maxPoolSize;
+    return this;
+  }
+
+  /**
+   * @return
+   */
+  public int getIdleTimeout() {
+    return idleTimeout;
+  }
+
+  public MailConfig setIdleTimeout(int idleTimeout) {
+    this.idleTimeout = idleTimeout;
+    return this;
   }
 
 }

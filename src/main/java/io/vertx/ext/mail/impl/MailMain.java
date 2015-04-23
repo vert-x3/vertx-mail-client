@@ -30,9 +30,9 @@ class MailMain {
 
   private SMTPConnection connection = null;
 
-  private ConnectionPool connectionPool;
+  private SMTPConnectionPool connectionPool;
 
-  public MailMain(ConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
+  public MailMain(SMTPConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.connectionPool = connectionPool;
     this.finishedHandler = finishedHandler;
   }

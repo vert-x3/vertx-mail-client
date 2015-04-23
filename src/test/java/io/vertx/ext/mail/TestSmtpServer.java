@@ -74,8 +74,6 @@ public class TestSmtpServer {
           if(skipUntilDot.get() == 1) {
             if(inputLine.equals(".")) {
               skipUntilDot.set(0);
-              log.debug("S:" + dialogue[lines.get()]);
-              socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
             }
           } else {
             log.debug("C:" + inputLine);
@@ -85,26 +83,24 @@ public class TestSmtpServer {
                 socket.write("500 didn't expect that command\r\n");
               }
             } else {
-              //            socket.write("500 out of lines\r\n");
+//              socket.write("500 out of lines\r\n");
               log.info("out of lines, not sending additional reply");
             }
             if(inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
               skipUntilDot.set(1);
             }
-            if (lines.get() < dialogue.length) {
-              log.debug("S:" + dialogue[lines.get()]);
-              socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
-            }
-            if (lines.get() == dialogue.length) {
-              // wait 10 seconds for the protocol to finish
-              // unless we want to simulate protocol errors
-              if (closeImmediately) {
-                log.debug("closeImmediately");
-                socket.close();
-              } else {
-                log.debug("waiting 10 secs to close");
-                vertx.setTimer(10000, v -> socket.close());
-              }
+          }
+          if (lines.get() < dialogue.length) {
+            log.debug("S:" + dialogue[lines.get()]);
+            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+          }
+          if (lines.get() == dialogue.length) {
+            if (closeImmediately) {
+              log.debug("closeImmediately");
+              socket.close();
+            } else {
+              log.debug("waiting 10 secs to close");
+              vertx.setTimer(10000, v -> socket.close());
             }
           }
         }));

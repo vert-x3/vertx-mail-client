@@ -35,17 +35,22 @@ class SMTPConnection {
   private final NetClient client;
   private final Context context;
   private Capabilities capa = new Capabilities();
-  private ConnectionPool pool;
+  private final ConnectionLifeCycleListener listener;
 
-  SMTPConnection(NetClient client, Context context, ConnectionPool pool) {
+  private final Vertx vertx;
+
+  private long idleTimerId;
+
+  SMTPConnection(NetClient client, Vertx vertx, Context context, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
     doShutdown = false;
     socketClosed = false;
     socketShutDown = false;
     this.client = client;
+    this.vertx = vertx;
     this.context = context;
-    this.pool = pool;
+    this.listener = listener;
   }
 
   /**
@@ -150,6 +155,7 @@ class SMTPConnection {
           });
           ns.closeHandler(v -> {
             log.debug("socket has been closed");
+            listener.connectionClosed(this);
             socketClosed = true;
             // avoid exception if we regularly shut down the socket on our side
             if (!socketShutDown && !idle && !broken) {
@@ -167,7 +173,7 @@ class SMTPConnection {
               }
               if (!socketShutDown) {
                 shutdown();
-                pool.removeFromPool(this);
+                listener.responseEnded(this);
               }
             }
           });
@@ -216,6 +222,8 @@ class SMTPConnection {
       log.debug("returning connection to pool");
       idle = true;
       commandReplyHandler = null;
+      setIdleTimer();
+      listener.responseEnded(this);
     }
   }
 
@@ -226,6 +234,7 @@ class SMTPConnection {
   void quitCloseConnection() {
     if (!socketShutDown) {
       log.debug("shutting down connection");
+      setBroken();
       new SMTPQuit(this, v -> {
         shutdown();
         log.debug("connection is shut down");
@@ -241,6 +250,21 @@ class SMTPConnection {
    */
   public void useConnection() {
     idle = false;
+    cancelIdleTimer();
+  }
+
+  void setIdleTimer() {
+    idleTimerId = vertx.setTimer(10000, id -> {
+      if(id == idleTimerId) {
+        log.debug("idle timeout reached, closing connection");
+        quitCloseConnection();
+      }
+    });
+  }
+
+  void cancelIdleTimer() {
+    log.debug("canceling timer on connection");
+    vertx.cancelTimer(idleTimerId);
   }
 
   /*
@@ -273,7 +297,7 @@ class SMTPConnection {
       commandReplyHandler = null;
       log.debug("closing connection");
       shutdown();
-      pool.removeFromPool(this);
+      listener.responseEnded(this);
     } else {
       log.debug("connection is already set to broken");
     }
@@ -285,5 +309,19 @@ class SMTPConnection {
   public void setDoShutdown() {
     log.debug("will shut down connection after send operation finishes");
     doShutdown = true;
+  }
+
+  /**
+   * @return
+   */
+  public Context getContext() {
+    return context;
+  }
+
+  /**
+   * 
+   */
+  public void close() {
+    quitCloseConnection();
   }
 }

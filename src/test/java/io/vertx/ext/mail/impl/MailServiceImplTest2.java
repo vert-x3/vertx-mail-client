@@ -14,6 +14,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,13 +31,15 @@ public class MailServiceImplTest2 extends SMTPTestWiser {
    * test if we can shut down the connection pool while a send operation is
    * still running the active connection will be shut down when the mail has
    * finished sending (this is basically the same test as
-   * {@link ConnectionPoolShutdownTest#testStopWhileMailActive(TestContext)} but
-   * it goes through the MailService interface and it actually sends a mail)
+   * {@link SMTPConnectionPoolShutdownTest#testStopWhileMailActive(TestContext)} but
+   * it goes through the MailService interface and actually sends a mail)
+   * (currently doesn't work)
    */
+//  @Ignore
   @Test
   public final void testStopWhileMailActive(TestContext testContext) {
     Async async = testContext.async();
-    Vertx vertx = Vertx.vertx();
+//    Vertx vertx = Vertx.vertx();
 
     vertx.runOnContext(v -> {
       MailConfig config = configNoSSL();

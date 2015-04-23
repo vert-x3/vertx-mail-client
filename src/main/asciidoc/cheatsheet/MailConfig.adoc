@@ -59,4 +59,10 @@ set string of allowed auth methods+++
 |`String`
 |+++
 set the hostname to be used for HELO/EHLO+++
-|===
+
+|[[maxPoolSize]]`maxPoolSize`
+|`Number`
+|-
+|[[idleTimeout]]`idleTimeout`
+|`Number`
+|-|===

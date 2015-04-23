@@ -23,7 +23,7 @@ public class MailServiceImpl implements MailService {
   private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
   private final Context context;
-  private final ConnectionPool connectionPool;
+  private final SMTPConnectionPool connectionPool;
   private boolean stopped = false;
 
   /**
@@ -35,7 +35,7 @@ public class MailServiceImpl implements MailService {
    */
   public MailServiceImpl(Vertx vertx, MailConfig config) {
     context = vertx.getOrCreateContext();
-    connectionPool = new ConnectionPool(vertx, config, context);
+    connectionPool = new SMTPConnectionPool(vertx, config, context);
   }
 
   @Override

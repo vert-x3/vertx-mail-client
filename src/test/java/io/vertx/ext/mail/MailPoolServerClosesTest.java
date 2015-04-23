@@ -16,14 +16,21 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  * test what happens when the server closes the connection if we use a pooled connection
+ * (doesn't work currently since the pool doesn't check if the connections are still working)
  */
 @RunWith(VertxUnitRunner.class)
-public class MailPoolServerClosesTest {
+public class MailPoolServerClosesTest extends SMTPTestDummy {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolServerClosesTest.class);
 
   Vertx vertx = Vertx.vertx();
 
+  /**
+   * send two mails after each other when the server closes the connection immediately after the data
+   * send was successful
+   *  
+   * @param context
+   */
   @Test
   public void mailConnectionCloseImmediatelyTest(TestContext context) {
     log.info("starting");
@@ -69,6 +76,12 @@ public class MailPoolServerClosesTest {
     });
   }
 
+  /**
+   * send two mails after each other when the server waits a time after the after the data
+   * send was successful and closes the connection
+   *
+   * @param context
+   */
   @Test
   public void mailConnectionCloseWaitTest(TestContext context) {
     log.info("starting");
@@ -114,6 +127,11 @@ public class MailPoolServerClosesTest {
     });
   }
 
+  /**
+   * send two mails after each other when the server fails the RSET operation after sending the first
+   * mail
+   *
+   */
   @Test
   public void mailConnectionRsetFailTest(TestContext context) {
     log.info("starting");
@@ -122,16 +140,16 @@ public class MailPoolServerClosesTest {
     smtpServer.setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n" +
-        "250-SIZE 1000000\n" +
-        "250 PIPELINING",
-        "MAIL FROM",
-        "250 2.1.0 Ok",
-        "RCPT TO",
-        "250 2.1.5 Ok",
-        "DATA",
-        "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-        "RSET",
+            "250-SIZE 1000000\n" +
+            "250 PIPELINING",
+            "MAIL FROM",
+            "250 2.1.0 Ok",
+            "RCPT TO",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+            "RSET",
         "500 xxx");
 
     Async mail1 = context.async();
@@ -189,17 +207,15 @@ public class MailPoolServerClosesTest {
     smtpServer.setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n" +
-        "250-SIZE 1000000\n" +
-        "250 PIPELINING",
-        "MAIL FROM",
-        "250 2.1.0 Ok",
-        "RCPT TO",
-        "250 2.1.5 Ok",
-        "DATA",
-        "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-        "QUIT",
-        "221 2.0.0 Bye");
+            "250-SIZE 1000000\n" +
+            "250 PIPELINING",
+            "MAIL FROM",
+            "250 2.1.0 Ok",
+            "RCPT TO",
+            "250 2.1.5 Ok",
+            "DATA",
+            "354 End data with <CR><LF>.<CR><LF>",
+            "250 2.0.0 Ok: queued as ABCDDEF0123456789");
   }
 
   @After

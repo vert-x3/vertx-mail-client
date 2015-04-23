@@ -205,6 +205,9 @@ abstract class AuthDigest extends AuthBaseClass {
   }
 
   /**
+   * parse a key/value list from the challenge
+   * TODO: implement this without split and handle quoting correctly
+   * currently it will fail with things like key="value,value" and key="string\"quoted\""
    * @param data
    * @return
    */

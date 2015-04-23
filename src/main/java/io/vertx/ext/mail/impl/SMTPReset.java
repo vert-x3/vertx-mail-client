@@ -4,10 +4,10 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.MailConfig;
 
 /**
- * Handle the reset command, this is mostly used to check if the connection is still active 
+ * Handle the reset command, this is mostly used to check if the connection is
+ * still active
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -15,27 +15,24 @@ import io.vertx.ext.mail.MailConfig;
 class SMTPReset {
 
   SMTPConnection connection;
-  MailConfig config;
   Handler<Void> finishedHandler;
   Handler<Throwable> errorHandler;
 
   private static final Logger log = LoggerFactory.getLogger(SMTPReset.class);
 
-  public SMTPReset(SMTPConnection connection, MailConfig config,
-      Handler<Void> finishedHandler, Handler<Throwable> errorHandler) {
+  public SMTPReset(SMTPConnection connection, Handler<Void> finishedHandler, Handler<Throwable> errorHandler) {
     this.connection = connection;
-    this.config = config;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
   }
 
   public void start() {
     connection.setErrorHandler(th -> {
-      log.info("exception on RSET "+th);
+      log.info("exception on RSET " + th);
       connection.resetErrorHandler();
       connection.setBroken();
       connection.shutdown();
-      handleError("exception on RSET "+th);
+      handleError("exception on RSET " + th);
     });
     connection.write("RSET", message -> {
       log.debug("RSET result: " + message);
@@ -60,8 +57,8 @@ class SMTPReset {
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-//  private void handleError(Throwable throwable) {
-//    errorHandler.handle(throwable);
-//  }
+  // private void handleError(Throwable throwable) {
+  // errorHandler.handle(throwable);
+  // }
 
 }
