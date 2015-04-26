@@ -22,6 +22,8 @@ public class MailConfig {
   public static final StarttlsOption DEFAULT_TLS = StarttlsOption.OPTIONAL;
   public static final int DEFAULT_PORT = 25;
   public static final String DEFAULT_HOST = "localhost";
+  private static final int DEFAULT_MAXPOOLSIZE = 10;
+  private static final int DEFAULT_IDLETIMEOUT = 300;
 
   private String hostname;
   private int port;
@@ -82,6 +84,8 @@ public class MailConfig {
     this.port = DEFAULT_PORT;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
+    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
+    this.idleTimeout = DEFAULT_IDLETIMEOUT;
   }
 
   /**
@@ -95,6 +99,8 @@ public class MailConfig {
     this.port = DEFAULT_PORT;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
+    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
+    this.idleTimeout = DEFAULT_IDLETIMEOUT;
   }
 
   /**
@@ -110,6 +116,8 @@ public class MailConfig {
     this.port = port;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
+    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
+    this.idleTimeout = DEFAULT_IDLETIMEOUT;
   }
 
   /**
@@ -129,6 +137,8 @@ public class MailConfig {
     this.port = port;
     this.starttls = starttls;
     this.login = login;
+    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
+    this.idleTimeout = DEFAULT_IDLETIMEOUT;
   }
 
   /**
@@ -147,10 +157,12 @@ public class MailConfig {
     ssl = other.ssl;
     trustAll = other.trustAll;
     if (other.netClientOptions != null) {
-      netClientOptions = new NetClientOptions(netClientOptions);
+      netClientOptions = new NetClientOptions(other.netClientOptions);
     }
     authMethods = other.authMethods;
     ehloHostname = other.ehloHostname;
+    maxPoolSize = other.maxPoolSize;
+    idleTimeout = other.idleTimeout;
   }
 
   /**
@@ -180,6 +192,8 @@ public class MailConfig {
     }
     authMethods = config.getString("auth_methods");
     ehloHostname = config.getString("ehlo_hostname");
+    maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAXPOOLSIZE);
+    idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLETIMEOUT);
   }
 
   /**
@@ -424,6 +438,49 @@ public class MailConfig {
   }
 
   /**
+   * get the max allowed number of open connections to the mailserver
+   * 
+   * @return max pool size value
+   */
+  public int getMaxPoolSize() {
+    return maxPoolSize;
+  }
+
+  /**
+   * set the max allowed number of open connections to the mailserver
+   * if not set or 0, the default is 10
+   * set to -1 to disable connection pooling completely
+   *
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setMaxPoolSize(int maxPoolSize) {
+    this.maxPoolSize = maxPoolSize;
+    return this;
+  }
+
+  /**
+   * get the timeout for idle smtp connections (in seconds)
+   *
+   * @return idle timeout value
+   */
+  public int getIdleTimeout() {
+    return idleTimeout;
+  }
+
+  /**
+   * set the timeout for idle smtp connections (in seconds)
+   * if not set, the default is 300 seconds
+   * set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
+   * set to -1 to disable connection pooling completely
+   *
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setIdleTimeout(int idleTimeout) {
+    this.idleTimeout = idleTimeout;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    * 
    * @return json object of the config
@@ -454,7 +511,7 @@ public class MailConfig {
     }
     // TODO: how do we do this, if it is necessary at all?
     // if(netClientOptions != null) {
-    // json.put("netclientoptions", netClientOptions);
+    //   json.put("netclientoptions", netClientOptions);
     // }
     if (authMethods != null) {
       json.put("auth_methods", authMethods);
@@ -462,13 +519,15 @@ public class MailConfig {
     if (ehloHostname != null) {
       json.put("ehlo_hostname", ehloHostname);
     }
+    json.put("max_pool_size", maxPoolSize);
+    json.put("idle_timeout", idleTimeout);
 
     return json;
   }
 
   private List<Object> getList() {
     final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll,
-        netClientOptions, authMethods, ehloHostname);
+        netClientOptions, authMethods, ehloHostname, maxPoolSize, idleTimeout);
     return objects;
   }
 
@@ -486,6 +545,7 @@ public class MailConfig {
       return false;
     }
     final MailConfig config = (MailConfig) o;
+
     return getList().equals(config.getList());
   }
 
@@ -497,30 +557,6 @@ public class MailConfig {
   @Override
   public int hashCode() {
     return getList().hashCode();
-  }
-
-  /**
-   * @return
-   */
-  public int getMaxPoolSize() {
-    return maxPoolSize;
-  }
-
-  public MailConfig setMaxPoolSize(int maxPoolSize) {
-    this.maxPoolSize = maxPoolSize;
-    return this;
-  }
-
-  /**
-   * @return
-   */
-  public int getIdleTimeout() {
-    return idleTimeout;
-  }
-
-  public MailConfig setIdleTimeout(int idleTimeout) {
-    this.idleTimeout = idleTimeout;
-    return this;
   }
 
 }

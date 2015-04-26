@@ -13,7 +13,7 @@ public class MailConfigTest {
   @Test
   public void toJsonTest() {
     MailConfig mailConfig = new MailConfig();
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}", mailConfig
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300}", mailConfig
         .toJson().toString());
   }
 
@@ -22,7 +22,7 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername("username").setPassword("password").setSsl(true);
     assertEquals(
-        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true}",
+        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"max_pool_size\":10,\"idle_timeout\":300}",
         mailConfig.toJson().toString());
   }
 
@@ -30,7 +30,7 @@ public class MailConfigTest {
   public void toJsonTest3() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname(null).setPort(0).setStarttls(null).setLogin(null);
-    assertEquals("{\"port\":0}", mailConfig.toJson().toString());
+    assertEquals("{\"port\":0,\"max_pool_size\":10,\"idle_timeout\":300}", mailConfig.toJson().toString());
   }
 
   @Test
@@ -40,7 +40,7 @@ public class MailConfigTest {
     mailConfig.setAuthMethods("PLAIN");
     mailConfig.setEhloHostname("example.com");
     assertEquals(
-        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\"}",
+        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
         mailConfig.toJson().toString());
   }
 
@@ -58,14 +58,14 @@ public class MailConfigTest {
   public void newJsonEmptyTest() {
     JsonObject json = new JsonObject("{}");
     MailConfig mailConfig = new MailConfig(json);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25}", mailConfig.toJson().encode());
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"max_pool_size\":10,\"idle_timeout\":300}", mailConfig.toJson().encode());
   }
 
   @Test
   public void testConstructorFromMailConfig() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname("asdfasdf").setPort(1234);
-    assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"}",
+    assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300}",
         new MailConfig(mailConfig).toJson().encode());
   }
 
@@ -158,10 +158,46 @@ public class MailConfigTest {
   }
 
   @Test
+  public void testNetClientOptionsFromMailConfig() {
+    MailConfig mailConfig = new MailConfig();
+    final NetClientOptions netClientOptions = new NetClientOptions();
+    netClientOptions.setSsl(true);
+    mailConfig.setNetClientOptions(netClientOptions);
+    final NetClientOptions netClientOptions2 = new MailConfig(mailConfig).getNetClientOptions();
+    // assert that we have not just assigned the value
+    assertFalse(netClientOptions == netClientOptions2);
+    assertEquals(netClientOptions, netClientOptions2);
+  }
+
+  // TODO: remove enabledCipherSuites if possible 
+  @Test
+  public void testNetClientOptionsFromJson() {
+    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true,\"enabledCipherSuites\":[]}}";
+    MailConfig mailConfig = new MailConfig(new JsonObject(jsonString));
+    MailConfig mailConfig2 = new MailConfig()
+    .setNetClientOptions(new NetClientOptions().setSsl(true));
+    assertEquals(mailConfig2, mailConfig);
+  }
+
+  @Test
   public void testEhloHostname() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setEhloHostname("localhost.localdomain");
     assertEquals("localhost.localdomain", mailConfig.getEhloHostname());
+  }
+
+  @Test
+  public void testMaxPoolSize() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setMaxPoolSize(123);
+    assertEquals(123, mailConfig.getMaxPoolSize());
+  }
+
+  @Test
+  public void testIdleTimeout() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setIdleTimeout(99);
+    assertEquals(99, mailConfig.getIdleTimeout());
   }
 
   @Test
