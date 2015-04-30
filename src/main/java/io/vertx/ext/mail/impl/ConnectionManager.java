@@ -113,12 +113,10 @@ public abstract class ConnectionManager {
 
     // Called when the response has ended
     public synchronized void responseEnded(SMTPConnection conn) {
-      log.debug("checkReuseConnection");
       checkReuseConnection(conn);
     }
 
     void closeAllConnections() {
-      log.debug("closeAllConnections()");
       Set<SMTPConnection> copy;
       synchronized (this) {
         copy = new HashSet<>(allConnections);
@@ -127,7 +125,6 @@ public abstract class ConnectionManager {
       // Close outside sync block to avoid deadlock
       for (SMTPConnection conn : copy) {
         if (conn.isIdle() || conn.isBroken()) {
-          log.debug("closing connection");
           try {
             conn.close();
           } catch (Throwable t) {
@@ -142,7 +139,6 @@ public abstract class ConnectionManager {
 
     private void checkReuseConnection(SMTPConnection conn) {
       if (conn.isBroken()) {
-        log.debug("closing connection (if it hasn't been already)");
         conn.close();
       } else {
         Waiter waiter = waiters.poll();

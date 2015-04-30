@@ -65,7 +65,7 @@ set the hostname to be used for HELO/EHLO+++
 |+++
 set the max allowed number of open connections to the mailserver
  if not set or 0, the default is 10
- set to -1 to disable connection pooling completely+++
+ set to -1 to disable connection pooling completely TODO: this is not yet implement+++
 
 |[[idleTimeout]]`idleTimeout`
 |`Number`

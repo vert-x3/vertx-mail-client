@@ -41,6 +41,8 @@ class SMTPConnection {
 
   private long idleTimerId;
 
+  private int timeout;
+
   SMTPConnection(NetClient client, Vertx vertx, Context context, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
@@ -136,6 +138,7 @@ class SMTPConnection {
     this.errorHandler = errorHandler;
     broken = false;
     idle = false;
+    timeout = config.getIdleTimeout();
 
     context.runOnContext(v1 -> {
       client.connect(config.getPort(), config.getHostname(), asyncResult -> {
@@ -254,12 +257,14 @@ class SMTPConnection {
   }
 
   void setIdleTimer() {
-    idleTimerId = vertx.setTimer(10000, id -> {
-      if(id == idleTimerId) {
-        log.debug("idle timeout reached, closing connection");
-        quitCloseConnection();
-      }
-    });
+    if (timeout > 0) {
+      idleTimerId = vertx.setTimer(timeout * 1000, id -> {
+        if (id == idleTimerId) {
+          log.debug("idle timeout reached, closing connection");
+          quitCloseConnection();
+        }
+      });
+    }
   }
 
   void cancelIdleTimer() {

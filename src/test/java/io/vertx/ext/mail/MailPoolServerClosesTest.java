@@ -1,6 +1,5 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
@@ -16,14 +15,11 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  * test what happens when the server closes the connection if we use a pooled connection
- * (doesn't work currently since the pool doesn't check if the connections are still working)
  */
 @RunWith(VertxUnitRunner.class)
 public class MailPoolServerClosesTest extends SMTPTestDummy {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolServerClosesTest.class);
-
-  Vertx vertx = Vertx.vertx();
 
   /**
    * send two mails after each other when the server closes the connection immediately after the data

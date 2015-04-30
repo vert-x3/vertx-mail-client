@@ -28,6 +28,7 @@ public class MailServiceImplTest extends VertxTestBase {
   @Test
   public final void testMailServiceImpl() {
     MailService mailService = new MailServiceImpl(vertx, new MailConfig());
+    assertNotNull(mailService);
   }
 
   /**

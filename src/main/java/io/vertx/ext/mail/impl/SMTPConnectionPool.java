@@ -67,7 +67,6 @@ class SMTPConnectionPool {
    */
   private void createNewConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler,
       ConnectionLifeCycleListener listener) {
-    log.debug("creating new connection");
     // if we have not yet created the netclient, do that first
     if (netClient == null) {
       createNetclient(v -> {
@@ -98,8 +97,6 @@ class SMTPConnectionPool {
    * @param conn
    */
   void afterRemoveFromPool(SMTPConnection conn) {
-    log.debug("afterRemoveFromPool()");
-    log.debug("removed old connection, new size is " + connections.size());
     if (stopped && connections.size() == 0) {
       log.debug("final shutdown finished");
       if (netClient != null) {
@@ -116,7 +113,6 @@ class SMTPConnectionPool {
   }
 
   void stop(Handler<Void> finishedHandler) {
-    log.debug("ConnectionPool.stop(...)");
     stopped = true;
     if (connections != null) {
       connections.close();
