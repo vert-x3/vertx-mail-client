@@ -80,7 +80,7 @@ public abstract class ConnectionManager {
           break;
         }
       }
-      if (idleConn == null && connCount >= maxSockets) {
+      if (idleConn == null && maxSockets > 0 && connCount >= maxSockets) {
         // Wait in queue
         log.debug("waiting for a free socket");
         waiters.add(new Waiter(handler, connectionExceptionHandler, context));
@@ -141,13 +141,18 @@ public abstract class ConnectionManager {
       if (conn.isBroken()) {
         conn.close();
       } else {
-        Waiter waiter = waiters.poll();
-        if (waiter != null) {
-          // TODO: how to do this properly?
-          log.debug("running one waiting operation");
-          ((ContextImpl) conn.getContext()).executeSync(() -> waiter.handler.handle(conn));
+        // if the pool is disabled, just close the connection
+        if(maxSockets<0) {
+          conn.close();
         } else {
-          log.debug("keeping connection idle");
+          Waiter waiter = waiters.poll();
+          if (waiter != null) {
+            // TODO: how to do this properly?
+            log.debug("running one waiting operation");
+            ((ContextImpl) conn.getContext()).executeSync(() -> waiter.handler.handle(conn));
+          } else {
+            log.debug("keeping connection idle");
+          }
         }
       }
     }

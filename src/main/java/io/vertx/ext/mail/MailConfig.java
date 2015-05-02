@@ -449,9 +449,10 @@ public class MailConfig {
   }
 
   /**
-   * set the max allowed number of open connections to the mailserver
-   * if not set or 0, the default is 10
-   * set to -1 to disable connection pooling completely TODO: this is not yet implemented
+   * set the max allowed number of open connections to the mail server
+   * if not set the default is 10
+   * if set to 0, the number of connections is not limited
+   * set to -1 to disable connection pooling completely
    *
    * @return this to be able to use the object fluently
    */
@@ -462,9 +463,9 @@ public class MailConfig {
 
   /**
    * get the timeout for idle smtp connections (in seconds)
-   * if not set, the default is 300 seconds
+   * if not set the default is 300 seconds
    * set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
-   * set to -1 to disable connection pooling completely TODO: this is not yet implemented
+   * set to -1 to disable connection pooling completely
    *
    * @return idle timeout value
    */

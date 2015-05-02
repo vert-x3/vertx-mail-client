@@ -265,6 +265,10 @@ class SMTPConnection {
         }
       });
     }
+    // pool disabled
+    if (timeout < 0) {
+      quitCloseConnection();
+    }
   }
 
   void cancelIdleTimer() {
