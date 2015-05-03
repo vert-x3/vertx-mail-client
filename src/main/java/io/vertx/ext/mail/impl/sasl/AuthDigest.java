@@ -7,7 +7,9 @@ import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -15,9 +17,6 @@ import java.util.Map;
  *
  */
 abstract class AuthDigest extends AuthBaseClass {
-
-  // private final static Logger log =
-  // LoggerFactory.getLogger(AuthDigest.class);
 
   private int counter;
   final MessageDigest digest;
@@ -131,8 +130,6 @@ abstract class AuthDigest extends AuthBaseClass {
     try {
       return str.getBytes("UTF-8");
     } catch (UnsupportedEncodingException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
       return null;
     }
   }
@@ -206,19 +203,44 @@ abstract class AuthDigest extends AuthBaseClass {
 
   /**
    * parse a key/value list from the challenge
-   * TODO: implement this without split and handle quoting correctly
-   * currently it will fail with things like key="value,value" and key="string\"quoted\""
+   *
    * @param data
    * @return
    */
-  private Map<String, String> parseToMap(String data) {
-    String[] fields = data.split(",");
+  static Map<String, String> parseToMap(String data) {
+    List<String> fields = new ArrayList<String>();
+
+    boolean inQuote = false;
+    int startIndex = 0;
+    for (int i = 0; i < data.length(); i++) {
+      char ch = data.charAt(i);
+      if (ch == '\\') {
+        i++;
+      } else {
+        if (inQuote) {
+          if (ch == '"') {
+            inQuote = false;
+          }
+        } else {
+          if (ch == '"') {
+            inQuote = true;
+          } else if (ch == ',') {
+            fields.add(data.substring(startIndex, i));
+            startIndex = i + 1;
+          }
+        }
+      }
+    }
+    fields.add(data.substring(startIndex));
+
     Map<String, String> map = new HashMap<String, String>();
-    for (String field : fields) {
-      String[] kv = field.split("=", 2);
-      String key = kv[0];
-      String value = removeQuotes(kv[1]);
-      map.put(key, value);
+    for (String f : fields) {
+      int equalsIndex = f.indexOf('=');
+      if (equalsIndex >= 0) {
+        String key = f.substring(0, equalsIndex);
+        String val = f.substring(equalsIndex + 1);
+        map.put(key, removeQuotes(val));
+      }
     }
 
     return map;
@@ -228,12 +250,24 @@ abstract class AuthDigest extends AuthBaseClass {
    * @param string
    * @return
    */
-  private String removeQuotes(String string) {
-    if (string.contains("\"")) {
-      return string.replaceAll("\"", "");
-    } else {
-      return string;
+  private static String removeQuotes(String string) {
+    StringBuilder sb = new StringBuilder(string.length());
+
+    boolean backslash = false;
+    for (int i = 0; i < string.length(); i++) {
+      char ch = string.charAt(i);
+      if (backslash) {
+        sb.append(ch);
+        backslash = false;
+      } else {
+        if (ch == '\\') {
+          backslash = true;
+        } else if (ch != '"') {
+          sb.append(ch);
+        }
+      }
     }
+    return sb.toString();
   }
 
   /**
