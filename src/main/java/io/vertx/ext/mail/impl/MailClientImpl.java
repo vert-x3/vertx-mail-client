@@ -9,7 +9,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailService;
+import io.vertx.ext.mail.MailClient;
 import io.vertx.core.Future;
 
 /**
@@ -18,9 +18,9 @@ import io.vertx.core.Future;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
-public class MailServiceImpl implements MailService {
+public class MailClientImpl implements MailClient {
 
-  private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
+  private static final Logger log = LoggerFactory.getLogger(MailClientImpl.class);
 
   private final MailConfig config;
   private final Context context;
@@ -35,7 +35,7 @@ public class MailServiceImpl implements MailService {
    * @param vertx the Vertx instance the mails will be sent in
    * @param config the configuration of the mailserver
    */
-  public MailServiceImpl(Vertx vertx, MailConfig config) {
+  public MailClientImpl(Vertx vertx, MailConfig config) {
     this.config = config;
     context = vertx.getOrCreateContext();
     connectionPool = new ConnectionPool(vertx, config, context);
@@ -58,7 +58,7 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailClient sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
     if(!stopped) {
       context.runOnContext(v -> {
         MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
@@ -71,7 +71,7 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public MailService sendMailString(MailMessage message, String messageText,
+  public MailClient sendMailString(MailMessage message, String messageText,
       Handler<AsyncResult<JsonObject>> resultHandler) {
     if(!stopped) {
       context.runOnContext(v -> {

@@ -4,7 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailService;
+import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.StarttlsOption;
 
 import java.util.Arrays;
@@ -23,7 +23,7 @@ public class MailPregen extends AbstractVerticle {
     MailConfig mailConfig = new MailConfig("smtp.example.com", 465, StarttlsOption.DISABLED, LoginOption.DISABLED)
       .setSsl(true);
 
-    MailService mailService = MailService.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
       .setFrom("user1@example.com")
@@ -54,7 +54,7 @@ public class MailPregen extends AbstractVerticle {
         "\n" + 
         "--001a113dff8406b62e0512c6690d--";
 
-    mailService.sendMailString(email, message, result -> {
+    mailClient.sendMailString(email, message, result -> {
       System.out.println("mail is finished");
     });
   }

@@ -8,7 +8,7 @@ import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailService;
+import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.StarttlsOption;
 
 import java.util.ArrayList;
@@ -30,7 +30,7 @@ public class MailLogin extends AbstractVerticle {
       .setUsername("username")
       .setPassword("password");
 
-    MailService mailService = MailService.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
@@ -55,7 +55,7 @@ public class MailLogin extends AbstractVerticle {
 
     email.setAttachment(list);
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());

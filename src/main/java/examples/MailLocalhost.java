@@ -3,7 +3,7 @@ package examples;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailService;
+import io.vertx.ext.mail.MailClient;
 
 import java.util.Arrays;
 
@@ -17,7 +17,7 @@ public class MailLocalhost extends AbstractVerticle {
   @Override
   public void start() {
 
-    MailService mailService = MailService.create(vertx, new MailConfig());
+    MailClient mailClient = MailClient.create(vertx, new MailConfig());
 
     MailMessage email = new MailMessage()
       .setFrom("user@example.com (Sender)")
@@ -28,7 +28,7 @@ public class MailLocalhost extends AbstractVerticle {
       .setSubject("Test email")
       .setText("this is a test email");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {

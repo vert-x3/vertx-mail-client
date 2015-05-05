@@ -30,9 +30,9 @@ import io.vertx.ext.mail.MailMessage
  * generate the service in other languages
 */
 @CompileStatic
-public class MailService {
-  final def io.vertx.ext.mail.MailService delegate;
-  public MailService(io.vertx.ext.mail.MailService delegate) {
+public class MailClient {
+  final def io.vertx.ext.mail.MailClient delegate;
+  public MailClient(io.vertx.ext.mail.MailClient delegate) {
     this.delegate = delegate;
   }
   public Object getDelegate() {
@@ -44,18 +44,8 @@ public class MailService {
    * @param config MailConfig configuration to be used for sending mails (see <a href="../../../../../../../cheatsheet/MailConfig.html">MailConfig</a>)
    * @return MailService instance that can then be used to send multiple mails
    */
-  public static MailService create(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
-    return ret;
-  }
-  /**
-   * create an instance of  MailService that calls the mail service via the event bus running somewhere else
-   * @param vertx the Vertx instance the operation will be run in
-   * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
-   * @return MailService instance that can then be used to send multiple mails
-   */
-  public static MailService createEventBusProxy(Vertx vertx, String address) {
-    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
+  public static MailClient create(Vertx vertx, Map<String, Object> config) {
+    def ret= new io.vertx.groovy.ext.mail.MailClient(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
     return ret;
   }
   /**
@@ -64,7 +54,7 @@ public class MailService {
    * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
    * @return this MailService instance so the method can be used fluently
    */
-  public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+  public MailClient sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f
@@ -88,7 +78,7 @@ public class MailService {
    * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
    * @return this MailService instance so the method can be used fluently
    */
-  public MailService sendMailString(Map<String, Object> email = [:], String message, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+  public MailClient sendMailString(Map<String, Object> email = [:], String message, Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMailString(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, message, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
       public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
         AsyncResult<Map<String, Object>> f

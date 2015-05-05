@@ -1,15 +1,13 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.Fluent;
-import io.vertx.codegen.annotations.ProxyGen;
 import io.vertx.codegen.annotations.ProxyIgnore;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
-import io.vertx.ext.mail.impl.MailServiceImpl;
-import io.vertx.serviceproxy.ProxyHelper;
+import io.vertx.ext.mail.impl.MailClientImpl;
 
 /**
  * smtp mail service for vert.x
@@ -20,8 +18,7 @@ import io.vertx.serviceproxy.ProxyHelper;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @VertxGen
-@ProxyGen
-public interface MailService {
+public interface MailClient {
 
   /**
    * create an instance of MailService that is running in the local JVM
@@ -30,19 +27,8 @@ public interface MailService {
    * @param config MailConfig configuration to be used for sending mails
    * @return MailService instance that can then be used to send multiple mails
    */
-  static MailService create(Vertx vertx, MailConfig config) {
-    return new MailServiceImpl(vertx, config);
-  }
-
-  /**
-   * create an instance of  MailService that calls the mail service via the event bus running somewhere else
-   *
-   * @param vertx the Vertx instance the operation will be run in
-   * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
-   * @return MailService instance that can then be used to send multiple mails
-   */
-  static MailService createEventBusProxy(Vertx vertx, String address) {
-    return ProxyHelper.createProxy(MailService.class, vertx, address);
+  static MailClient create(Vertx vertx, MailConfig config) {
+    return new MailClientImpl(vertx, config);
   }
 
   /**
@@ -54,7 +40,7 @@ public interface MailService {
    * @return this MailService instance so the method can be used fluently
    */
   @Fluent
-  MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
+  MailClient sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * send a single mail via MailService that has been pregenerated already
@@ -71,7 +57,7 @@ public interface MailService {
    * @return this MailService instance so the method can be used fluently
    */
   @Fluent
-  MailService sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler);
+  MailClient sendMailString(MailMessage email, String message, Handler<AsyncResult<JsonObject>> resultHandler);
 
   /**
    * start the MailServer instance if it is running locally (this operation is currently a no-op)

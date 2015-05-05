@@ -16,7 +16,7 @@
 /**
  * = Vert.x Mail (SMTP client implementation)
  *
- * {@link io.vertx.ext.mail.MailService} simple example:
+ * {@link io.vertx.ext.mail.MailClient} simple example:
  *
  * [source,$lang]
  * ----

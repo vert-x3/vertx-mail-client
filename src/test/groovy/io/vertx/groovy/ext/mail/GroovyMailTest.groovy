@@ -1,7 +1,4 @@
 package io.vertx.groovy.ext.mail
-
-import static org.hamcrest.core.IsEqual.equalTo
-import static org.hamcrest.core.StringContains.containsString
 import io.vertx.core.logging.Logger
 import io.vertx.core.logging.impl.LoggerFactory
 import io.vertx.ext.mail.LoginOption
@@ -10,16 +7,16 @@ import io.vertx.ext.mail.MailMessage
 import io.vertx.ext.mail.StarttlsOption
 import io.vertx.groovy.core.Vertx
 import io.vertx.test.core.VertxTestBase
-
-import javax.mail.MessagingException
-import javax.mail.internet.MimeMessage
-
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
 import org.subethamail.wiser.Wiser
 import org.subethamail.wiser.WiserMessage
 
+import javax.mail.internet.MimeMessage
+
+import static org.hamcrest.core.IsEqual.equalTo
+import static org.hamcrest.core.StringContains.containsString
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
@@ -38,7 +35,7 @@ public class GroovyMailTest extends VertxTestBase {
     mailConfig.username="username"
     mailConfig.password="asdf"
 
-    MailService mailService = MailService.create(vertx, mailConfig.toJson().map)
+    MailClient mailService = MailClient.create(vertx, mailConfig.toJson().map)
 
     MailMessage email = new MailMessage()
 

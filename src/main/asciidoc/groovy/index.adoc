@@ -1,10 +1,10 @@
 = Vert.x Mail (SMTP client implementation)
 
-`link:groovydoc/io/vertx/groovy/ext/mail/MailService.html[MailService]` simple example:
+`link:groovydoc/io/vertx/groovy/ext/mail/MailClient.html[MailClient]` simple example:
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailService
+import io.vertx.groovy.ext.mail.MailClient
 def mailConfig = [
   hostname:"mail.example.com",
   port:587,
@@ -12,7 +12,7 @@ def mailConfig = [
   password:"pw"
 ]
 
-def mailService = MailService.create(vertx, mailConfig)
+def mailClient = MailClient.create(vertx, mailConfig)
 
 def email = [
   from:"address@example.com",
@@ -22,7 +22,7 @@ def email = [
   html:"HTML message <a href=\"http://vertx.io\">vertx</a>"
 ]
 
-mailService.sendMail(email, { result ->
+mailClient.sendMail(email, { result ->
   if (result.succeeded()) {
     println(result.result())
   } else {
@@ -36,12 +36,12 @@ attachments can be added as Buffer object
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailService
+import io.vertx.groovy.ext.mail.MailClient
 import io.vertx.groovy.core.buffer.Buffer
 // default config will use localhost:25
 def mailConfig = [:]
 
-def mailService = MailService.create(vertx, mailConfig)
+def mailClient = MailClient.create(vertx, mailConfig)
 
 def email = [
   from:"address@example.com",
@@ -57,7 +57,7 @@ def attachment = [
 
 email.attachment = attachment
 
-mailService.sendMail(email, { result ->
+mailClient.sendMail(email, { result ->
   if (result.succeeded()) {
     println(result.result())
   } else {
@@ -72,23 +72,21 @@ on other machine in the cluster
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailService
-def mailService = MailService.createEventBusProxy(vertx, "vertx.mail")
-
-def email = [
-  from:"user@example.com",
-  bounceAddress:"bounce@example.com",
-  to:"user@example.com"
-]
-
-mailService.sendMail(email, { result ->
-  println("mail finished")
-  if (result.succeeded()) {
-    println(result.result())
-  } else {
-    println("got exception")
-    result.cause().printStackTrace()
-  }
-})
+//    MailClient mailClient = MailClient.createEventBusProxy(vertx, "vertx.mail");
+//
+//    MailMessage email=new MailMessage()
+//    .setFrom("user@example.com")
+//    .setBounceAddress("bounce@example.com")
+//    .setTo("user@example.com");
+//
+//    mailClient.sendMail(email, result -> {
+//      System.out.println("mail finished");
+//      if (result.succeeded()) {
+//        System.out.println(result.result());
+//      } else {
+//        System.out.println("got exception");
+//        result.cause().printStackTrace();
+//      }
+//    });
 
 ----

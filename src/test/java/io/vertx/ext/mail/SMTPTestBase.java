@@ -20,43 +20,43 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
-  protected MailService mailServiceDefault() {
-    return MailService.create(vertx, defaultConfig());
+  protected MailClient mailServiceDefault() {
+    return MailClient.create(vertx, defaultConfig());
   }
 
   /**
    * @return
    */
-  protected MailService mailServiceLogin() {
-    return MailService.create(vertx, configLogin());
+  protected MailClient mailServiceLogin() {
+    return MailClient.create(vertx, configLogin());
   }
 
   /**
    * @return
    */
-  protected MailService mailServiceLogin(String user, String pw) {
-    return MailService.create(vertx, configLogin(user, pw));
+  protected MailClient mailServiceLogin(String user, String pw) {
+    return MailClient.create(vertx, configLogin(user, pw));
   }
 
   /**
-   * @param mailService
+   * @param mailClient
    */
-  protected void runTestException(final MailService mailService) {
-    testException(mailService, exampleMessage());
-  }
-
-  /**
-   * @return
-   */
-  protected MailService mailServiceTLS() {
-    return MailService.create(vertx, configTLS());
+  protected void runTestException(final MailClient mailClient) {
+    testException(mailClient, exampleMessage());
   }
 
   /**
    * @return
    */
-  protected MailService mailServiceNoSSL() {
-    return MailService.create(vertx, configNoSSL());
+  protected MailClient mailServiceTLS() {
+    return MailClient.create(vertx, configTLS());
+  }
+
+  /**
+   * @return
+   */
+  protected MailClient mailServiceNoSSL() {
+    return MailClient.create(vertx, configNoSSL());
   }
 
   /**
@@ -103,13 +103,13 @@ public class SMTPTestBase extends VertxTestBase {
     return new MailMessage("from@example.com", "user@example.com", "Subject", "Message");
   }
 
-  protected void testException(MailService mailService, MailMessage email) {
+  protected void testException(MailClient mailClient, MailMessage email) {
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
-      mailService.stop();
+      mailClient.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");
@@ -122,13 +122,13 @@ public class SMTPTestBase extends VertxTestBase {
     await();
   }
 
-  protected void testSuccess(MailService mailService, MailMessage email) {
+  protected void testSuccess(MailClient mailClient, MailMessage email) {
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
-      mailService.stop();
+      mailClient.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
@@ -141,13 +141,13 @@ public class SMTPTestBase extends VertxTestBase {
     await();
   }
 
-  protected void testSuccess(MailService mailService, MailMessage email, String message) {
+  protected void testSuccess(MailClient mailClient, MailMessage email, String message) {
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    mailService.sendMailString(email, message, result -> {
+    mailClient.sendMailString(email, message, result -> {
       log.info("mail finished");
       pass.passOnce();
-      mailService.stop();
+      mailClient.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
         testComplete();
@@ -160,16 +160,16 @@ public class SMTPTestBase extends VertxTestBase {
     await();
   }
 
-  protected void testSuccess(MailService mailService) {
-    testSuccess(mailService, exampleMessage());
+  protected void testSuccess(MailClient mailClient) {
+    testSuccess(mailClient, exampleMessage());
   }
 
   protected void testException(MailMessage email) {
     testException(mailServiceDefault(), email);
   }
 
-  protected void testException(MailService mailService) {
-    testException(mailService, exampleMessage());
+  protected void testException(MailClient mailClient) {
+    testException(mailClient, exampleMessage());
   }
 
   protected void testSuccess(MailMessage email) {

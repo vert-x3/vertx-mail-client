@@ -23,7 +23,7 @@ public class MailStringTest extends SMTPTestWiser {
 
   @Test
   public void mailTest() throws MessagingException, IOException {
-    MailService mailService = mailServiceNoSSL();
+    MailClient mailClient = mailServiceNoSSL();
 
     MailMessage email = new MailMessage()
     .setFrom("user@example.com")
@@ -47,7 +47,7 @@ public class MailStringTest extends SMTPTestWiser {
         "this is an example mail\n" + 
         "\n";
 
-    testSuccess(mailService, email, messageString);
+    testSuccess(mailClient, email, messageString);
 
     final WiserMessage message = wiser.getMessages().get(0);
     assertEquals("user@example.org", message.getEnvelopeSender());

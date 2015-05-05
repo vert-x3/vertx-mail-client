@@ -6,7 +6,7 @@ import io.vertx.docgen.Source;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailService;
+import io.vertx.ext.mail.MailClient;
 
 /**
  * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
@@ -21,7 +21,7 @@ public class Examples {
     .setUsername("user")
     .setPassword("pw");
 
-    MailService mailService = MailService.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
     .setFrom("address@example.com")
@@ -30,7 +30,7 @@ public class Examples {
     .setText("this is a message")
     .setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {
@@ -44,7 +44,7 @@ public class Examples {
     // default config will use localhost:25
     MailConfig mailConfig = new MailConfig();
 
-    MailService mailService = MailService.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
     .setFrom("address@example.com")
@@ -58,7 +58,7 @@ public class Examples {
 
     email.setAttachment(attachment);
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {
@@ -69,22 +69,22 @@ public class Examples {
   }
 
   public void example3(Vertx vertx) {
-    MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
-
-    MailMessage email=new MailMessage()
-    .setFrom("user@example.com")
-    .setBounceAddress("bounce@example.com")
-    .setTo("user@example.com");
-
-    mailService.sendMail(email, result -> {
-      System.out.println("mail finished");
-      if (result.succeeded()) {
-        System.out.println(result.result());
-      } else {
-        System.out.println("got exception");
-        result.cause().printStackTrace();
-      }
-    });
+//    MailClient mailClient = MailClient.createEventBusProxy(vertx, "vertx.mail");
+//
+//    MailMessage email=new MailMessage()
+//    .setFrom("user@example.com")
+//    .setBounceAddress("bounce@example.com")
+//    .setTo("user@example.com");
+//
+//    mailClient.sendMail(email, result -> {
+//      System.out.println("mail finished");
+//      if (result.succeeded()) {
+//        System.out.println(result.result());
+//      } else {
+//        System.out.println("got exception");
+//        result.cause().printStackTrace();
+//      }
+//    });
   }
 
 }

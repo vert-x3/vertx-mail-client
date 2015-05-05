@@ -3,9 +3,9 @@
 
 var TestSuite = require('vertx-unit-js/test_suite');
 var Vertx = require("vertx-js/vertx");
-var MailService = require('vertx-mail-js/mail_service');
+var MailClient = require('vertx-mail-js/mail_client');
 
-var suite = TestSuite.create("mailservice_suite");
+var suite = TestSuite.create("MailClient_suite");
 
 suite.test("mail_test_case", function(context) {
 
@@ -22,7 +22,7 @@ suite.test("mail_test_case", function(context) {
   };
 
 
-  var service = MailService.create(vertx, config);
+  var service = MailClient.create(vertx, config);
 
   var email = {
       "from" : "user@example.com",

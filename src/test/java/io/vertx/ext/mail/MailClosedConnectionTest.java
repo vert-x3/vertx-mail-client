@@ -33,7 +33,7 @@ public class MailClosedConnectionTest {
 
     Async async = context.async();
 
-    MailService mailService = MailService.create(vertx, mailConfig());
+    MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email=new MailMessage()
     .setFrom("user@example.com")
@@ -41,7 +41,7 @@ public class MailClosedConnectionTest {
     .setSubject("Test email")
     .setText("this is a message");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
@@ -59,7 +59,7 @@ public class MailClosedConnectionTest {
 
     Async async = context.async();
 
-    MailService mailService = MailService.create(vertx, mailConfig());
+    MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email=new MailMessage()
     .setFrom("user@example.com")
@@ -67,7 +67,7 @@ public class MailClosedConnectionTest {
     .setSubject("Test email")
     .setText("this is a message");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());

@@ -146,7 +146,7 @@ public class MailAuthTest extends SMTPTestDummy {
         "250-example.com\n" +
         "250 AUTH PLAIN");
 
-    testException(MailService.create(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
+    testException(MailClient.create(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
   }
 
 }

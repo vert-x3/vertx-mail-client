@@ -21,7 +21,7 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTest() throws MessagingException, IOException {
 
-    MailService mailService = mailServiceLogin();
+    MailClient mailClient = mailServiceLogin();
 
     MailMessage email = new MailMessage();
 
@@ -33,7 +33,7 @@ public class MailLocalTest extends SMTPTestWiser {
       .setSubject("Test email")
       .setText("this is a test email");
 
-    testSuccess(mailService, email);
+    testSuccess(mailClient, email);
 
     final WiserMessage message = wiser.getMessages().get(0);
     assertEquals("user@example.com", message.getEnvelopeSender());

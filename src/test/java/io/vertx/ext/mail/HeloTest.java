@@ -90,7 +90,7 @@ public class HeloTest extends SMTPTestDummy {
 
   @Test
   public void connectionRefusedTest() {
-    runTestException(MailService.create(vertx, new MailConfig("localhost", 1588)));
+    runTestException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test

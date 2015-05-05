@@ -1,10 +1,10 @@
 = Vert.x Mail (SMTP client implementation)
 
-`link:jsdoc/mail_service-MailService.html[MailService]` simple example:
+`link:jsdoc/mail_client-MailClient.html[MailClient]` simple example:
 
 [source,js]
 ----
-var MailService = require("vertx-mail-js/mail_service");
+var MailClient = require("vertx-mail-js/mail_client");
 var mailConfig = {
   "hostname" : "mail.example.com",
   "port" : 587,
@@ -12,7 +12,7 @@ var mailConfig = {
   "password" : "pw"
 };
 
-var mailService = MailService.create(vertx, mailConfig);
+var mailClient = MailClient.create(vertx, mailConfig);
 
 var email = {
   "from" : "address@example.com",
@@ -22,7 +22,7 @@ var email = {
   "html" : "HTML message <a href=\"http://vertx.io\">vertx</a>"
 };
 
-mailService.sendMail(email, function (result, result_err) {
+mailClient.sendMail(email, function (result, result_err) {
   if (result_err == null) {
     console.log(result);
   } else {
@@ -36,13 +36,13 @@ attachments can be added as Buffer object
 
 [source,js]
 ----
-var MailService = require("vertx-mail-js/mail_service");
+var MailClient = require("vertx-mail-js/mail_client");
 var Buffer = require("vertx-js/buffer");
 // default config will use localhost:25
 var mailConfig = {
 };
 
-var mailService = MailService.create(vertx, mailConfig);
+var mailClient = MailClient.create(vertx, mailConfig);
 
 var email = {
   "from" : "address@example.com",
@@ -58,7 +58,7 @@ var attachment = {
 
 email.attachment = attachment;
 
-mailService.sendMail(email, function (result, result_err) {
+mailClient.sendMail(email, function (result, result_err) {
   if (result_err == null) {
     console.log(result);
   } else {
@@ -73,23 +73,21 @@ on other machine in the cluster
 
 [source,js]
 ----
-var MailService = require("vertx-mail-js/mail_service");
-var mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
-
-var email = {
-  "from" : "user@example.com",
-  "bounceAddress" : "bounce@example.com",
-  "to" : "user@example.com"
-};
-
-mailService.sendMail(email, function (result, result_err) {
-  console.log("mail finished");
-  if (result_err == null) {
-    console.log(result);
-  } else {
-    console.log("got exception");
-    result_err.printStackTrace();
-  };
-});
+//    MailClient mailClient = MailClient.createEventBusProxy(vertx, "vertx.mail");
+//
+//    MailMessage email=new MailMessage()
+//    .setFrom("user@example.com")
+//    .setBounceAddress("bounce@example.com")
+//    .setTo("user@example.com");
+//
+//    mailClient.sendMail(email, result -> {
+//      System.out.println("mail finished");
+//      if (result.succeeded()) {
+//        System.out.println(result.result());
+//      } else {
+//        System.out.println("got exception");
+//        result.cause().printStackTrace();
+//      }
+//    });
 
 ----
