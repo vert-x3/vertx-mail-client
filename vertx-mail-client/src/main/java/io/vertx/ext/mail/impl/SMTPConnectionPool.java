@@ -1,6 +1,5 @@
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -15,10 +14,6 @@ import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
 
-/*
-  FIXME: I can't really a good reason why this functionality is in it's own class and not just in
-  MailClientImpl
- */
 class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnectionPool.class);
@@ -47,11 +42,10 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   void getConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("getConnection()");
-    Context context = vertx.getOrCreateContext();
     if (closed) {
       errorHandler.handle(new NoStackTraceThrowable("connection pool is closed"));
     } else {
-      getConnection(resultHandler, errorHandler, context);
+      getConnection0(resultHandler, errorHandler);
     }
   }
 
@@ -98,8 +92,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   // Private methods
 
-  private synchronized void getConnection(Handler<SMTPConnection> handler, Handler<Throwable> connectionExceptionHandler,
-                                          Context context) {
+  private synchronized void getConnection0(Handler<SMTPConnection> handler, Handler<Throwable> connectionExceptionHandler) {
     SMTPConnection idleConn = null;
     for (SMTPConnection conn : allConnections) {
       if (!conn.isBroken() && conn.isIdle()) {

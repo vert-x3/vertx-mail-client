@@ -26,7 +26,6 @@ class MailMain {
   private Handler<AsyncResult<JsonObject>> finishedHandler;
 
   private MailMessage email;
-  private String mailMessage;
 
   private SMTPConnection connection = null;
 
@@ -70,7 +69,7 @@ class MailMain {
   private void sendMessage(SMTPConnection connection) {
     log.debug("got a connection");
     this.connection=connection;
-    new SMTPSendMail(connection, email, mailMessage, v -> finishMail(), this::handleError).startMail();
+    new SMTPSendMail(connection, email, v -> finishMail(), this::handleError).startMail();
   }
 
   private void finishMail() {

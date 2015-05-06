@@ -30,6 +30,7 @@ public class MailClientImpl implements MailClient {
   @Override
   public void close() {
     connectionPool.close();
+    closed = true;
   }
 
   @Override
@@ -44,5 +45,6 @@ public class MailClientImpl implements MailClient {
     }
     return this;
   }
+
 
 }

@@ -5,8 +5,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
-
-import org.junit.Ignore;
 import org.junit.Test;
 
 /*
@@ -26,26 +24,8 @@ public class MailServiceVerticleTest extends VertxTestBase {
   private static final Logger log = LoggerFactory.getLogger(MailServiceVerticleTest.class);
 
   @Test
-  public void testService() {
-    JsonObject config = new JsonObject(
-        "{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
-    DeploymentOptions deploymentOptions = new DeploymentOptions(config);
-    vertx.deployVerticle("MailServiceVerticle", deploymentOptions, r -> {
-      if (r.succeeded()) {
-        log.info(r.result());
-        testComplete();
-      } else {
-        log.info("exception", r.cause());
-        fail(r.cause().toString());
-      }
-    });
-
-    await();
-  }
-
-  @Test
   public void testServiceError() {
-    JsonObject config = new JsonObject("{}");
+    JsonObject config = new JsonObject();
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
     vertx.deployVerticle("MailServiceVerticle", deploymentOptions, r -> {
       if (r.succeeded()) {
@@ -61,7 +41,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
   }
 
   @Test
-  public void testServiceMaven() {
+  public void testDeployService() {
     JsonObject config = new JsonObject(
         "{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
@@ -78,25 +58,5 @@ public class MailServiceVerticleTest extends VertxTestBase {
     await();
   }
 
-  /*
-   * I would expect this test to fail, but it currently doesn't
-   */
-  @Ignore
-  @Test
-  public void testServiceMavenError() {
-    JsonObject config = new JsonObject("{\"config\":{}}");
-    DeploymentOptions deploymentOptions = new DeploymentOptions(config);
-    vertx.deployVerticle("service:io.vertx.mail-service", deploymentOptions, r -> {
-      if (r.succeeded()) {
-        log.info(r.result());
-        fail("operation should fail");
-      } else {
-        log.info("exception", r.cause());
-        testComplete();
-      }
-    });
-
-    await();
-  }
 
 }

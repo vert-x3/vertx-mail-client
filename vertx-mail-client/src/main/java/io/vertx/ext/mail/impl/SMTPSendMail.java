@@ -21,12 +21,11 @@ class SMTPSendMail {
   private Handler<Void> finishedHandler;
   private Handler<Throwable> exceptionHandler;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, String mailMessage, Handler<Void> finishedHandler,
+  SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<Void> finishedHandler,
       Handler<Throwable> exceptionHandler) {
     super();
     this.connection = connection;
     this.email = email;
-    this.mailMessage = mailMessage;
     this.finishedHandler = finishedHandler;
     this.exceptionHandler = exceptionHandler;
   }

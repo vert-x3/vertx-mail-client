@@ -57,8 +57,4 @@ class SMTPReset {
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-  // private void handleError(Throwable throwable) {
-  // errorHandler.handle(throwable);
-  // }
-
 }

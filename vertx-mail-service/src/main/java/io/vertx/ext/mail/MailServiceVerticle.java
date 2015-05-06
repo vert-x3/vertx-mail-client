@@ -1,6 +1,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.ext.mail.impl.MailServiceImpl;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
@@ -17,27 +18,26 @@ import io.vertx.serviceproxy.ProxyHelper;
  */
 public class MailServiceVerticle extends AbstractVerticle {
 
-  private MailClient client;
+  private MailService service;
 
   @Override
   public void start() {
 
-    // Create the client object
-    client = MailClient.create(vertx, new MailConfig(config()));
+    service = new MailServiceImpl(MailClient.create(vertx, new MailConfig(config())));
 
     // And register it on the event bus against the configured address
     final String address = config().getString("address");
     if (address == null) {
       throw new IllegalStateException("address field must be specified in config for client verticle");
     }
-    ProxyHelper.registerService(MailClient.class, vertx, client, address);
+    ProxyHelper.registerService(MailService.class, vertx, service, address);
 
   }
 
   @Override
   public void stop() {
-    if (client != null) {
-      client.close();
+    if (service != null) {
+      service.close();
     }
   }
 }

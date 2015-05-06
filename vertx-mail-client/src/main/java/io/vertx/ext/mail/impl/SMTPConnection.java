@@ -34,11 +34,8 @@ class SMTPConnection {
   private final NetClient client;
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
-
   private final Vertx vertx;
-
   private long idleTimerId;
-
   private int timeout;
 
   SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {

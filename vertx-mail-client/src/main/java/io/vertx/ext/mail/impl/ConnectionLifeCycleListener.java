@@ -16,10 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
-/**
- * @author <a href="http://tfox.org">Tim Fox</a>
- */
-public interface ConnectionLifeCycleListener {
+interface ConnectionLifeCycleListener {
 
   void responseEnded(SMTPConnection conn);
 
