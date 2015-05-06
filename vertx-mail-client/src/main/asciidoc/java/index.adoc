@@ -1,0 +1,59 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:../../apidocs/io/vertx/ext/mail/MailClient.html[MailClient]` simple example:
+
+[source,java]
+----
+MailConfig mailConfig = new MailConfig()
+.setHostname("mail.example.com")
+.setPort(587)
+.setUsername("user")
+.setPassword("pw");
+
+MailClient mailService = MailClient.create(vertx, mailConfig);
+
+MailMessage email = new MailMessage()
+.setFrom("address@example.com")
+.setTo("address@example.com")
+.setSubject("meaningful subject")
+.setText("this is a message")
+.setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
+
+mailService.sendMail(email, result -> {
+  if (result.succeeded()) {
+    System.out.println(result.result());
+  } else {
+    System.out.println("got exception");
+    result.cause().printStackTrace();
+  }
+});
+----
+attachments can be added as Buffer object
+
+[source,java]
+----
+MailConfig mailConfig = new MailConfig();
+
+MailClient mailService = MailClient.create(vertx, mailConfig);
+
+MailMessage email = new MailMessage()
+.setFrom("address@example.com")
+.setTo("address@example.com")
+.setSubject("your file")
+.setText("please take a look at the attached file");
+
+MailAttachment attachment = new MailAttachment()
+.setName("file.dat")
+.setData(Buffer.buffer("ASDF1234\0\u0001\u0080\u00ff\n"));
+
+email.setAttachment(attachment);
+
+mailService.sendMail(email, result -> {
+  if (result.succeeded()) {
+    System.out.println(result.result());
+  } else {
+    System.out.println("got exception");
+    result.cause().printStackTrace();
+  }
+});
+----

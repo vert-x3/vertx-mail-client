@@ -1,0 +1,70 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:jsdoc/mail_client-MailClient.html[MailClient]` simple example:
+
+[source,js]
+----
+var MailClient = require("vertx-mail-js/mail_client");
+var mailConfig = {
+  "hostname" : "mail.example.com",
+  "port" : 587,
+  "username" : "user",
+  "password" : "pw"
+};
+
+var mailService = MailClient.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "meaningful subject",
+  "text" : "this is a message",
+  "html" : "HTML message <a href=\"http://vertx.io\">vertx</a>"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
+attachments can be added as Buffer object
+
+[source,js]
+----
+var MailClient = require("vertx-mail-js/mail_client");
+var Buffer = require("vertx-js/buffer");
+// default config will use localhost:25
+var mailConfig = {
+};
+
+var mailService = MailClient.create(vertx, mailConfig);
+
+var email = {
+  "from" : "address@example.com",
+  "to" : "address@example.com",
+  "subject" : "your file",
+  "text" : "please take a look at the attached file"
+};
+
+var attachment = {
+  "name" : "file.dat",
+  "data" : Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
+};
+
+email.attachment = attachment;
+
+mailService.sendMail(email, function (result, result_err) {
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
