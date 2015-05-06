@@ -8,6 +8,7 @@ import io.vertx.ext.mail.LoginOption
 import io.vertx.ext.mail.MailConfig
 import io.vertx.ext.mail.MailMessage
 import io.vertx.ext.mail.StarttlsOption
+import io.vertx.ext.mail.SMTPTestWiser
 import io.vertx.groovy.core.Vertx
 import io.vertx.test.core.VertxTestBase
 
@@ -23,9 +24,9 @@ import org.subethamail.wiser.WiserMessage
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
- * this test uses a local smtp server mockup
+ * this test uses a local smtp server mockup (wiser)
  */
-public class GroovyMailTest extends VertxTestBase {
+public class GroovyMailTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(GroovyMailTest.class)
 
@@ -55,7 +56,7 @@ public class GroovyMailTest extends VertxTestBase {
         testComplete()
       } else {
         log.warn("got exception", result.cause())
-        throw new RuntimeException("unexpected exception", result.cause())
+        fail(result.cause().toString())
       }
     })
 
@@ -69,19 +70,4 @@ public class GroovyMailTest extends VertxTestBase {
     assertThat(mimeMessage.subject, equalTo("Test email"))
   }
 
-  Wiser wiser
-
-  @Before
-  public void startSMTP() {
-    wiser = new Wiser()
-    wiser.setPort(1587)
-    wiser.start()
-  }
-
-  @After
-  public void stopSMTP() {
-    if (wiser != null) {
-      wiser.stop()
-    }
-  }
 }

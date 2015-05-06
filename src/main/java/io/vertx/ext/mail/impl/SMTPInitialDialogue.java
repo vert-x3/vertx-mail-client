@@ -36,7 +36,7 @@ class SMTPInitialDialogue {
     this.errorHandler = errorHandler;
   }
 
-  public void serverGreeting(final String message) {
+  public void start(final String message) {
     log.debug("server greeting: " + message);
     if (StatusCode.isStatusOk(message)) {
       if (isEsmtpSupported(message)) {
@@ -102,15 +102,20 @@ class SMTPInitialDialogue {
 //  }
 
   /**
-   * @return
+   * get the hostname either from config or by resolving our own address
+   * @return the hostname
    */
   private String getMyHostname() {
-    try {
-      InetAddress ip = InetAddress.getLocalHost();
-      return ip.getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      // as a last resort, use localhost
-      return "localhost";
+    if(config.getEhloHostname() != null) {
+      return config.getEhloHostname();
+    } else {
+      try {
+        InetAddress ip = InetAddress.getLocalHost();
+        return ip.getCanonicalHostName();
+      } catch (UnknownHostException e) {
+        // as a last resort, use localhost
+        return "localhost";
+      }
     }
   }
 
@@ -131,7 +136,12 @@ class SMTPInitialDialogue {
   }
 
   private void finished() {
-    finishedHandler.handle(null);
+    if (connection.isSsl() || config.getStarttls() != StarttlsOption.REQUIRED) {
+      finishedHandler.handle(null);
+    } else {
+      log.warn("STARTTLS required but not supported by server");
+      handleError("STARTTLS required but not supported by server");
+    }
   }
 
 }

@@ -2,8 +2,6 @@ package io.vertx.ext.mail.mailencoder;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 
@@ -15,30 +13,36 @@ import java.util.List;
  * create MIME mail messages from a MailMessage object
  * <p>
  * example usage is:
- * <pre>{@code
+ * 
+ * <pre>
+ * {@code
  * MailMessage = new MailMessage();
  * (set elements and attachments ...)
  * String message = new MailEncoder(mailmessage).encode();
- * }</pre>
+ * }
+ * </pre>
  *
- * usually you are not using this class directly, rather it will be used by {@code sendMail()} in MailServiceImpl 
+ * usually you are not using this class directly, rather it will be used by
+ * {@code sendMail()} in MailServiceImpl
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
 public class MailEncoder {
 
-  private static final Logger log = LoggerFactory.getLogger(MailEncoder.class);
+  // private static final Logger log =
+  // LoggerFactory.getLogger(MailEncoder.class);
 
   private MailMessage message;
 
   /**
    * create a MailEncoder for the message
    * <p>
-   * The class will probably get a few setters for optional features of the SMTP protocol later
-   * e.g. 8BIT or SMTPUTF (this is not yet supported)
+   * The class will probably get a few setters for optional features of the SMTP
+   * protocol later e.g. 8BIT or SMTPUTF (this is not yet supported)
    * 
-   * @param message the message to encode later
+   * @param message
+   *          the message to encode later
    */
   public MailEncoder(MailMessage message) {
     this.message = message;
@@ -46,6 +50,7 @@ public class MailEncoder {
 
   /**
    * encode the MailMessage to a String
+   * 
    * @return the encoded message
    */
   public String encode() {
@@ -94,28 +99,32 @@ public class MailEncoder {
    * @return
    */
   private MultiMap createHeaders(MultiMap additionalHeaders) {
-    CaseInsensitiveHeaders headers = new CaseInsensitiveHeaders();
-
-    headers.set("MIME-Version", "1.0");
-    headers.set("Message-ID", Utils.generateMessageId());
-    headers.set("Date", Utils.generateDate());
-    
-    if (message.getSubject() != null) {
-      headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+    MultiMap headers = new CaseInsensitiveHeaders();
+    if (message.getHeaders() != null) {
+      headers.addAll(message.getHeaders());
     }
 
-    if (message.getFrom() != null) {
-      headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));
-    }
-    if (message.getTo() != null) {
-      headers.set("To", Utils.encodeEmailList(message.getTo(), 4));
-    }
-    if (message.getCc() != null) {
-      headers.set("Cc", Utils.encodeEmailList(message.getCc(), 4));
-    }
+    if (!message.isFixedHeaders()) {
+      headers.set("MIME-Version", "1.0");
+      headers.set("Message-ID", Utils.generateMessageId());
+      headers.set("Date", Utils.generateDate());
 
-    headers.addAll(additionalHeaders);
+      if (message.getSubject() != null) {
+        headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+      }
 
+      if (message.getFrom() != null) {
+        headers.set("From", Utils.encodeHeaderEmail(message.getFrom(), 6));
+      }
+      if (message.getTo() != null) {
+        headers.set("To", Utils.encodeEmailList(message.getTo(), 4));
+      }
+      if (message.getCc() != null) {
+        headers.set("Cc", Utils.encodeEmailList(message.getCc(), 4));
+      }
+
+      headers.addAll(additionalHeaders);
+    }
     return headers;
   }
 

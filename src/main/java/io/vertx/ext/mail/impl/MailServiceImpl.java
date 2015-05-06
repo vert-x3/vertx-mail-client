@@ -22,11 +22,9 @@ public class MailServiceImpl implements MailService {
 
   private static final Logger log = LoggerFactory.getLogger(MailServiceImpl.class);
 
-  private final MailConfig config;
   private final Context context;
-  private final ConnectionPool connectionPool;
+  private final SMTPConnectionPool connectionPool;
   private boolean stopped = false;
-
 
   /**
    * construct a MailService object with the vertx and config configuration
@@ -36,47 +34,31 @@ public class MailServiceImpl implements MailService {
    * @param config the configuration of the mailserver
    */
   public MailServiceImpl(Vertx vertx, MailConfig config) {
-    this.config = config;
     context = vertx.getOrCreateContext();
-    connectionPool = new ConnectionPool(vertx, config, context);
+    connectionPool = new SMTPConnectionPool(vertx, config, context);
   }
 
   @Override
   public void start() {
     // may take care of validating the options
-    // and configure a queue if we implement one
     log.debug("mail service started");
   }
 
   @Override
   public void stop() {
     if (!stopped) {
-      stopped = true;
+      log.debug("stopping mail service");
       connectionPool.stop();
+      stopped = true;
     }
-    log.debug("mail service stopped");
   }
 
   @Override
   public MailService sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
     if(!stopped) {
       context.runOnContext(v -> {
-        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
+        MailMain mailMain = new MailMain(connectionPool, resultHandler);
         mailMain.sendMail(message);
-      });
-    } else {
-      resultHandler.handle(Future.failedFuture("mail service has been stopped"));
-    }
-    return this;
-  }
-
-  @Override
-  public MailService sendMailString(MailMessage message, String messageText,
-      Handler<AsyncResult<JsonObject>> resultHandler) {
-    if(!stopped) {
-      context.runOnContext(v -> {
-        MailMain mailMain = new MailMain(config, connectionPool, resultHandler);
-        mailMain.sendMail(message, messageText);
       });
     } else {
       resultHandler.handle(Future.failedFuture("mail service has been stopped"));

@@ -1,6 +1,8 @@
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
@@ -14,7 +16,9 @@ import java.util.List;
 import org.junit.Test;
 
 import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 
 public class MailEncoderTest {
 
@@ -347,6 +351,80 @@ public class MailEncoderTest {
     message.setTo("Last, First <user@example.com>");
     String mime = new MailEncoder(message).encode();
     assertThat(mime, containsString("user@example.com (Last, First)"));
+  }
+
+  @Test
+  public void testHeaders() {
+    MailMessage message = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.set("X-Header", "value");
+    message.setHeaders(headers);
+    String mime = new MailEncoder(message).encode();
+    assertThat(mime, containsString("X-Header: value"));
+  }
+
+  @Test
+  public void testHeadersExist() {
+    MailMessage message = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.set("mime-version", "2.1");
+    message.setHeaders(headers);
+    String mime = new MailEncoder(message).encode();
+    assertThat(mime, containsString("MIME-Version: 1.0"));
+  }
+
+  @Test
+  public void testFixedHeaders() {
+    MailMessage message = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.set("X-Header", "value");
+    message.setHeaders(headers);
+    message.setFixedHeaders(true);
+    String mime = new MailEncoder(message).encode();
+    assertThat(mime, containsString("X-Header: value"));
+    assertThat(mime, not(containsString("MIME-Version: 1.0")));
+  }
+
+  @Test
+  public void testFixedHeadersExist() {
+    MailMessage message = new MailMessage();
+    MultiMap headers = new CaseInsensitiveHeaders();
+    headers.set("Content-Type", "type");
+    message.setHeaders(headers);
+    message.setFixedHeaders(true);
+    String mime = new MailEncoder(message).encode();
+    assertThat(mime, containsString("Content-Type: type"));
+    assertThat(mime, not(containsString("Content-Type: text/plain")));
+  }
+
+  @Test
+  public void testFixedHeadersMessage() {
+    MailMessage message = new MailMessage();
+    message.setHeaders(new CaseInsensitiveHeaders());
+    message.setFixedHeaders(true);
+    message.setText("message text");
+    String mime = new MailEncoder(message).encode();
+    assertEquals("\nmessage text", TestUtils.conv2nl(mime));
+  }
+
+  @Test
+  public void testFixedHeadersMultiple() {
+    MailMessage message = new MailMessage();
+    final MultiMap headers = new CaseInsensitiveHeaders();
+    headers.add("Header", "value1");
+    headers.add("Header", "value2");
+    headers.add("Header2", "value3");
+    headers.add("Header", "value4");
+    message.setHeaders(headers);
+    message.setFixedHeaders(true);
+    message.setText("message text");
+    String mime = new MailEncoder(message).encode();
+    assertEquals("Header: value1\n" + 
+        "Header: value2\n" + 
+        "Header2: value3\n" + 
+        "Header: value4\n" + 
+        "\n" + 
+        "message text", TestUtils.conv2nl(mime));
   }
 
 }

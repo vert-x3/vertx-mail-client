@@ -26,7 +26,7 @@ class Utils {
           sb.append(ch);
           column = 0;
         } else {
-          boolean nextIsEOL = (i == utf8.length - 1 || utf8[i + 1] == '\n');
+          boolean nextIsEOL = i == utf8.length - 1 || utf8[i + 1] == '\n';
           String encChar;
           if (mustEncode(ch) || nextIsEOL && ch == ' ') {
             encChar = encodeChar(ch);
@@ -55,9 +55,9 @@ class Utils {
    */
   private static String encodeChar(char ch) {
     if (ch < 16) {
-      return "=0" + Integer.toHexString(ch).toUpperCase();
+      return "=0" + Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);
     } else {
-      return '=' + Integer.toHexString((ch&0xff)).toUpperCase();
+      return '=' + Integer.toHexString(ch & 0xff).toUpperCase(Locale.ENGLISH);
     }
   }
 
@@ -94,7 +94,7 @@ class Utils {
     return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + getMyHostname() + ">";
   }
 
-  static private String getMyHostname() {
+  private static String getMyHostname() {
     try {
       InetAddress ip = InetAddress.getLocalHost();
       return ip.getCanonicalHostName();

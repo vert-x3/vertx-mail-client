@@ -64,6 +64,8 @@ public class MailTest extends VertxTestBase {
 //    MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername(username);
     mailConfig.setPassword(password);
+//    mailConfig.setTrustAll(true);
+//    mailConfig.setAuthMethods("DIGEST-MD5");
 
     MailService mailService = MailService.create(vertx, mailConfig);
 

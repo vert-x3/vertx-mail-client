@@ -5,7 +5,7 @@ class StatusCode {
   private StatusCode() {
   }
 
-  static private int getStatusCode(String message) {
+  private static int getStatusCode(String message) {
     if (message.length() < 4) {
       return 500;
     }
@@ -22,6 +22,11 @@ class StatusCode {
   static boolean isStatusOk(String message) {
     int statusCode = getStatusCode(message);
     return statusCode >= 200 && statusCode < 400;
+  }
+
+  static boolean isStatusContinue(String message) {
+    int statusCode = getStatusCode(message);
+    return statusCode >= 300 && statusCode < 400;
   }
 
   static boolean isStatusFatal(String message) {

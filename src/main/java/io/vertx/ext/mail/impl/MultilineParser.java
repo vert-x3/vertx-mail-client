@@ -60,7 +60,7 @@ class MultilineParser implements Handler<Buffer> {
 
     };
 
-    this.rp = RecordParser.newDelimited("\n", mlp);
+    rp = RecordParser.newDelimited("\n", mlp);
   }
 
   @Override

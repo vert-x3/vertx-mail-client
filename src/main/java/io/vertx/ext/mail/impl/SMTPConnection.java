@@ -22,6 +22,8 @@ import io.vertx.ext.mail.MailConfig;
  */
 class SMTPConnection {
 
+  private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+
   private NetSocket ns;
   private boolean socketClosed;
   private boolean socketShutDown;
@@ -29,19 +31,29 @@ class SMTPConnection {
   private Handler<Throwable> errorHandler;
   private boolean broken;
   private boolean idle;
+  private boolean doShutdown;
   private final NetClient client;
   private final Context context;
+  private Capabilities capa = new Capabilities();
+  private final ConnectionLifeCycleListener listener;
 
-  private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+  private final Vertx vertx;
 
-  SMTPConnection(NetClient client, Context context) {
+  private long idleTimerId;
+
+  private int timeout;
+
+  SMTPConnection(NetClient client, Vertx vertx, Context context, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
+    doShutdown = false;
+    socketClosed = false;
+    socketShutDown = false;
     this.client = client;
+    this.vertx = vertx;
     this.context = context;
+    this.listener = listener;
   }
-
-  private Capabilities capa = new Capabilities();
 
   /**
    * @return the capabilities object
@@ -62,6 +74,7 @@ class SMTPConnection {
   }
 
   void shutdown() {
+    broken = true;
     commandReplyHandler = null;
     socketShutDown = true;
     if (ns != null) {
@@ -85,26 +98,31 @@ class SMTPConnection {
     if (socketClosed) {
       log.debug("connection was closed by server");
       handleError("connection was closed by server");
-    }
-    if (log.isDebugEnabled()) {
-      String logStr;
-      if (blank >= 0) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = blank; i < str.length(); i++) {
-          sb.append('*');
+    } else {
+      if (ns != null) {
+        if (log.isDebugEnabled()) {
+          String logStr;
+          if (blank >= 0) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = blank; i < str.length(); i++) {
+              sb.append('*');
+            }
+            logStr = str.substring(0, blank) + sb;
+          } else {
+            logStr = str;
+          }
+          // avoid logging large mail body
+          if (logStr.length() < 1000) {
+            log.debug("command: " + logStr);
+          } else {
+            log.debug("command: " + logStr.substring(0, 1000) + "...");
+          }
         }
-        logStr = str.substring(0, blank) + sb;
+        ns.write(str + "\r\n");
       } else {
-        logStr = str;
-      }
-      // avoid logging large mail body
-      if (logStr.length() < 1000) {
-        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr);
-      } else {
-        log.debug("write on STMPConnection " + this.toString() + " command: " + logStr.substring(0, 1000) + "...");
+        log.debug("not sending command " + str + " since the netsocket is null");
       }
     }
-    ns.write(str + "\r\n");
   }
 
   private void handleError(String message) {
@@ -120,6 +138,7 @@ class SMTPConnection {
     this.errorHandler = errorHandler;
     broken = false;
     idle = false;
+    timeout = config.getIdleTimeout();
 
     context.runOnContext(v1 -> {
       client.connect(config.getPort(), config.getHostname(), asyncResult -> {
@@ -130,20 +149,35 @@ class SMTPConnection {
             // avoid returning two exceptions
             log.debug("exceptionHandler called");
             if (!socketClosed && !socketShutDown && !idle && !broken) {
-              broken = true;
+              setBroken();
               log.debug("got an exception on the netsocket", e);
               handleError(e);
+            } else {
+              log.debug("not returning follow-up exception", e);
             }
           });
           ns.closeHandler(v -> {
-            log.debug("closeHandler called");
             log.debug("socket has been closed");
+            listener.connectionClosed(this);
             socketClosed = true;
             // avoid exception if we regularly shut down the socket on our side
             if (!socketShutDown && !idle && !broken) {
-              broken = true;
+              setBroken();
               log.debug("throwing: connection has been closed by the server");
               handleError("connection has been closed by the server");
+            } else {
+              if (socketShutDown || broken) {
+                log.debug("close has been expected");
+              } else {
+                log.debug("closed while connection has been idle (timeout on server?)");
+              }
+              if (!broken) {
+                setBroken();
+              }
+              if (!socketShutDown) {
+                shutdown();
+                listener.responseEnded(this);
+              }
             }
           });
           commandReplyHandler = initialReplyHandler;
@@ -183,9 +217,35 @@ class SMTPConnection {
   }
 
   public void returnToPool() {
-    log.debug("returning connection to pool");
-    idle = true;
-    commandReplyHandler = null;
+    if (doShutdown) {
+      useConnection();
+      setBroken();
+      quitCloseConnection();
+    } else {
+      log.debug("returning connection to pool");
+      idle = true;
+      commandReplyHandler = null;
+      setIdleTimer();
+      listener.responseEnded(this);
+    }
+  }
+
+  /**
+   * send quit and close the connection, this operation waits for the success of
+   * the quit command but will close the connection on exception as well
+   */
+  void quitCloseConnection() {
+    if (!socketShutDown) {
+      log.debug("shutting down connection");
+      setBroken();
+      new SMTPQuit(this, v -> {
+        shutdown();
+        log.debug("connection is shut down");
+      }, th -> {
+        shutdown();
+        log.debug("connection is shut down", th);
+      }).start();
+    }
   }
 
   /**
@@ -193,6 +253,27 @@ class SMTPConnection {
    */
   public void useConnection() {
     idle = false;
+    cancelIdleTimer();
+  }
+
+  void setIdleTimer() {
+    if (timeout > 0) {
+      idleTimerId = vertx.setTimer(timeout * 1000, id -> {
+        if (id == idleTimerId) {
+          log.debug("idle timeout reached, closing connection");
+          quitCloseConnection();
+        }
+      });
+    }
+    // pool disabled
+    if (timeout < 0) {
+      quitCloseConnection();
+    }
+  }
+
+  void cancelIdleTimer() {
+    log.debug("canceling timer on connection");
+    vertx.cancelTimer(idleTimerId);
   }
 
   /*
@@ -216,12 +297,40 @@ class SMTPConnection {
   }
 
   /**
-   * set connection to broken, it will not be used again
-   * TODO: (and shut down and closed async)
+   * set connection to broken and shut it down
    */
   public void setBroken() {
-    log.debug("setting connection to broken");
-    broken = true;
-    commandReplyHandler = null;
+    if (!broken) {
+      log.debug("setting connection to broken");
+      broken = true;
+      commandReplyHandler = null;
+      log.debug("closing connection");
+      shutdown();
+      listener.responseEnded(this);
+    } else {
+      log.debug("connection is already set to broken");
+    }
+  }
+
+  /**
+   * 
+   */
+  public void setDoShutdown() {
+    log.debug("will shut down connection after send operation finishes");
+    doShutdown = true;
+  }
+
+  /**
+   * @return
+   */
+  public Context getContext() {
+    return context;
+  }
+
+  /**
+   * 
+   */
+  public void close() {
+    quitCloseConnection();
   }
 }

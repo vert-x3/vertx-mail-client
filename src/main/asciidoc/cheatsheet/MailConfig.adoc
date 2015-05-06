@@ -1,7 +1,8 @@
 == MailConfig
 
 ++++
- represents the configuration of a mail service with mail server hostname, port, security options, login options and login/password
+ represents the configuration of a mail service with mail server hostname,
+ port, security options, login options and login/password
 ++++
 '''
 
@@ -34,4 +35,43 @@ Set the password for the login.+++
 |`Boolean`
 |+++
 Set the sslOnConnect mode for the connection.+++
+
+|[[trustAll]]`trustAll`
+|`Boolean`
+|+++
+set whether to trust all certificates on ssl connect the option is also
+ applied to STARTTLS operation+++
+
+|[[netClientOptions]]`netClientOptions`
+|`link:NetClientOptions.html[NetClientOptions]`
+|+++
+set the NetClientOptions to be used when opening SMTP connections
+
+ if not set, an options object will be created based on other settings (ssl
+ and trustAll)+++
+
+|[[authMethods]]`authMethods`
+|`String`
+|+++
+set string of allowed auth methods+++
+
+|[[ehloHostname]]`ehloHostname`
+|`String`
+|+++
+set the hostname to be used for HELO/EHLO+++
+
+|[[maxPoolSize]]`maxPoolSize`
+|`Number`
+|+++
+set the max allowed number of open connections to the mailserver
+ if not set or 0, the default is 10
+ set to -1 to disable connection pooling completely TODO: this is not yet implement+++
+
+|[[idleTimeout]]`idleTimeout`
+|`Number`
+|+++
+set the timeout for idle smtp connections (in seconds)
+ if not set, the default is 300 seconds
+ set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
+ set to -1 to disable connection pooling completely+++
 |===

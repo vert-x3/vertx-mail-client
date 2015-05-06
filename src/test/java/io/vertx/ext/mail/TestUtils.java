@@ -26,4 +26,8 @@ public class TestUtils {
   private TestUtils() {
   }
 
+  public static String conv2nl(String string) {
+    return string.replace("\r\n", "\n");
+  }
+
 }

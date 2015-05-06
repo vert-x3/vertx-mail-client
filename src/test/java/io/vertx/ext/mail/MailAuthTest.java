@@ -181,4 +181,39 @@ public class MailAuthTest extends SMTPTestDummy {
     testException(MailService.create(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
   }
 
+  @Test
+  public void authSelectMethodsTest() {
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+        "250 AUTH PLAIN LOGIN",
+        "AUTH LOGIN",
+        "334 VXNlcm5hbWU6",
+        "eHh4",
+        "334 UGFzc3dvcmQ6",
+        "eXl5",
+        "250 2.1.0 Ok",
+        "MAIL FROM",
+        "250 2.1.0 Ok",
+        "RCPT TO",
+        "250 2.1.5 Ok",
+        "DATA",
+        "354 End data with <CR><LF>.<CR><LF>",
+        "250 2.0.0 Ok: queued as ABCD",
+        "QUIT",
+        "221 2.0.0 Bye");
+
+    testSuccess(MailService.create(vertx, configLogin().setAuthMethods("LOGIN CRAM-MD5")));
+  }
+
+  @Test
+  public void authSelectMethodsNoneTest() {
+    smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+        "250 AUTH PLAIN LOGIN");
+
+    testException(MailService.create(vertx, configLogin().setAuthMethods("DIGEST-MD5 CRAM-MD5")));
+  }
+
 }

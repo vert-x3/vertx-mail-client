@@ -1,31 +1,22 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.subethamail.wiser.Wiser;
 
-/*
- first implementation of a SMTP client
- */
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
 @RunWith(VertxUnitRunner.class)
-public class MailPoolTest {
+public class MailPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolTest.class);
-
-  Vertx vertx = Vertx.vertx();
 
   MailService mailService;
 
@@ -35,7 +26,7 @@ public class MailPoolTest {
 
     Async async = context.async();
 
-    MailService mailService = MailService.create(vertx, mailConfig());
+    MailService mailService = MailService.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -66,14 +57,6 @@ public class MailPoolTest {
     });
   }
 
-  /**
-   * @return
-   */
-  private MailMessage exampleMessage() {
-    return new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-        .setSubject("Test email").setText("this is a message");
-  }
-
   @Test
   public void mailConcurrentTest(TestContext context) {
     log.info("starting");
@@ -81,7 +64,7 @@ public class MailPoolTest {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailService mailService = MailService.create(vertx, mailConfig());
+    MailService mailService = MailService.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -122,7 +105,7 @@ public class MailPoolTest {
 
       log.info("starting");
 
-      MailService mailService = MailService.create(vertx, mailConfig());
+      MailService mailService = MailService.create(vertx, configNoSSL());
 
       MailMessage email = exampleMessage();
 
@@ -177,31 +160,6 @@ public class MailPoolTest {
         }
       });
     });
-  }
-
-  /**
-   * @return
-   */
-  private MailConfig mailConfig() {
-    return new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.DISABLED);
-  }
-
-  Wiser wiser;
-
-  @Before
-  public void startSMTP() {
-    mailService = MailService.create(vertx, mailConfig());
-    wiser = new Wiser();
-    wiser.setPort(1587);
-    wiser.start();
-  }
-
-  @After
-  public void stopSMTP() {
-    mailService.stop();
-    if (wiser != null) {
-      wiser.stop();
-    }
   }
 
 }

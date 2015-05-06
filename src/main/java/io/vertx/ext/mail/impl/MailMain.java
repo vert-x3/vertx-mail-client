@@ -6,7 +6,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 
 /*
@@ -25,17 +24,15 @@ class MailMain {
   private static final Logger log = LoggerFactory.getLogger(MailMain.class);
 
   private Handler<AsyncResult<JsonObject>> finishedHandler;
-  private MailConfig config;
 
   private MailMessage email;
   private String mailMessage;
 
   private SMTPConnection connection = null;
 
-  private ConnectionPool connectionPool;
+  private SMTPConnectionPool connectionPool;
 
-  public MailMain(MailConfig config, ConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
-    this.config = config;
+  public MailMain(SMTPConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
     this.connectionPool = connectionPool;
     this.finishedHandler = finishedHandler;
   }
@@ -48,27 +45,8 @@ class MailMain {
    */
   void sendMail(MailMessage email) {
     this.email = email;
-    doSend();
-  }
-
-  /**
-   * start a mail send operation using the parameters from MailMessage object
-   * and a pregenerated message provided as String
-   * 
-   * @param email
-   *          the mail parameters (from, to, etc)
-   * @param message
-   *          the message to send
-   */
-  void sendMail(MailMessage email, String message) {
-    this.email = email;
-    mailMessage = message;
-    doSend();
-  }
-
-  private void doSend() {
     if(validateHeaders()) {
-      connectionPool.getConnection(config, this::sendMessage, this::handleError);
+      connectionPool.getConnection(this::sendMessage, this::handleError);
     }
   }
 
@@ -92,10 +70,10 @@ class MailMain {
   private void sendMessage(SMTPConnection connection) {
     log.debug("got a connection");
     this.connection=connection;
-    new SMTPSendMail(connection, email, mailMessage, this::finishMail, this::handleError).startMail();
+    new SMTPSendMail(connection, email, mailMessage, v -> finishMail(), this::handleError).startMail();
   }
 
-  private void finishMail(Void v) {
+  private void finishMail() {
     log.debug("finishMail");
     if (connection != null) {
       connection.returnToPool();

@@ -55,6 +55,13 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
+  protected MailService mailServiceTLSTrustAll() {
+    return MailService.create(vertx, configTLSTrustAll());
+  }
+
+  /**
+   * @return
+   */
   protected MailService mailServiceNoSSL() {
     return MailService.create(vertx, configNoSSL());
   }
@@ -69,7 +76,14 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
-  private MailConfig configNoSSL() {
+  private MailConfig configTLSTrustAll() {
+    return new MailConfig("localhost", 1587, StarttlsOption.REQUIRED, LoginOption.DISABLED).setTrustAll(true);
+  }
+
+  /**
+   * @return
+   */
+  protected MailConfig configNoSSL() {
     return new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.DISABLED);
   }
 
@@ -83,7 +97,7 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @return
    */
-  private MailConfig configLogin() {
+  protected MailConfig configLogin() {
     return configLogin("xxx", "yyy");
   }
 
@@ -123,6 +137,19 @@ public class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testSuccess(MailService mailService, MailMessage email) {
+    testSuccess(mailService, email, (AdditionalAsserts) null);
+  }
+
+  
+  /**
+   * support running additional asserts after the sending was successfull
+   * so we do not fail after we have called testComplete()
+   * 
+   * @param mailService
+   * @param email
+   * @param asserts
+   */
+  protected void testSuccess(MailService mailService, MailMessage email, AdditionalAsserts asserts) {
     PassOnce pass = new PassOnce(s -> fail(s));
 
     mailService.sendMail(email, result -> {
@@ -131,25 +158,13 @@ public class SMTPTestBase extends VertxTestBase {
       mailService.stop();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        testComplete();
-      } else {
-        log.warn("got exception", result.cause());
-        fail(result.cause().toString());
-      }
-    });
-
-    await();
-  }
-
-  protected void testSuccess(MailService mailService, MailMessage email, String message) {
-    PassOnce pass = new PassOnce(s -> fail(s));
-
-    mailService.sendMailString(email, message, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      mailService.stop();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
+        if(asserts != null) {
+          try {
+            asserts.doAsserts();
+          } catch (Exception e) {
+            fail(e.toString());
+          }
+        }
         testComplete();
       } else {
         log.warn("got exception", result.cause());

@@ -5,7 +5,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -75,7 +74,7 @@ class Capabilities {
         capaStartTLS = true;
       }
       if (c.startsWith("AUTH ")) {
-        capaAuth = parseCapaAuth(c);
+        capaAuth = Utils.parseCapaAuth(c.substring(5));
       }
       // if (c.equals("8BITMIME")) {
       // capa8BitMime = true;
@@ -91,19 +90,6 @@ class Capabilities {
   }
 
   /**
-   * parse the capabilities string (single line) into a Set of auth String
-   * @param auths list of auth methods as String (e.g. "PLAIN LOGIN CRAM-MD5")
-   * @return Set of supported auth methods
-   */
-  private Set<String> parseCapaAuth(String auths) {
-    Set<String> authSet = new HashSet<String>();
-    for (String a : splitByChar(auths.substring(5), ' ')) {
-      authSet.add(a);
-    }
-    return authSet;
-  }
-
-  /**
    * parse a multi-line EHLO reply string into a List of lines
    * 
    * @param message
@@ -115,7 +101,7 @@ class Capabilities {
 
     String resultCode = message.substring(0, 3);
 
-    for (String line : splitByChar(message, '\n')) {
+    for (String line : Utils.splitByChar(message, '\n')) {
       if (!line.startsWith(resultCode) || line.charAt(3) != '-' && line.charAt(3) != ' ') {
         log.error("format error in multiline response");
         handleError("format error in multiline response");
@@ -125,27 +111,6 @@ class Capabilities {
     }
 
     return result;
-  }
-
-  /**
-   * split string at each occurrence of a character (e.g. \n)
-   * 
-   * @param message
-   *          the string to split
-   * @param ch
-   *          the char between which we split
-   * @return List<String> of the split lines
-   */
-  private List<String> splitByChar(String message, char ch) {
-    List<String> lines = new ArrayList<String>();
-    int index = 0;
-    int nextIndex;
-    while ((nextIndex = message.indexOf(ch, index)) != -1) {
-      lines.add(message.substring(index, nextIndex));
-      index = nextIndex + 1;
-    }
-    lines.add(message.substring(index));
-    return lines;
   }
 
   /**
