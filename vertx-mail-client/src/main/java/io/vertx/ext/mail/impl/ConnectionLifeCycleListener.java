@@ -21,8 +21,6 @@ package io.vertx.ext.mail.impl;
  */
 public interface ConnectionLifeCycleListener {
 
-  void requestEnded(SMTPConnection conn);
-
   void responseEnded(SMTPConnection conn);
 
   void connectionClosed(SMTPConnection conn);

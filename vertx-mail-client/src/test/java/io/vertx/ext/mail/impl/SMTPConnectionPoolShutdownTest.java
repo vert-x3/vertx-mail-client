@@ -30,10 +30,10 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
     vertx.runOnContext(v -> {
       MailConfig config = configNoSSL();
 
-      SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
+      SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
 
       pool.getConnection(conn -> {
-        pool.stop(v1 -> {
+        pool.close(v1 -> {
           conn.returnToPool();
           async.complete();
         });

@@ -32,8 +32,8 @@ class MailMain {
 
   private SMTPConnectionPool connectionPool;
 
-  public MailMain(SMTPConnectionPool connectionPool, Handler<AsyncResult<JsonObject>> finishedHandler) {
-    this.connectionPool = connectionPool;
+  public MailMain(SMTPConnectionPool client, Handler<AsyncResult<JsonObject>> finishedHandler) {
+    this.connectionPool = client;
     this.finishedHandler = finishedHandler;
   }
 
@@ -45,7 +45,7 @@ class MailMain {
    */
   void sendMail(MailMessage email) {
     this.email = email;
-    if(validateHeaders()) {
+    if (validateHeaders()) {
       connectionPool.getConnection(this::sendMessage, this::handleError);
     }
   }

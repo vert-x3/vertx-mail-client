@@ -25,13 +25,10 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
 
   private final MailConfig config = configNoSSL();
 
-  /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#ConnectionPool(io.vertx.core.Vertx, io.vertx.ext.mail.MailConfig, io.vertx.core.Context)}.
-   */
   @Test
   public final void testConnectionPool() {
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
-    pool.stop();
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool.close();
   }
 
   /**
@@ -39,7 +36,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
    */
   @Test
   public final void testGetConnection(TestContext testContext) {
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     pool.getConnection(r -> {
       async.complete();
@@ -49,16 +46,16 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   }
 
   /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#stop()}.
+   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#close()}.
    */
   @Test
   public final void testStop(TestContext testContext) {
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     pool.getConnection(conn -> {
       log.debug("have got a connection");
       conn.returnToPool();
-      pool.stop();
+      pool.close();
       async.complete();
     }, th -> {
       testContext.fail(th);
@@ -66,15 +63,15 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   }
 
   /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#stop(io.vertx.core.Handler)}.
+   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#close(io.vertx.core.Handler)}.
    */
   @Test
   public final void testStopHandlerOfVoid(TestContext testContext) {
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     pool.getConnection(conn -> {
       conn.returnToPool();
-      pool.stop(v -> {
+      pool.close(v -> {
         log.info("connection pool stopped");
         async.complete();
       });
@@ -85,8 +82,8 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
 
   @Test
   public final void testStoppedGetConnection(TestContext testContext) {
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config, vertx.getOrCreateContext());
-    pool.stop();
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool.close();
     Async async = testContext.async();
     pool.getConnection(conn -> {
       testContext.fail("this operation should fail");

@@ -33,7 +33,7 @@ class SMTPStarter {
 
   void start() {
     log.debug("connection.openConnection");
-    connection.openConnection(vertx, config, this::serverGreeting, this::handleError);
+    connection.openConnection(config, this::serverGreeting, this::handleError);
   }
   
   private void serverGreeting(String message) {
@@ -45,10 +45,6 @@ class SMTPStarter {
     log.debug("SMTPAuthentication");
     new SMTPAuthentication(connection, config, finishedHandler, this::handleError).start();
   }
-
-//  private void handleError(String message) {
-//    errorHandler.handle(new NoStackTraceThrowable(message));
-//  }
 
   private void handleError(Throwable throwable) {
     log.debug("handleError:"+throwable);

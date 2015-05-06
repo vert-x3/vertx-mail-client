@@ -1,6 +1,5 @@
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -33,7 +32,6 @@ class SMTPConnection {
   private boolean idle;
   private boolean doShutdown;
   private final NetClient client;
-  private final Context context;
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
 
@@ -43,7 +41,7 @@ class SMTPConnection {
 
   private int timeout;
 
-  SMTPConnection(NetClient client, Vertx vertx, Context context, ConnectionLifeCycleListener listener) {
+  SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
     doShutdown = false;
@@ -51,7 +49,6 @@ class SMTPConnection {
     socketShutDown = false;
     this.client = client;
     this.vertx = vertx;
-    this.context = context;
     this.listener = listener;
   }
 
@@ -133,70 +130,67 @@ class SMTPConnection {
     errorHandler.handle(throwable);
   }
 
-  public void openConnection(Vertx vertx, MailConfig config, Handler<String> initialReplyHandler,
-      Handler<Throwable> errorHandler) {
+  public void openConnection(MailConfig config, Handler<String> initialReplyHandler, Handler<Throwable> errorHandler) {
     this.errorHandler = errorHandler;
     broken = false;
     idle = false;
     timeout = config.getIdleTimeout();
 
-    context.runOnContext(v1 -> {
-      client.connect(config.getPort(), config.getHostname(), asyncResult -> {
-        if (asyncResult.succeeded()) {
-          ns = asyncResult.result();
-          socketClosed = false;
-          ns.exceptionHandler(e -> {
-            // avoid returning two exceptions
-            log.debug("exceptionHandler called");
-            if (!socketClosed && !socketShutDown && !idle && !broken) {
+    client.connect(config.getPort(), config.getHostname(), asyncResult -> {
+      if (asyncResult.succeeded()) {
+        ns = asyncResult.result();
+        socketClosed = false;
+        ns.exceptionHandler(e -> {
+          // avoid returning two exceptions
+          log.debug("exceptionHandler called");
+          if (!socketClosed && !socketShutDown && !idle && !broken) {
+            setBroken();
+            log.debug("got an exception on the netsocket", e);
+            handleError(e);
+          } else {
+            log.debug("not returning follow-up exception", e);
+          }
+        });
+        ns.closeHandler(v -> {
+          log.debug("socket has been closed");
+          listener.connectionClosed(this);
+          socketClosed = true;
+          // avoid exception if we regularly shut down the socket on our side
+          if (!socketShutDown && !idle && !broken) {
+            setBroken();
+            log.debug("throwing: connection has been closed by the server");
+            handleError("connection has been closed by the server");
+          } else {
+            if (socketShutDown || broken) {
+              log.debug("close has been expected");
+            } else {
+              log.debug("closed while connection has been idle (timeout on server?)");
+            }
+            if (!broken) {
               setBroken();
-              log.debug("got an exception on the netsocket", e);
-              handleError(e);
-            } else {
-              log.debug("not returning follow-up exception", e);
             }
-          });
-          ns.closeHandler(v -> {
-            log.debug("socket has been closed");
-            listener.connectionClosed(this);
-            socketClosed = true;
-            // avoid exception if we regularly shut down the socket on our side
-            if (!socketShutDown && !idle && !broken) {
-              setBroken();
-              log.debug("throwing: connection has been closed by the server");
-              handleError("connection has been closed by the server");
-            } else {
-              if (socketShutDown || broken) {
-                log.debug("close has been expected");
-              } else {
-                log.debug("closed while connection has been idle (timeout on server?)");
-              }
-              if (!broken) {
-                setBroken();
-              }
-              if (!socketShutDown) {
-                shutdown();
-                listener.responseEnded(this);
-              }
+            if (!socketShutDown) {
+              shutdown();
+              listener.responseEnded(this);
             }
-          });
-          commandReplyHandler = initialReplyHandler;
-          final Handler<Buffer> mlp = new MultilineParser(buffer -> {
-            if (commandReplyHandler == null) {
-              log.debug("dropping reply arriving after we stopped processing \"" + buffer.toString() + "\"");
-            } else {
-              // make sure we only call the handler once
-              Handler<String> currentHandler = commandReplyHandler;
-              commandReplyHandler = null;
-              currentHandler.handle(buffer.toString());
-            }
-          });
-          ns.handler(mlp);
-        } else {
-          log.error("exception on connect", asyncResult.cause());
-          handleError(asyncResult.cause());
-        }
-      });
+          }
+        });
+        commandReplyHandler = initialReplyHandler;
+        final Handler<Buffer> mlp = new MultilineParser(buffer -> {
+          if (commandReplyHandler == null) {
+            log.debug("dropping reply arriving after we stopped processing \"" + buffer.toString() + "\"");
+          } else {
+            // make sure we only call the handler once
+            Handler<String> currentHandler = commandReplyHandler;
+            commandReplyHandler = null;
+            currentHandler.handle(buffer.toString());
+          }
+        });
+        ns.handler(mlp);
+      } else {
+        log.error("exception on connect", asyncResult.cause());
+        handleError(asyncResult.cause());
+      }
     });
   }
 
@@ -318,13 +312,6 @@ class SMTPConnection {
   public void setDoShutdown() {
     log.debug("will shut down connection after send operation finishes");
     doShutdown = true;
-  }
-
-  /**
-   * @return
-   */
-  public Context getContext() {
-    return context;
   }
 
   /**
