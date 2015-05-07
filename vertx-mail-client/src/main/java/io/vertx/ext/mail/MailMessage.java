@@ -454,8 +454,7 @@ public class MailMessage {
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment, headers, fixedHeaders);
-    return objects;
+    return Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment, headers, fixedHeaders);
   }
 
   /*

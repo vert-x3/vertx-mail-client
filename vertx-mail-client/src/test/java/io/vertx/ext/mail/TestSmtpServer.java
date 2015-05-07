@@ -45,10 +45,6 @@ public class TestSmtpServer {
     startServer(vertx);
   }
 
-  public TestSmtpServer(Vertx vertx, String... answers) {
-    setDialogue(answers);
-    startServer(vertx);
-  }
 
   private void startServer(Vertx vertx) {
     NetServerOptions nsOptions = new NetServerOptions();

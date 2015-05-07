@@ -30,7 +30,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
     this.config = config;
-    this.maxSockets = config.getMaxPoolSize() == 0 ? 10 : config.getMaxPoolSize();
+    this.maxSockets = config.getMaxPoolSize();
     NetClientOptions netClientOptions;
     if (config.getNetClientOptions() == null) {
       netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
@@ -54,10 +54,14 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     });
   }
 
-  void close(Handler<Void> finishedHandler) {
+  synchronized void close(Handler<Void> finishedHandler) {
     closed = true;
 
     finishedHandler.handle(null);
+  }
+
+  synchronized int connCount() {
+    return connCount;
   }
 
   // Lifecycle methods
@@ -75,13 +79,6 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     connCount--;
     if (conn != null) {
       allConnections.remove(conn);
-
-      // FIXME ??
-      if (closed && connCount == 0) {
-        log.debug("final shutdown finished");
-        log.debug("closing netClient");
-        netClient.close();
-      }
     }
     Waiter waiter = waiters.poll();
     if (waiter != null) {
@@ -122,27 +119,6 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
           log.debug("using idle connection failed, create a new connection");
           createNewConnection(handler, connectionExceptionHandler);
         }).start();
-      }
-    }
-  }
-
-  private void closeAllConnections() {
-    Set<SMTPConnection> copy;
-    synchronized (this) {
-      copy = new HashSet<>(allConnections);
-      allConnections.clear();
-    }
-    // Close outside sync block to avoid deadlock
-    for (SMTPConnection conn : copy) {
-      if (conn.isIdle() || conn.isBroken()) {
-        try {
-          conn.close();
-        } catch (Throwable t) {
-          log.error("Failed to close connection", t);
-        }
-      } else {
-        log.debug("closing connection after current send operation finishes");
-        conn.setDoShutdown();
       }
     }
   }

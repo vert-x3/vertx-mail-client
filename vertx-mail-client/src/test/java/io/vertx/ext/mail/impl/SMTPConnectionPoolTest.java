@@ -35,13 +35,18 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   @Test
   public final void testGetConnection(TestContext testContext) {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    testContext.assertEquals(0, pool.connCount());
     Async async = testContext.async();
-    pool.getConnection(r -> {
+    pool.getConnection(conn -> {
+      testContext.assertEquals(1, pool.connCount());
       async.complete();
     }, throwable -> {
       testContext.fail(throwable);
     });
   }
+
+  // FIXME - need more tests that test with different values of maxSockets, and assert connCount
+  // also closing connections, returning to the pool, etc, etc
 
   /**
    * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#close()}.

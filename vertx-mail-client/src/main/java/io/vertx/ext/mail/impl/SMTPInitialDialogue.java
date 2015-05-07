@@ -49,6 +49,7 @@ class SMTPInitialDialogue {
   }
 
   private boolean isEsmtpSupported(String message) {
+    // FIXME What if the message body contains the text ESMTP
     return message.contains("ESMTP");
   }
 

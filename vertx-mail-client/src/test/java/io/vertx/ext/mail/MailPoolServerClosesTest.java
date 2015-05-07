@@ -34,40 +34,37 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    vertx.getOrCreateContext().runOnContext(v -> {
+    MailClient mailService = MailClient.create(vertx, mailConfig());
 
-      MailClient mailService = MailClient.create(vertx, mailConfig());
+    MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
+      .setSubject("Test email").setText("this is a message");
 
-      MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-        .setSubject("Test email").setText("this is a message");
+    PassOnce pass1 = new PassOnce(s -> context.fail(s));
+    PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-      PassOnce pass1 = new PassOnce(s -> context.fail(s));
-      PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
-      log.info("starting mail 1");
-      mailService.sendMail(email, result -> {
-        log.info("mail finished 1");
-        pass1.passOnce();
-        if (result.succeeded()) {
-          log.info(result.result().toString());
-          mail1.complete();
-          log.info("starting mail 2");
-          mailService.sendMail(email, result2 -> {
-            pass2.passOnce();
-            log.info("mail finished 2");
-            if (result2.succeeded()) {
-              log.info(result2.result().toString());
-              mail2.complete();
-            } else {
-              log.warn("got exception 2", result2.cause());
-              context.fail(result2.cause());
-            }
-          });
-        } else {
-          log.warn("got exception 1", result.cause());
-          context.fail(result.cause());
-        }
-      });
+    log.info("starting mail 1");
+    mailService.sendMail(email, result -> {
+      log.info("mail finished 1");
+      pass1.passOnce();
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+        mail1.complete();
+        log.info("starting mail 2");
+        mailService.sendMail(email, result2 -> {
+          pass2.passOnce();
+          log.info("mail finished 2");
+          if (result2.succeeded()) {
+            log.info(result2.result().toString());
+            mail2.complete();
+          } else {
+            log.warn("got exception 2", result2.cause());
+            context.fail(result2.cause());
+          }
+        });
+      } else {
+        log.warn("got exception 1", result.cause());
+        context.fail(result.cause());
+      }
     });
   }
 

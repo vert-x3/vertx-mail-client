@@ -21,8 +21,8 @@ public class MailConfig {
   public static final StartTLSOptions DEFAULT_TLS = StartTLSOptions.OPTIONAL;
   public static final int DEFAULT_PORT = 25;
   public static final String DEFAULT_HOST = "localhost";
-  private static final int DEFAULT_MAXPOOLSIZE = 10;
-  private static final int DEFAULT_IDLETIMEOUT = 300;
+  public static final int DEFAULT_MAX_POOL_SIZE = 10;
+  public static final int DEFAULT_IDLE_TIMEOUT = 300;
 
   private String hostname;
   private int port;
@@ -83,8 +83,8 @@ public class MailConfig {
     this.port = DEFAULT_PORT;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
-    this.idleTimeout = DEFAULT_IDLETIMEOUT;
+    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
   }
 
   /**
@@ -97,8 +97,8 @@ public class MailConfig {
     this.port = DEFAULT_PORT;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
-    this.idleTimeout = DEFAULT_IDLETIMEOUT;
+    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
   }
 
   /**
@@ -112,8 +112,8 @@ public class MailConfig {
     this.port = port;
     this.starttls = DEFAULT_TLS;
     this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
-    this.idleTimeout = DEFAULT_IDLETIMEOUT;
+    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
   }
 
   /**
@@ -129,8 +129,8 @@ public class MailConfig {
     this.port = port;
     this.starttls = starttls;
     this.login = login;
-    this.maxPoolSize = DEFAULT_MAXPOOLSIZE;
-    this.idleTimeout = DEFAULT_IDLETIMEOUT;
+    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
   }
 
   /**
@@ -182,8 +182,8 @@ public class MailConfig {
     }
     authMethods = config.getString("auth_methods");
     ehloHostname = config.getString("ehlo_hostname");
-    maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAXPOOLSIZE);
-    idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLETIMEOUT);
+    maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
+    idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
   }
 
   /**
