@@ -2,18 +2,16 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetClientOptions;
-
-import java.io.IOException;
+import org.junit.Test;
 
 import javax.mail.MessagingException;
-
-import org.junit.Test;
+import java.io.IOException;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
- * this test uses a local SMTP server (wiser from subethasmtp)
- * since this server supports SSL/TLS, the tests relating to that are here
+ *         <p>
+ *         this test uses a local SMTP server (wiser from subethasmtp)
+ *         since this server supports SSL/TLS, the tests relating to that are here
  */
 public class MailLocalTest extends SMTPTestWiser {
 
@@ -44,7 +42,7 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTestTLSCorrectCert() {
     NetClientOptions netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(
-        "src/test/resources/certs/keystore.jks").setPassword("password"));
+      "src/test/resources/certs/keystore.jks").setPassword("password"));
 
     MailClient mailService = MailClient.create(vertx,
       configLogin()

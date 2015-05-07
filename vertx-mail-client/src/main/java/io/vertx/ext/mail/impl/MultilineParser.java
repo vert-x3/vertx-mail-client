@@ -1,16 +1,15 @@
 package io.vertx.ext.mail.impl;
 
-import java.util.regex.Pattern;
-
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.core.parsetools.RecordParser;
 
+import java.util.regex.Pattern;
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class MultilineParser implements Handler<Buffer> {
   private static final Pattern STATUS_LINE_CONTINUE = Pattern.compile("^\\d{3}-.*");

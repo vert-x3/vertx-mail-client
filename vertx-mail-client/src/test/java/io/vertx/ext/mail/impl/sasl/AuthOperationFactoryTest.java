@@ -1,18 +1,17 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
-import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 import java.util.HashSet;
 import java.util.Set;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class AuthOperationFactoryTest {
 

@@ -7,7 +7,6 @@ import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,7 +15,6 @@ import org.junit.runner.RunWith;
  * the active connection will be shut down when the mail has finished sending
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 @RunWith(VertxUnitRunner.class)
 public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {

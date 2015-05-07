@@ -1,11 +1,10 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 abstract class AuthCram extends AuthBaseClass {
 

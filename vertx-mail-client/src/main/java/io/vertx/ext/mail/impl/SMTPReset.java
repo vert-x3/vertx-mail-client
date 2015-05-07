@@ -10,7 +10,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
  * still active
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class SMTPReset {
 
@@ -47,7 +46,7 @@ class SMTPReset {
   }
 
   /**
-   * 
+   *
    */
   private void finished() {
     finishedHandler.handle(null);

@@ -5,9 +5,9 @@ import io.vertx.test.core.VertxTestBase;
 /*
  first implementation of a SMTP client
  */
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailEBTest extends VertxTestBase {
 

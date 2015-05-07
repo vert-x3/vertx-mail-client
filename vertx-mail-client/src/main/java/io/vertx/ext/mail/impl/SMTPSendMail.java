@@ -22,7 +22,7 @@ class SMTPSendMail {
   private Handler<Throwable> exceptionHandler;
 
   SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<Void> finishedHandler,
-      Handler<Throwable> exceptionHandler) {
+               Handler<Throwable> exceptionHandler) {
     super();
     this.connection = connection;
     this.email = email;
@@ -31,14 +31,14 @@ class SMTPSendMail {
   }
 
   void startMail() {
-    if(checkSize()) {
+    if (checkSize()) {
       mailFromCmd();
     }
   }
 
   /**
    * Check if message size is allowed if size is supported.
-   *
+   * <p>
    * returns true if the message is allowed, have to make sure
    * that when returning from the handleError method it doesn't continue with the mail from
    * operation

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
@@ -14,7 +14,6 @@ import java.util.Map;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 abstract class AuthDigest extends AuthBaseClass {
 
@@ -111,15 +110,14 @@ abstract class AuthDigest extends AuthBaseClass {
    * @param qop
    * @param nc
    * @param digestUri
-   *
    * @return Digest-MD5 value of the input params
    */
   private String response(final String user, final String realm, final String nonce, final String cnonce, String qop,
-      final String nc, final String digestUri, final String operation) {
+                          final String nc, final String digestUri, final String operation) {
     final byte[] colon = b(":");
 
     byte[] A1 = concatBytes(hash(concatBytes(b(user), colon, b(realm), colon, b(password))), colon, b(nonce), colon,
-        b(cnonce));
+      b(cnonce));
     byte[] A2 = concatBytes(b(operation), colon, b(digestUri));
 
     String responseValue = hexKd(hexHash(A1), nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + hexHash(A2));

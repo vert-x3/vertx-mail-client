@@ -1,15 +1,5 @@
 package io.vertx.ext.mail;
 
-import static org.hamcrest.core.StringContains.containsString;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.Security;
-import java.util.Arrays;
-import java.util.List;
-
-import javax.mail.internet.MimeMessage;
-
 import org.junit.After;
 import org.junit.Before;
 import org.slf4j.LoggerFactory;
@@ -19,13 +9,21 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
+import javax.mail.internet.MimeMessage;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.Security;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.hamcrest.core.StringContains.containsString;
+
 /**
  * Start/stop a dummy test server for each test
- *
+ * <p>
  * the server is Wiser, this supports inspecting the messages that were received in the test code
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class SMTPTestWiser extends SMTPTestBase {
 

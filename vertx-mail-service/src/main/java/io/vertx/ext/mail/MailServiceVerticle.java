@@ -13,7 +13,7 @@ import io.vertx.serviceproxy.ProxyHelper;
  * <pre>{@code vertx run client:io.vertx.mail-client}</pre>
  * and send mails from other machines via the event bus with the client address vertx.mail
  * (on the other hand, if you can send mails via localhost:25, you do not really need the event bus)
- * 
+ *
  * @author <a href="http://tfox.org">Tim Fox</a>
  */
 public class MailServiceVerticle extends AbstractVerticle {

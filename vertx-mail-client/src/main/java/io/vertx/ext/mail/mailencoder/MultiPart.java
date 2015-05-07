@@ -1,8 +1,8 @@
 package io.vertx.ext.mail.mailencoder;
 
-import java.util.List;
-
 import io.vertx.core.http.CaseInsensitiveHeaders;
+
+import java.util.List;
 
 class MultiPart extends EncodedPart {
 

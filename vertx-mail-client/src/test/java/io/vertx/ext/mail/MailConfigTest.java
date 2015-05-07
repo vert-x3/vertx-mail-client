@@ -1,12 +1,10 @@
 package io.vertx.ext.mail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
-
 import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class MailConfigTest {
 
@@ -14,7 +12,7 @@ public class MailConfigTest {
   public void toJsonTest() {
     MailConfig mailConfig = new MailConfig();
     assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300}", mailConfig
-        .toJson().toString());
+      .toJson().toString());
   }
 
   @Test
@@ -22,8 +20,8 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername("username").setPassword("password").setSsl(true);
     assertEquals(
-        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"max_pool_size\":10,\"idle_timeout\":300}",
-        mailConfig.toJson().toString());
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"max_pool_size\":10,\"idle_timeout\":300}",
+      mailConfig.toJson().toString());
   }
 
   @Test
@@ -40,8 +38,8 @@ public class MailConfigTest {
     mailConfig.setAuthMethods("PLAIN");
     mailConfig.setEhloHostname("example.com");
     assertEquals(
-        "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
-        mailConfig.toJson().toString());
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
+      mailConfig.toJson().toString());
   }
 
   @Test
@@ -66,7 +64,7 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname("asdfasdf").setPort(1234);
     assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300}",
-        new MailConfig(mailConfig).toJson().encode());
+      new MailConfig(mailConfig).toJson().encode());
   }
 
   @Test
@@ -176,7 +174,7 @@ public class MailConfigTest {
     String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true,\"enabledCipherSuites\":[]}}";
     MailConfig mailConfig = new MailConfig(new JsonObject(jsonString));
     MailConfig mailConfig2 = new MailConfig()
-    .setNetClientOptions(new NetClientOptions().setSsl(true));
+      .setNetClientOptions(new NetClientOptions().setSsl(true));
     assertEquals(mailConfig2, mailConfig);
   }
 

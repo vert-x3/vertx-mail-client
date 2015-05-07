@@ -1,16 +1,14 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.buffer.Buffer;
+import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailDummyTest extends SMTPTestDummy {
 
@@ -58,7 +56,7 @@ public class MailDummyTest extends SMTPTestDummy {
       .setFrom("user@example.com")
       .setTo("user@example.com")
       .setAttachment(new MailAttachment()
-      .setData(TestUtils.asBuffer(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)));
+        .setData(TestUtils.asBuffer(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)));
 
     testSuccess(email);
   }
@@ -66,7 +64,8 @@ public class MailDummyTest extends SMTPTestDummy {
   /**
    * pass null to ignore result
    * this is not properly async since we do not have a result lambda
-   * @throws InterruptedException 
+   *
+   * @throws InterruptedException
    */
   @Test
   public void mailTestNoResult() throws InterruptedException {

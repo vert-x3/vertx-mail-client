@@ -12,7 +12,6 @@ import io.vertx.ext.mail.MailMessage;
  * MailService implementation for sending mails inside the local JVM
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailClientImpl implements MailClient {
 

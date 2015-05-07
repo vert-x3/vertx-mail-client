@@ -16,7 +16,6 @@ import java.util.Set;
  * Handle the authentication flow
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class SMTPAuthentication {
 
@@ -28,7 +27,7 @@ class SMTPAuthentication {
   private static final Logger log = LoggerFactory.getLogger(SMTPAuthentication.class);
 
   public SMTPAuthentication(SMTPConnection connection, MailConfig config, Handler<Void> finishedHandler,
-      Handler<Throwable> errorHandler) {
+                            Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
@@ -38,7 +37,7 @@ class SMTPAuthentication {
   public void start() {
     final boolean foundAllowedMethods = !intersectAllowedMethods().isEmpty();
     if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-        && foundAllowedMethods) {
+      && foundAllowedMethods) {
       authCmd();
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
@@ -55,7 +54,7 @@ class SMTPAuthentication {
 
   /**
    * find the auth methods we can use
-   * 
+   *
    * @return
    */
   private Set<String> intersectAllowedMethods() {
@@ -75,7 +74,7 @@ class SMTPAuthentication {
     // this works for example to avoid plain text pw methods with
     // "CRAM-SHA1 CRAM-MD5"
     AuthOperation authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(),
-        intersectAllowedMethods());
+      intersectAllowedMethods());
 
     if (authOperation != null) {
       authCmdStep(authOperation, null);
@@ -116,7 +115,7 @@ class SMTPAuthentication {
   }
 
   /**
-   * 
+   *
    */
   private void finished() {
     finishedHandler.handle(null);

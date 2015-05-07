@@ -1,11 +1,10 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 abstract class AuthBaseClass implements AuthOperation {
 
@@ -13,7 +12,7 @@ abstract class AuthBaseClass implements AuthOperation {
   protected final String password;
 
   /**
-   * 
+   *
    */
   protected AuthBaseClass(String username, String password) {
     this.username = username;

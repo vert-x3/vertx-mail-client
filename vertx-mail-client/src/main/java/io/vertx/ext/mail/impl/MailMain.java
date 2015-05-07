@@ -17,7 +17,6 @@ import io.vertx.ext.mail.MailMessage;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class MailMain {
 
@@ -38,9 +37,8 @@ class MailMain {
 
   /**
    * start a mail send operation using the MailMessage object
-   * 
-   * @param email
-   *          the mail to send
+   *
+   * @param email the mail to send
    */
   void sendMail(MailMessage email) {
     this.email = email;
@@ -56,8 +54,8 @@ class MailMain {
       handleError("sender address is not present");
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
-        && (email.getCc() == null || email.getCc().size() == 0)
-        && (email.getBcc() == null || email.getBcc().size() == 0)) {
+      && (email.getCc() == null || email.getCc().size() == 0)
+      && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
       handleError("no recipient addresses are present");
       return false;
@@ -68,7 +66,7 @@ class MailMain {
 
   private void sendMessage(SMTPConnection connection) {
     log.debug("got a connection");
-    this.connection=connection;
+    this.connection = connection;
     new SMTPSendMail(connection, email, v -> finishMail(), this::handleError).startMail();
   }
 
@@ -83,7 +81,7 @@ class MailMain {
   }
 
   private void handleError(Throwable throwable) {
-    log.debug("handleError:"+throwable);
+    log.debug("handleError:" + throwable);
     if (connection != null) {
       log.debug("connection.setInactive");
       connection.setBroken();
@@ -92,7 +90,7 @@ class MailMain {
   }
 
   private void handleError(String message) {
-    log.debug("handleError:"+message);
+    log.debug("handleError:" + message);
     if (connection != null) {
       log.debug("connection.setInactive");
       connection.setBroken();
@@ -101,10 +99,10 @@ class MailMain {
   }
 
   private void returnResult(Future<JsonObject> result) {
-    if(finishedHandler!=null) {
+    if (finishedHandler != null) {
       finishedHandler.handle(result);
     } else {
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         log.debug("dropping sendMail result");
       } else {
         log.info("dropping sendMail failure", result.cause());

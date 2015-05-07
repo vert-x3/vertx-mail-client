@@ -7,15 +7,14 @@ import io.vertx.core.logging.impl.LoggerFactory;
 
 /**
  * handle connection quit
- *
+ * <p>
  * There is not much point in encapsulating this but its useful for the
  * connection pool
- *
+ * <p>
  * this operation does not throw any error, it just closes the connection in the
  * end
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class SMTPQuit {
 

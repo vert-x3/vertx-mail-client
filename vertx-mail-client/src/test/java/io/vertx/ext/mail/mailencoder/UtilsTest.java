@@ -1,15 +1,14 @@
 package io.vertx.ext.mail.mailencoder;
 
-import static org.junit.Assert.*;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * this are tests of the Utils class (as opposed to utils for our tests, that
  * class is called TestUtils)
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class UtilsTest {
 
@@ -23,8 +22,8 @@ public class UtilsTest {
       }
     }
     assertEquals(
-        "\n !\"#$%&'()*+,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u007f",
-        sb.toString());
+      "\n !\"#$%&'()*+,-./0123456789:;<>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u007f",
+      sb.toString());
   }
 
   @Test
@@ -38,8 +37,8 @@ public class UtilsTest {
     assertEquals("Kg==", Utils.base64("*"));
     assertEquals("KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq\n"
         + "KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg==",
-        conv2nl(Utils
-            .base64("**********************************************************************************************")));
+      conv2nl(Utils
+        .base64("**********************************************************************************************")));
   }
 
   // convert windows style line endings

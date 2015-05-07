@@ -11,9 +11,8 @@ import java.util.Locale;
 /**
  * represents the configuration of a mail service with mail server hostname,
  * port, security options, login options and login/password
- * 
- * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @DataObject
 public class MailConfig {
@@ -33,7 +32,7 @@ public class MailConfig {
   private StartTLSOptions starttls;
   /**
    * LoginOption: DISABLED, NONE, REQUIRED
-   *
+   * <p>
    * if you choose NONE, you can also set the auth data to null with the same
    * effect
    */
@@ -42,7 +41,7 @@ public class MailConfig {
   /**
    * String of allowed auth methods, if set only these methods will be used if
    * the server supports them.
-   * 
+   * <p>
    * e.g. setting it to a single word will use this method and fail otherwise.
    */
   private String authMethods;
@@ -90,9 +89,8 @@ public class MailConfig {
 
   /**
    * construct a config object with hostname and default options
-   * 
-   * @param hostname
-   *          the hostname of the mail server
+   *
+   * @param hostname the hostname of the mail server
    */
   public MailConfig(String hostname) {
     this.hostname = hostname;
@@ -105,11 +103,9 @@ public class MailConfig {
 
   /**
    * construct a config object with hostname/port and default options
-   * 
-   * @param hostname
-   *          the hostname of the mail server
-   * @param port
-   *          the port of the mail server
+   *
+   * @param hostname the hostname of the mail server
+   * @param port     the port of the mail server
    */
   public MailConfig(String hostname, int port) {
     this.hostname = hostname;
@@ -122,15 +118,11 @@ public class MailConfig {
 
   /**
    * construct a config object with hostname/port and security and login options
-   * 
-   * @param hostname
-   *          the hostname of the mail server
-   * @param port
-   *          the port of the mail server
-   * @param starttls
-   *          whether to use TLS or not
-   * @param login
-   *          whether to use Login or not
+   *
+   * @param hostname the hostname of the mail server
+   * @param port     the port of the mail server
+   * @param starttls whether to use TLS or not
+   * @param login    whether to use Login or not
    */
   public MailConfig(String hostname, int port, StartTLSOptions starttls, LoginOption login) {
     this.hostname = hostname;
@@ -143,9 +135,8 @@ public class MailConfig {
 
   /**
    * copy config object from another MailConfig object
-   * 
-   * @param other
-   *          the object to be copied
+   *
+   * @param other the object to be copied
    */
   public MailConfig(MailConfig other) {
     hostname = other.hostname;
@@ -167,9 +158,8 @@ public class MailConfig {
 
   /**
    * construct config object from Json representation
-   * 
-   * @param config
-   *          the config to copy
+   *
+   * @param config the config to copy
    */
   public MailConfig(JsonObject config) {
     hostname = config.getString("hostname", DEFAULT_HOST);
@@ -198,7 +188,7 @@ public class MailConfig {
 
   /**
    * get the hostname of the mailserver
-   * 
+   *
    * @return hostname
    */
   public String getHostname() {
@@ -208,8 +198,7 @@ public class MailConfig {
   /**
    * Set the hostname of the smtp server.
    *
-   * @param hostname
-   *          the hostname (default is localhost)
+   * @param hostname the hostname (default is localhost)
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setHostname(String hostname) {
@@ -219,7 +208,7 @@ public class MailConfig {
 
   /**
    * get the port of the mailserver
-   * 
+   *
    * @return port
    */
   public int getPort() {
@@ -229,8 +218,7 @@ public class MailConfig {
   /**
    * Set the port of the smtp server.
    *
-   * @param port
-   *          the port (default is 25)
+   * @param port the port (default is 25)
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setPort(int port) {
@@ -240,7 +228,7 @@ public class MailConfig {
 
   /**
    * get security (TLS) options
-   * 
+   *
    * @return the security options
    */
   public StartTLSOptions getStarttls() {
@@ -249,11 +237,10 @@ public class MailConfig {
 
   /**
    * Set the tls security mode for the connection.
-   *
+   * <p>
    * Either NONE, OPTIONAL or REQUIRED
    *
-   * @param starttls
-   *          (default is OPTIONAL)
+   * @param starttls (default is OPTIONAL)
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setStarttls(StartTLSOptions starttls) {
@@ -263,7 +250,7 @@ public class MailConfig {
 
   /**
    * get login options
-   * 
+   *
    * @return the login options
    */
   public LoginOption getLogin() {
@@ -272,11 +259,10 @@ public class MailConfig {
 
   /**
    * Set the login mode for the connection.
-   *
+   * <p>
    * Either DISABLED, OPTIONAL or REQUIRED
    *
-   * @param login
-   *          (default is OPTIONAL)
+   * @param login (default is OPTIONAL)
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setLogin(LoginOption login) {
@@ -286,7 +272,7 @@ public class MailConfig {
 
   /**
    * get username
-   * 
+   *
    * @return username
    */
   public String getUsername() {
@@ -296,8 +282,7 @@ public class MailConfig {
   /**
    * Set the username for the login.
    *
-   * @param username
-   *          the username
+   * @param username the username
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setUsername(String username) {
@@ -307,7 +292,7 @@ public class MailConfig {
 
   /**
    * get password
-   * 
+   *
    * @return password
    */
   public String getPassword() {
@@ -317,8 +302,7 @@ public class MailConfig {
   /**
    * Set the password for the login.
    *
-   * @param password
-   *          the password
+   * @param password the password
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setPassword(String password) {
@@ -328,7 +312,7 @@ public class MailConfig {
 
   /**
    * get whether ssl is used on connect
-   * 
+   *
    * @return ssl option
    */
   public boolean isSsl() {
@@ -337,9 +321,8 @@ public class MailConfig {
 
   /**
    * Set the sslOnConnect mode for the connection.
-   * 
-   * @param ssl
-   *          true is ssl is used
+   *
+   * @param ssl true is ssl is used
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setSsl(boolean ssl) {
@@ -349,7 +332,7 @@ public class MailConfig {
 
   /**
    * get whether to trust all certificates on ssl connect
-   * 
+   *
    * @return trustAll option
    */
   public boolean isTrustAll() {
@@ -359,9 +342,8 @@ public class MailConfig {
   /**
    * set whether to trust all certificates on ssl connect the option is also
    * applied to STARTTLS operation
-   * 
-   * @param trustAll
-   *          trust all certificates
+   *
+   * @param trustAll trust all certificates
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setTrustAll(boolean trustAll) {
@@ -371,7 +353,7 @@ public class MailConfig {
 
   /**
    * get the NetClientOptions to be used when opening SMTP connections
-   * 
+   *
    * @return the netClientOptions
    */
   public NetClientOptions getNetClientOptions() {
@@ -380,12 +362,11 @@ public class MailConfig {
 
   /**
    * set the NetClientOptions to be used when opening SMTP connections
-   *
+   * <p>
    * if not set, an options object will be created based on other settings (ssl
    * and trustAll)
-   * 
-   * @param netClientOptions
-   *          the netClientOptions to set
+   *
+   * @param netClientOptions the netClientOptions to set
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setNetClientOptions(NetClientOptions netClientOptions) {
@@ -397,7 +378,7 @@ public class MailConfig {
    * get string of allowed auth methods, if set only these methods will be used
    * if the server supports them. If null or empty all supported methods may be
    * used
-   * 
+   *
    * @return the authMethods
    */
   public String getAuthMethods() {
@@ -406,9 +387,8 @@ public class MailConfig {
 
   /**
    * set string of allowed auth methods
-   * 
-   * @param authMethods
-   *          the authMethods to set
+   *
+   * @param authMethods the authMethods to set
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setAuthMethods(String authMethods) {
@@ -418,7 +398,7 @@ public class MailConfig {
 
   /**
    * get the hostname to be used for HELO/EHLO
-   * 
+   *
    * @return the ehloHostname
    */
   public String getEhloHostname() {
@@ -427,9 +407,8 @@ public class MailConfig {
 
   /**
    * set the hostname to be used for HELO/EHLO
-   * 
-   * @param ehloHostname
-   *          the ehloHostname to set
+   *
+   * @param ehloHostname the ehloHostname to set
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setEhloHostname(String ehloHostname) {
@@ -488,7 +467,7 @@ public class MailConfig {
 
   /**
    * convert config object to Json representation
-   * 
+   *
    * @return json object of the config
    */
   public JsonObject toJson() {
@@ -533,7 +512,7 @@ public class MailConfig {
 
   private List<Object> getList() {
     final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll,
-        netClientOptions, authMethods, ehloHostname, maxPoolSize, idleTimeout);
+      netClientOptions, authMethods, ehloHostname, maxPoolSize, idleTimeout);
     return objects;
   }
 

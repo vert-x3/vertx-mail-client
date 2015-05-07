@@ -6,7 +6,6 @@ import org.junit.Test;
  * test sending message with either missing from or to
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MissingToTest extends SMTPTestDummy {
 

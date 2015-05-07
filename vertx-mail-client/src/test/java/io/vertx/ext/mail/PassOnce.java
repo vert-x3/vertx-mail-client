@@ -14,7 +14,6 @@ import io.vertx.core.Handler;
  * <p>
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 
 class PassOnce {

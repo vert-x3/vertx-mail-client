@@ -1,16 +1,15 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class AuthCramMD5 extends AuthCram {
 
   /**
-   * 
+   *
    */
   static final String AUTH_NAME = "CRAM-MD5";
 

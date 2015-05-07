@@ -12,7 +12,6 @@ package io.vertx.ext.mail;
  * REQUIRED means that a login will be attempted if the server supports it and the send operation will fail otherwise
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public enum LoginOption {
   DISABLED,

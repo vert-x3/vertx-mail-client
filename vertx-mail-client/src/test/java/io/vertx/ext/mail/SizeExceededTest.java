@@ -2,12 +2,11 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-
 import org.junit.Test;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
+ *         <p>
  *         this test uses a message that exceeds the SIZE limit of the smtp
  *         server (uses the mockup server that just plays a file)
  */

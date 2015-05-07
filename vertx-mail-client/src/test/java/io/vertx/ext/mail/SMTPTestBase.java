@@ -6,12 +6,11 @@ import io.vertx.test.core.VertxTestBase;
 
 /**
  * Support functions for SMTP tests
- *
+ * <p>
  * the actual tests should extend a subclass
  * that starts and stops a fake smtp server
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class SMTPTestBase extends VertxTestBase {
 
@@ -140,11 +139,11 @@ public class SMTPTestBase extends VertxTestBase {
     testSuccess(mailService, email, (AdditionalAsserts) null);
   }
 
-  
+
   /**
    * support running additional asserts after the sending was successfull
    * so we do not fail after we have called testComplete()
-   * 
+   *
    * @param mailService
    * @param email
    * @param asserts
@@ -158,7 +157,7 @@ public class SMTPTestBase extends VertxTestBase {
       mailService.close();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        if(asserts != null) {
+        if (asserts != null) {
           try {
             asserts.doAsserts();
           } catch (Exception e) {

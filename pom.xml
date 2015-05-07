@@ -19,6 +19,7 @@
 
   <modelVersion>4.0.0</modelVersion>
   <packaging>pom</packaging>
+
   <modules>
     <module>vertx-mail-client</module>
     <module>vertx-mail-service</module>
@@ -35,64 +36,6 @@
 
   <name>Vert.x Mail</name>
 
-  <properties>
-    <stack.version>3.0.0-SNAPSHOT</stack.version>
-  </properties>
-
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>io.vertx</groupId>
-        <artifactId>vertx-dependencies</artifactId>
-        <version>${stack.version}</version>
-        <type>pom</type>
-        <scope>import</scope>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
 
-  <!--<build>-->
-    <!--<plugins>-->
-      <!--<plugin>-->
-        <!--<groupId>org.codehaus.gmavenplus</groupId>-->
-        <!--<artifactId>gmavenplus-plugin</artifactId>-->
-        <!--<version>1.2</version>-->
-        <!--<executions>-->
-          <!--<execution>-->
-            <!--<goals>-->
-              <!--<goal>addSources</goal>-->
-              <!--<goal>addTestSources</goal>-->
-              <!--<goal>compile</goal>-->
-              <!--<goal>testCompile</goal>-->
-            <!--</goals>-->
-          <!--</execution>-->
-        <!--</executions>-->
-      <!--</plugin>-->
-      <!--<plugin>-->
-        <!--<groupId>org.codehaus.mojo</groupId>-->
-        <!--<artifactId>findbugs-maven-plugin</artifactId>-->
-        <!--<version>3.0.1</version>-->
-      <!--</plugin>-->
-      <!--<plugin>-->
-        <!--<groupId>org.apache.maven.plugins</groupId>-->
-        <!--<artifactId>maven-checkstyle-plugin</artifactId>-->
-        <!--<version>2.15</version>-->
-        <!--<dependencies>-->
-          <!--<dependency>-->
-            <!--<groupId>com.puppycrawl.tools</groupId>-->
-            <!--<artifactId>checkstyle</artifactId>-->
-            <!--<version>6.5</version>-->
-          <!--</dependency>-->
-        <!--</dependencies>-->
-      <!--</plugin>-->
-      <!--<plugin>-->
-        <!--<artifactId>maven-pmd-plugin</artifactId>-->
-        <!--<version>3.4</version>-->
-        <!--<configuration>-->
-          <!--<targetJdk>1.8</targetJdk>-->
-        <!--</configuration>-->
-      <!--</plugin>-->
-    <!--</plugins>-->
-  <!--</build>-->
 </project>

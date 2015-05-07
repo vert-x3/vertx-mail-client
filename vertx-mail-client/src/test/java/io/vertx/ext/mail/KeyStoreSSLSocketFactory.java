@@ -4,6 +4,9 @@
  */
 package io.vertx.ext.mail;
 
+import javax.net.ssl.KeyManagerFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSocketFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -12,13 +15,8 @@ import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSocketFactory;
-
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
 
@@ -30,7 +28,6 @@ public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
   /**
    * @throws GeneralSecurityException
    * @throws IOException
-   * 
    */
   public KeyStoreSSLSocketFactory() throws GeneralSecurityException, IOException {
     final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
@@ -50,7 +47,7 @@ public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
    */
   @Override
   public Socket createSocket(final Socket s, final String host, final int port, final boolean autoClose)
-      throws IOException {
+    throws IOException {
     return delegate.createSocket(s, host, port, autoClose);
   }
 
@@ -102,7 +99,7 @@ public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
    */
   @Override
   public Socket createSocket(final String arg0, final int arg1, final InetAddress arg2, final int arg3)
-      throws IOException, UnknownHostException {
+    throws IOException, UnknownHostException {
     return delegate.createSocket(arg0, arg1, arg2, arg3);
   }
 
@@ -114,7 +111,7 @@ public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
    */
   @Override
   public Socket createSocket(final InetAddress arg0, final int arg1, final InetAddress arg2, final int arg3)
-      throws IOException {
+    throws IOException {
     return delegate.createSocket(arg0, arg1, arg2, arg3);
   }
 

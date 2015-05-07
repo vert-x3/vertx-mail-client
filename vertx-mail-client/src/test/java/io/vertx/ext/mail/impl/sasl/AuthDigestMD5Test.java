@@ -1,15 +1,11 @@
 package io.vertx.ext.mail.impl.sasl;
 
+import org.junit.Test;
+
+import java.util.*;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
-import org.junit.Test;
 
 public class AuthDigestMD5Test {
 
@@ -44,10 +40,10 @@ public class AuthDigestMD5Test {
     };
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
-        .nextStep("realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8");
+      .nextStep("realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8");
     assertEquals(
-        sortMap("charset=utf-8,username=\"chris\",realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",nc=00000001,cnonce=\"OA6MHXh6VqTrRk\",digest-uri=\"imap/elwood.innosoft.com\",response=d388dad90d4bbd760a152321f2143af7,qop=auth"),
-        sortMap(step1));
+      sortMap("charset=utf-8,username=\"chris\",realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",nc=00000001,cnonce=\"OA6MHXh6VqTrRk\",digest-uri=\"imap/elwood.innosoft.com\",response=d388dad90d4bbd760a152321f2143af7,qop=auth"),
+      sortMap(step1));
     assertEquals("", auth.nextStep("rspauth=ea40f60335c427b5527b84dbabcdfffd"));
     assertEquals(null, auth.nextStep(""));
   }
@@ -62,10 +58,10 @@ public class AuthDigestMD5Test {
     };
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
-        .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");
+      .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");
     assertEquals(
-        sortMap("charset=utf-8,cnonce=\"asdf1234\",digest-uri=\"smtp/\",nc=00000001,nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",qop=auth,realm=\"example.com\",response=6c660aaff71160689ac4ef31b6eb964c,username=\"user\""),
-        sortMap(step1));
+      sortMap("charset=utf-8,cnonce=\"asdf1234\",digest-uri=\"smtp/\",nc=00000001,nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",qop=auth,realm=\"example.com\",response=6c660aaff71160689ac4ef31b6eb964c,username=\"user\""),
+      sortMap(step1));
     assertEquals("", auth.nextStep("rspauth=423e7f36a2e584985fc1ea3035de81d3"));
     assertEquals(null, auth.nextStep(""));
   }
@@ -84,10 +80,10 @@ public class AuthDigestMD5Test {
     };
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
-        .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");
+      .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");
     assertEquals(
-        sortMap("charset=utf-8,cnonce=\"asdf1234\",digest-uri=\"smtp/\",nc=00000001,nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",qop=auth,realm=\"example.com\",response=6c660aaff71160689ac4ef31b6eb964c,username=\"user\""),
-        sortMap(step1));
+      sortMap("charset=utf-8,cnonce=\"asdf1234\",digest-uri=\"smtp/\",nc=00000001,nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",qop=auth,realm=\"example.com\",response=6c660aaff71160689ac4ef31b6eb964c,username=\"user\""),
+      sortMap(step1));
     assertEquals(null, auth.nextStep("rspauth=00000000000000000000000000000000"));
   }
 
@@ -129,9 +125,9 @@ public class AuthDigestMD5Test {
     assertEquals("a=\"\", b=", mapSortToString(AuthDigest.parseToMap("a=\\\"\\\",b=\"\"")));
     assertEquals("a=a,b", mapSortToString(AuthDigest.parseToMap("a=\"a,b\"")));
     assertEquals(
-        "algorithm=md5-sess, charset=utf-8, nonce=OA6MG9tEQGm2hh, qop=auth, realm=elwood.innosoft.com",
-        mapSortToString(AuthDigest
-            .parseToMap("realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8")));
+      "algorithm=md5-sess, charset=utf-8, nonce=OA6MG9tEQGm2hh, qop=auth, realm=elwood.innosoft.com",
+      mapSortToString(AuthDigest
+        .parseToMap("realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8")));
   }
 
 }

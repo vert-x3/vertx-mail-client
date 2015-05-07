@@ -5,15 +5,14 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
- * this test uses a local SMTP server (wiser from subethasmtp)
- * since this server supports SSL/TLS, the tests relating to that are here
+ *         <p>
+ *         this test uses a local SMTP server (wiser from subethasmtp)
+ *         since this server supports SSL/TLS, the tests relating to that are here
  */
 @RunWith(VertxUnitRunner.class)
 public class Pool1SlotTest extends SMTPTestWiser {

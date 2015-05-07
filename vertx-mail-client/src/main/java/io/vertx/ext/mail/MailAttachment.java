@@ -10,7 +10,7 @@ import java.util.Objects;
 
 /**
  * represent a mail attachment that can be used in a MailMessage
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 
@@ -37,9 +37,8 @@ public class MailAttachment {
 
   /**
    * set the name
-   * 
-   * @param name
-   *          name of the attachment file
+   *
+   * @param name name of the attachment file
    * @return this to be able to use it fluently
    */
   public MailAttachment setName(String name) {
@@ -56,9 +55,8 @@ public class MailAttachment {
 
   /**
    * create a copy of a MailAttachment object
-   * 
-   * @param other
-   *          object to be copied
+   *
+   * @param other object to be copied
    */
   public MailAttachment(MailAttachment other) {
     Objects.requireNonNull(other);
@@ -71,9 +69,8 @@ public class MailAttachment {
 
   /**
    * create a MailAttachment object from a JsonObject representation
-   * 
-   * @param json
-   *          object to be copied
+   *
+   * @param json object to be copied
    */
   public MailAttachment(JsonObject json) {
     Objects.requireNonNull(json);
@@ -86,7 +83,7 @@ public class MailAttachment {
 
   /**
    * get the data
-   * 
+   *
    * @return the data
    */
   public Buffer getData() {
@@ -95,9 +92,8 @@ public class MailAttachment {
 
   /**
    * set the data
-   * 
-   * @param data
-   *          Buffer of bytes to be used at attachment
+   *
+   * @param data Buffer of bytes to be used at attachment
    * @return this to be able to use it fluently
    */
   public MailAttachment setData(Buffer data) {
@@ -107,7 +103,7 @@ public class MailAttachment {
 
   /**
    * get the Content-Type
-   * 
+   *
    * @return the contentType
    */
   public String getContentType() {
@@ -116,9 +112,8 @@ public class MailAttachment {
 
   /**
    * set the Content-Type
-   * 
-   * @param contentType
-   *          the contentType
+   *
+   * @param contentType the contentType
    * @return this to be able to use it fluently
    */
   public MailAttachment setContentType(String contentType) {
@@ -128,7 +123,7 @@ public class MailAttachment {
 
   /**
    * get the disposition field
-   * 
+   *
    * @return the disposition
    */
   public String getDisposition() {
@@ -137,9 +132,8 @@ public class MailAttachment {
 
   /**
    * set the disposition field to be used in the attachment
-   * 
-   * @param disposition
-   *          the disposition
+   *
+   * @param disposition the disposition
    * @return this to be able to use it fluently
    */
   public MailAttachment setDisposition(String disposition) {
@@ -149,7 +143,7 @@ public class MailAttachment {
 
   /**
    * get the description field
-   * 
+   *
    * @return the description
    */
   public String getDescription() {
@@ -158,9 +152,8 @@ public class MailAttachment {
 
   /**
    * set the description field to be used in the attachment
-   * 
-   * @param description
-   *          the description
+   *
+   * @param description the description
    * @return this to be able to use it fluently
    */
   public MailAttachment setDescription(String description) {
@@ -170,7 +163,7 @@ public class MailAttachment {
 
   /**
    * convert this object to Json representation
-   * 
+   *
    * @return the json object
    */
   public JsonObject toJson() {

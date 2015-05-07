@@ -1,9 +1,9 @@
 package io.vertx.ext.mail.impl.sasl;
 
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-
-import org.junit.Test;
 
 public class AuthCramSHA1Test {
 

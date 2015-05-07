@@ -1,17 +1,17 @@
 package io.vertx.ext.mail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class MailMessageTest {
 
@@ -25,7 +25,7 @@ public class MailMessageTest {
   public void testToJson() {
     assertEquals("{}", new MailMessage().toJson().encode());
     assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
-        new MailMessage("a", "b", "c", "d").toJson().encode());
+      new MailMessage("a", "b", "c", "d").toJson().encode());
   }
 
   @Test
@@ -36,8 +36,8 @@ public class MailMessageTest {
     MailMessage message = new MailMessage("a", "b", "c", "d");
     message.setAttachment(attachment);
     assertEquals(
-        "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"}]}",
-        message.toJson().encode());
+      "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"}]}",
+      message.toJson().encode());
   }
 
   @Test
@@ -48,8 +48,8 @@ public class MailMessageTest {
     MailMessage message = new MailMessage();
     message.setAttachment(list);
     assertEquals(
-        "{\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg=\",\"name\":\"file2.txt\"}]}",
-        message.toJson().encode());
+      "{\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg=\",\"name\":\"file2.txt\"}]}",
+      message.toJson().encode());
   }
 
   @Test
@@ -89,7 +89,7 @@ public class MailMessageTest {
     String jsonString = "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}";
     assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
     assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}", new MailMessage(new JsonObject(
-        "{\"from\":\"a\",\"to\":\"b\",\"subject\":\"c\",\"text\":\"d\"}")).toJson().encode());
+      "{\"from\":\"a\",\"to\":\"b\",\"subject\":\"c\",\"text\":\"d\"}")).toJson().encode());
   }
 
   @Test

@@ -8,7 +8,6 @@ import org.junit.Test;
  * connected with TLS e.g. gmail.com
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MissingAuthTest extends SMTPTestDummy {
 

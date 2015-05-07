@@ -4,12 +4,7 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.ext.mail.LoginOption;
-import io.vertx.ext.mail.MailAttachment;
-import io.vertx.ext.mail.MailConfig;
-import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailClient;
-import io.vertx.ext.mail.StartTLSOptions;
+import io.vertx.ext.mail.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +14,6 @@ import java.util.List;
  * we use an attachment and a text/html alternative mail body
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailLogin extends AbstractVerticle {
 
@@ -32,7 +26,7 @@ public class MailLogin extends AbstractVerticle {
 
     MailClient mailService = MailClient.create(vertx, mailConfig);
 
-    Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
+    Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
       .setFrom("user1@example.com")
@@ -44,7 +38,7 @@ public class MailLogin extends AbstractVerticle {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    List<MailAttachment> list = new ArrayList<MailAttachment>();
 
     list.add(new MailAttachment()
       .setData(image)

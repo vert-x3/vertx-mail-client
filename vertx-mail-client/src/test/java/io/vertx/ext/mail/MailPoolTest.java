@@ -5,13 +5,11 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 @RunWith(VertxUnitRunner.class)
 public class MailPoolTest extends SMTPTestWiser {

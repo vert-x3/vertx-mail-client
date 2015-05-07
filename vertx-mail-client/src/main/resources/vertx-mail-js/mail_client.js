@@ -25,7 +25,7 @@ var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
  SMTP mail client for Vert.x
- 
+ <p>
  A simple asynchronous API for sending mails from Vert.x applications
 
  @class

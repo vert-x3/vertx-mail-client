@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl;
 
@@ -10,13 +10,11 @@ import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 @RunWith(VertxUnitRunner.class)
 public class SMTPConnectionPoolTest extends SMTPTestWiser {

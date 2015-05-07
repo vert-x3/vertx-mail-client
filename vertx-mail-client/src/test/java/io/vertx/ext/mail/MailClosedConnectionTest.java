@@ -6,7 +6,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,9 +15,9 @@ import org.subethamail.wiser.Wiser;
 /*
  first implementation of a SMTP client
  */
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 @RunWith(VertxUnitRunner.class)
 public class MailClosedConnectionTest {
@@ -35,11 +34,11 @@ public class MailClosedConnectionTest {
 
     MailClient mailService = MailClient.create(vertx, mailConfig());
 
-    MailMessage email=new MailMessage()
-    .setFrom("user@example.com")
-    .setTo("user@example.com")
-    .setSubject("Test email")
-    .setText("this is a message");
+    MailMessage email = new MailMessage()
+      .setFrom("user@example.com")
+      .setTo("user@example.com")
+      .setSubject("Test email")
+      .setText("this is a message");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");
@@ -61,11 +60,11 @@ public class MailClosedConnectionTest {
 
     MailClient mailService = MailClient.create(vertx, mailConfig());
 
-    MailMessage email=new MailMessage()
-    .setFrom("user@example.com")
-    .setTo("user@example.com")
-    .setSubject("Test email")
-    .setText("this is a message");
+    MailMessage email = new MailMessage()
+      .setFrom("user@example.com")
+      .setTo("user@example.com")
+      .setSubject("Test email")
+      .setText("this is a message");
 
     mailService.sendMail(email, result -> {
       log.info("mail finished");

@@ -15,7 +15,6 @@ import java.util.Objects;
  * represent a mail message that can be sent via the MailService
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 @DataObject
 public class MailMessage {
@@ -40,9 +39,8 @@ public class MailMessage {
 
   /**
    * copy object to another @link MailMessage object
-   * 
-   * @param other
-   *          object to copy
+   *
+   * @param other object to copy
    */
   public MailMessage(MailMessage other) {
     Objects.requireNonNull(other);
@@ -68,9 +66,8 @@ public class MailMessage {
 
   /**
    * construct object from a JsonObject representation
-   * 
-   * @param json
-   *          json object to copy
+   *
+   * @param json json object to copy
    */
   public MailMessage(JsonObject json) {
     Objects.requireNonNull(json);
@@ -133,15 +130,11 @@ public class MailMessage {
 
   /**
    * construct a simple message with text/plain
-   * 
-   * @param from
-   *          from email address
-   * @param to
-   *          string to email address
-   * @param subject
-   *          subject of the mail
-   * @param text
-   *          plain text of the message body
+   *
+   * @param from    from email address
+   * @param to      string to email address
+   * @param subject subject of the mail
+   * @param text    plain text of the message body
    */
   public MailMessage(String from, String to, String subject, String text) {
     this.from = from;
@@ -152,7 +145,7 @@ public class MailMessage {
 
   /**
    * get bounce address of this mail
-   * 
+   *
    * @return bounce address
    */
   public String getBounceAddress() {
@@ -161,9 +154,8 @@ public class MailMessage {
 
   /**
    * set bounce address of this mail
-   * 
-   * @param bounceAddress
-   *          bounce address
+   *
+   * @param bounceAddress bounce address
    * @return this to be able to use it fluently
    */
   public MailMessage setBounceAddress(String bounceAddress) {
@@ -173,7 +165,7 @@ public class MailMessage {
 
   /**
    * get from address of this mail
-   * 
+   *
    * @return from address
    */
   public String getFrom() {
@@ -182,9 +174,8 @@ public class MailMessage {
 
   /**
    * set from address of this mail
-   * 
-   * @param from
-   *          from addrss
+   *
+   * @param from from addrss
    * @return this to be able to use it fluently
    */
   public MailMessage setFrom(String from) {
@@ -194,7 +185,7 @@ public class MailMessage {
 
   /**
    * get list of to addresses
-   * 
+   *
    * @return List of to addresses
    */
   public List<String> getTo() {
@@ -203,9 +194,8 @@ public class MailMessage {
 
   /**
    * set list of to addresses
-   * 
-   * @param to
-   *          List of to addresses
+   *
+   * @param to List of to addresses
    * @return this to be able to use it fluently
    */
   public MailMessage setTo(List<String> to) {
@@ -215,9 +205,8 @@ public class MailMessage {
 
   /**
    * helper method for single recipient
-   * 
-   * @param to
-   *          to address
+   *
+   * @param to to address
    * @return this to be able to use it fluently
    */
   public MailMessage setTo(String to) {
@@ -227,7 +216,7 @@ public class MailMessage {
 
   /**
    * get list of cc addresses
-   * 
+   *
    * @return List of cc addresses
    */
   public List<String> getCc() {
@@ -236,9 +225,8 @@ public class MailMessage {
 
   /**
    * set list of cc addresses
-   * 
-   * @param cc
-   *          List of cc addresses
+   *
+   * @param cc List of cc addresses
    * @return this to be able to use it fluently
    */
   public MailMessage setCc(List<String> cc) {
@@ -248,9 +236,8 @@ public class MailMessage {
 
   /**
    * helper method for single recipient
-   * 
-   * @param cc
-   *          cc address
+   *
+   * @param cc cc address
    * @return this to be able to use it fluently
    */
   public MailMessage setCc(String cc) {
@@ -260,7 +247,7 @@ public class MailMessage {
 
   /**
    * get list of bcc addresses
-   * 
+   *
    * @return List of bcc addresses
    */
   public List<String> getBcc() {
@@ -269,9 +256,8 @@ public class MailMessage {
 
   /**
    * set list of bcc addresses
-   * 
-   * @param bcc
-   *          List of bcc addresses
+   *
+   * @param bcc List of bcc addresses
    * @return this to be able to use it fluently
    */
   public MailMessage setBcc(List<String> bcc) {
@@ -281,9 +267,8 @@ public class MailMessage {
 
   /**
    * helper method for single recipient
-   * 
-   * @param bcc
-   *          bcc address
+   *
+   * @param bcc bcc address
    * @return this to be able to use it fluently
    */
   public MailMessage setBcc(String bcc) {
@@ -293,7 +278,7 @@ public class MailMessage {
 
   /**
    * get the subject of this mail
-   * 
+   *
    * @return the subject
    */
   public String getSubject() {
@@ -302,9 +287,8 @@ public class MailMessage {
 
   /**
    * set the subject of this mail
-   * 
-   * @param subject
-   *          the subject
+   *
+   * @param subject the subject
    * @return this to be able to use it fluently
    */
   public MailMessage setSubject(String subject) {
@@ -314,7 +298,7 @@ public class MailMessage {
 
   /**
    * get the plain text of this mail
-   * 
+   *
    * @return the text
    */
   public String getText() {
@@ -323,9 +307,8 @@ public class MailMessage {
 
   /**
    * set the plain text of this mail
-   * 
-   * @param text
-   *          the text
+   *
+   * @param text the text
    * @return this to be able to use it fluently
    */
   public MailMessage setText(String text) {
@@ -335,7 +318,7 @@ public class MailMessage {
 
   /**
    * get the html text of this mail
-   * 
+   *
    * @return the text
    */
   public String getHtml() {
@@ -344,9 +327,8 @@ public class MailMessage {
 
   /**
    * set the html text of this mail
-   * 
-   * @param html
-   *          the text
+   *
+   * @param html the text
    * @return this to be able to use it fluently
    */
   public MailMessage setHtml(String html) {
@@ -356,7 +338,7 @@ public class MailMessage {
 
   /**
    * get the list of attachments of this mail
-   * 
+   *
    * @return List of attachment
    */
   public List<MailAttachment> getAttachment() {
@@ -365,9 +347,8 @@ public class MailMessage {
 
   /**
    * set the list of attachments of this mail
-   * 
-   * @param attachment
-   *          List of attachment
+   *
+   * @param attachment List of attachment
    * @return this to be able to use it fluently
    */
   public MailMessage setAttachment(List<MailAttachment> attachment) {
@@ -380,9 +361,8 @@ public class MailMessage {
    * this method returns an unmodifiable list, if you want to be able to add
    * attachments later, please use
    * {@code setAttachment(new ArrayList<MailAttachment>())} instead
-   * 
-   * @param attachment
-   *          the attachment to add
+   *
+   * @param attachment the attachment to add
    * @return this to be able to use it fluently
    */
   public MailMessage setAttachment(MailAttachment attachment) {
@@ -412,6 +392,7 @@ public class MailMessage {
 
   /**
    * get whether our own headers should be the only headers added to the message
+   *
    * @return the fixedHeaders
    */
   public boolean isFixedHeaders() {
@@ -431,7 +412,7 @@ public class MailMessage {
 
   /**
    * convert the mail message to Json representation
-   * 
+   *
    * @return the json object
    */
   public JsonObject toJson() {

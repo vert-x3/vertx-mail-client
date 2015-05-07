@@ -15,7 +15,6 @@ import java.net.UnknownHostException;
  * and STARTTLS if necessary
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class SMTPInitialDialogue {
 
@@ -29,7 +28,7 @@ class SMTPInitialDialogue {
   private MailConfig config;
 
   public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, Handler<Void> finishedHandler,
-      Handler<Throwable> errorHandler) {
+                             Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
@@ -55,36 +54,36 @@ class SMTPInitialDialogue {
 
   private void ehloCmd() {
     connection
-        .write(
-            "EHLO " + getMyHostname(),
-            message -> {
-              log.debug("EHLO result: " + message);
-              if (StatusCode.isStatusOk(message)) {
-                connection.parseCapabilities(message);
-                if (connection.getCapa().isStartTLS()
-                    && !connection.isSsl()
-                    && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
-                    // do not start TLS if we are connected with SSL
-                    // or are already in TLS
-                    startTLSCmd();
-                  } else {
-                    finished();
-                  }
-              } else {
-                // if EHLO fails, assume we have to do HELO
-                if (StatusCode.isStatusTemporary(message)) {
-                  heloCmd();
-                } else {
-                  handleError("EHLO failed with " + message);
-                }
-              }
-            });
+      .write(
+        "EHLO " + getMyHostname(),
+        message -> {
+          log.debug("EHLO result: " + message);
+          if (StatusCode.isStatusOk(message)) {
+            connection.parseCapabilities(message);
+            if (connection.getCapa().isStartTLS()
+              && !connection.isSsl()
+              && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
+              // do not start TLS if we are connected with SSL
+              // or are already in TLS
+              startTLSCmd();
+            } else {
+              finished();
+            }
+          } else {
+            // if EHLO fails, assume we have to do HELO
+            if (StatusCode.isStatusTemporary(message)) {
+              heloCmd();
+            } else {
+              handleError("EHLO failed with " + message);
+            }
+          }
+        });
   }
 
   private void heloCmd() {
     connection.write("HELO " + getMyHostname(), message -> {
       log.debug("HELO result: " + message);
-      if(StatusCode.isStatusOk(message)) {
+      if (StatusCode.isStatusOk(message)) {
         finished();
       } else {
         handleError("HELO failed with " + message);
@@ -93,7 +92,7 @@ class SMTPInitialDialogue {
   }
 
   private void handleError(String message) {
-    log.debug("handleError:"+message);
+    log.debug("handleError:" + message);
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
@@ -103,10 +102,11 @@ class SMTPInitialDialogue {
 
   /**
    * get the hostname either from config or by resolving our own address
+   *
    * @return the hostname
    */
   private String getMyHostname() {
-    if(config.getEhloHostname() != null) {
+    if (config.getEhloHostname() != null) {
       return config.getEhloHostname();
     } else {
       try {
@@ -120,7 +120,7 @@ class SMTPInitialDialogue {
   }
 
   /**
-   * 
+   *
    */
   private void startTLSCmd() {
     connection.write("STARTTLS", message -> {
@@ -130,8 +130,8 @@ class SMTPInitialDialogue {
         // capabilities may have changed, e.g.
         // if a service only announces PLAIN/LOGIN
         // on secure channel (e.g. googlemail)
-          ehloCmd();
-        });
+        ehloCmd();
+      });
     });
   }
 

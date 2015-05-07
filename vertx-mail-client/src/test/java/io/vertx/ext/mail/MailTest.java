@@ -4,6 +4,8 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -13,15 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import org.junit.Ignore;
-import org.junit.Test;
-
 /*
  first implementation of a SMTP client
  */
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailTest extends VertxTestBase {
 
@@ -69,7 +68,7 @@ public class MailTest extends VertxTestBase {
 
     MailClient mailService = MailClient.create(vertx, mailConfig);
 
-    Buffer image=vertx.fileSystem().readFileBlocking("logo-white-big.png");
+    Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
       .setFrom("alexlehm1969@aol.com")
@@ -81,7 +80,7 @@ public class MailTest extends VertxTestBase {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    List<MailAttachment> list = new ArrayList<MailAttachment>();
 
     list.add(new MailAttachment()
       .setData(image)
@@ -113,7 +112,7 @@ public class MailTest extends VertxTestBase {
         testComplete();
       } else {
         log.warn("got exception", result.cause());
-        fail("got exception "+result.cause());
+        fail("got exception " + result.cause());
       }
     });
 

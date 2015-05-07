@@ -1,20 +1,18 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.MailClient;
 import io.vertx.test.core.VertxTestBase;
-
 import org.junit.Test;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailServiceImplTest extends VertxTestBase {
 

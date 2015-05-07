@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package io.vertx.ext.mail.impl.sasl;
 
@@ -9,12 +9,11 @@ import java.util.Set;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class AuthOperationFactory {
 
-  final static Class<?>[] authList = new Class<?>[] { AuthDigestMD5.class, AuthCramSHA256.class, AuthCramSHA1.class,
-      AuthCramMD5.class, AuthPlain.class, AuthLogin.class };
+  final static Class<?>[] authList = new Class<?>[]{AuthDigestMD5.class, AuthCramSHA256.class, AuthCramSHA1.class,
+    AuthCramMD5.class, AuthPlain.class, AuthLogin.class};
 
   public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
     Class<?> classToUse = null;
@@ -41,7 +40,7 @@ public class AuthOperationFactory {
       try {
         return (AuthOperation) classToUse.getConstructor(String.class, String.class).newInstance(username, password);
       } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-          | NoSuchMethodException | SecurityException e) {
+        | NoSuchMethodException | SecurityException e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
       }

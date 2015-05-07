@@ -25,7 +25,7 @@ import io.vertx.core.Handler
 import io.vertx.ext.mail.MailMessage
 /**
  * SMTP mail client for Vert.x
- * 
+ * <p>
  * A simple asynchronous API for sending mails from Vert.x applications
 */
 @CompileStatic

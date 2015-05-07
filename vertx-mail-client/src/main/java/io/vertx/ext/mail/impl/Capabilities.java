@@ -10,11 +10,10 @@ import java.util.Set;
 
 /**
  * holds the capabilities of an ESMTP server.
- * 
+ * <p>
  * e.g. SIZE, AUTH, PIPELINING
- * 
- * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 class Capabilities {
 
@@ -22,7 +21,7 @@ class Capabilities {
 
   /**
    * hold that parsed list of possible authentication mechanisms
-   * 
+   * <p>
    * e.g. PLAIN, LOGIN, CRAM-MD5
    */
   private Set<String> capaAuth;
@@ -91,7 +90,7 @@ class Capabilities {
 
   /**
    * parse a multi-line EHLO reply string into a List of lines
-   * 
+   *
    * @param message
    * @return List of lines
    */

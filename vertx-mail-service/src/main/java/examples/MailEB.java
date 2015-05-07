@@ -8,7 +8,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
  * send a mail via event bus to the mail service running on another machine
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailEB extends AbstractVerticle {
 

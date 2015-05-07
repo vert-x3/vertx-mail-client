@@ -15,9 +15,9 @@ import org.junit.Test;
  * we test creating a service based on the class on the classpath
  * and via the service-descriptor with vertx-service-factory (using maven resolution)
  */
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailServiceVerticleTest extends VertxTestBase {
 
@@ -43,7 +43,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
   @Test
   public void testDeployService() {
     JsonObject config = new JsonObject(
-        "{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
+      "{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
     vertx.deployVerticle("service:io.vertx.mail-service", deploymentOptions, r -> {
       if (r.succeeded()) {

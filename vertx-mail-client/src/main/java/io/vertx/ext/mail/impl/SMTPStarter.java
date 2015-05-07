@@ -9,8 +9,8 @@ import io.vertx.ext.mail.MailConfig;
 /**
  * TODO: this encapsulates initial dialogue and authentication, might as well
  * put authentication into the initial class
- * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 class SMTPStarter {
 
@@ -23,7 +23,7 @@ class SMTPStarter {
   Handler<Throwable> errorHandler;
 
   SMTPStarter(Vertx vertx, SMTPConnection connection, MailConfig config, Handler<Void> finishedHandler,
-      Handler<Throwable> errorHandler) {
+              Handler<Throwable> errorHandler) {
     this.vertx = vertx;
     this.connection = connection;
     this.config = config;
@@ -35,7 +35,7 @@ class SMTPStarter {
     log.debug("connection.openConnection");
     connection.openConnection(config, this::serverGreeting, this::handleError);
   }
-  
+
   private void serverGreeting(String message) {
     log.debug("SMTPInitialDialogue");
     new SMTPInitialDialogue(connection, config, v -> doAuthentication(), this::handleError).start(message);
@@ -47,7 +47,7 @@ class SMTPStarter {
   }
 
   private void handleError(Throwable throwable) {
-    log.debug("handleError:"+throwable);
+    log.debug("handleError:" + throwable);
     if (connection != null) {
       connection.setBroken();
     }

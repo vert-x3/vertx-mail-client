@@ -12,12 +12,11 @@ import io.vertx.ext.mail.MailConfig;
 
 /**
  * SMTP connection to a server.
- *
+ * <p>
  * Encapsulate the NetClient connection and the data writing/reading, but not
  * the protocol itself
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 class SMTPConnection {
 
@@ -59,8 +58,7 @@ class SMTPConnection {
   /**
    * parse capabilities from the ehlo reply string
    *
-   * @param message
-   *          the capabilities to set
+   * @param message the capabilities to set
    */
   void parseCapabilities(String message) {
     capa = new Capabilities();
@@ -304,7 +302,7 @@ class SMTPConnection {
   }
 
   /**
-   * 
+   *
    */
   public void setDoShutdown() {
     log.debug("will shut down connection after send operation finishes");
@@ -312,7 +310,7 @@ class SMTPConnection {
   }
 
   /**
-   * 
+   *
    */
   public void close() {
     quitCloseConnection();

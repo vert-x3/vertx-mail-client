@@ -5,7 +5,6 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,8 +12,8 @@ import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
- * test what happens when the server closes the connection if we use a pooled connection
+ *         <p>
+ *         test what happens when the server closes the connection if we use a pooled connection
  */
 @RunWith(VertxUnitRunner.class)
 public class MailPoolServerClosesTest extends SMTPTestDummy {
@@ -24,7 +23,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
   /**
    * send two mails after each other when the server closes the connection immediately after the data
    * send was successful
-   *  
+   *
    * @param context
    */
   @Test
@@ -40,7 +39,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       MailClient mailService = MailClient.create(vertx, mailConfig());
 
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-          .setSubject("Test email").setText("this is a message");
+        .setSubject("Test email").setText("this is a message");
 
       PassOnce pass1 = new PassOnce(s -> context.fail(s));
       PassOnce pass2 = new PassOnce(s -> context.fail(s));
@@ -91,7 +90,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       MailClient mailService = MailClient.create(vertx, mailConfig());
 
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-          .setSubject("Test email").setText("this is a message");
+        .setSubject("Test email").setText("this is a message");
 
       PassOnce pass1 = new PassOnce(s -> context.fail(s));
       PassOnce pass2 = new PassOnce(s -> context.fail(s));
@@ -126,7 +125,6 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
   /**
    * send two mails after each other when the server fails the RSET operation after sending the first
    * mail
-   *
    */
   @Test
   public void mailConnectionRsetFailTest(TestContext context) {
@@ -134,19 +132,19 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
 
     smtpServer.setCloseImmediately(false);
     smtpServer.setDialogue("220 example.com ESMTP",
-        "EHLO",
-        "250-example.com\n" +
-            "250-SIZE 1000000\n" +
-            "250 PIPELINING",
-            "MAIL FROM",
-            "250 2.1.0 Ok",
-            "RCPT TO",
-            "250 2.1.5 Ok",
-            "DATA",
-            "354 End data with <CR><LF>.<CR><LF>",
-            "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-            "RSET",
-        "500 xxx");
+      "EHLO",
+      "250-example.com\n" +
+        "250-SIZE 1000000\n" +
+        "250 PIPELINING",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+      "RSET",
+      "500 xxx");
 
     Async mail1 = context.async();
     Async mail2 = context.async();
@@ -156,7 +154,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       MailClient mailService = MailClient.create(vertx, mailConfig());
 
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
-          .setSubject("Test email").setText("this is a message");
+        .setSubject("Test email").setText("this is a message");
 
       PassOnce pass1 = new PassOnce(s -> context.fail(s));
       PassOnce pass2 = new PassOnce(s -> context.fail(s));
@@ -201,17 +199,17 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
   public void startSMTP() {
     smtpServer = new TestSmtpServer(vertx);
     smtpServer.setDialogue("220 example.com ESMTP",
-        "EHLO",
-        "250-example.com\n" +
-            "250-SIZE 1000000\n" +
-            "250 PIPELINING",
-            "MAIL FROM",
-            "250 2.1.0 Ok",
-            "RCPT TO",
-            "250 2.1.5 Ok",
-            "DATA",
-            "354 End data with <CR><LF>.<CR><LF>",
-            "250 2.0.0 Ok: queued as ABCDDEF0123456789");
+      "EHLO",
+      "250-example.com\n" +
+        "250-SIZE 1000000\n" +
+        "250 PIPELINING",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789");
   }
 
   @After

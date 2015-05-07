@@ -13,7 +13,7 @@ import java.util.List;
  * create MIME mail messages from a MailMessage object
  * <p>
  * example usage is:
- * 
+ * <p>
  * <pre>
  * {@code
  * MailMessage = new MailMessage();
@@ -21,12 +21,11 @@ import java.util.List;
  * String message = new MailEncoder(mailmessage).encode();
  * }
  * </pre>
- *
+ * <p>
  * usually you are not using this class directly, rather it will be used by
  * {@code sendMail()} in MailServiceImpl
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailEncoder {
 
@@ -40,9 +39,8 @@ public class MailEncoder {
    * <p>
    * The class will probably get a few setters for optional features of the SMTP
    * protocol later e.g. 8BIT or SMTPUTF (this is not yet supported)
-   * 
-   * @param message
-   *          the message to encode later
+   *
+   * @param message the message to encode later
    */
   public MailEncoder(MailMessage message) {
     this.message = message;
@@ -50,7 +48,7 @@ public class MailEncoder {
 
   /**
    * encode the MailMessage to a String
-   * 
+   *
    * @return the encoded message
    */
   public String encode() {
