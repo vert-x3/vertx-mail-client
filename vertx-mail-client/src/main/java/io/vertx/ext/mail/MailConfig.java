@@ -356,6 +356,7 @@ public class MailConfig {
    *
    * @return the netClientOptions
    */
+  // FIXME - why allow NetClientOptions to be provided?
   public NetClientOptions getNetClientOptions() {
     return netClientOptions;
   }
