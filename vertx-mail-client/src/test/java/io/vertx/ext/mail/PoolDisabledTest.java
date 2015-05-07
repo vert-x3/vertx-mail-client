@@ -33,7 +33,7 @@ public class PoolDisabledTest extends SMTPTestWiser {
         log.info(result.result().toString());
         log.debug("waiting for 20 seconds");
         //FIXME - 20 seconds waits in testsuites suck!
-        vertx.setTimer(20000, v -> {
+        vertx.setTimer(2000, v -> {
           log.debug("timer finished");
           async.complete();
         });

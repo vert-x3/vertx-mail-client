@@ -40,6 +40,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     this.netClient = vertx.createNetClient(netClientOptions);
   }
 
+  // FIXME Why not use Handler<AsyncResult<SMTPConnection>> - that's what it's for
   void getConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("getConnection()");
     if (closed) {
