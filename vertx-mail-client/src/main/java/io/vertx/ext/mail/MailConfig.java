@@ -353,6 +353,9 @@ public class MailConfig {
 
   /**
    * get the NetClientOptions to be used when opening SMTP connections
+   * <p>
+   * when using a custom key store, the NetClientOptions are necessary to the
+   * set the correct jks options, see this example {@code io/vertx/ext/mail/MailLocalTest}
    *
    * @return the netClientOptions
    */
@@ -419,7 +422,8 @@ public class MailConfig {
 
   /**
    * get the max allowed number of open connections to the mailserver
-   * if not set or 0, the default is 10
+   * if not set the default is 10
+   * if set to 0 the connection count is unlimited
    * set to -1 to disable connection pooling completely
    *
    * @return max pool size value

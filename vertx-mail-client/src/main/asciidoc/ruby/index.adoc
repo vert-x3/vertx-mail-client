@@ -1,10 +1,10 @@
 = Vert.x Mail (SMTP client implementation)
 
-`link:yardoc/VertxMail/MailService.html[MailService]` simple example:
+`link:yardoc/VertxMail/MailClient.html[MailClient]` simple example:
 
 [source,ruby]
 ----
-require 'vertx-mail/mail_service'
+require 'vertx-mail/mail_client'
 mailConfig = {
   'hostname' => "mail.example.com",
   'port' => 587,
@@ -12,7 +12,7 @@ mailConfig = {
   'password' => "pw"
 }
 
-mailService = VertxMail::MailService.create(vertx, mailConfig)
+mailClient = VertxMail::MailClient.create(vertx, mailConfig)
 
 email = {
   'from' => "address@example.com",
@@ -22,7 +22,7 @@ email = {
   'html' => "HTML message <a href=\"http://vertx.io\">vertx</a>"
 }
 
-mailService.send_mail(email) { |result,result_err|
+mailClient.send_mail(email) { |result,result_err|
   if (result_err == nil)
     puts result
   else
@@ -36,13 +36,13 @@ attachments can be added as Buffer object
 
 [source,ruby]
 ----
-require 'vertx-mail/mail_service'
+require 'vertx-mail/mail_client'
 require 'vertx/buffer'
 # default config will use localhost:25
 mailConfig = {
 }
 
-mailService = VertxMail::MailService.create(vertx, mailConfig)
+mailClient = VertxMail::MailClient.create(vertx, mailConfig)
 
 email = {
   'from' => "address@example.com",
@@ -58,32 +58,7 @@ attachment = {
 
 email['attachment'] = attachment
 
-mailService.send_mail(email) { |result,result_err|
-  if (result_err == nil)
-    puts result
-  else
-    puts "got exception"
-    result_err.print_stack_trace()
-  end
-}
-
-----
-the service interface can send mails via the eventbus if the service is running
-on other machine in the cluster
-
-[source,ruby]
-----
-require 'vertx-mail/mail_service'
-mailService = VertxMail::MailService.create_event_bus_proxy(vertx, "vertx.mail")
-
-email = {
-  'from' => "user@example.com",
-  'bounceAddress' => "bounce@example.com",
-  'to' => "user@example.com"
-}
-
-mailService.send_mail(email) { |result,result_err|
-  puts "mail finished"
+mailClient.send_mail(email) { |result,result_err|
   if (result_err == nil)
     puts result
   else

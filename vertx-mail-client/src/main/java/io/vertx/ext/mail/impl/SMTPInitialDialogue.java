@@ -49,7 +49,8 @@ class SMTPInitialDialogue {
   }
 
   private boolean isEsmtpSupported(String message) {
-    // FIXME What if the message body contains the text ESMTP
+    // note that message in this case is the inital reply from the server
+    // e.g. 220 example.com ESMTP Postfix
     return message.contains("ESMTP");
   }
 
