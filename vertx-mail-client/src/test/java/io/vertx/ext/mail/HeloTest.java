@@ -111,7 +111,7 @@ public class HeloTest extends SMTPTestDummy {
       "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
-    runTestException(mailServiceTLS());
+    runTestException(mailClientTLS());
   }
 
   @Test

@@ -15,7 +15,7 @@ public class LongAuthTest extends SMTPTestWiser {
   @Test
   public void mailTest() throws MessagingException {
     testSuccess(
-      mailServiceLogin("*************************************************",
+      mailClientLogin("*************************************************",
         "*************************************************"), exampleMessage(), assertExampleMessage());
   }
 

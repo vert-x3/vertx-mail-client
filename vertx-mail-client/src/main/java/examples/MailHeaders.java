@@ -19,7 +19,7 @@ public class MailHeaders extends AbstractVerticle {
     MailConfig mailConfig = new MailConfig("smtp.example.com", 465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
       .setSsl(true);
 
-    MailClient mailService = MailClient.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
       .setFrom("user1@example.com")
@@ -29,7 +29,7 @@ public class MailHeaders extends AbstractVerticle {
       .setHeaders(new CaseInsensitiveHeaders().add("X-Header", "this header probably means something special"))
       .setText("this is a test mail from vertx <http://vertx.io/>\n");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       System.out.println("mail is finished");
     });
   }

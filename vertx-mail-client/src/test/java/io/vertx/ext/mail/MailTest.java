@@ -66,7 +66,7 @@ public class MailTest extends VertxTestBase {
 //    mailConfig.setTrustAll(true);
 //    mailConfig.setAuthMethods("DIGEST-MD5");
 
-    MailClient mailService = MailClient.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
@@ -105,7 +105,7 @@ public class MailTest extends VertxTestBase {
 
     email.setAttachment(list);
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());

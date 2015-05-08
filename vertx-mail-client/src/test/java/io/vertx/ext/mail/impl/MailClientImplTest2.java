@@ -19,16 +19,16 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class MailServiceImplTest2 extends SMTPTestWiser {
+public class MailClientImplTest2 extends SMTPTestWiser {
 
-  private static final Logger log = LoggerFactory.getLogger(MailServiceImplTest2.class);
+  private static final Logger log = LoggerFactory.getLogger(MailClientImplTest2.class);
 
   /**
    * test if we can shut down the connection pool while a send operation is
    * still running the active connection will be shut down when the mail has
    * finished sending (this is basically the same test as
    * {@link SMTPConnectionPoolShutdownTest#testStopWhileMailActive(TestContext)} but
-   * it goes through the MailService interface and actually sends a mail)
+   * it goes through the MailClient interface and actually sends a mail)
    * (currently doesn't work)
    */
 //  @Ignore
@@ -40,7 +40,7 @@ public class MailServiceImplTest2 extends SMTPTestWiser {
     vertx.runOnContext(v -> {
       MailConfig config = configNoSSL();
 
-      MailClient mailService = MailClient.create(vertx, config);
+      MailClient mailClient = MailClient.create(vertx, config);
 
       // send large mail so we some time to call the .stop() method
       StringBuilder sb = new StringBuilder();
@@ -52,7 +52,7 @@ public class MailServiceImplTest2 extends SMTPTestWiser {
 
       MailMessage email = new MailMessage("from@example.com", "user@example.com", "Subject", text);
 
-      mailService.sendMail(email, result -> {
+      mailClient.sendMail(email, result -> {
         log.info("mail finished");
         if (result.succeeded()) {
           log.info(result.result().toString());
@@ -66,7 +66,7 @@ public class MailServiceImplTest2 extends SMTPTestWiser {
       // otherwise we shut down the connection pool before sending even starts
       vertx.setTimer(100, v1 -> {
         log.info("closing mail service");
-        mailService.close();
+        mailClient.close();
       });
     });
   }

@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * represent a mail message that can be sent via the MailService
+ * represent a mail message that can be sent via the MailClient
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */

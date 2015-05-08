@@ -22,7 +22,7 @@ public class Pool1SlotTest extends SMTPTestWiser {
   @Test
   public void mailTest(TestContext context) {
     final MailConfig config = configNoSSL().setMaxPoolSize(1);
-    final MailClient mailService = MailClient.create(vertx, config);
+    final MailClient mailClient = MailClient.create(vertx, config);
     Async async = context.async();
 
     MailMessage email = exampleMessage();
@@ -30,15 +30,15 @@ public class Pool1SlotTest extends SMTPTestWiser {
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        mailService.sendMail(email, result2 -> {
+        mailClient.sendMail(email, result2 -> {
           log.info("mail finished");
           pass2.passOnce();
-          mailService.close();
+          mailClient.close();
           if (result2.succeeded()) {
             log.info(result2.result().toString());
             async.complete();
@@ -57,7 +57,7 @@ public class Pool1SlotTest extends SMTPTestWiser {
   @Test
   public void mailTwiceTest(TestContext context) {
     final MailConfig config = configNoSSL().setMaxPoolSize(1);
-    final MailClient mailService = MailClient.create(vertx, config);
+    final MailClient mailClient = MailClient.create(vertx, config);
     Async async = context.async();
 
     MailMessage email = exampleMessage();
@@ -65,7 +65,7 @@ public class Pool1SlotTest extends SMTPTestWiser {
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
@@ -75,10 +75,10 @@ public class Pool1SlotTest extends SMTPTestWiser {
         context.fail(result.cause());
       }
     });
-    mailService.sendMail(email, result2 -> {
+    mailClient.sendMail(email, result2 -> {
       log.info("mail finished");
       pass2.passOnce();
-      mailService.close();
+      mailClient.close();
       if (result2.succeeded()) {
         log.info(result2.result().toString());
         async.complete();

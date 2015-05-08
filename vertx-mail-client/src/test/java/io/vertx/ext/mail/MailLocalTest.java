@@ -18,25 +18,25 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTest() {
 
-    testSuccess(mailServiceLogin(), exampleMessage(), assertExampleMessage());
+    testSuccess(mailClientLogin(), exampleMessage(), assertExampleMessage());
   }
 
   @Test
   public void mailTestTLSTrustAll() {
 
-    MailClient mailService = MailClient.create(vertx,
+    MailClient mailClient = MailClient.create(vertx,
       configLogin().setStarttls(StartTLSOptions.REQUIRED).setTrustAll(true));
 
-    testSuccess(mailService, exampleMessage(), assertExampleMessage());
+    testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
   @Test
   public void mailTestTLSNoTrust() throws MessagingException, IOException {
 
-    MailClient mailService = MailClient.create(vertx,
+    MailClient mailClient = MailClient.create(vertx,
       configLogin().setStarttls(StartTLSOptions.REQUIRED));
 
-    testException(mailService, exampleMessage());
+    testException(mailClient, exampleMessage());
   }
 
   @Test
@@ -44,12 +44,12 @@ public class MailLocalTest extends SMTPTestWiser {
     NetClientOptions netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(
       "src/test/resources/certs/keystore.jks").setPassword("password"));
 
-    MailClient mailService = MailClient.create(vertx,
+    MailClient mailClient = MailClient.create(vertx,
       configLogin()
         .setStarttls(StartTLSOptions.REQUIRED)
         .setNetClientOptions(netClientOptions));
 
-    testSuccess(mailService, exampleMessage(), assertExampleMessage());
+    testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
 }

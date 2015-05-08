@@ -19,24 +19,24 @@ import io.vertx.ext.mail.impl.MailClientImpl;
 public interface MailClient {
 
   /**
-   * create an instance of MailService that is running in the local JVM
+   * create an instance of MailClient that is running in the local JVM
    *
    * @param vertx  the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails
-   * @return MailService instance that can then be used to send multiple mails
+   * @return MailClient instance that can then be used to send multiple mails
    */
   static MailClient create(Vertx vertx, MailConfig config) {
     return new MailClientImpl(vertx, config);
   }
 
   /**
-   * send a single mail via MailService
+   * send a single mail via MailClient
    *
    * @param email         MailMessage object containing the mail text, from/to, attachments etc
    * @param resultHandler will be called when the operation is finished or it fails
    *                      (may be null to ignore the result)
    *                      the result JsonObject currently only contains {@code {"result":"success"}}
-   * @return this MailService instance so the method can be used fluently
+   * @return this MailClient instance so the method can be used fluently
    */
   @Fluent
   MailClient sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);

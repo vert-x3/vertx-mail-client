@@ -21,7 +21,7 @@ public class Examples {
       .setUsername("user")
       .setPassword("pw");
 
-    MailClient mailService = MailClient.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
       .setFrom("address@example.com")
@@ -30,7 +30,7 @@ public class Examples {
       .setText("this is a message")
       .setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {
@@ -44,7 +44,7 @@ public class Examples {
     // default config will use localhost:25
     MailConfig mailConfig = new MailConfig();
 
-    MailClient mailService = MailClient.create(vertx, mailConfig);
+    MailClient mailClient = MailClient.create(vertx, mailConfig);
 
     MailMessage email = new MailMessage()
       .setFrom("address@example.com")
@@ -58,7 +58,7 @@ public class Examples {
 
     email.setAttachment(attachment);
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {

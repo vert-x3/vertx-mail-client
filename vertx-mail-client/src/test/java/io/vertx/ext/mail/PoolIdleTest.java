@@ -19,14 +19,14 @@ public class PoolIdleTest extends SMTPTestWiser {
   @Test
   public void mailTest(TestContext context) {
     final MailConfig config = configNoSSL().setMaxPoolSize(1);
-    final MailClient mailService = MailClient.create(vertx, config);
+    final MailClient mailClient = MailClient.create(vertx, config);
     Async async = context.async();
 
     MailMessage email = exampleMessage();
 
     PassOnce pass = new PassOnce(s -> context.fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
       if (result.succeeded()) {

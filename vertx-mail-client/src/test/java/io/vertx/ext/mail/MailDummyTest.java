@@ -69,7 +69,7 @@ public class MailDummyTest extends SMTPTestDummy {
    */
   @Test
   public void mailTestNoResult() throws InterruptedException {
-    mailServiceDefault().sendMail(exampleMessage(), null);
+    mailClientDefault().sendMail(exampleMessage(), null);
 
     Thread.sleep(2000);
   }

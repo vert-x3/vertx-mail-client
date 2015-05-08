@@ -1,7 +1,7 @@
 == MailMessage
 
 ++++
- represent a mail message that can be sent via the MailService
+ represent a mail message that can be sent via the MailClient
 ++++
 '''
 

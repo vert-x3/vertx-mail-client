@@ -16,7 +16,7 @@ public class MailPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolTest.class);
 
-  MailClient mailService;
+  MailClient mailClient;
 
   @Test
   public void mailTest(TestContext context) {
@@ -24,22 +24,22 @@ public class MailPoolTest extends SMTPTestWiser {
 
     Async async = context.async();
 
-    MailClient mailService = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        mailService.sendMail(email, result2 -> {
+        mailClient.sendMail(email, result2 -> {
           log.info("mail finished");
           pass2.passOnce();
-          mailService.close();
+          mailClient.close();
           if (result2.succeeded()) {
             log.info(result2.result().toString());
             async.complete();
@@ -62,14 +62,14 @@ public class MailPoolTest extends SMTPTestWiser {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailService = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
@@ -81,7 +81,7 @@ public class MailPoolTest extends SMTPTestWiser {
       }
     });
 
-    mailService.sendMail(email, result2 -> {
+    mailClient.sendMail(email, result2 -> {
       log.info("mail finished");
       pass2.passOnce();
       if (result2.succeeded()) {
@@ -103,7 +103,7 @@ public class MailPoolTest extends SMTPTestWiser {
 
       log.info("starting");
 
-      MailClient mailService = MailClient.create(vertx, configNoSSL());
+      MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
       MailMessage email = exampleMessage();
 
@@ -113,12 +113,12 @@ public class MailPoolTest extends SMTPTestWiser {
       PassOnce pass4 = new PassOnce(s -> context.fail(s));
 
       log.info("starting mail 1");
-      mailService.sendMail(email, result -> {
+      mailClient.sendMail(email, result -> {
         log.info("mail finished");
         pass1.passOnce();
         if (result.succeeded()) {
           log.info(result.result().toString());
-          mailService.sendMail(email, result2 -> {
+          mailClient.sendMail(email, result2 -> {
             log.info("mail finished");
             pass2.passOnce();
             if (result2.succeeded()) {
@@ -136,12 +136,12 @@ public class MailPoolTest extends SMTPTestWiser {
       });
 
       log.info("starting mail 2");
-      mailService.sendMail(email, result -> {
+      mailClient.sendMail(email, result -> {
         log.info("mail finished");
         pass3.passOnce();
         if (result.succeeded()) {
           log.info(result.result().toString());
-          mailService.sendMail(email, result2 -> {
+          mailClient.sendMail(email, result2 -> {
             log.info("mail finished");
             pass4.passOnce();
             if (result2.succeeded()) {

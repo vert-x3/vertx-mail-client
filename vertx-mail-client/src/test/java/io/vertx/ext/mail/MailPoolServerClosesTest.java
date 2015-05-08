@@ -34,7 +34,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailService = MailClient.create(vertx, mailConfig());
+    MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
       .setSubject("Test email").setText("this is a message");
@@ -43,14 +43,14 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
     log.info("starting mail 1");
-    mailService.sendMail(email, result -> {
+    mailClient.sendMail(email, result -> {
       log.info("mail finished 1");
       pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
         mail1.complete();
         log.info("starting mail 2");
-        mailService.sendMail(email, result2 -> {
+        mailClient.sendMail(email, result2 -> {
           pass2.passOnce();
           log.info("mail finished 2");
           if (result2.succeeded()) {
@@ -84,7 +84,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
 
     vertx.getOrCreateContext().runOnContext(v -> {
 
-      MailClient mailService = MailClient.create(vertx, mailConfig());
+      MailClient mailClient = MailClient.create(vertx, mailConfig());
 
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
         .setSubject("Test email").setText("this is a message");
@@ -93,14 +93,14 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
       log.info("starting mail 1");
-      mailService.sendMail(email, result -> {
+      mailClient.sendMail(email, result -> {
         pass1.passOnce();
         log.info("mail finished 1");
         if (result.succeeded()) {
           log.info(result.result().toString());
           mail1.complete();
           log.info("starting mail 2");
-          mailService.sendMail(email, result2 -> {
+          mailClient.sendMail(email, result2 -> {
             pass2.passOnce();
             log.info("mail finished 2");
             if (result2.succeeded()) {
@@ -148,7 +148,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
 
     vertx.getOrCreateContext().runOnContext(v -> {
 
-      MailClient mailService = MailClient.create(vertx, mailConfig());
+      MailClient mailClient = MailClient.create(vertx, mailConfig());
 
       MailMessage email = new MailMessage().setFrom("user@example.com").setTo("user@example.com")
         .setSubject("Test email").setText("this is a message");
@@ -157,14 +157,14 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
       log.info("starting mail 1");
-      mailService.sendMail(email, result -> {
+      mailClient.sendMail(email, result -> {
         pass1.passOnce();
         log.info("mail finished 1");
         if (result.succeeded()) {
           log.info(result.result().toString());
           mail1.complete();
           log.info("starting mail 2");
-          mailService.sendMail(email, result2 -> {
+          mailClient.sendMail(email, result2 -> {
             pass2.passOnce();
             log.info("mail finished 2");
             if (result2.succeeded()) {

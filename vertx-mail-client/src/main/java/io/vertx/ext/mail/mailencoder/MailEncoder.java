@@ -23,7 +23,7 @@ import java.util.List;
  * </pre>
  * <p>
  * usually you are not using this class directly, rather it will be used by
- * {@code sendMail()} in MailServiceImpl
+ * {@code sendMail()} in MailClientImpl
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */

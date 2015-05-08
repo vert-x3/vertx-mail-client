@@ -12,7 +12,7 @@ def mailConfig = [
   password:"pw"
 ]
 
-def mailService = MailClient.create(vertx, mailConfig)
+def mailClient = MailClient.create(vertx, mailConfig)
 
 def email = [
   from:"address@example.com",
@@ -22,7 +22,7 @@ def email = [
   html:"HTML message <a href=\"http://vertx.io\">vertx</a>"
 ]
 
-mailService.sendMail(email, { result ->
+mailClient.sendMail(email, { result ->
   if (result.succeeded()) {
     println(result.result())
   } else {
@@ -41,7 +41,7 @@ import io.vertx.groovy.core.buffer.Buffer
 // default config will use localhost:25
 def mailConfig = [:]
 
-def mailService = MailClient.create(vertx, mailConfig)
+def mailClient = MailClient.create(vertx, mailConfig)
 
 def email = [
   from:"address@example.com",
@@ -57,7 +57,7 @@ def attachment = [
 
 email.attachment = attachment
 
-mailService.sendMail(email, { result ->
+mailClient.sendMail(email, { result ->
   if (result.succeeded()) {
     println(result.result())
   } else {

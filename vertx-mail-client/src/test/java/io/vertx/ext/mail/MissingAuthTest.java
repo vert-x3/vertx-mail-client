@@ -13,7 +13,7 @@ public class MissingAuthTest extends SMTPTestDummy {
 
   @Test
   public void mailTest() {
-    runTestException(mailServiceLogin());
+    runTestException(mailClientLogin());
   }
 
 }

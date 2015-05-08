@@ -14,9 +14,9 @@ import org.junit.Test;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public class MailServiceImplTest extends VertxTestBase {
+public class MailClientImplTest extends VertxTestBase {
 
-  private static final Logger log = LoggerFactory.getLogger(MailServiceImplTest.class);
+  private static final Logger log = LoggerFactory.getLogger(MailClientImplTest.class);
 
   /**
    * Test method for
@@ -24,9 +24,9 @@ public class MailServiceImplTest extends VertxTestBase {
    * .
    */
   @Test
-  public final void testMailServiceImpl() {
-    MailClient mailService = new MailClientImpl(vertx, new MailConfig());
-    assertNotNull(mailService);
+  public final void testMailClientImpl() {
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    assertNotNull(mailClient);
   }
 
   /**
@@ -34,22 +34,22 @@ public class MailServiceImplTest extends VertxTestBase {
    */
   @Test
   public final void testClose() {
-    MailClient mailService = new MailClientImpl(vertx, new MailConfig());
-    mailService.close();
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    mailClient.close();
   }
 
   @Test
   public final void test2xClose() {
-    MailClient mailService = new MailClientImpl(vertx, new MailConfig());
-    mailService.close();
-    mailService.close();
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    mailClient.close();
+    mailClient.close();
   }
 
   @Test
   public final void testClosedSend() {
-    MailClient mailService = new MailClientImpl(vertx, new MailConfig());
-    mailService.close();
-    mailService.sendMail(new MailMessage(), result -> {
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    mailClient.close();
+    mailClient.sendMail(new MailMessage(), result -> {
       if (result.succeeded()) {
         log.info(result.result().toString());
         fail("this test should throw an Exception");

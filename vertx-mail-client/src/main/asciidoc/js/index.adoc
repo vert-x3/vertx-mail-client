@@ -12,7 +12,7 @@ var mailConfig = {
   "password" : "pw"
 };
 
-var mailService = MailClient.create(vertx, mailConfig);
+var mailClient = MailClient.create(vertx, mailConfig);
 
 var email = {
   "from" : "address@example.com",
@@ -22,7 +22,7 @@ var email = {
   "html" : "HTML message <a href=\"http://vertx.io\">vertx</a>"
 };
 
-mailService.sendMail(email, function (result, result_err) {
+mailClient.sendMail(email, function (result, result_err) {
   if (result_err == null) {
     console.log(result);
   } else {
@@ -42,7 +42,7 @@ var Buffer = require("vertx-js/buffer");
 var mailConfig = {
 };
 
-var mailService = MailClient.create(vertx, mailConfig);
+var mailClient = MailClient.create(vertx, mailConfig);
 
 var email = {
   "from" : "address@example.com",
@@ -58,7 +58,7 @@ var attachment = {
 
 email.attachment = attachment;
 
-mailService.sendMail(email, function (result, result_err) {
+mailClient.sendMail(email, function (result, result_err) {
   if (result_err == null) {
     console.log(result);
   } else {

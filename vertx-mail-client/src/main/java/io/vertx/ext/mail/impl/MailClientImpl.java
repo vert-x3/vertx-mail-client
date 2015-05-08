@@ -9,7 +9,7 @@ import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 
 /**
- * MailService implementation for sending mails inside the local JVM
+ * MailClient implementation for sending mails inside the local JVM
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
