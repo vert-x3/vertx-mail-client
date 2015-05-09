@@ -1,0 +1,94 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:groovydoc/io/vertx/groovy/ext/mail/MailService.html[MailService]` simple example:
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailService
+def mailConfig = [
+  hostname:"mail.example.com",
+  port:587,
+  username:"user",
+  password:"pw"
+]
+
+def mailService = MailService.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"meaningful subject",
+  text:"this is a message",
+  html:"HTML message <a href=\"http://vertx.io\">vertx</a>"
+]
+
+mailService.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----
+attachments can be added as Buffer object
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailService
+import io.vertx.groovy.core.buffer.Buffer
+// default config will use localhost:25
+def mailConfig = [:]
+
+def mailService = MailService.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"your file",
+  text:"please take a look at the attached file"
+]
+
+def attachment = [
+  name:"file.dat",
+  data:Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
+]
+
+email.attachment = attachment
+
+mailService.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----
+the service interface can send mails via the eventbus if the service is running
+on other machine in the cluster
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailService
+def mailService = MailService.createEventBusProxy(vertx, "vertx.mail")
+
+def email = [
+  from:"user@example.com",
+  bounceAddress:"bounce@example.com",
+  to:"user@example.com"
+]
+
+mailService.sendMail(email, { result ->
+  println("mail finished")
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----

@@ -1,0 +1,73 @@
+package io.vertx.groovy.ext.mail
+
+import static org.hamcrest.core.IsEqual.equalTo
+import static org.hamcrest.core.StringContains.containsString
+import io.vertx.core.logging.Logger
+import io.vertx.core.logging.impl.LoggerFactory
+import io.vertx.ext.mail.LoginOption
+import io.vertx.ext.mail.MailConfig
+import io.vertx.ext.mail.MailMessage
+import io.vertx.ext.mail.StarttlsOption
+import io.vertx.ext.mail.SMTPTestWiser
+import io.vertx.groovy.core.Vertx
+import io.vertx.test.core.VertxTestBase
+
+import javax.mail.MessagingException
+import javax.mail.internet.MimeMessage
+
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.subethamail.wiser.Wiser
+import org.subethamail.wiser.WiserMessage
+
+/**
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ *
+ * this test uses a local smtp server mockup (wiser)
+ */
+public class GroovyMailTest extends SMTPTestWiser {
+
+  private static final Logger log = LoggerFactory.getLogger(GroovyMailTest.class)
+
+  Vertx vertx = Vertx.vertx()
+
+  @Test
+  public void mailTest() {
+    MailConfig mailConfig = new MailConfig("localhost", 1587, StarttlsOption.DISABLED, LoginOption.REQUIRED)
+
+    mailConfig.username="username"
+    mailConfig.password="asdf"
+
+    MailService mailService = MailService.create(vertx, mailConfig.toJson().map)
+
+    MailMessage email = new MailMessage()
+
+    email.from="from@example.com"
+    email.to=["user@example.com (User Name)", "another@example.com (Another User)"]
+    email.bounceAddress="bounce@example.com"
+    email.subject="Test email"
+    email.text="this is a test email"
+
+    mailService.sendMail(email.toJson().map, { result ->
+      log.info("mail finished")
+      if (result.succeeded()) {
+        log.info(result.result())
+        testComplete()
+      } else {
+        log.warn("got exception", result.cause())
+        fail(result.cause().toString())
+      }
+    })
+
+    await()
+
+    final WiserMessage message = wiser.messages[0]
+    String sender = message.envelopeSender
+    final MimeMessage mimeMessage = message.mimeMessage
+    assertEquals("bounce@example.com", sender)
+    assertThat(mimeMessage.contentType, containsString("text/plain"))
+    assertThat(mimeMessage.subject, equalTo("Test email"))
+  }
+
+}

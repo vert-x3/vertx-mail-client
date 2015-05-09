@@ -1,22 +1,4 @@
-# Vert.x mail-service (SMTP client)
-
-A first version of a smtp client for vert.x.
-
-The test classes shows how this could be used, the whole client is async and
-supports SSL, STARTTLS, a few methods of SASL.
-
-Supported are plaintext and html messages with UTF-8, binary attachments and
-multipart/alternative.
-
-Using codegen, the service interface is available in different languages
-supported by vert.x
-
-* link:src/main/asciidoc/java/index.adoc[Java in-source docs]
-* link:src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
-* link:src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
-
-For questions about the project, please write a message on the vert.x google
-group or drop by on irc.
+= Vert.x Mail (SMTP client implementation)
 
 `link:../../apidocs/io/vertx/ext/mail/MailService.html[MailService]` simple example:
 
