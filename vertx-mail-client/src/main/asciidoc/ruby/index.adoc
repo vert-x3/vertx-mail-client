@@ -1,0 +1,70 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:yardoc/VertxMail/MailClient.html[MailClient]` simple example:
+
+[source,ruby]
+----
+require 'vertx-mail/mail_client'
+mailConfig = {
+  'hostname' => "mail.example.com",
+  'port' => 587,
+  'username' => "user",
+  'password' => "pw"
+}
+
+mailClient = VertxMail::MailClient.create(vertx, mailConfig)
+
+email = {
+  'from' => "address@example.com",
+  'to' => "address@example.com",
+  'subject' => "meaningful subject",
+  'text' => "this is a message",
+  'html' => "HTML message <a href=\"http://vertx.io\">vertx</a>"
+}
+
+mailClient.send_mail(email) { |result,result_err|
+  if (result_err == nil)
+    puts result
+  else
+    puts "got exception"
+    result_err.print_stack_trace()
+  end
+}
+
+----
+attachments can be added as Buffer object
+
+[source,ruby]
+----
+require 'vertx-mail/mail_client'
+require 'vertx/buffer'
+# default config will use localhost:25
+mailConfig = {
+}
+
+mailClient = VertxMail::MailClient.create(vertx, mailConfig)
+
+email = {
+  'from' => "address@example.com",
+  'to' => "address@example.com",
+  'subject' => "your file",
+  'text' => "please take a look at the attached file"
+}
+
+attachment = {
+  'name' => "file.dat",
+  'data' => Vertx::Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
+}
+
+email['attachment'] = attachment
+
+mailClient.send_mail(email) { |result,result_err|
+  if (result_err == nil)
+    puts result
+  else
+    puts "got exception"
+    result_err.print_stack_trace()
+  end
+}
+
+----
