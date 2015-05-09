@@ -1,4 +1,4 @@
-# Vert.x mail-service (SMTP client)
+# Vert.x mail (SMTP client)
 
 A first version of a smtp client for vert.x.
 
@@ -8,7 +8,7 @@ supports SSL, STARTTLS, a few methods of SASL.
 Supported are plaintext and html messages with UTF-8, binary attachments and
 multipart/alternative.
 
-Using codegen, the service interface is available in different languages
+Using codegen, the client interface is available in different languages
 supported by vert.x
 
 * link:vertx-mail-client/src/main/asciidoc/java/index.adoc[Java in-source docs]
