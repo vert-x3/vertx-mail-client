@@ -11,10 +11,10 @@ multipart/alternative.
 Using codegen, the service interface is available in different languages
 supported by vert.x
 
-* link:src/main/asciidoc/java/index.adoc[Java in-source docs]
-* link:src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
-* link:src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
-* Ruby *TODO*
+* link:vertx-mail-client/src/main/asciidoc/java/index.adoc[Java in-source docs]
+* link:vertx-mail-client/src/main/asciidoc/js/index.adoc[JavaScript in-source docs]
+* link:vertx-mail-client/src/main/asciidoc/groovy/index.adoc[Groovy in-source docs]
+* link:vertx-mail-client/src/main/asciidoc/ruby/index.adoc[Ruby in-source docs]
 
 For questions about the project, please write a message on the vert.x google
 group or drop by on irc.
