@@ -29,6 +29,7 @@ import java.util.ArrayList;import java.util.HashSet;import java.util.List;import
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.ext.mail.MailService;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -91,6 +92,7 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
     }
     accessed();
     switch (action) {
+
       case "sendMail": {
         service.sendMail(new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), createHandler(msg));
         break;

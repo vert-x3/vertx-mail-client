@@ -27,7 +27,7 @@ public class MailServiceVerticleTest extends VertxTestBase {
   public void testServiceError() {
     JsonObject config = new JsonObject();
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
-    vertx.deployVerticle("MailServiceVerticle", deploymentOptions, r -> {
+    vertx.deployVerticle("io.vertx.ext.mail.MailServiceVerticle", deploymentOptions, r -> {
       if (r.succeeded()) {
         log.info(r.result());
         fail("operation should fail");

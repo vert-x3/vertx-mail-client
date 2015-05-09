@@ -72,5 +72,20 @@ var MailService = function(j_val) {
   this._jdel = j_mailService;
 };
 
+/**
+ create an instance of  MailService that calls the mail service via the event bus running somewhere else
+
+ @memberof module:vertx-mail-js/mail_service
+ @param vertx {Vertx} the Vertx instance the operation will be run in 
+ @param address {string} the eb address of the mail service running somewhere, default is "vertx.mail" 
+ @return {MailService} MailService instance that can then be used to send multiple mails
+ */
+MailService.createEventBusProxy = function(vertx, address) {
+  var __args = arguments;
+  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
+    return new MailService(JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address));
+  } else utils.invalidArgs();
+};
+
 // We export the Constructor function
 module.exports = MailService;

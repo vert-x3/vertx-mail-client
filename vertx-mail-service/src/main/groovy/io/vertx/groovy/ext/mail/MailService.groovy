@@ -17,6 +17,7 @@
 package io.vertx.groovy.ext.mail;
 import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
+import io.vertx.groovy.core.Vertx
 import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
@@ -33,6 +34,16 @@ public class MailService extends MailClient {
   }
   public Object getDelegate() {
     return delegate;
+  }
+  /**
+   * create an instance of  MailService that calls the mail service via the event bus running somewhere else
+   * @param vertx the Vertx instance the operation will be run in
+   * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
+   * @return MailService instance that can then be used to send multiple mails
+   */
+  public static MailService createEventBusProxy(Vertx vertx, String address) {
+    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
+    return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
     this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {

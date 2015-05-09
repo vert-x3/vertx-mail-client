@@ -15,6 +15,16 @@ module VertxMail
     def j_del
       @j_del
     end
+    #  create an instance of  MailService that calls the mail service via the event bus running somewhere else
+    # @param [::Vertx::Vertx] vertx the Vertx instance the operation will be run in
+    # @param [String] address the eb address of the mail service running somewhere, default is "vertx.mail"
+    # @return [::VertxMail::MailService] MailService instance that can then be used to send multiple mails
+    def self.create_event_bus_proxy(vertx=nil,address=nil)
+      if vertx.class.method_defined?(:j_del) && address.class == String && !block_given?
+        return ::VertxMail::MailService.new(Java::IoVertxExtMail::MailService.java_method(:createEventBusProxy, [Java::IoVertxCore::Vertx.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,address))
+      end
+      raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(vertx,address)"
+    end
     # @param [Hash] email
     # @yield 
     # @return [self]
