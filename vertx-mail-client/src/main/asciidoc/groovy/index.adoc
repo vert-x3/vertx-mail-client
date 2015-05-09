@@ -1,0 +1,69 @@
+= Vert.x Mail (SMTP client implementation)
+
+`link:groovydoc/io/vertx/groovy/ext/mail/MailClient.html[MailClient]` simple example:
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailClient
+def mailConfig = [
+  hostname:"mail.example.com",
+  port:587,
+  username:"user",
+  password:"pw"
+]
+
+def mailClient = MailClient.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"meaningful subject",
+  text:"this is a message",
+  html:"HTML message <a href=\"http://vertx.io\">vertx</a>"
+]
+
+mailClient.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----
+attachments can be added as Buffer object
+
+[source,groovy]
+----
+import io.vertx.groovy.ext.mail.MailClient
+import io.vertx.groovy.core.buffer.Buffer
+// default config will use localhost:25
+def mailConfig = [:]
+
+def mailClient = MailClient.create(vertx, mailConfig)
+
+def email = [
+  from:"address@example.com",
+  to:"address@example.com",
+  subject:"your file",
+  text:"please take a look at the attached file"
+]
+
+def attachment = [
+  name:"file.dat",
+  data:Buffer.buffer("ASDF1234\u0000\u0001\u0080\u00FF\n")
+]
+
+email.attachment = attachment
+
+mailClient.sendMail(email, { result ->
+  if (result.succeeded()) {
+    println(result.result())
+  } else {
+    println("got exception")
+    result.cause().printStackTrace()
+  }
+})
+
+----
