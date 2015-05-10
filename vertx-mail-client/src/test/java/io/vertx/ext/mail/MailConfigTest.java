@@ -43,6 +43,15 @@ public class MailConfigTest {
   }
 
   @Test
+  public void toJsonTest5() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setKeepAlive(false);
+    assertEquals(
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false}",
+      mailConfig.toJson().toString());
+  }
+
+  @Test
   public void newJsonTest() {
     JsonObject json = new MailConfig("somehost", 25).toJson();
     json.put("ssl", true);
@@ -197,6 +206,15 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setIdleTimeout(99);
     assertEquals(99, mailConfig.getIdleTimeout());
+  }
+
+  @Test
+  public void testKeepAlive() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setKeepAlive(false);
+    assertFalse(mailConfig.isKeepAlive());
+    mailConfig.setKeepAlive(true);
+    assertTrue(mailConfig.isKeepAlive());
   }
 
   @Test

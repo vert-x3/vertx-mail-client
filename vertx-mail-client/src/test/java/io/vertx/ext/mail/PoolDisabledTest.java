@@ -18,7 +18,7 @@ public class PoolDisabledTest extends SMTPTestWiser {
 
   @Test
   public void mailTest(TestContext context) {
-    final MailConfig config = configNoSSL().setMaxPoolSize(-1);
+    final MailConfig config = configNoSSL().setKeepAlive(false);
     final MailClient mailClient = MailClient.create(vertx, config);
     Async async = context.async();
 
@@ -31,8 +31,7 @@ public class PoolDisabledTest extends SMTPTestWiser {
       pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        log.debug("waiting for 20 seconds");
-        //FIXME - 20 seconds waits in testsuites suck!
+        // have to assert that the connection was closed somehow
         vertx.setTimer(2000, v -> {
           log.debug("timer finished");
           async.complete();

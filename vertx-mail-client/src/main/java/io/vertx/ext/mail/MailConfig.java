@@ -72,19 +72,34 @@ public class MailConfig {
    * use this hostname for HELO/EHLO command
    */
   private String ehloHostname;
+
+  /**
+   * maximum number of connections to keep open in the connection pool in one instance
+   * of MailClient
+   */
   private int maxPoolSize;
+
+  /**
+   * time until an open idle connection is closed
+   */
   private int idleTimeout;
+
+  /**
+   * set keepAlive = false to disable connection pool
+   */
+  private boolean keepAlive;
 
   /**
    * construct a config object with default options
    */
   public MailConfig() {
-    this.hostname = DEFAULT_HOST;
-    this.port = DEFAULT_PORT;
-    this.starttls = DEFAULT_TLS;
-    this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    hostname = DEFAULT_HOST;
+    port = DEFAULT_PORT;
+    starttls = DEFAULT_TLS;
+    login = DEFAULT_LOGIN;
+    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    keepAlive = true;
   }
 
   /**
@@ -94,11 +109,12 @@ public class MailConfig {
    */
   public MailConfig(String hostname) {
     this.hostname = hostname;
-    this.port = DEFAULT_PORT;
-    this.starttls = DEFAULT_TLS;
-    this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    port = DEFAULT_PORT;
+    starttls = DEFAULT_TLS;
+    login = DEFAULT_LOGIN;
+    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    keepAlive = true;
   }
 
   /**
@@ -110,10 +126,11 @@ public class MailConfig {
   public MailConfig(String hostname, int port) {
     this.hostname = hostname;
     this.port = port;
-    this.starttls = DEFAULT_TLS;
-    this.login = DEFAULT_LOGIN;
-    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    starttls = DEFAULT_TLS;
+    login = DEFAULT_LOGIN;
+    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    keepAlive = true;
   }
 
   /**
@@ -129,8 +146,9 @@ public class MailConfig {
     this.port = port;
     this.starttls = starttls;
     this.login = login;
-    this.maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    this.idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+    idleTimeout = DEFAULT_IDLE_TIMEOUT;
+    keepAlive = true;
   }
 
   /**
@@ -154,6 +172,7 @@ public class MailConfig {
     ehloHostname = other.ehloHostname;
     maxPoolSize = other.maxPoolSize;
     idleTimeout = other.idleTimeout;
+    keepAlive = other.keepAlive;
   }
 
   /**
@@ -184,6 +203,7 @@ public class MailConfig {
     ehloHostname = config.getString("ehlo_hostname");
     maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
     idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
+    keepAlive = config.getBoolean("keep_alive", true);
   }
 
   /**
@@ -359,7 +379,6 @@ public class MailConfig {
    *
    * @return the netClientOptions
    */
-  // FIXME - why allow NetClientOptions to be provided?
   public NetClientOptions getNetClientOptions() {
     return netClientOptions;
   }
@@ -423,8 +442,6 @@ public class MailConfig {
   /**
    * get the max allowed number of open connections to the mailserver
    * if not set the default is 10
-   * if set to 0 the connection count is unlimited
-   * set to -1 to disable connection pooling completely
    *
    * @return max pool size value
    */
@@ -435,8 +452,6 @@ public class MailConfig {
   /**
    * set the max allowed number of open connections to the mail server
    * if not set the default is 10
-   * if set to 0, the number of connections is not limited
-   * set to -1 to disable connection pooling completely
    *
    * @return this to be able to use the object fluently
    */
@@ -448,8 +463,6 @@ public class MailConfig {
   /**
    * get the timeout for idle smtp connections (in seconds)
    * if not set the default is 300 seconds
-   * set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
-   * set to -1 to disable connection pooling completely
    *
    * @return idle timeout value
    */
@@ -460,13 +473,32 @@ public class MailConfig {
   /**
    * set the timeout for idle smtp connections (in seconds)
    * if not set, the default is 300 seconds
-   * set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
-   * set to -1 to disable connection pooling completely
    *
    * @return this to be able to use the object fluently
    */
   public MailConfig setIdleTimeout(int idleTimeout) {
     this.idleTimeout = idleTimeout;
+    return this;
+  }
+
+  /**
+   * get if connection pool is enabled
+   * default is true
+   *
+   * @return keep alive value
+   */
+  public boolean isKeepAlive() {
+    return keepAlive;
+  }
+
+  /**
+   * set if connection pool is enabled
+   * default is true
+   *
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setKeepAlive(boolean keepAlive) {
+    this.keepAlive = keepAlive;
     return this;
   }
 
@@ -511,14 +543,16 @@ public class MailConfig {
     }
     json.put("max_pool_size", maxPoolSize);
     json.put("idle_timeout", idleTimeout);
+    if(keepAlive == false) {
+      json.put("keep_alive", keepAlive);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll,
-      netClientOptions, authMethods, ehloHostname, maxPoolSize, idleTimeout);
-    return objects;
+    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions,
+        authMethods, ehloHostname, maxPoolSize, idleTimeout, keepAlive);
   }
 
   /*
