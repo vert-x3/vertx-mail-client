@@ -20,6 +20,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private final Vertx vertx;
   private final int maxSockets;
+  private final boolean keepAlive;
   private final Queue<Waiter> waiters = new ArrayDeque<>();
   private final Set<SMTPConnection> allConnections = new HashSet<>();
   private final NetClient netClient;
@@ -30,14 +31,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
     this.config = config;
-    this.maxSockets = config.getMaxPoolSize();
+    maxSockets = config.getMaxPoolSize();
+    keepAlive = config.isKeepAlive();
     NetClientOptions netClientOptions;
     if (config.getNetClientOptions() == null) {
       netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
     } else {
       netClientOptions = config.getNetClientOptions();
     }
-    this.netClient = vertx.createNetClient(netClientOptions);
+    netClient = vertx.createNetClient(netClientOptions);
   }
 
   // FIXME Why not use Handler<AsyncResult<SMTPConnection>> - that's what it's for
@@ -57,7 +59,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   synchronized void close(Handler<Void> finishedHandler) {
     closed = true;
-
+    closeAllConnections();
     finishedHandler.handle(null);
   }
 
@@ -67,14 +69,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   // Lifecycle methods
 
-  // Called when the response has ended
+  // Called when the send operation has finished
+  // TODO: this method should be called dataFinished,
+  // responseEnded is from http
   public synchronized void responseEnded(SMTPConnection conn) {
     checkReuseConnection(conn);
   }
 
   // Called if the connection is actually closed, OR the connection attempt
-  // failed - in the latter case
-  // conn will be null
+  // failed - in the latter case conn will be null
   public synchronized void connectionClosed(SMTPConnection conn) {
     log.debug("connection closed, removing from pool");
     connCount--;
@@ -98,7 +101,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         break;
       }
     }
-    if (idleConn == null && maxSockets > 0 && connCount >= maxSockets) {
+    log.debug("idleConn=="+idleConn+",keepAlive=="+keepAlive+",connCount=="+connCount);
+    if (idleConn == null && keepAlive && connCount >= maxSockets) {
       // Wait in queue
       log.debug("waiting for a free socket");
       waiters.add(new Waiter(handler, connectionExceptionHandler));
@@ -108,8 +112,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         log.debug("create a new connection");
         createNewConnection(handler, connectionExceptionHandler);
       } else {
-        // if we have found a connection run a RSET command, this checks if the connection
-        // is really usable. If this fails, we create a new connection, we may run over the connection limit
+        // if we have found a connection, run a RSET command, this checks if the connection
+        // is really usable. If this fails, we create a new connection. we may run over the connection limit
         // since the close operation is not finished before we open the new connection, however it will be closed
         // shortly after
         log.debug("found idle connection, checking");
@@ -126,19 +130,40 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void checkReuseConnection(SMTPConnection conn) {
     if (conn.isBroken()) {
+      log.debug("connection is broken, closing");
       conn.close();
     } else {
       // if the pool is disabled, just close the connection
-      if (maxSockets < 0) {
+      if (!keepAlive) {
+        log.debug("connection pool is disabled, immediately doing QUIT");
         conn.close();
       } else {
+        log.debug("checking for waiting operations");
         Waiter waiter = waiters.poll();
         if (waiter != null) {
           log.debug("running one waiting operation");
           waiter.handler.handle(conn);
         } else {
           log.debug("keeping connection idle");
+          conn.setIdleTimer();
         }
+      }
+    }
+  }
+
+  private void closeAllConnections() {
+    Set<SMTPConnection> copy;
+    synchronized (this) {
+      copy = new HashSet<>(allConnections);
+      allConnections.clear();
+    }
+    // Close outside sync block to avoid deadlock
+    for (SMTPConnection conn : copy) {
+      if (conn.isIdle() || conn.isBroken()) {
+        conn.close();
+      } else {
+        log.debug("closing connection after current send operation finishes");
+        conn.setDoShutdown();
       }
     }
   }

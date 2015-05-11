@@ -16,7 +16,7 @@ import io.vertx.core.Handler;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 
-class PassOnce {
+public class PassOnce {
 
   private boolean passed;
   private final Handler<String> fail;

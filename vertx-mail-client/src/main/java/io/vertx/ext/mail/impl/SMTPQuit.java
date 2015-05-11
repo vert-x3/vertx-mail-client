@@ -33,7 +33,6 @@ class SMTPQuit {
   }
 
   void start() {
-    connection.setBroken();
     connection.setErrorHandler(exceptionHandler);
     connection.write("QUIT", message -> {
       connection.resetErrorHandler();

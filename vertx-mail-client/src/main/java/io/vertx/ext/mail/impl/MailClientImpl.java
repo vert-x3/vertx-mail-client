@@ -41,7 +41,7 @@ public class MailClientImpl implements MailClient {
                                      t ->  handleError(t, resultHandler, context));
       }
     } else {
-      handleError("mail service has been closed", resultHandler, context);
+      handleError("mail client has been closed", resultHandler, context);
     }
     return this;
   }
@@ -107,4 +107,8 @@ public class MailClientImpl implements MailClient {
     });
   }
 
+  SMTPConnectionPool getConnectionPool() {
+    return connectionPool;
+    
+  }
 }

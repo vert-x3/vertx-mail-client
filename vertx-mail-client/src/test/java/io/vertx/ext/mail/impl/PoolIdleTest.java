@@ -1,10 +1,15 @@
-package io.vertx.ext.mail;
+package io.vertx.ext.mail.impl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.PassOnce;
+import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,8 +23,8 @@ public class PoolIdleTest extends SMTPTestWiser {
 
   @Test
   public void mailTest(TestContext context) {
-    final MailConfig config = configNoSSL().setMaxPoolSize(1);
-    final MailClient mailClient = MailClient.create(vertx, config);
+    final MailConfig config = configNoSSL().setMaxPoolSize(1).setIdleTimeout(1);
+    final TestMailClient mailClient = new TestMailClient(vertx, config);
     Async async = context.async();
 
     MailMessage email = exampleMessage();
@@ -31,10 +36,10 @@ public class PoolIdleTest extends SMTPTestWiser {
       pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        log.debug("waiting for 20 seconds");
-        //FIXME - 20 seconds waits in testsuites suck!
-        vertx.setTimer(2000, v -> {
-          log.debug("timer finished");
+        // connection pool has 1 second idle timeout so the connection should be closed after 1,5s
+        vertx.setTimer(1500, v -> {
+          context.assertEquals(0, mailClient.getConnectionPool().connCount());
+          mailClient.close();
           async.complete();
         });
       } else {

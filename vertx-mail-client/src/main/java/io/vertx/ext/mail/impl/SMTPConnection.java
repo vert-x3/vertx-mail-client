@@ -13,7 +13,7 @@ import io.vertx.ext.mail.MailConfig;
 /**
  * SMTP connection to a server.
  * <p>
- * Encapsulate the NetClient connection and the data writing/reading, but not
+ * Encapsulate the NetSocket connection and the data writing/reading, but not
  * the protocol itself
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -36,6 +36,7 @@ class SMTPConnection {
   private final Vertx vertx;
   private long idleTimerId;
   private int timeout;
+  private boolean keepAlive;
 
   SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
     broken = true;
@@ -130,6 +131,7 @@ class SMTPConnection {
     broken = false;
     idle = false;
     timeout = config.getIdleTimeout();
+    keepAlive = config.isKeepAlive();
 
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
@@ -207,26 +209,26 @@ class SMTPConnection {
 
   public void returnToPool() {
     if (doShutdown) {
+      log.debug("shutting connection down");
       useConnection();
-      setBroken();
       quitCloseConnection();
     } else {
       log.debug("returning connection to pool");
       idle = true;
       commandReplyHandler = null;
-      setIdleTimer();
       listener.responseEnded(this);
     }
   }
 
   /**
-   * send quit and close the connection, this operation waits for the success of
+   * send QUIT and close the connection, this operation waits for the success of
    * the quit command but will close the connection on exception as well
    */
   void quitCloseConnection() {
     if (!socketShutDown) {
       log.debug("shutting down connection");
-      setBroken();
+      // set the connection to in use to avoid it being used by another getConnection operation
+      useConnection();
       new SMTPQuit(this, v -> {
         shutdown();
         log.debug("connection is shut down");
@@ -246,7 +248,8 @@ class SMTPConnection {
   }
 
   void setIdleTimer() {
-    if (timeout > 0) {
+    if (keepAlive) {
+      log.debug("setting idle timer on connection");
       idleTimerId = vertx.setTimer(timeout * 1000, id -> {
         if (id == idleTimerId) {
           log.debug("idle timeout reached, closing connection");
@@ -254,15 +257,13 @@ class SMTPConnection {
         }
       });
     }
-    // pool disabled
-    if (timeout < 0) {
-      quitCloseConnection();
-    }
   }
 
   void cancelIdleTimer() {
-    log.debug("canceling timer on connection");
-    vertx.cancelTimer(idleTimerId);
+    if (keepAlive) {
+      log.debug("canceling timer on connection");
+      vertx.cancelTimer(idleTimerId);
+    }
   }
 
   /*
@@ -302,7 +303,8 @@ class SMTPConnection {
   }
 
   /**
-   *
+   * if connection is still active, shut it down when the current
+   * operation has finished
    */
   public void setDoShutdown() {
     log.debug("will shut down connection after send operation finishes");
@@ -310,9 +312,16 @@ class SMTPConnection {
   }
 
   /**
-   *
+   * close the connection doing a QUIT command first
    */
   public void close() {
     quitCloseConnection();
+  }
+
+  /**
+   * check if a connection is already closed (this is mostly for unit tests)
+   */
+  boolean isClosed() {
+    return socketClosed;
   }
 }
