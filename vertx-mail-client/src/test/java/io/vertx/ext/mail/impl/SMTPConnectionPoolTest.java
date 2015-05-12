@@ -120,7 +120,6 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
         log.info(th);
         testContext.fail(th);
       });
-      async.complete();
     }, th -> {
       log.info(th);
       testContext.fail(th);
@@ -141,13 +140,13 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
       pool.getConnection(conn2 -> {
         testContext.assertEquals(conn, conn2);
         testContext.assertEquals(1, pool.connCount());
+        conn2.returnToPool();
         pool.close();
         async.complete();
       }, th -> {
         log.info(th);
         testContext.fail(th);
       });
-      async.complete();
     }, th -> {
       log.info(th);
       testContext.fail(th);
