@@ -76,5 +76,8 @@ set the timeout for idle smtp connections (in seconds)
 |`Boolean`
 |+++
 set if connection pool is enabled
- default is true+++
+ default is true
+<p>
+ if the connection pooling is disabled, the max number of sockets is enforced nevertheless
+<p>+++
 |===

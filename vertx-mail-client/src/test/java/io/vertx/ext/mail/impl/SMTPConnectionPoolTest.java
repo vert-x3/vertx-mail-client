@@ -44,6 +44,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     pool.getConnection(conn -> {
       testContext.assertEquals(1, pool.connCount());
+      conn.returnToPool();
       pool.close();
       async.complete();
     }, throwable -> {
@@ -114,6 +115,32 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
       pool.getConnection(conn2 -> {
         testContext.assertNotEquals(conn, conn2);
         testContext.assertEquals(2, pool.connCount());
+        conn.returnToPool();
+        conn2.returnToPool();
+        pool.close();
+        async.complete();
+      }, th -> {
+        log.info(th);
+        testContext.fail(th);
+      });
+    }, th -> {
+      log.info(th);
+      testContext.fail(th);
+    });
+  }
+
+  @Test
+  public final void testGetConnectionAfterReturn(TestContext testContext) {
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    Async async = testContext.async();
+    pool.getConnection(conn -> {
+      log.debug("got 1st connection");
+      conn.returnToPool();
+      pool.getConnection(conn2 -> {
+        log.debug("got 2nd connection");
+        testContext.assertEquals(conn, conn2);
+        testContext.assertEquals(1, pool.connCount());
+        conn2.returnToPool();
         pool.close();
         async.complete();
       }, th -> {
@@ -169,6 +196,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
         haveGotConnection.set(true);
         log.debug("got connection 2nd time");
         testContext.assertEquals(1, pool.connCount());
+        conn2.returnToPool();
         pool.close();
         async.complete();
       }, th -> {
@@ -206,8 +234,10 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   }
 
   /**
-   * the close exception was sent to the errorHandler
-   * even though we have returned the connection to the pool
+   * test what happens if the server closes the connection while idle
+   * <p>
+   * (the close exception was sent to the errorHandler
+   * even though we returned the connection to the pool)
    * @param testContext
    */
   @Test
@@ -228,6 +258,10 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     });
   }
 
+  /**
+   * test that pool.close closes the idle connections
+   * @param testContext
+   */
   @Test
   public final void testClosePoolClosesConnection(TestContext testContext) {
     Async async = testContext.async();
@@ -238,6 +272,68 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
       pool.close();
       vertx.setTimer(1000, v -> {
         testContext.assertEquals(0, pool.connCount());
+        async.complete();
+      });
+    }, th -> {
+      log.info(th);
+      testContext.fail(th);
+    });
+  }
+
+  /**
+   * test that we are really waiting if the connection pool is full
+   * this test has the connection pool disabled
+   * @param testContext
+   */
+  @Test
+  public final void testWaitingForConnectionPoolDisabled(TestContext testContext) {
+    final MailConfig config = configNoSSL().setMaxPoolSize(1).setKeepAlive(false);
+    Async async = testContext.async();
+    Async async2 = testContext.async();
+    AtomicBoolean haveGotConnection = new AtomicBoolean(false);
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool.getConnection(conn -> {
+      log.debug("got connection 1st tme");
+      pool.getConnection(conn2 -> {
+        haveGotConnection.set(true);
+        log.debug("got connection 2nd time");
+        testContext.assertEquals(1, pool.connCount());
+        conn2.returnToPool();
+        pool.close();
+        async.complete();
+      }, th -> {
+        log.info(th);
+        testContext.fail(th);
+      });
+      testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
+      log.debug("didn't get a connection 2nd time yet");
+      conn.returnToPool();
+      vertx.setTimer(1000, v -> {
+        testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
+        log.debug("got a connection 2nd time");
+        async2.complete();
+      });
+    }, th -> {
+      log.info(th);
+      testContext.fail(th);
+    });
+  }
+
+  /**
+   * test that pool.close doesn't close active connections before the operation is finished
+   * @param testContext
+   */
+  @Test
+  public final void testClosePoolWaitsToCloseActive(TestContext testContext) {
+    final MailConfig config = configNoSSL().setMaxPoolSize(1);
+    Async async = testContext.async();
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool.getConnection(conn -> {
+      pool.close();
+      testContext.assertFalse(conn.isClosed(), "connection is already closed");
+      conn.returnToPool();
+      vertx.setTimer(1000, v -> {
+        testContext.assertTrue(conn.isClosed(), "connection was not closed");
         async.complete();
       });
     }, th -> {

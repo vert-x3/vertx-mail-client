@@ -484,7 +484,9 @@ public class MailConfig {
   /**
    * get if connection pool is enabled
    * default is true
-   *
+   *<p>
+   * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
+   *<p>
    * @return keep alive value
    */
   public boolean isKeepAlive() {
@@ -494,7 +496,9 @@ public class MailConfig {
   /**
    * set if connection pool is enabled
    * default is true
-   *
+   *<p>
+   * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
+   *<p>
    * @return this to be able to use the object fluently
    */
   public MailConfig setKeepAlive(boolean keepAlive) {

@@ -208,15 +208,19 @@ class SMTPConnection {
   }
 
   public void returnToPool() {
-    if (doShutdown) {
-      log.debug("shutting connection down");
-      useConnection();
-      quitCloseConnection();
+    if (isIdle()) {
+      log.info("state error: idle connection returned to pool");
+      handleError("state error: idle connection returned to pool");
     } else {
-      log.debug("returning connection to pool");
-      idle = true;
-      commandReplyHandler = null;
-      listener.responseEnded(this);
+      if (doShutdown) {
+        log.debug("shutting connection down");
+        quitCloseConnection();
+      } else {
+        log.debug("returning connection to pool");
+        idle = true;
+        commandReplyHandler = null;
+        listener.responseEnded(this);
+      }
     }
   }
 

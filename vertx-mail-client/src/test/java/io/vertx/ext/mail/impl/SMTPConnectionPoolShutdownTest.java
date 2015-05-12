@@ -25,19 +25,18 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
   public final void testStopWhileMailActive(TestContext testContext) {
     Async async = testContext.async();
 
-    vertx.runOnContext(v -> {
-      MailConfig config = configNoSSL();
+    MailConfig config = configNoSSL();
 
-      SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
 
-      pool.getConnection(conn -> {
-        pool.close(v1 -> {
-          conn.returnToPool();
-          async.complete();
-        });
-      }, th -> {
-        log.info("exception", th);
+    pool.getConnection(conn -> {
+      pool.close(v1 -> {
+        conn.returnToPool();
+        async.complete();
       });
+    }, th -> {
+      log.info("exception", th);
+      testContext.fail(th);
     });
   }
 

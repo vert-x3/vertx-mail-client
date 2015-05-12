@@ -72,6 +72,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   // Called when the send operation has finished
   // TODO: this method should be called dataFinished,
   // responseEnded is from http
+  // TODO: this method may not be called directly since it
+  // doesn't set idle state on the connection
   public synchronized void responseEnded(SMTPConnection conn) {
     checkReuseConnection(conn);
   }
@@ -87,7 +89,12 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     Waiter waiter = waiters.poll();
     if (waiter != null) {
       // There's a waiter - so it can have a new connection
+      log.debug("creating new connection for waiter");
       createNewConnection(waiter.handler, waiter.connectionExceptionHandler);
+    }
+    if (closed && connCount == 0) {
+      log.debug("all connections closed, closing NetClient");
+      netClient.close();
     }
   }
 
@@ -101,8 +108,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         break;
       }
     }
-    log.debug("idleConn=="+idleConn+",keepAlive=="+keepAlive+",connCount=="+connCount);
-    if (idleConn == null && keepAlive && connCount >= maxSockets) {
+    if (idleConn == null && connCount >= maxSockets) {
       // Wait in queue
       log.debug("waiting for a free socket");
       waiters.add(new Waiter(handler, connectionExceptionHandler));
@@ -142,6 +148,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         Waiter waiter = waiters.poll();
         if (waiter != null) {
           log.debug("running one waiting operation");
+          conn.useConnection();
           waiter.handler.handle(conn);
         } else {
           log.debug("keeping connection idle");
