@@ -81,7 +81,7 @@
       value="16" />
     <setting
       id="org.eclipse.jdt.core.formatter.alignment_for_conditional_expression"
-      value="80" />
+      value="120" />
     <setting
       id="org.eclipse.jdt.core.formatter.insert_space_before_opening_paren_in_for"
       value="insert" />
@@ -597,7 +597,7 @@
       id="org.eclipse.jdt.core.formatter.insert_new_line_before_while_in_do_statement"
       value="do not insert" />
     <setting id="org.eclipse.jdt.core.formatter.comment.line_length"
-      value="80" />
+      value="120" />
     <setting
       id="org.eclipse.jdt.core.formatter.insert_new_line_after_annotation_on_package"
       value="insert" />
@@ -721,7 +721,7 @@
       value="insert" />
     <setting
       id="org.eclipse.jdt.core.formatter.alignment_for_resources_in_try"
-      value="80" />
+      value="120" />
     <setting id="org.eclipse.jdt.core.compiler.codegen.targetPlatform"
       value="1.8" />
     <setting

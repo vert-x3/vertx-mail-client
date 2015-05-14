@@ -47,6 +47,7 @@ public class PoolDisabledTest extends SMTPTestWiser {
               context.fail("smtp connection wasn't closed");
             } else {
               log.debug("connection has been closed after wait");
+              mailClient.close();
               async.complete();
             }
           });

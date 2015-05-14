@@ -52,8 +52,7 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
         log.debug("got 2nd connection");
         testContext.assertEquals(1, pool.connCount());
         conn2.returnToPool();
-        pool.close();
-        async.complete();
+        pool.close(v -> async.complete());
       }, th -> {
         log.info(th);
         testContext.fail(th);

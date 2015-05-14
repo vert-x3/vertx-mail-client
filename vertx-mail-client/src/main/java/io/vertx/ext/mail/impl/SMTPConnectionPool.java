@@ -28,6 +28,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private boolean closed = false;
   private int connCount;
 
+  private Handler<Void> closeFinishedHandler;
+
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
     this.config = config;
@@ -59,8 +61,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   synchronized void close(Handler<Void> finishedHandler) {
     closed = true;
+    closeFinishedHandler = finishedHandler;
     closeAllConnections();
-    finishedHandler.handle(null);
   }
 
   synchronized int connCount() {
@@ -95,6 +97,9 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     if (closed && connCount == 0) {
       log.debug("all connections closed, closing NetClient");
       netClient.close();
+      if (closeFinishedHandler != null) {
+        closeFinishedHandler.handle(null);
+      }
     }
   }
 
