@@ -56,7 +56,21 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   // also closing connections, returning to the pool, etc, etc
 
   /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#close()}.
+   * test closing an empty connection pool
+   */
+  @Test
+  public final void testCloseEmpty(TestContext testContext) {
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    Async async = testContext.async();
+    pool.close();
+    vertx.setTimer(1000, v -> {
+      testContext.assertEquals(0, pool.connCount());
+      async.complete();
+    });
+  }
+
+  /**
+   * test closing an used connection pool
    */
   @Test
   public final void testClose(TestContext testContext) {
@@ -76,7 +90,21 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   }
 
   /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPConnectionPool#close(io.vertx.core.Handler)} .
+   * test closing an empty connection pool with handler
+   */
+  @Test
+  public final void testCloseEmptyWithHandler(TestContext testContext) {
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    Async async = testContext.async();
+    pool.close(v -> {
+      testContext.assertEquals(0, pool.connCount());
+      log.info("connection pool stopped");
+      async.complete();
+    });
+  }
+
+  /**
+   * test closing an used connection pool with handler
    */
   @Test
   public final void testCloseWithHandler(TestContext testContext) {
@@ -245,7 +273,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
       log.debug("got connection");
       conn.returnToPool();
       stopSMTP(); // this closes our dummy server and consequently our
-                  // connection at the server end
+        // connection at the server end
         vertx.setTimer(1, v -> {
           pool.close(v2 -> async.complete());
         });

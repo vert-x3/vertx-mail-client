@@ -60,7 +60,6 @@ public class Pool1SlotTest extends SMTPTestWiser {
             // give the pool 1,5s to time the connection out
             vertx.setTimer(1500, v -> {
               context.assertEquals(0, mailClient.getConnectionPool().connCount());
-              mailClient.close();
               async.complete();
             });
           } else {
@@ -126,7 +125,6 @@ public class Pool1SlotTest extends SMTPTestWiser {
         if (diff < 1000) {
           context.fail("time difference is too small (" + diff + "ms), connection pool limit not enforced");
         }
-        mailClient.close();
         async.complete();
       } else {
         log.warn("got exception", result2.cause());

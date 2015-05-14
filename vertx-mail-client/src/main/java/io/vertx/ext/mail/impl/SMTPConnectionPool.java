@@ -55,14 +55,17 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   void close() {
-    close(v -> {
-    });
+    close(null);
   }
 
   synchronized void close(Handler<Void> finishedHandler) {
-    closed = true;
-    closeFinishedHandler = finishedHandler;
-    closeAllConnections();
+    if (closed) {
+      throw new IllegalStateException("pool is already closed");
+    } else {
+      closed = true;
+      closeFinishedHandler = finishedHandler;
+      closeAllConnections();
+    }
   }
 
   synchronized int connCount() {
@@ -105,7 +108,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   // Private methods
 
-  private synchronized void getConnection0(Handler<SMTPConnection> handler, Handler<Throwable> connectionExceptionHandler) {
+  private synchronized void getConnection0(Handler<SMTPConnection> handler,
+      Handler<Throwable> connectionExceptionHandler) {
     SMTPConnection idleConn = null;
     for (SMTPConnection conn : allConnections) {
       if (!conn.isBroken() && conn.isIdle()) {
@@ -165,17 +169,23 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void closeAllConnections() {
     Set<SMTPConnection> copy;
-    synchronized (this) {
-      copy = new HashSet<>(allConnections);
-      allConnections.clear();
-    }
-    // Close outside sync block to avoid deadlock
-    for (SMTPConnection conn : copy) {
-      if (conn.isIdle() || conn.isBroken()) {
-        conn.close();
-      } else {
-        log.debug("closing connection after current send operation finishes");
-        conn.setDoShutdown();
+    if (connCount > 0) {
+      synchronized (this) {
+        copy = new HashSet<>(allConnections);
+        allConnections.clear();
+      }
+      // Close outside sync block to avoid deadlock
+      for (SMTPConnection conn : copy) {
+        if (conn.isIdle() || conn.isBroken()) {
+          conn.close();
+        } else {
+          log.debug("closing connection after current send operation finishes");
+          conn.setDoShutdown();
+        }
+      }
+    } else {
+      if (closeFinishedHandler != null) {
+        closeFinishedHandler.handle(null);
       }
     }
   }
