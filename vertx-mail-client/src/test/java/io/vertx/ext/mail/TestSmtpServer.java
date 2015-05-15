@@ -22,6 +22,7 @@ public class TestSmtpServer {
   private NetServer netServer;
   private String[] dialogue;
   private boolean closeImmediately = false;
+  private int closeWaitTime = 10;
 
   /*
    * set up server with a default reply that works for EHLO and no login with
@@ -59,8 +60,8 @@ public class TestSmtpServer {
           log.debug("closeImmediately");
           socket.close();
         } else {
-          log.debug("waiting 10 secs to close");
-          vertx.setTimer(10000, v -> socket.close());
+          log.debug("waiting " + closeWaitTime + " secs to close");
+          vertx.setTimer(closeWaitTime * 1000, v -> socket.close());
         }
       } else {
         final AtomicInteger lines = new AtomicInteger(1);
@@ -99,8 +100,8 @@ public class TestSmtpServer {
               log.debug("closeImmediately");
               socket.close();
             } else {
-              log.debug("waiting 10 secs to close");
-              vertx.setTimer(10000, v -> socket.close());
+              log.debug("waiting " + closeWaitTime + " secs to close");
+              vertx.setTimer(closeWaitTime * 1000, v -> socket.close());
             }
           }
         }));
@@ -121,6 +122,11 @@ public class TestSmtpServer {
 
   public void setCloseImmediately(boolean close) {
     closeImmediately = close;
+  }
+
+  public void setCloseWaitTime(int time) {
+    log.debug("setting closeWaitTime to "+time);
+    closeWaitTime = time;
   }
 
   // TODO: this assumes we are in a @After method of junit
