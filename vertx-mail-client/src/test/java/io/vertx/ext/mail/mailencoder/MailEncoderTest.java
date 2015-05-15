@@ -8,11 +8,13 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.TestUtils;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
@@ -368,8 +370,9 @@ public class MailEncoderTest {
     MultiMap headers = new CaseInsensitiveHeaders();
     headers.set("mime-version", "2.1");
     message.setHeaders(headers);
-    String mime = new MailEncoder(message).encode();
-    assertThat(mime, containsString("MIME-Version: 1.0"));
+    String mime = new MailEncoder(message).encode().toLowerCase(Locale.ENGLISH);
+    assertThat(mime, containsString("mime-version: 2.1"));
+    assertThat(mime, not(containsString("mime-version: 1.0")));
   }
 
   @Test

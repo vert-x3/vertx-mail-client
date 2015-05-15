@@ -19,10 +19,10 @@ import groovy.transform.CompileStatic
 import io.vertx.lang.groovy.InternalHelper
 import io.vertx.ext.mail.MailConfig
 import io.vertx.groovy.core.Vertx
-import io.vertx.core.json.JsonObject
 import io.vertx.core.AsyncResult
 import io.vertx.core.Handler
 import io.vertx.ext.mail.MailMessage
+import io.vertx.ext.mail.MailResult
 /**
  * SMTP mail client for Vert.x
  * <p>
@@ -53,18 +53,8 @@ public class MailClient {
    * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
    * @return this MailClient instance so the method can be used fluently
    */
-  public MailClient sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.core.json.JsonObject>>() {
-      public void handle(AsyncResult<io.vertx.core.json.JsonObject> event) {
-        AsyncResult<Map<String, Object>> f
-        if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result(event.result()?.getMap())
-        } else {
-          f = InternalHelper.<Map<String, Object>>failure(event.cause())
-        }
-        resultHandler.handle(f)
-      }
-    });
+  public MailClient sendMail(Map<String, Object> email = [:], Handler<AsyncResult<MailResult>> resultHandler) {
+    this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, resultHandler);
     return this;
   }
   /**

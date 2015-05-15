@@ -7,6 +7,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 
 /**
  * MailClient implementation for sending mails inside the local JVM
@@ -33,7 +34,7 @@ public class MailClientImpl implements MailClient {
   }
 
   @Override
-  public MailClient sendMail(MailMessage message, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
@@ -51,13 +52,12 @@ public class MailClientImpl implements MailClient {
   // returned with the list of successful addresses and the list of failed
   // addresses. this is not implemented yet
 
-  private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<JsonObject>> resultHandler,
+  private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
                            Context context) {
     new SMTPSendMail(conn, email, v -> {
       conn.returnToPool();
-      /// FIXME Why return a JSON object? What's the point?
-      JsonObject result = new JsonObject();
-      result.put("result", "success");
+      // TODO: this object is empty
+      MailResult result = new MailResult();
       returnResult(Future.succeededFuture(result), resultHandler, context);
     }, t -> {
       conn.setBroken();
@@ -67,7 +67,7 @@ public class MailClientImpl implements MailClient {
 
   // do some validation before we open the connection
   // return true on successful validation so we can stop processing above
-  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler, Context context) {
+  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
       handleError("sender address is not present", resultHandler, context);
       return false;
@@ -82,17 +82,17 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private void handleError(String message, Handler<AsyncResult<JsonObject>> resultHandler, Context context) {
+  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
     log.debug("handleError:" + message);
     returnResult(Future.failedFuture(message), resultHandler, context);
   }
 
-  private void handleError(Throwable t, Handler<AsyncResult<JsonObject>> resultHandler, Context context) {
+  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
     log.debug("handleError:" + t);
     returnResult(Future.failedFuture(t), resultHandler, context);
   }
 
-  private void returnResult(Future<JsonObject> result, Handler<AsyncResult<JsonObject>> resultHandler, Context context) {
+  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
     // Note - results must always be executed on the right context, asynchronously, not directly!
     context.runOnContext(v -> {
       if (resultHandler != null) {

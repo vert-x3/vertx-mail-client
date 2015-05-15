@@ -273,14 +273,14 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
       log.debug("got connection");
       conn.returnToPool();
       stopSMTP(); // this closes our dummy server and consequently our
-        // connection at the server end
-        vertx.setTimer(1, v -> {
-          pool.close(v2 -> async.complete());
-        });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
+      // connection at the server end
+      vertx.setTimer(1, v -> {
+        pool.close(v2 -> async.complete());
       });
+    }, th -> {
+      log.info(th);
+      testContext.fail(th);
+    });
   }
 
   /**
@@ -355,13 +355,13 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     pool.getConnection(conn -> {
-      pool.close(v -> {
-        testContext.assertFalse(conn.isClosed(), "connection is already closed");
-        conn.returnToPool();
-        vertx.setTimer(1000, v2 -> {
-          testContext.assertTrue(conn.isClosed(), "connection was not closed");
-          async.complete();
-        });
+      log.debug("got connection");
+      pool.close();
+      conn.returnToPool();
+      vertx.setTimer(1000, v -> {
+        testContext.assertTrue(conn.isClosed(), "connection was not closed");
+        log.debug("connection is closed");
+        async.complete();
       });
     }, th -> {
       log.info(th);

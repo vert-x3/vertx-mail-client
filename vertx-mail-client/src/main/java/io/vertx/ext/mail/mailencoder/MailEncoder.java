@@ -14,6 +14,7 @@ import java.util.List;
  * <p>
  * example usage is:
  * <p>
+ * 
  * <pre>
  * {@code
  * MailMessage = new MailMessage();
@@ -22,25 +23,22 @@ import java.util.List;
  * }
  * </pre>
  * <p>
- * usually you are not using this class directly, rather it will be used by
- * {@code sendMail()} in MailClientImpl
+ * usually you are not using this class directly, rather it will be used by {@code sendMail()} in MailClientImpl
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public class MailEncoder {
-
-  // private static final Logger log =
-  // LoggerFactory.getLogger(MailEncoder.class);
 
   private MailMessage message;
 
   /**
    * create a MailEncoder for the message
    * <p>
-   * The class will probably get a few setters for optional features of the SMTP
-   * protocol later e.g. 8BIT or SMTPUTF (this is not yet supported)
+   * The class will probably get a few setters for optional features of the SMTP protocol later e.g. 8BIT or SMTPUTF
+   * (this is not yet supported)
    *
-   * @param message the message to encode later
+   * @param message
+   *          the message to encode later
    */
   public MailEncoder(MailMessage message) {
     this.message = message;
@@ -94,13 +92,13 @@ public class MailEncoder {
   }
 
   /**
-   * @return
+   * create the headers of the MIME message by combining the headers the user has supplied with the ones necessary for
+   * the message
+   *
+   * @return MultiMap of final headers
    */
   private MultiMap createHeaders(MultiMap additionalHeaders) {
     MultiMap headers = new CaseInsensitiveHeaders();
-    if (message.getHeaders() != null) {
-      headers.addAll(message.getHeaders());
-    }
 
     if (!message.isFixedHeaders()) {
       headers.set("MIME-Version", "1.0");
@@ -123,7 +121,17 @@ public class MailEncoder {
 
       headers.addAll(additionalHeaders);
     }
+
+    // add the user-supplied headers as last step, this way it is possible
+    // to supply a custom Message-ID for example.
+    MultiMap headersToSet = message.getHeaders();
+    if (headersToSet != null) {
+      for (String key : headersToSet.names()) {
+        headers.remove(key);
+      }
+      headers.addAll(headersToSet);
+    }
+
     return headers;
   }
-
 }

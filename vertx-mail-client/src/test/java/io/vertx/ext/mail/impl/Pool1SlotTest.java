@@ -16,8 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * this test uses a local SMTP server (wiser from subethasmtp) since this server
- * supports SSL/TLS, the tests relating to that are here
+ * this test uses a local SMTP server (wiser from subethasmtp) since this server supports SSL/TLS, the tests relating to
+ * that are here
  * <p>
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -28,9 +28,8 @@ public class Pool1SlotTest extends SMTPTestWiser {
   private static final Logger log = LoggerFactory.getLogger(Pool1SlotTest.class);
 
   /**
-   * send two mails after one another with a pool with size 1 we try to assert
-   * that the pool doesn't reach size > 1 and that it is closed after the idle
-   * wait time
+   * send two mails after one another with a pool with size 1 we try to assert that the pool doesn't reach size > 1 and
+   * that it is closed after the idle wait time
    *
    * @param context
    */
@@ -75,10 +74,9 @@ public class Pool1SlotTest extends SMTPTestWiser {
   }
 
   /**
-   * send two mails in parallel with a pool with size 1 we try to assert that
-   * the pool doesn't start both send operations in parallel that it is closed
-   * after the idle wait time
-   * 
+   * send two mails in parallel with a pool with size 1 we try to assert that the pool doesn't start both send
+   * operations in parallel
+   *
    * @param context
    */
   @Test

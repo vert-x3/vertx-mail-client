@@ -1,0 +1,13 @@
+== MailResult
+
+++++
+ Represent the result of the sendMail operation This class is currently a placeholder, it will get a field message-id
+ and recipient list (for the list of addresses that the mail was actually sent to)
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|===

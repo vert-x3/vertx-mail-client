@@ -1,5 +1,12 @@
 package io.vertx.ext.mail;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -15,6 +22,8 @@ import io.vertx.test.core.VertxTestBase;
 public class SMTPTestBase extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
+
+  private long testStartTime;
 
   /**
    * @return
@@ -217,4 +226,25 @@ public class SMTPTestBase extends VertxTestBase {
     runTestException(mailClientDefault());
   }
 
+  @Before
+  public void startCounter() {
+    testStartTime = System.currentTimeMillis();
+  }
+
+  @After
+  public void stopCounter() {
+    final long runtime = System.currentTimeMillis() - testStartTime;
+    if (runtime > 2000) {
+      log.warn(this.getClass().getName()+"."+ methodName + "() test took " + runtime + "ms");
+    }
+  }
+
+  private String methodName;
+
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+     protected void starting(Description description) {
+       methodName = description.getMethodName();
+     }
+  };
 }

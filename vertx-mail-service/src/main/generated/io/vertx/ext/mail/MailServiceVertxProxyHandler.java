@@ -30,10 +30,10 @@ import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.ext.mail.MailService;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 
 /*
   Generated Proxy code - DO NOT EDIT
@@ -94,7 +94,13 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
     switch (action) {
 
       case "sendMail": {
-        service.sendMail(new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), createHandler(msg));
+        service.sendMail(new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), res -> {
+  if (res.failed()) {
+    msg.fail(-1, res.cause().getMessage());
+  } else {
+    msg.reply(res.result().toJson());
+  }
+});
         break;
       }
       case "close": {

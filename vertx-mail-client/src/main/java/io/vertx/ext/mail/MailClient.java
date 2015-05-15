@@ -39,7 +39,7 @@ public interface MailClient {
    * @return this MailClient instance so the method can be used fluently
    */
   @Fluent
-  MailClient sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
+  MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler);
 
   /**
    * close the MailClient

@@ -7,7 +7,6 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.serviceproxy.ProxyHelper;
 
 /**
@@ -30,7 +29,7 @@ public interface MailService extends MailClient {
 
   @Override
   @Fluent
-  MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler);
+  MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler);
 
   @Override
   @ProxyIgnore

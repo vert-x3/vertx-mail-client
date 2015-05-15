@@ -25,10 +25,10 @@ import io.vertx.core.json.JsonArray;
 import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.ext.mail.MailService;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 
 /*
   Generated Proxy code - DO NOT EDIT
@@ -45,7 +45,7 @@ public class MailServiceVertxEBProxy implements MailService {
     this._address = address;
   }
 
-  public MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
     if (closed) {
       resultHandler.handle(Future.failedFuture(new IllegalStateException("Proxy is closed")));
       return this;
@@ -58,7 +58,7 @@ public class MailServiceVertxEBProxy implements MailService {
       if (res.failed()) {
         resultHandler.handle(Future.failedFuture(res.cause()));
       } else {
-        resultHandler.handle(Future.succeededFuture(res.result().body()));
+        resultHandler.handle(Future.succeededFuture(new MailResult(res.result().body())));
       }
     });
     return this;

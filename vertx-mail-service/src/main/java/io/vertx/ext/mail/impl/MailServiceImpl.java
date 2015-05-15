@@ -2,9 +2,9 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.MailService;
 
 /**
@@ -19,7 +19,7 @@ public class MailServiceImpl implements MailService {
   }
 
   @Override
-  public MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
     client.sendMail(email, resultHandler);
     return this;
   }

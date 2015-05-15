@@ -3,11 +3,10 @@ package io.vertx.ext.mail.impl;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.impl.MailClientImpl;
+import io.vertx.ext.mail.MailResult;
 
 /**
  * MailClient providing a few internal getters for unit tests
@@ -32,7 +31,7 @@ public class TestMailClient implements MailClient {
    * @see io.vertx.ext.mail.MailClient#sendMail(io.vertx.ext.mail.MailMessage, io.vertx.core.Handler)
    */
   @Override
-  public MailClient sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) {
+  public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
     // TODO Auto-generated method stub
     return mailClient.sendMail(email, resultHandler);
   }
