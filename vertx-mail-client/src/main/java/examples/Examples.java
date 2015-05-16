@@ -27,7 +27,7 @@ public class Examples {
 
   public void mailMessage(Vertx vertx) {
     MailMessage message = new MailMessage();
-    message.setFrom("user@example.com (Example User")
+    message.setFrom("user@example.com (Example User)")
       .setTo("recipient@example.org")
       .setCc("Another User <another@example.net>")
       .setText("this is the plain message text")

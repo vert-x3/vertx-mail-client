@@ -52,13 +52,13 @@ public class Pool1SlotTest extends SMTPTestWiser {
         mailClient.sendMail(email, result2 -> {
           log.info("mail finished");
           pass2.passOnce();
-          mailClient.close();
           if (result2.succeeded()) {
             log.info(result2.result().toString());
             context.assertEquals(1, mailClient.getConnectionPool().connCount());
             // give the pool 1,5s to time the connection out
             vertx.setTimer(1500, v -> {
               context.assertEquals(0, mailClient.getConnectionPool().connCount());
+              mailClient.close();
               async.complete();
             });
           } else {

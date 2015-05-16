@@ -53,6 +53,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
           log.info("mail finished 2");
           if (result2.succeeded()) {
             log.info(result2.result().toString());
+            mailClient.close();
             mail2.complete();
           } else {
             log.warn("got exception 2", result2.cause());
@@ -99,6 +100,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
           log.info("mail finished 2");
           if (result2.succeeded()) {
             log.info(result2.result().toString());
+            mailClient.close();
             mail2.complete();
           } else {
             log.warn("got exception 2", result2.cause());
@@ -156,6 +158,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
           log.info("mail finished 2");
           if (result2.succeeded()) {
             log.info(result2.result().toString());
+            mailClient.close();
             mail2.complete();
           } else {
             log.warn("got exception 2", result2.cause());
