@@ -11,10 +11,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/*
- first implementation of a SMTP client
- */
-
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
