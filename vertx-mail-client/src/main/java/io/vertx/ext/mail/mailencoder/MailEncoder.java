@@ -29,20 +29,23 @@ import java.util.List;
  */
 public class MailEncoder {
 
-  private MailMessage message;
+  private final MailMessage message;
+  private final String hostname;
+
   private String messageID;
-  
+
   /**
    * create a MailEncoder for the message
    * <p>
    * The class will probably get a few setters for optional features of the SMTP protocol later e.g. 8BIT or SMTPUTF
    * (this is not yet supported)
    *
-   * @param message
-   *          the message to encode later
+   * @param message the message to encode later
+   * @param hostname the hostname to be used in message-id or null to get hostname from OS network config
    */
-  public MailEncoder(MailMessage message) {
+  public MailEncoder(MailMessage message, String hostname) {
     this.message = message;
+    this.hostname = hostname;
   }
 
   /**
@@ -103,7 +106,7 @@ public class MailEncoder {
 
     if (!message.isFixedHeaders()) {
       headers.set("MIME-Version", "1.0");
-      headers.set("Message-ID", Utils.generateMessageID());
+      headers.set("Message-ID", Utils.generateMessageID(hostname));
       headers.set("Date", Utils.generateDate());
 
       if (message.getSubject() != null) {

@@ -4,6 +4,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
@@ -18,15 +19,18 @@ class SMTPSendMail {
 
   private final SMTPConnection connection;
   private MailMessage email;
-  private String mailMessage;
+  private final MailConfig config;
   private final Handler<MailResult> finishedHandler;
   private final Handler<Throwable> exceptionHandler;
   private final MailResult mailResult;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<MailResult> finishedHandler,
+  private String mailMessage;
+
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<MailResult> finishedHandler,
                Handler<Throwable> exceptionHandler) {
     this.connection = connection;
     this.email = email;
+    this.config = config;
     this.finishedHandler = finishedHandler;
     this.exceptionHandler = exceptionHandler;
     mailResult = new MailResult();
@@ -165,7 +169,7 @@ class SMTPSendMail {
    */
   private void createMailMessage() {
     if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email);
+      MailEncoder encoder = new MailEncoder(email, config.getEhloHostname());
       mailMessage = encoder.encode();
       mailResult.setMessageID(encoder.getMessageID());
     }

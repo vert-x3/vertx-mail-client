@@ -90,8 +90,9 @@ class Utils {
     return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + (count++);
   }
 
-  static String generateMessageID() {
-    return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + getMyHostname() + ">";
+  static String generateMessageID(String setHostname) {
+    String hostname = setHostname != null ? setHostname : getMyHostname();
+    return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + hostname + ">";
   }
 
   private static String getMyHostname() {
@@ -99,7 +100,7 @@ class Utils {
       InetAddress ip = InetAddress.getLocalHost();
       return ip.getCanonicalHostName();
     } catch (UnknownHostException e) {
-      return "unknown";
+      return "localhost";
     }
   }
 

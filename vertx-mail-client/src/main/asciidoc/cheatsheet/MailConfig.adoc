@@ -58,7 +58,7 @@ set string of allowed auth methods+++
 |[[ehloHostname]]`ehloHostname`
 |`String`
 |+++
-set the hostname to be used for HELO/EHLO+++
+set the hostname to be used for HELO/EHLO and the Message-ID+++
 
 |[[maxPoolSize]]`maxPoolSize`
 |`Number`

@@ -420,7 +420,7 @@ public class MailConfig {
   }
 
   /**
-   * get the hostname to be used for HELO/EHLO
+   * get the hostname to be used for HELO/EHLO and the Message-ID
    *
    * @return the ehloHostname
    */
@@ -429,7 +429,7 @@ public class MailConfig {
   }
 
   /**
-   * set the hostname to be used for HELO/EHLO
+   * set the hostname to be used for HELO/EHLO and the Message-ID
    *
    * @param ehloHostname the ehloHostname to set
    * @return a reference to this, so the API can be used fluently
