@@ -30,7 +30,7 @@ public class MailResult {
 
   @SuppressWarnings("unchecked")
   public MailResult(JsonObject json) {
-    messageID = json.getString("message-id");
+    messageID = json.getString("message_id");
     JsonArray jsonArray = json.getJsonArray("recipients");
     recipients = jsonArray == null ? new ArrayList<String>() : (List<String>) jsonArray.getList();
   }
@@ -38,7 +38,7 @@ public class MailResult {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     if (messageID != null) {
-      json.put("message-id", messageID);
+      json.put("message_id", messageID);
     }
     if (recipients != null) {
       json.put("recipients", recipients);

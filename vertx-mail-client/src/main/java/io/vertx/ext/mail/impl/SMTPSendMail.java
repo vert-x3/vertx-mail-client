@@ -167,7 +167,7 @@ class SMTPSendMail {
     if (mailMessage == null) {
       MailEncoder encoder = new MailEncoder(email);
       mailMessage = encoder.encode();
-      mailResult.setMessageID(encoder.getMessageId());
+      mailResult.setMessageID(encoder.getMessageID());
     }
   }
 

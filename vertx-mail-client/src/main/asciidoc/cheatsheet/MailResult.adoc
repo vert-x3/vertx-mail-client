@@ -1,8 +1,7 @@
 == MailResult
 
 ++++
- Represent the result of the sendMail operation This class is currently a placeholder, it will get a field message-id
- and recipient list (for the list of addresses that the mail was actually sent to)
+ Represent the result of the sendMail operation
 ++++
 '''
 
@@ -11,10 +10,10 @@
 |===
 ^|Name | Type ^| Description
 
-|[[messageId]]`messageId`
+|[[messageID]]`messageID`
 |`String`
 |+++
-@param messageId the messageId to set+++
+@param messageID the messageID to set+++
 
 |[[recipients]]`recipients`
 |`Array of String`

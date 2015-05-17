@@ -55,11 +55,19 @@ public class MailResultTest {
     assertEquals("{\"recipients\":[]}", result.toJson().encode());
   }
 
+  @Test
+  public final void testToJson2() {
+    MailResult result = new MailResult();
+    result.setMessageID("12345");
+    result.setRecipients(Arrays.asList("user1","user2"));
+    assertEquals("{\"message_id\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toJson().encode());
+  }
+
   /**
    * Test method for {@link io.vertx.ext.mail.MailResult#getMessageID()}.
    */
   @Test
-  public final void testGetMessageId() {
+  public final void testGetMessageID() {
     MailResult result = new MailResult();
     assertEquals(null, result.getMessageID());
   }
@@ -68,7 +76,7 @@ public class MailResultTest {
    * Test method for {@link io.vertx.ext.mail.MailResult#setMessageID(java.lang.String)}.
    */
   @Test
-  public final void testSetMessageId() {
+  public final void testSetMessageID() {
     MailResult result = new MailResult();
     assertEquals("asdf", result.setMessageID("asdf").getMessageID());
   }
@@ -80,6 +88,14 @@ public class MailResultTest {
   public final void testGetRecipients() {
     MailResult result = new MailResult();
     assertEquals("[]", result.getRecipients().toString());
+  }
+
+  @Test
+  public final void testGetRecipients2() {
+    MailResult result = new MailResult();
+    result.getRecipients().add("user");
+    result.getRecipients().add("user2");
+    assertEquals("[user, user2]", result.getRecipients().toString());
   }
 
   /**
@@ -99,6 +115,14 @@ public class MailResultTest {
   public final void testToString() {
     MailResult result = new MailResult();
     assertEquals("{\"recipients\":[]}", result.toString());
+  }
+
+  @Test
+  public final void testToString2() {
+    MailResult result = new MailResult();
+    result.setMessageID("12345");
+    result.setRecipients(Arrays.asList("user1","user2"));
+    assertEquals("{\"message_id\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toString());
   }
 
 }

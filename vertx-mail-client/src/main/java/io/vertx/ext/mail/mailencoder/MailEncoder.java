@@ -30,7 +30,7 @@ import java.util.List;
 public class MailEncoder {
 
   private MailMessage message;
-  private String messageId;
+  private String messageID;
   
   /**
    * create a MailEncoder for the message
@@ -103,7 +103,7 @@ public class MailEncoder {
 
     if (!message.isFixedHeaders()) {
       headers.set("MIME-Version", "1.0");
-      headers.set("Message-ID", Utils.generateMessageId());
+      headers.set("Message-ID", Utils.generateMessageID());
       headers.set("Date", Utils.generateDate());
 
       if (message.getSubject() != null) {
@@ -133,7 +133,7 @@ public class MailEncoder {
       headers.addAll(headersToSet);
     }
 
-    messageId = headers.get("Message-ID");
+    messageID = headers.get("Message-ID");
     
     return headers;
   }
@@ -141,7 +141,7 @@ public class MailEncoder {
   /**
    * @return the messageId
    */
-  public String getMessageId() {
-    return messageId;
+  public String getMessageID() {
+    return messageID;
   }
 }

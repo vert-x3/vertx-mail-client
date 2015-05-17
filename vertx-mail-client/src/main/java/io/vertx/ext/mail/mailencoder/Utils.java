@@ -90,7 +90,7 @@ class Utils {
     return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + (count++);
   }
 
-  static String generateMessageId() {
+  static String generateMessageID() {
     return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + getMyHostname() + ">";
   }
 
