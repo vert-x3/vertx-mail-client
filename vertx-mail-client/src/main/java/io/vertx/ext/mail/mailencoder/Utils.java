@@ -106,6 +106,7 @@ class Utils {
   /*
    * encode subject if necessary. we assume that the string is encoded as whole
    * and do mime compliant line wrapping
+   * index is the offset of the line that is already used (i.e. the length of the header including ": ")
    */
   static String encodeHeader(String subject, int index) {
     if (mustEncode(subject)) {
@@ -128,7 +129,7 @@ class Utils {
               encChar = String.valueOf(ch);
             }
             int newColumn = column + encChar.length();
-            if (newColumn <= 73) {
+            if (newColumn <= 74) {
               sb.append(encChar);
               column = newColumn;
             } else {

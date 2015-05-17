@@ -191,9 +191,9 @@ public class MailEncoderTest {
     message
       .setTo("user@example.com (ä this email has an insanely long username just to check that the text is correctly wrapped into multiple lines)");
     String mime = new MailEncoder(message).encode();
-    assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?=C3=A4_this_email_has_an_insanely_long_us?=\n"
-      + " =?UTF-8?Q?ername_just_to_check_that_the_text_is_correctly_wrapped_into_m?=\n"
-      + " =?UTF-8?Q?ultiple_lines?=)\n"));
+    assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?=C3=A4_this_email_has_an_insanely_long_use?=\n"
+      + " =?UTF-8?Q?rname_just_to_check_that_the_text_is_correctly_wrapped_into_mul?=\n"
+      + " =?UTF-8?Q?tiple_lines?=)\n"));
   }
 
   @Test
@@ -255,10 +255,10 @@ public class MailEncoderTest {
     MailMessage message = new MailMessage();
     final String subject = "ä=======================================================================================";
     final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=";
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D?=";
     message.setSubject(subject);
     String mime = new MailEncoder(message).encode();
     assertThat(mime, containsString(encodedSubject));
@@ -267,9 +267,9 @@ public class MailEncoderTest {
   @Test
   public void testSubjectEncodedLong2() {
     MailMessage message = new MailMessage();
-    final String subject = "ä***************************************************************************************";
+    final String subject = "ä****************************************************************************************************************";
     final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4*************************************************?=\n"
-      + " =?UTF-8?Q?**************************************?=\n";
+      + " =?UTF-8?Q?***************************************************************?=\n";
     message.setSubject(subject);
     String mime = new MailEncoder(message).encode();
     assertThat(mime, containsString(encodedSubject));

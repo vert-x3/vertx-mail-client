@@ -109,6 +109,7 @@ public class MailTest extends VertxTestBase {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        mailClient.close();
         testComplete();
       } else {
         log.warn("got exception", result.cause());

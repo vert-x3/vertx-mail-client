@@ -5,6 +5,7 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
 
@@ -15,19 +16,20 @@ class SMTPSendMail {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
 
-  private SMTPConnection connection;
+  private final SMTPConnection connection;
   private MailMessage email;
   private String mailMessage;
-  private Handler<Void> finishedHandler;
-  private Handler<Throwable> exceptionHandler;
+  private final Handler<MailResult> finishedHandler;
+  private final Handler<Throwable> exceptionHandler;
+  private final MailResult mailResult;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<Void> finishedHandler,
+  SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<MailResult> finishedHandler,
                Handler<Throwable> exceptionHandler) {
-    super();
     this.connection = connection;
     this.email = email;
     this.finishedHandler = finishedHandler;
     this.exceptionHandler = exceptionHandler;
+    mailResult = new MailResult();
   }
 
   void startMail() {
@@ -102,6 +104,7 @@ class SMTPSendMail {
       connection.write("RCPT TO:<" + toAddr.getEmail() + ">", message -> {
         log.debug("RCPT TO result: " + message);
         if (StatusCode.isStatusOk(message)) {
+          mailResult.getRecipients().add(toAddr.getEmail());
           if (i + 1 < recipientAddrs.size()) {
             rcptToCmd(recipientAddrs, i + 1);
           } else {
@@ -149,7 +152,7 @@ class SMTPSendMail {
     connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
-        finishedHandler.handle(null);
+        finishedHandler.handle(mailResult);
       } else {
         log.warn("sending data failed: " + message);
         handleError("sending data failed: " + message);
@@ -164,6 +167,7 @@ class SMTPSendMail {
     if (mailMessage == null) {
       MailEncoder encoder = new MailEncoder(email);
       mailMessage = encoder.encode();
+      mailResult.setMessageID(encoder.getMessageId());
     }
   }
 

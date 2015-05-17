@@ -30,7 +30,8 @@ import java.util.List;
 public class MailEncoder {
 
   private MailMessage message;
-
+  private String messageId;
+  
   /**
    * create a MailEncoder for the message
    * <p>
@@ -106,7 +107,7 @@ public class MailEncoder {
       headers.set("Date", Utils.generateDate());
 
       if (message.getSubject() != null) {
-        headers.set("Subject", Utils.encodeHeader(message.getSubject(), 8));
+        headers.set("Subject", Utils.encodeHeader(message.getSubject(), 9));
       }
 
       if (message.getFrom() != null) {
@@ -132,6 +133,15 @@ public class MailEncoder {
       headers.addAll(headersToSet);
     }
 
+    messageId = headers.get("Message-ID");
+    
     return headers;
+  }
+
+  /**
+   * @return the messageId
+   */
+  public String getMessageId() {
+    return messageId;
   }
 }

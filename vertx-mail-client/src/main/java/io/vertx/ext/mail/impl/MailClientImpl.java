@@ -54,11 +54,9 @@ public class MailClientImpl implements MailClient {
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
                            Context context) {
-    new SMTPSendMail(conn, email, v -> {
+    new SMTPSendMail(conn, email, mailResult -> {
       conn.returnToPool();
-      // TODO: this object is empty
-      MailResult result = new MailResult();
-      returnResult(Future.succeededFuture(result), resultHandler, context);
+      returnResult(Future.succeededFuture(mailResult), resultHandler, context);
     }, t -> {
       conn.setBroken();
       handleError(t, resultHandler, context);

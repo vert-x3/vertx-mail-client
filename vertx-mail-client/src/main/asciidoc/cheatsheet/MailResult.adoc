@@ -10,4 +10,14 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+
+|[[messageId]]`messageId`
+|`String`
+|+++
+@param messageId the messageId to set+++
+
+|[[recipients]]`recipients`
+|`Array of String`
+|+++
+@param recipients the recipients to set+++
 |===
