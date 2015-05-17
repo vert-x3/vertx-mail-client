@@ -27,17 +27,18 @@ public class Examples {
 
   public void mailMessage(Vertx vertx) {
     MailMessage message = new MailMessage();
-    message.setFrom("user@example.com (Example User)")
-      .setTo("recipient@example.org")
-      .setCc("Another User <another@example.net>")
-      .setText("this is the plain message text")
-      .setHtml("this is html text <a href=\"\">vertx.io</a>");
+    message.setFrom("user@example.com (Example User)");
+    message.setTo("recipient@example.org");
+    message.setCc("Another User <another@example.net>");
+    message.setText("this is the plain message text");
+    message.setHtml("this is html text <a href=\"\">vertx.io</a>");
   }
 
   public void attachment(Vertx vertx, MailMessage message) {
     MailAttachment attachment = new MailAttachment();
-    attachment.setContentType("text/plain")
-      .setData(Buffer.buffer("attachment file"));
+    attachment.setContentType("text/plain");
+    attachment.setData(Buffer.buffer("attachment file"));
+
     message.setAttachment(attachment);
   }
 

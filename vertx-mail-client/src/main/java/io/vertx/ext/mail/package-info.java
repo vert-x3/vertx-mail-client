@@ -97,7 +97,14 @@
  * {@link examples.Examples#sendMail}
  * ----
  *
- * == MailMessage properties
+ * == mail-client data objects
+ *
+ * The objects used by the MailClient service are all @DataObject classes, which means that they have a few properties
+ * and can be converted from and to JSON. In Java the regular getter and setter methods can be used for the properties
+ * in Groovy you can use the property names directly. In JavaScript and Ruby, you can use a JSON object directly to
+ * construct or read the properties. The objects can be used fluently. 
+ *
+ * === MailMessage properties
  * 
  * Email fields are Strings using the common formats for email with or without real
  * name
@@ -118,7 +125,7 @@
  * ...
  * TODO
  * 
- * == MailAttachment properties
+ * === MailAttachment properties
  * The MailAttachment object has the following properties
  * 
  * * data Buffer containing the binary data of the attachment
@@ -127,7 +134,7 @@
  * * disposition String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
  * * name String filename of the attachment (this is put into the disposition and in the contentType headers of the attachment), optional
  *
- * == Configuration options
+ * === MailConfig options
  * 
  * The configuration has the following properties
  * 
@@ -144,7 +151,11 @@
  * * idleTimeout int timeout in seconds for idle connections after a mail has been sent (default is 300)
  * * maxPoolSize int max number of open connections kept in the pool or to be opened at one time (regardless if pooling is enabled or not), default is 10
  * * trustAll boolean whether to accept all certs from the server (default is false)
- * * netClientOptions NetClientOptions object to be used when connecting to the server port, this allows for example to set a custom keystore to use a self-defined certificate 
+ * * netClientOptions NetClientOptions object to be used when connecting to the server port, this allows for example to set a custom keystore to use a self-defined certificate
+ * 
+ * === MailResult object
+ * The MailResult object currently has no properties, this is just a placeholder for a few return values that are still a TODO
+ * (e.g. Message-ID of the sent message)
  */
 @Document(fileName = "index.adoc")
 @GenModule(name = "vertx-mail") package io.vertx.ext.mail;
