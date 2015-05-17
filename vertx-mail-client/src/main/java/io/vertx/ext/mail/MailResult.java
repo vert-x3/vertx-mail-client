@@ -1,6 +1,3 @@
-/**
- * 
- */
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
@@ -40,27 +37,27 @@ public class MailResult {
 
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    if(messageID != null) {
+    if (messageID != null) {
       json.put("message-id", messageID);
     }
-    if(recipients != null) {
+    if (recipients != null) {
       json.put("recipients", recipients);
     }
     return json;
   }
 
   /**
-   * @return the messageId
+   * @return the messageID
    */
   public String getMessageID() {
     return messageID;
   }
 
   /**
-   * @param messageId the messageId to set
+   * @param messageID the messageID to set
    */
-  public MailResult setMessageID(String messageId) {
-    this.messageID = messageId;
+  public MailResult setMessageID(String messageID) {
+    this.messageID = messageID;
     return this;
   }
 
