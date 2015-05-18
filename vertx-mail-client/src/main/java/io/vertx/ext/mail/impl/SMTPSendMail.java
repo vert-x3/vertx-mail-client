@@ -73,7 +73,13 @@ class SMTPSendMail {
         fromAddr = email.getFrom();
       }
       EmailAddress from = new EmailAddress(fromAddr);
-      connection.write("MAIL FROM:<" + from.getEmail() + ">", message -> {
+      String sizeParameter;
+      if (connection.getCapa().getSize() > 0) {
+        sizeParameter = " SIZE=" + mailMessage.length();
+      } else {
+        sizeParameter = "";
+      }
+      connection.write("MAIL FROM:<" + from.getEmail() + ">" + sizeParameter, message -> {
         log.debug("MAIL FROM result: " + message);
         if (StatusCode.isStatusOk(message)) {
           rcptToCmd();

@@ -26,7 +26,7 @@ public class MailTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailTest.class);
 
-  @Ignore
+//  @Ignore
   @Test
   public void mailTest() throws IOException {
     log.info("starting");
