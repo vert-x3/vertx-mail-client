@@ -169,7 +169,7 @@ class SMTPSendMail {
    */
   private void createMailMessage() {
     if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email, config.getEhloHostname());
+      MailEncoder encoder = new MailEncoder(email, config.getOwnHostname());
       mailMessage = encoder.encode();
       mailResult.setMessageID(encoder.getMessageID());
     }

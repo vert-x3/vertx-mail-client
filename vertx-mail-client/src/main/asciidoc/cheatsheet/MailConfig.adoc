@@ -53,9 +53,12 @@ set the NetClientOptions to be used when opening SMTP connections
 |[[authMethods]]`authMethods`
 |`String`
 |+++
-set string of allowed auth methods+++
+set string of allowed auth methods.
+ if set only these methods will be used
+ if the server supports them. If null or empty all supported methods may be
+ used+++
 
-|[[ehloHostname]]`ehloHostname`
+|[[ownHostname]]`ownHostname`
 |`String`
 |+++
 set the hostname to be used for HELO/EHLO and the Message-ID+++

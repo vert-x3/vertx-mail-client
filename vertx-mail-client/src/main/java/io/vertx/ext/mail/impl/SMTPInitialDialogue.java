@@ -108,8 +108,8 @@ class SMTPInitialDialogue {
    * @return the hostname
    */
   private String getMyHostname() {
-    if (config.getEhloHostname() != null) {
-      return config.getEhloHostname();
+    if (config.getOwnHostname() != null) {
+      return config.getOwnHostname();
     } else {
       try {
         InetAddress ip = InetAddress.getLocalHost();

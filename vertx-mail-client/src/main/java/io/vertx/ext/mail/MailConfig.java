@@ -71,7 +71,7 @@ public class MailConfig {
   /**
    * use this hostname for HELO/EHLO command
    */
-  private String ehloHostname;
+  private String ownHostname;
 
   /**
    * maximum number of connections to keep open in the connection pool in one instance
@@ -169,7 +169,7 @@ public class MailConfig {
       netClientOptions = new NetClientOptions(other.netClientOptions);
     }
     authMethods = other.authMethods;
-    ehloHostname = other.ehloHostname;
+    ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
     idleTimeout = other.idleTimeout;
     keepAlive = other.keepAlive;
@@ -200,7 +200,7 @@ public class MailConfig {
       netClientOptions = new NetClientOptions(options);
     }
     authMethods = config.getString("auth_methods");
-    ehloHostname = config.getString("ehlo_hostname");
+    ownHostname = config.getString("own_hostname");
     maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
     idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
     keepAlive = config.getBoolean("keep_alive", true);
@@ -409,7 +409,10 @@ public class MailConfig {
   }
 
   /**
-   * set string of allowed auth methods
+   * set string of allowed auth methods.
+   * if set only these methods will be used
+   * if the server supports them. If null or empty all supported methods may be
+   * used
    *
    * @param authMethods the authMethods to set
    * @return a reference to this, so the API can be used fluently
@@ -422,20 +425,20 @@ public class MailConfig {
   /**
    * get the hostname to be used for HELO/EHLO and the Message-ID
    *
-   * @return the ehloHostname
+   * @return my own hostname
    */
-  public String getEhloHostname() {
-    return ehloHostname;
+  public String getOwnHostname() {
+    return ownHostname;
   }
 
   /**
    * set the hostname to be used for HELO/EHLO and the Message-ID
    *
-   * @param ehloHostname the ehloHostname to set
+   * @param ownHostname my own hostname to set
    * @return a reference to this, so the API can be used fluently
    */
-  public MailConfig setEhloHostname(String ehloHostname) {
-    this.ehloHostname = ehloHostname;
+  public MailConfig setOwnHostname(String ownHostname) {
+    this.ownHostname = ownHostname;
     return this;
   }
 
@@ -542,8 +545,8 @@ public class MailConfig {
     if (authMethods != null) {
       json.put("auth_methods", authMethods);
     }
-    if (ehloHostname != null) {
-      json.put("ehlo_hostname", ehloHostname);
+    if (ownHostname != null) {
+      json.put("own_hostname", ownHostname);
     }
     json.put("max_pool_size", maxPoolSize);
     json.put("idle_timeout", idleTimeout);
@@ -556,7 +559,7 @@ public class MailConfig {
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions,
-        authMethods, ehloHostname, maxPoolSize, idleTimeout, keepAlive);
+        authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive);
   }
 
   /*

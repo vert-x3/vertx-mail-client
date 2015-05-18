@@ -36,9 +36,9 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setTrustAll(true);
     mailConfig.setAuthMethods("PLAIN");
-    mailConfig.setEhloHostname("example.com");
+    mailConfig.setOwnHostname("example.com");
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"own_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
       mailConfig.toJson().toString());
   }
 
@@ -188,10 +188,10 @@ public class MailConfigTest {
   }
 
   @Test
-  public void testEhloHostname() {
+  public void testOwnHostname() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setEhloHostname("localhost.localdomain");
-    assertEquals("localhost.localdomain", mailConfig.getEhloHostname());
+    mailConfig.setOwnHostname("localhost.localdomain");
+    assertEquals("localhost.localdomain", mailConfig.getOwnHostname());
   }
 
   @Test
