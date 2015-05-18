@@ -21,10 +21,6 @@ public class Examples {
     MailClient mailClient = MailClient.create(vertx, config);
   }
 
-//  public void createService(Vertx vertx) {
-//    MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
-//  }
-
   public void mailMessage(Vertx vertx) {
     MailMessage message = new MailMessage();
     message.setFrom("user@example.com (Example User)");

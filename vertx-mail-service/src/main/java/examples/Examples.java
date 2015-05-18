@@ -13,7 +13,7 @@ public class Examples {
     MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
   }
 
-  public void example3(Vertx vertx) {
+  public void exampleService(Vertx vertx) {
     MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
 
     MailMessage email=new MailMessage()

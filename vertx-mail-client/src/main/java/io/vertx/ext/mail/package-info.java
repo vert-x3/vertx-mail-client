@@ -14,7 +14,7 @@
  * You may elect to redistribute this code under either of these licenses.
  */
 /**
- * = Vert.x Mail (SMTP client implementation)
+ * = Vert.x Mail client (SMTP client implementation)
  * 
  * Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
  * by external mail server (e.g. googlemail or aol) or by the vert.x event bus via
@@ -46,16 +46,8 @@
  * 
  * === Service client
  * 
- * The service client only needs the name of the service address as parameter, by
- * default this is "vertx.mail".
- * 
- * [source,java]
- * ----
- * MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
- * ----
- * 
- * The behaviour of MailClient and MailService is the same, if you like you can use the
- * MailClient interface to store the MailService instance.
+ * For documentation about the MailService interface, please take a look at the documentation
+ * for the vertx-mail-service sub-project
  * 
  * == Sending mails
  * 
