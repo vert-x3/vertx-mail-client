@@ -40,7 +40,7 @@ public class Examples {
 
   public void sendMail(Vertx vertx, MailMessage message, MailClient mailClient) {
     mailClient.sendMail(message, result -> {
-      if(result.succeeded()) {
+      if (result.succeeded()) {
         System.out.println(result.result());
       } else {
         result.cause().printStackTrace();

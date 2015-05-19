@@ -20,11 +20,11 @@ class SMTPQuit {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPQuit.class);
 
-  final private SMTPConnection connection;
+  private final SMTPConnection connection;
 
-  final private Handler<Void> finishedHandler;
+  private final Handler<Void> finishedHandler;
 
-  final private Handler<Throwable> exceptionHandler;
+  private final Handler<Throwable> exceptionHandler;
 
   SMTPQuit(SMTPConnection connection, Handler<Void> finishedHandler, Handler<Throwable> exceptionHandler) {
     this.connection = connection;

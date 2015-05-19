@@ -16,10 +16,10 @@ public class Examples {
   public void exampleService(Vertx vertx) {
     MailService mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
 
-    MailMessage email=new MailMessage()
-    .setFrom("user@example.com")
-    .setBounceAddress("bounce@example.com")
-    .setTo("user@example.com");
+    MailMessage email = new MailMessage()
+      .setFrom("user@example.com")
+      .setBounceAddress("bounce@example.com")
+      .setTo("user@example.com");
 
     mailService.sendMail(email, result -> {
       System.out.println("mail finished");

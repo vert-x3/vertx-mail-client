@@ -550,7 +550,7 @@ public class MailConfig {
     }
     json.put("max_pool_size", maxPoolSize);
     json.put("idle_timeout", idleTimeout);
-    if(keepAlive == false) {
+    if (keepAlive == false) {
       json.put("keep_alive", keepAlive);
     }
 
