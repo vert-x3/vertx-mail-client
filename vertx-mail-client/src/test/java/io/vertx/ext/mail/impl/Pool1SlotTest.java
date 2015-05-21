@@ -14,8 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * this test uses a local SMTP server (wiser from subethasmtp) since this server supports SSL/TLS, the tests relating to
- * that are here
+ * Tests using a pool of size 1
  * <p>
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>

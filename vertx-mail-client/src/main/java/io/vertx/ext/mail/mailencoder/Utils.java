@@ -8,6 +8,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class Utils {
 
@@ -83,16 +84,15 @@ class Utils {
     }
   }
 
-  // TODO: make this smarter
-  static int count = 0;
+  private static AtomicInteger count = new AtomicInteger(0);
 
   static String generateBoundary() {
-    return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + (count++);
+    return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + count.getAndIncrement();
   }
 
   static String generateMessageID(String setHostname) {
     String hostname = setHostname != null ? setHostname : getMyHostname();
-    return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + hostname + ">";
+    return "<msg." + System.currentTimeMillis() + ".vertxmail." + count.getAndIncrement() + "@" + hostname + ">";
   }
 
   private static String getMyHostname() {
