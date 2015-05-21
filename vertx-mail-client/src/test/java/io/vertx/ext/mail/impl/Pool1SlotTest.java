@@ -76,6 +76,7 @@ public class Pool1SlotTest extends SMTPTestWiser {
   /**
    * send two mails in parallel with a pool with size 1 we try to assert that the pool doesn't start both send
    * operations in parallel
+   * TODO: check if this test really makes sense
    *
    * @param context
    */
@@ -119,8 +120,8 @@ public class Pool1SlotTest extends SMTPTestWiser {
         long time1 = finishtimeMail1.get() - startTime;
         long time2 = finishtimeMail2.get() - startTime;
         long diff = Math.abs(time1 - time2);
-        log.debug("running time " + time1 + "/" + time2 + " diff " + diff);
-        if (diff < 1000) {
+        log.info("running time " + time1 + "/" + time2 + " diff " + diff);
+        if (diff < 100) {
           context.fail("time difference is too small (" + diff + "ms), connection pool limit not enforced");
         }
         async.complete();

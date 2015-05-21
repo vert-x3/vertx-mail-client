@@ -129,17 +129,18 @@ public class SMTPTestBase extends VertxTestBase {
 
   /**
    * create a large message to be able to test timing of operations
-   * the message is about 10MB and will take a few seconds to send on the fake server
+   * the message is about 1MB and will take about a second to send on the fake server
    */
   protected MailMessage largeMessage() {
     // this is not thread safe, but we do not have to be
-    if(largeMessage == null) {
-      StringBuilder sb = new StringBuilder(50*1024*1024);
-      sb.append("*************************************************\n");
-      for(int i=0; i<20;i++) {
+    if (largeMessage == null) {
+      StringBuilder sb = new StringBuilder(1024 * 1024);
+      // 64*2^14 = 2^20
+      sb.append("****************************************************************\n");
+      for (int i = 0; i < 14; i++) {
         sb.append(sb);
       }
-      largeMessage =new MailMessage("from@example.com", "user@example.com", "Subject", sb.toString()); 
+      largeMessage = new MailMessage("from@example.com", "user@example.com", "Subject", sb.toString());
     }
     return largeMessage;
   }
