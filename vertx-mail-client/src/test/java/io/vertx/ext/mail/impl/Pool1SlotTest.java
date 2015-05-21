@@ -1,7 +1,5 @@
 package io.vertx.ext.mail.impl;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -39,7 +37,7 @@ public class Pool1SlotTest extends SMTPTestWiser {
     final TestMailClient mailClient = new TestMailClient(vertx, config);
     Async async = context.async();
 
-    MailMessage email = largeMessage();
+    MailMessage email = exampleMessage();
 
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
@@ -48,12 +46,12 @@ public class Pool1SlotTest extends SMTPTestWiser {
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
-        log.info(result.result().toString());
+        log.info(result.result());
         mailClient.sendMail(email, result2 -> {
           log.info("mail finished");
           pass2.passOnce();
           if (result2.succeeded()) {
-            log.info(result2.result().toString());
+            log.info(result2.result());
             context.assertEquals(1, mailClient.getConnectionPool().connCount());
             // give the pool 1,5s to time the connection out
             vertx.setTimer(1500, v -> {
@@ -74,9 +72,10 @@ public class Pool1SlotTest extends SMTPTestWiser {
   }
 
   /**
-   * send two mails in parallel with a pool with size 1 we try to assert that the pool doesn't start both send
-   * operations in parallel
-   * TODO: check if this test really makes sense
+   * send two mails in parallel with a pool with size 1
+   *
+   * we try to assert that the pool doesn't start both send operations in parallel by checking that the pool size stays
+   * at 1
    *
    * @param context
    */
@@ -85,46 +84,36 @@ public class Pool1SlotTest extends SMTPTestWiser {
     final MailConfig config = configNoSSL().setMaxPoolSize(1).setIdleTimeout(1);
     final TestMailClient mailClient = new TestMailClient(vertx, config);
     Async async = context.async();
+    Async async2 = context.async();
 
-    MailMessage email = largeMessage();
+    MailMessage email = exampleMessage();
 
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
-    final long startTime = System.currentTimeMillis();
-    AtomicLong finishtimeMail1 = new AtomicLong(0);
-    AtomicLong finishtimeMail2 = new AtomicLong(0);
-
     mailClient.sendMail(email, result -> {
+      context.assertEquals(1, mailClient.getConnectionPool().connCount());
       log.info("mail finished");
       pass1.passOnce();
       if (result.succeeded()) {
-        finishtimeMail1.set(System.currentTimeMillis());
-        log.info(result.result().toString());
+        log.info(result.result());
+        async2.complete();
       } else {
         log.warn("got exception", result.cause());
         context.fail(result.cause());
       }
     });
     mailClient.sendMail(email, result2 -> {
+      context.assertEquals(1, mailClient.getConnectionPool().connCount());
       log.info("mail finished");
       pass2.passOnce();
       mailClient.close();
       if (result2.succeeded()) {
-        log.info(result2.result().toString());
-        finishtimeMail2.set(System.currentTimeMillis());
-        // to assert that the pool size limit works, we assume that the send
-        // operations did not finish
-        // in about the same time (i.e. the mails were sent in sequence and not
-        // in parallel)
-        long time1 = finishtimeMail1.get() - startTime;
-        long time2 = finishtimeMail2.get() - startTime;
-        long diff = Math.abs(time1 - time2);
-        log.info("running time " + time1 + "/" + time2 + " diff " + diff);
-        if (diff < 100) {
-          context.fail("time difference is too small (" + diff + "ms), connection pool limit not enforced");
-        }
-        async.complete();
+        log.info(result2.result());
+        vertx.setTimer(1000, v -> {
+          context.assertEquals(0, mailClient.getConnectionPool().connCount());
+          async.complete();
+        });
       } else {
         log.warn("got exception", result2.cause());
         context.fail(result2.cause());
