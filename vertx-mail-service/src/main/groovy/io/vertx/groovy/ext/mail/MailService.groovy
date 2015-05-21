@@ -45,8 +45,18 @@ public class MailService extends MailClient {
     def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
     return ret;
   }
-  public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<MailResult>> resultHandler) {
-    this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, resultHandler);
+  public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
+    this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> event) {
+        AsyncResult<Map<String, Object>> f
+        if (event.succeeded()) {
+          f = InternalHelper.<Map<String, Object>>result(event.result()?.toJson()?.getMap())
+        } else {
+          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+        }
+        resultHandler.handle(f)
+      }
+    });
     return this;
   }
   public void close() {

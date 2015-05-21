@@ -25,7 +25,13 @@ import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.ReplyException;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.JsonArray;
-import java.util.ArrayList;import java.util.HashSet;import java.util.List;import java.util.Map;import java.util.Set;import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.ext.mail.MailService;
@@ -94,13 +100,13 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
     switch (action) {
 
       case "sendMail": {
-        service.sendMail(new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), res -> {
-  if (res.failed()) {
-    msg.fail(-1, res.cause().getMessage());
-  } else {
-    msg.reply(res.result().toJson());
-  }
-});
+        service.sendMail(json.getJsonObject("email") == null ? null : new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), res -> {
+          if (res.failed()) {
+            msg.fail(-1, res.cause().getMessage());
+          } else {
+            msg.reply(res.result() == null ? null : res.result().toJson());
+          }
+       });
         break;
       }
       case "close": {
