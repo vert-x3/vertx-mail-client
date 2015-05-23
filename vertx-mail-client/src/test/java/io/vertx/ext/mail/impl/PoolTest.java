@@ -46,6 +46,8 @@ public class PoolTest extends SMTPTestWiser {
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
+    context.assertEquals(0, mailClient.getConnectionPool().connCount());
+
     final AtomicReference<String> messageID1 = new AtomicReference<String>();
 
     mailClient.sendMail(email, result -> {

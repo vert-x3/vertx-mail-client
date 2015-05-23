@@ -36,11 +36,14 @@ public class PoolDisabledTest extends SMTPTestWiser {
 
     PassOnce pass = new PassOnce(s -> context.fail(s));
 
+    context.assertEquals(0, mailClient.getConnectionPool().connCount());
+
     mailClient.sendMail(email, result -> {
       log.info("mail finished");
       pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
+        // it would be ok if the connection is closed before the success handler is called
         if (mailClient.getConnectionPool().connCount() > 0) {
           vertx.setTimer(1000, v -> {
             if (mailClient.getConnectionPool().connCount() > 0) {

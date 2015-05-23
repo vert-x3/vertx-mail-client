@@ -45,14 +45,23 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
 
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
+
+    testContext.assertEquals(0, pool.connCount());
+
     pool.getConnection(conn -> {
       log.debug("got 1st connection");
+      testContext.assertEquals(1, pool.connCount());
       conn.returnToPool();
+      testContext.assertEquals(1, pool.connCount());
+
       pool.getConnection(conn2 -> {
         log.debug("got 2nd connection");
         testContext.assertEquals(1, pool.connCount());
         conn2.returnToPool();
-        pool.close(v -> async.complete());
+        pool.close(v -> {
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
       }, th -> {
         log.info(th);
         testContext.fail(th);

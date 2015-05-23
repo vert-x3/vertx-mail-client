@@ -31,8 +31,11 @@ public class PoolIdleTest extends SMTPTestWiser {
 
     PassOnce pass = new PassOnce(s -> context.fail(s));
 
+    context.assertEquals(0, mailClient.getConnectionPool().connCount());
+
     mailClient.sendMail(email, result -> {
       log.info("mail finished");
+      context.assertEquals(1, mailClient.getConnectionPool().connCount());
       pass.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());

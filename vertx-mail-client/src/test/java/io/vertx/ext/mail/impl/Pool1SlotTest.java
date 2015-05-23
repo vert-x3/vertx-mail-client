@@ -41,8 +41,11 @@ public class Pool1SlotTest extends SMTPTestWiser {
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
+    context.assertEquals(0, mailClient.getConnectionPool().connCount());
+
     mailClient.sendMail(email, result -> {
       log.info("mail finished");
+      context.assertEquals(1, mailClient.getConnectionPool().connCount());
       pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result());
@@ -90,10 +93,13 @@ public class Pool1SlotTest extends SMTPTestWiser {
     PassOnce pass1 = new PassOnce(s -> context.fail(s));
     PassOnce pass2 = new PassOnce(s -> context.fail(s));
 
+    context.assertEquals(0, mailClient.getConnectionPool().connCount());
+
     mailClient.sendMail(email, result -> {
       context.assertEquals(1, mailClient.getConnectionPool().connCount());
       log.info("mail finished");
       pass1.passOnce();
+      context.assertEquals(1, mailClient.getConnectionPool().connCount());
       if (result.succeeded()) {
         log.info(result.result());
         async2.complete();
