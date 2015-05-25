@@ -143,7 +143,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     }
   }
 
-  private void checkReuseConnection(SMTPConnection conn) {
+  private synchronized void checkReuseConnection(SMTPConnection conn) {
     if (conn.isBroken()) {
       log.debug("connection is broken, closing");
       conn.close();
