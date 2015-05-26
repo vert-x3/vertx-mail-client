@@ -242,6 +242,10 @@ public class MailConfig {
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setPort(int port) {
+    if (port < 0 || port > 65535) {
+      throw new IllegalArgumentException("port must be >=0 && <= 65535");
+    }
+
     this.port = port;
     return this;
   }
@@ -459,6 +463,9 @@ public class MailConfig {
    * @return this to be able to use the object fluently
    */
   public MailConfig setMaxPoolSize(int maxPoolSize) {
+    if (maxPoolSize < 1) {
+      throw new IllegalArgumentException("maxPoolSize must be > 0");
+    }
     this.maxPoolSize = maxPoolSize;
     return this;
   }
@@ -480,6 +487,9 @@ public class MailConfig {
    * @return this to be able to use the object fluently
    */
   public MailConfig setIdleTimeout(int idleTimeout) {
+    if (idleTimeout < 1) {
+      throw new IllegalArgumentException("idleTimeout must be > 0");
+    }
     this.idleTimeout = idleTimeout;
     return this;
   }

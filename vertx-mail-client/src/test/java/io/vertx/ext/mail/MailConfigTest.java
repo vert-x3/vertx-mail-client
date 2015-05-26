@@ -176,11 +176,9 @@ public class MailConfigTest {
     assertEquals(netClientOptions, netClientOptions2);
   }
 
-  // TODO: remove enabledCipherSuites if possible, this case be done
-  // as soon as pr is merged https://github.com/eclipse/vert.x/pull/1022
   @Test
   public void testNetClientOptionsFromJson() {
-    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true,\"enabledCipherSuites\":[]}}";
+    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true}}";
     MailConfig mailConfig = new MailConfig(new JsonObject(jsonString));
     MailConfig mailConfig2 = new MailConfig()
       .setNetClientOptions(new NetClientOptions().setSsl(true));
