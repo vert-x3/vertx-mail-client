@@ -60,7 +60,7 @@ public class MailMessage {
       this.attachment = newList;
     }
     if (other.headers != null) {
-      headers = new CaseInsensitiveHeaders().addAll(headers);
+      headers = new CaseInsensitiveHeaders().addAll(other.headers);
     }
   }
 
@@ -210,7 +210,9 @@ public class MailMessage {
    * @return this to be able to use it fluently
    */
   public MailMessage setTo(String to) {
-    this.to = asList(to);
+    List<String> toList = new ArrayList<String>();
+    toList.add(to);
+    this.to = toList;
     return this;
   }
 
@@ -241,7 +243,9 @@ public class MailMessage {
    * @return this to be able to use it fluently
    */
   public MailMessage setCc(String cc) {
-    this.cc = asList(cc);
+    List<String> ccList = new ArrayList<String>();
+    ccList.add(cc);
+    this.cc = ccList;
     return this;
   }
 
@@ -272,7 +276,9 @@ public class MailMessage {
    * @return this to be able to use it fluently
    */
   public MailMessage setBcc(String bcc) {
-    this.bcc = asList(bcc);
+    List<String> bccList = new ArrayList<String>();
+    bccList.add(bcc);
+    this.bcc = bccList;
     return this;
   }
 
@@ -366,7 +372,9 @@ public class MailMessage {
    * @return this to be able to use it fluently
    */
   public MailMessage setAttachment(MailAttachment attachment) {
-    this.attachment = Arrays.asList(attachment);
+    List<MailAttachment> attachmentList = new ArrayList<MailAttachment>();
+    attachmentList.add(attachment);
+    this.attachment = attachmentList;
     return this;
   }
 
@@ -471,6 +479,7 @@ public class MailMessage {
       return false;
     }
     final MailMessage message = (MailMessage) o;
+
     return getList().equals(message.getList());
   }
 

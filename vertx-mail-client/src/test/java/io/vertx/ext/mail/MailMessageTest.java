@@ -4,6 +4,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
+
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class MailMessageTest {
 
@@ -26,6 +28,7 @@ public class MailMessageTest {
     assertEquals("{}", new MailMessage().toJson().encode());
     assertEquals("{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\"}",
       new MailMessage("a", "b", "c", "d").toJson().encode());
+    assertEquals("{\"fixedheaders\":true}", new MailMessage().setFixedHeaders(true).toJson().encode());
   }
 
   @Test
@@ -67,6 +70,15 @@ public class MailMessageTest {
     assertEquals(message, message2);
     message2.getTo().add("user@example.net");
     assertEquals("[user@example.com]", message.getTo().toString());
+  }
+
+  @Test
+  public void testConstructorFromClassHeaders() {
+    MailMessage message = new MailMessage();
+    message.setHeaders(new CaseInsensitiveHeaders());
+    MailMessage message2 = new MailMessage(message);
+    // cannot use equals since CaseInsensitiveHeaders doesn't implement that
+    assertEquals(message.toJson().encode(), message2.toJson().encode());
   }
 
   @Test(expected = NullPointerException.class)
@@ -129,7 +141,7 @@ public class MailMessageTest {
   }
 
   @Test
-  public void testConstructorFromMailConfigCopy() {
+  public void testConstructorFromMailMessgeCopy() {
     MailMessage message = new MailMessage();
 
     MailAttachment attachment = new MailAttachment();
@@ -259,6 +271,14 @@ public class MailMessageTest {
     headers.add("Header2", "value3");
     mailMessage.setHeaders(headers);
     assertEquals("{\"headers\":{\"Header\":[\"value1\",\"value2\"],\"Header2\":[\"value3\"]}}", mailMessage.toJson().encode());
+  }
+
+  @Test
+  public void testFixedHeaders() {
+    MailMessage mailMessage = new MailMessage();
+    assertFalse(mailMessage.isFixedHeaders());
+    mailMessage.setFixedHeaders(true);
+    assertTrue(mailMessage.isFixedHeaders());
   }
 
 }
