@@ -1,0 +1,22 @@
+== MailResult
+
+++++
+ Represent the result of the sendMail operation
+++++
+'''
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[messageID]]`messageID`
+|`String`
+|+++
+@param messageID the messageID to set+++
+
+|[[recipients]]`recipients`
+|`Array of String`
+|+++
+@param recipients the recipients to set+++
+|===

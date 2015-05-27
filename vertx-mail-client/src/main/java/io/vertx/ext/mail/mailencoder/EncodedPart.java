@@ -7,7 +7,7 @@ abstract class EncodedPart {
   String part;
 
   public String asString() {
-    return headers.toString() + "\n" +
-      part;
+    return headers.toString() + "\n"
+        + part;
   }
 }

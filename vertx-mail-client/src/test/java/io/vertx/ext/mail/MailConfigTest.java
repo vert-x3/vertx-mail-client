@@ -36,9 +36,18 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setTrustAll(true);
     mailConfig.setAuthMethods("PLAIN");
-    mailConfig.setEhloHostname("example.com");
+    mailConfig.setOwnHostname("example.com");
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"ehlo_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustall\":true,\"auth_methods\":\"PLAIN\",\"own_hostname\":\"example.com\",\"max_pool_size\":10,\"idle_timeout\":300}",
+      mailConfig.toJson().toString());
+  }
+
+  @Test
+  public void toJsonTest5() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setKeepAlive(false);
+    assertEquals(
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false}",
       mailConfig.toJson().toString());
   }
 
@@ -167,11 +176,9 @@ public class MailConfigTest {
     assertEquals(netClientOptions, netClientOptions2);
   }
 
-  // TODO: remove enabledCipherSuites if possible, this case be done
-  // as soon as pr is merged https://github.com/eclipse/vert.x/pull/1022
   @Test
   public void testNetClientOptionsFromJson() {
-    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true,\"enabledCipherSuites\":[]}}";
+    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true}}";
     MailConfig mailConfig = new MailConfig(new JsonObject(jsonString));
     MailConfig mailConfig2 = new MailConfig()
       .setNetClientOptions(new NetClientOptions().setSsl(true));
@@ -179,10 +186,10 @@ public class MailConfigTest {
   }
 
   @Test
-  public void testEhloHostname() {
+  public void testOwnHostname() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setEhloHostname("localhost.localdomain");
-    assertEquals("localhost.localdomain", mailConfig.getEhloHostname());
+    mailConfig.setOwnHostname("localhost.localdomain");
+    assertEquals("localhost.localdomain", mailConfig.getOwnHostname());
   }
 
   @Test
@@ -197,6 +204,15 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setIdleTimeout(99);
     assertEquals(99, mailConfig.getIdleTimeout());
+  }
+
+  @Test
+  public void testKeepAlive() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setKeepAlive(false);
+    assertFalse(mailConfig.isKeepAlive());
+    mailConfig.setKeepAlive(true);
+    assertTrue(mailConfig.isKeepAlive());
   }
 
   @Test

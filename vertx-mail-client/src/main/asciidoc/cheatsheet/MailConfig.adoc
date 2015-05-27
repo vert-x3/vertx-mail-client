@@ -53,26 +53,34 @@ set the NetClientOptions to be used when opening SMTP connections
 |[[authMethods]]`authMethods`
 |`String`
 |+++
-set string of allowed auth methods+++
+set string of allowed auth methods.
+ if set only these methods will be used
+ if the server supports them. If null or empty all supported methods may be
+ used+++
 
-|[[ehloHostname]]`ehloHostname`
+|[[ownHostname]]`ownHostname`
 |`String`
 |+++
-set the hostname to be used for HELO/EHLO+++
+set the hostname to be used for HELO/EHLO and the Message-ID+++
 
 |[[maxPoolSize]]`maxPoolSize`
 |`Number`
 |+++
 set the max allowed number of open connections to the mail server
- if not set the default is 10
- if set to 0, the number of connections is not limited
- set to -1 to disable connection pooling completely+++
+ if not set the default is 10+++
 
 |[[idleTimeout]]`idleTimeout`
 |`Number`
 |+++
 set the timeout for idle smtp connections (in seconds)
- if not set, the default is 300 seconds
- set to 0 to disable the client side timeout (shutdown of the connections depends on the server's timeout in this case)
- set to -1 to disable connection pooling completely+++
+ if not set, the default is 300 seconds+++
+
+|[[keepAlive]]`keepAlive`
+|`Boolean`
+|+++
+set if connection pool is enabled
+ default is true
+<p>
+ if the connection pooling is disabled, the max number of sockets is enforced nevertheless
+<p>+++
 |===

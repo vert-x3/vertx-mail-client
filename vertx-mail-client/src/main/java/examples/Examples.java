@@ -9,64 +9,43 @@ import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 
 /**
- * @author <a href="mailto:julien@julienviet.com">Julien Viet</a>
+ * code chunks for the adoc documentation 
+ *
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @Source
 public class Examples {
 
-  public void example1(Vertx vertx) {
-    MailConfig mailConfig = new MailConfig()
-      .setHostname("mail.example.com")
-      .setPort(587)
-      .setUsername("user")
-      .setPassword("pw");
+  public void createClient(Vertx vertx) {
+    MailConfig config = new MailConfig();
+    MailClient mailClient = MailClient.create(vertx, config);
+  }
 
-    MailClient mailClient = MailClient.create(vertx, mailConfig);
+  public void mailMessage(Vertx vertx) {
+    MailMessage message = new MailMessage();
+    message.setFrom("user@example.com (Example User)");
+    message.setTo("recipient@example.org");
+    message.setCc("Another User <another@example.net>");
+    message.setText("this is the plain message text");
+    message.setHtml("this is html text <a href=\"\">vertx.io</a>");
+  }
 
-    MailMessage email = new MailMessage()
-      .setFrom("address@example.com")
-      .setTo("address@example.com")
-      .setSubject("meaningful subject")
-      .setText("this is a message")
-      .setHtml("HTML message <a href=\"http://vertx.io\">vertx</a>");
+  public void attachment(Vertx vertx, MailMessage message) {
+    MailAttachment attachment = new MailAttachment();
+    attachment.setContentType("text/plain");
+    attachment.setData(Buffer.buffer("attachment file"));
 
-    mailClient.sendMail(email, result -> {
+    message.setAttachment(attachment);
+  }
+
+  public void sendMail(Vertx vertx, MailMessage message, MailClient mailClient) {
+    mailClient.sendMail(message, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());
       } else {
-        System.out.println("got exception");
         result.cause().printStackTrace();
       }
     });
   }
-
-  public void example2(Vertx vertx) {
-    // default config will use localhost:25
-    MailConfig mailConfig = new MailConfig();
-
-    MailClient mailClient = MailClient.create(vertx, mailConfig);
-
-    MailMessage email = new MailMessage()
-      .setFrom("address@example.com")
-      .setTo("address@example.com")
-      .setSubject("your file")
-      .setText("please take a look at the attached file");
-
-    MailAttachment attachment = new MailAttachment()
-      .setName("file.dat")
-      .setData(Buffer.buffer("ASDF1234\0\u0001\u0080\u00ff\n"));
-
-    email.setAttachment(attachment);
-
-    mailClient.sendMail(email, result -> {
-      if (result.succeeded()) {
-        System.out.println(result.result());
-      } else {
-        System.out.println("got exception");
-        result.cause().printStackTrace();
-      }
-    });
-  }
-
 
 }

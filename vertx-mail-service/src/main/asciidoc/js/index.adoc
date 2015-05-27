@@ -1,0 +1,64 @@
+= Vert.x Mail service (SMTP client implementation)
+
+Vert.x service for sending SMTP emails via the vert.x event bus by
+a mail service running on another machine on the local network.
+
+== MailService
+
+The MailService interface supports sending mails through another server running
+on the local network by the event bus.
+
+=== Service client
+
+The service client only needs the name of the service address as parameter, the
+default is "vertx.mail".
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
+
+----
+
+The behaviour of MailClient and MailService is the same, if you like you can use the
+MailClient interface to store the MailService instance.
+
+A more complete example for sending a mail via the event bus is this:
+
+[source,js]
+----
+var MailService = require("vertx-mail-js/mail_service");
+var mailService = MailService.createEventBusProxy(vertx, "vertx.mail");
+
+var email = {
+  "from" : "user@example.com",
+  "bounceAddress" : "bounce@example.com",
+  "to" : "user@example.com"
+};
+
+mailService.sendMail(email, function (result, result_err) {
+  console.log("mail finished");
+  if (result_err == null) {
+    console.log(result);
+  } else {
+    console.log("got exception");
+    result_err.printStackTrace();
+  };
+});
+
+----
+
+== Service listener
+
+To run the service listener that sends the mails, you need to start it seperately
+e.g. with the vertx command
+
+[source,shell]
+----
+vertx run service:io.vertx.mail-service
+----
+TODO: this command is probably not quite right
+
+or deploy the verticle inside your program.
+
+If you have a smtp server running on the machine on port 25, you can use the default config.

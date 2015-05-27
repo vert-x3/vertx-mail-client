@@ -38,7 +38,7 @@ public class MailClientImplTest extends VertxTestBase {
     mailClient.close();
   }
 
-  @Test
+  @Test(expected=IllegalStateException.class)
   public final void test2xClose() {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
     mailClient.close();

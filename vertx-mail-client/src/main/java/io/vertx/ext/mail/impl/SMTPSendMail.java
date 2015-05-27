@@ -4,7 +4,9 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
 
@@ -15,19 +17,23 @@ class SMTPSendMail {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
 
-  private SMTPConnection connection;
+  private final SMTPConnection connection;
   private MailMessage email;
-  private String mailMessage;
-  private Handler<Void> finishedHandler;
-  private Handler<Throwable> exceptionHandler;
+  private final MailConfig config;
+  private final Handler<MailResult> finishedHandler;
+  private final Handler<Throwable> exceptionHandler;
+  private final MailResult mailResult;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, Handler<Void> finishedHandler,
+  private String mailMessage;
+
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<MailResult> finishedHandler,
                Handler<Throwable> exceptionHandler) {
-    super();
     this.connection = connection;
     this.email = email;
+    this.config = config;
     this.finishedHandler = finishedHandler;
     this.exceptionHandler = exceptionHandler;
+    mailResult = new MailResult();
   }
 
   void startMail() {
@@ -67,7 +73,13 @@ class SMTPSendMail {
         fromAddr = email.getFrom();
       }
       EmailAddress from = new EmailAddress(fromAddr);
-      connection.write("MAIL FROM:<" + from.getEmail() + ">", message -> {
+      String sizeParameter;
+      if (connection.getCapa().getSize() > 0) {
+        sizeParameter = " SIZE=" + mailMessage.length();
+      } else {
+        sizeParameter = "";
+      }
+      connection.write("MAIL FROM:<" + from.getEmail() + ">" + sizeParameter, message -> {
         log.debug("MAIL FROM result: " + message);
         if (StatusCode.isStatusOk(message)) {
           rcptToCmd();
@@ -102,6 +114,7 @@ class SMTPSendMail {
       connection.write("RCPT TO:<" + toAddr.getEmail() + ">", message -> {
         log.debug("RCPT TO result: " + message);
         if (StatusCode.isStatusOk(message)) {
+          mailResult.getRecipients().add(toAddr.getEmail());
           if (i + 1 < recipientAddrs.size()) {
             rcptToCmd(recipientAddrs, i + 1);
           } else {
@@ -149,7 +162,7 @@ class SMTPSendMail {
     connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
-        finishedHandler.handle(null);
+        finishedHandler.handle(mailResult);
       } else {
         log.warn("sending data failed: " + message);
         handleError("sending data failed: " + message);
@@ -162,8 +175,9 @@ class SMTPSendMail {
    */
   private void createMailMessage() {
     if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email);
+      MailEncoder encoder = new MailEncoder(email, config.getOwnHostname());
       mailMessage = encoder.encode();
+      mailResult.setMessageID(encoder.getMessageID());
     }
   }
 

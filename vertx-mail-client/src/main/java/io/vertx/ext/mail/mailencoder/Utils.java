@@ -8,6 +8,7 @@ import java.util.Base64;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicInteger;
 
 class Utils {
 
@@ -83,15 +84,15 @@ class Utils {
     }
   }
 
-  // TODO: make this smarter
-  static int count = 0;
+  private static AtomicInteger count = new AtomicInteger(0);
 
   static String generateBoundary() {
-    return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + (count++);
+    return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + count.getAndIncrement();
   }
 
-  static String generateMessageId() {
-    return "<msg." + System.currentTimeMillis() + ".vertxmail." + (count++) + "@" + getMyHostname() + ">";
+  static String generateMessageID(String setHostname) {
+    String hostname = setHostname != null ? setHostname : getMyHostname();
+    return "<msg." + System.currentTimeMillis() + ".vertxmail." + count.getAndIncrement() + "@" + hostname + ">";
   }
 
   private static String getMyHostname() {
@@ -99,13 +100,14 @@ class Utils {
       InetAddress ip = InetAddress.getLocalHost();
       return ip.getCanonicalHostName();
     } catch (UnknownHostException e) {
-      return "unknown";
+      return "localhost";
     }
   }
 
   /*
    * encode subject if necessary. we assume that the string is encoded as whole
    * and do mime compliant line wrapping
+   * index is the offset of the line that is already used (i.e. the length of the header including ": ")
    */
   static String encodeHeader(String subject, int index) {
     if (mustEncode(subject)) {
@@ -128,7 +130,7 @@ class Utils {
               encChar = String.valueOf(ch);
             }
             int newColumn = column + encChar.length();
-            if (newColumn <= 73) {
+            if (newColumn <= 74) {
               sb.append(encChar);
               column = newColumn;
             } else {

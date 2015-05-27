@@ -48,7 +48,7 @@ var MailClient = function(j_val) {
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
       j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
       if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result()), null);
+        resultHandler(utils.convReturnJson(ar.result().toJson()), null);
       } else {
         resultHandler(null, ar.cause());
       }

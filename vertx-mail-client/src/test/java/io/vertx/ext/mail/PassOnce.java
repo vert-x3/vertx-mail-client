@@ -2,6 +2,8 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.Handler;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Assert that a point in the code is passed only once.
  * <p>
@@ -16,21 +18,18 @@ import io.vertx.core.Handler;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 
-class PassOnce {
+public class PassOnce {
 
-  private boolean passed;
+  private final AtomicBoolean passed = new AtomicBoolean(false);
   private final Handler<String> fail;
 
   public PassOnce(Handler<String> fail) {
     this.fail = fail;
-    passed = false;
   }
 
   public void passOnce() {
-    if (passed) {
+    if (passed.getAndSet(true)) {
       fail.handle("should only pass this point once");
-    } else {
-      passed = true;
     }
   }
 

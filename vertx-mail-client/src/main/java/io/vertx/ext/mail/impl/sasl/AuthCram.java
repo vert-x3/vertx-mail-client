@@ -10,7 +10,7 @@ abstract class AuthCram extends AuthBaseClass {
 
   protected boolean firstStep;
   protected boolean finished;
-  final private String hmac;
+  private final String hmac;
 
   /**
    * @param username

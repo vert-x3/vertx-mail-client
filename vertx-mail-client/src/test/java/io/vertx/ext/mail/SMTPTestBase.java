@@ -1,5 +1,12 @@
 package io.vertx.ext.mail;
 
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TestRule;
+import org.junit.rules.TestWatcher;
+import org.junit.runner.Description;
+
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
@@ -15,6 +22,8 @@ import io.vertx.test.core.VertxTestBase;
 public class SMTPTestBase extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
+
+  private long testStartTime;
 
   /**
    * @return
@@ -116,6 +125,26 @@ public class SMTPTestBase extends VertxTestBase {
     return new MailMessage("from@example.com", "user@example.com", "Subject", "Message");
   }
 
+  static MailMessage largeMessage;
+
+  /**
+   * create a large message to be able to test timing of operations
+   * the message is about 1MB and will take about a second to send on the fake server
+   */
+  protected MailMessage largeMessage() {
+    // this is not thread safe, but we do not have to be
+    if (largeMessage == null) {
+      StringBuilder sb = new StringBuilder(1024 * 1024);
+      // 64*2^14 = 2^20
+      sb.append("****************************************************************\n");
+      for (int i = 0; i < 14; i++) {
+        sb.append(sb);
+      }
+      largeMessage = new MailMessage("from@example.com", "user@example.com", "Subject", sb.toString());
+    }
+    return largeMessage;
+  }
+
   protected void testException(MailClient mailClient, MailMessage email) {
     PassOnce pass = new PassOnce(s -> fail(s));
 
@@ -198,4 +227,25 @@ public class SMTPTestBase extends VertxTestBase {
     runTestException(mailClientDefault());
   }
 
+  @Before
+  public void startCounter() {
+    testStartTime = System.currentTimeMillis();
+  }
+
+  @After
+  public void stopCounter() {
+    final long runtime = System.currentTimeMillis() - testStartTime;
+    if (runtime > 2000) {
+      log.warn(this.getClass().getName()+"."+ methodName + "() test took " + runtime + "ms");
+    }
+  }
+
+  private String methodName;
+
+  @Rule
+  public TestRule watcher = new TestWatcher() {
+     protected void starting(Description description) {
+       methodName = description.getMethodName();
+     }
+  };
 }
