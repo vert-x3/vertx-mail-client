@@ -19,10 +19,11 @@ package io.vertx.rxjava.ext.mail;
 import java.util.Map;
 import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
-import io.vertx.core.json.JsonObject;
+import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 
 /**
  * @author <a href="http://tfox.org">Tim Fox</a>
@@ -44,13 +45,24 @@ public class MailService extends MailClient {
     return delegate;
   }
 
-  public MailService sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) { 
+  /**
+   * create an instance of  MailService that calls the mail service via the event bus running somewhere else
+   * @param vertx the Vertx instance the operation will be run in
+   * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
+   * @return MailService instance that can then be used to send multiple mails
+   */
+  public static MailService createEventBusProxy(Vertx vertx, String address) { 
+    MailService ret= MailService.newInstance(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx) vertx.getDelegate(), address));
+    return ret;
+  }
+
+  public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
     this.delegate.sendMail(email, resultHandler);
     return this;
   }
 
-  public Observable<JsonObject> sendMailObservable(MailMessage email) { 
-    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+  public Observable<MailResult> sendMailObservable(MailMessage email) { 
+    io.vertx.rx.java.ObservableFuture<MailResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     sendMail(email, resultHandler.toHandler());
     return resultHandler;
   }

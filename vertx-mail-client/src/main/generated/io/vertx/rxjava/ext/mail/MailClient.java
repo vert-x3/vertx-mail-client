@@ -21,10 +21,10 @@ import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.rxjava.core.Vertx;
-import io.vertx.core.json.JsonObject;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.MailResult;
 
 /**
  * SMTP mail client for Vert.x
@@ -64,7 +64,7 @@ public class MailClient {
    * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
    * @return this MailClient instance so the method can be used fluently
    */
-  public MailClient sendMail(MailMessage email, Handler<AsyncResult<JsonObject>> resultHandler) { 
+  public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
     this.delegate.sendMail(email, resultHandler);
     return this;
   }
@@ -74,8 +74,8 @@ public class MailClient {
    * @param email MailMessage object containing the mail text, from/to, attachments etc
    * @return 
    */
-  public Observable<JsonObject> sendMailObservable(MailMessage email) { 
-    io.vertx.rx.java.ObservableFuture<JsonObject> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
+  public Observable<MailResult> sendMailObservable(MailMessage email) { 
+    io.vertx.rx.java.ObservableFuture<MailResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     sendMail(email, resultHandler.toHandler());
     return resultHandler;
   }

@@ -1,8 +1,7 @@
 = Vert.x Mail client (SMTP client implementation)
 
 Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
-by external mail server (e.g. googlemail or aol) or by the vert.x event bus via
-a mail service running on another machine on the local network.
+by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
 support for TLS and SSL and is completely asynchronous. The client supports
@@ -10,12 +9,7 @@ connection pooling to keep connections open for an specific time to be reused.
 
 == Creating a client
 
-There are two possibilities to send mails, either by creating a client that
-opens SMTP connections from the local jvm or by creating a service that
-communicates over the event bus with a service listener on another machine,
-sending mails works the same in both cases.
-
-=== Local client
+You can create by creating a client that opens SMTP connections from the local jvm.
 
 The client uses a configuration object, in Java this is called MailConfig, in
 all other languages it is a Json Object. The default config is created as empty
@@ -31,11 +25,6 @@ config = {
 mailClient = VertxMail::MailClient.create(vertx, config)
 
 ----
-
-=== Service client
-
-For documentation about the MailService interface, please take a look at the documentation
-for the vertx-mail-service sub-project
 
 == Sending mails
 
@@ -100,10 +89,8 @@ mailClient.send_mail(message) { |result,result_err|
 
 == Mail-client data objects
 
-The objects used by the MailClient service are all @DataObject classes, which means that they have a few properties
-and can be converted from and to JSON. In Java the regular getter and setter methods can be used for the properties
-in Groovy you can use the property names directly. In JavaScript and Ruby, you can use a JSON object directly to
-construct or read the properties. The objects can be used fluently. 
+The objects used by the MailClient are all @DataObject classes, which means that they have a few properties
+and can be converted from and to JSON.
 
 === MailMessage properties
 

@@ -1,6 +1,6 @@
 # Vert.x mail (SMTP client)
 
-A Simple asynchronous SMTP client for Vert.x
+A simple asynchronous SMTP client for Vert.x
 
 Please see the documentation for more information.
 
