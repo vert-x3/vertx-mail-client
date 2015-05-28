@@ -15,8 +15,8 @@ module VertxMail
     def j_del
       @j_del
     end
-    #  create an instance of  MailService that calls the mail service via the event bus running somewhere else
-    # @param [::Vertx::Vertx] vertx the Vertx instance the operation will be run in
+    #  create a proxy of  MailService that delegates to the mail service running somewhere else via the event bus
+    # @param [::Vertx::Vertx] vertx the Vertx instance the proxy will be run in
     # @param [String] address the eb address of the mail service running somewhere, default is "vertx.mail"
     # @return [::VertxMail::MailService] MailService instance that can then be used to send multiple mails
     def self.create_event_bus_proxy(vertx=nil,address=nil)

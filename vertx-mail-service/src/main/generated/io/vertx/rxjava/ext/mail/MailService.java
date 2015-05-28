@@ -46,8 +46,8 @@ public class MailService extends MailClient {
   }
 
   /**
-   * create an instance of  MailService that calls the mail service via the event bus running somewhere else
-   * @param vertx the Vertx instance the operation will be run in
+   * create a proxy of  MailService that delegates to the mail service running somewhere else via the event bus
+   * @param vertx the Vertx instance the proxy will be run in
    * @param address the eb address of the mail service running somewhere, default is "vertx.mail"
    * @return MailService instance that can then be used to send multiple mails
    */

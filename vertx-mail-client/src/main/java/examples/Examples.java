@@ -7,6 +7,7 @@ import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.StartTLSOptions;
 
 /**
  * code chunks for the adoc documentation 
@@ -18,6 +19,16 @@ public class Examples {
 
   public void createClient(Vertx vertx) {
     MailConfig config = new MailConfig();
+    MailClient mailClient = MailClient.create(vertx, config);
+  }
+
+  public void createClient2(Vertx vertx) {
+    MailConfig config = new MailConfig();
+    config.setHostname("mail.example.com");
+    config.setPort(587);
+    config.setStarttls(StartTLSOptions.REQUIRED);
+    config.setUsername("user");
+    config.setPassword("password");
     MailClient mailClient = MailClient.create(vertx, config);
   }
 
