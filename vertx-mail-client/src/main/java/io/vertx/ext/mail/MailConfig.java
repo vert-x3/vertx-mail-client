@@ -26,67 +26,17 @@ public class MailConfig {
 
   private String hostname;
   private int port;
-  /**
-   * StarttlsOption: DISABLED, OPTIONAL, REQUIRED
-   */
   private StartTLSOptions starttls;
-  /**
-   * LoginOption: DISABLED, NONE, REQUIRED
-   * <p>
-   * if you choose NONE, you can also set the auth data to null with the same
-   * effect
-   */
   private LoginOption login;
-
-  /**
-   * String of allowed auth methods, if set only these methods will be used if
-   * the server supports them.
-   * <p>
-   * e.g. setting it to a single word will use this method and fail otherwise.
-   */
   private String authMethods;
-
-  // TODO: it might be better to put username/password into
-  // an object since other auth mechanisms may have other data
-  // e.g. XOAUTH for google
   private String username;
   private String password;
-
-  /**
-   * use ssl on connect? (i.e. Port 465)
-   */
   private boolean ssl;
-
-  /**
-   * trust all certificates this is applied to ssl connect or STARTTLS operation
-   */
   private boolean trustAll;
-
-  /**
-   * use NetClinetOptions if set instead of creating an options object based on
-   * the other options (this is mainly useful for ssl certs)
-   */
   private NetClientOptions netClientOptions;
-
-  /**
-   * use this hostname for HELO/EHLO command
-   */
   private String ownHostname;
-
-  /**
-   * maximum number of connections to keep open in the connection pool in one instance
-   * of MailClient
-   */
   private int maxPoolSize;
-
-  /**
-   * time until an open idle connection is closed
-   */
   private int idleTimeout;
-
-  /**
-   * set keepAlive = false to disable connection pool
-   */
   private boolean keepAlive;
 
   /**

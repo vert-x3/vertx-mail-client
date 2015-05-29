@@ -1,8 +1,7 @@
 = Vert.x Mail client (SMTP client implementation)
 
 Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
-by external mail server (e.g. googlemail or aol) or by the vert.x event bus via
-a mail service running on another machine on the local network.
+by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
 support for TLS and SSL and is completely asynchronous. The client supports
@@ -10,18 +9,12 @@ connection pooling to keep connections open for an specific time to be reused.
 
 == Creating a client
 
-There are two possibilities to send mails, either by creating a client that
-opens SMTP connections from the local jvm or by creating a service that
-communicates over the event bus with a service listener on another machine,
-sending mails works the same in both cases.
+You can send mails by creating a client that opens SMTP connections from the local jvm.
 
-=== Local client
-
-The client uses a configuration object, in Java this is called MailConfig, in
-all other languages it is a Json Object. The default config is created as empty
+The client uses a configuration object, the default config is created as empty
 object and will connect to localhost port 25, which should be ok in a standard
 Linux environment where you have Postfix or similar mail server running on
-localhost. For more examples of the config object, see below.
+the local machine. For all possible properties of the config object, see below.
 
 [source,java]
 ----
@@ -29,10 +22,17 @@ MailConfig config = new MailConfig();
 MailClient mailClient = MailClient.create(vertx, config);
 ----
 
-=== Service client
-
-For documentation about the MailService interface, please take a look at the documentation
-for the vertx-mail-service sub-project
+A more elaborate example using a mailserver that requires login via TLS
+[source,java]
+----
+MailConfig config = new MailConfig();
+config.setHostname("mail.example.com");
+config.setPort(587);
+config.setStarttls(StartTLSOptions.REQUIRED);
+config.setUsername("user");
+config.setPassword("password");
+MailClient mailClient = MailClient.create(vertx, config);
+----
 
 == Sending mails
 
@@ -40,14 +40,12 @@ Once the client object is created, you can use it to send mails. Since the
 sending of the mails works asynchronous in vert.x, the result handler will be
 called when the mail operation finishes. You can start many mail send operations
 in parallel, the connection pool will limit the number of concurrent operations
-so that new operations will wait in a queue if no slots are available.
+so that new operations will wait in queue if no slots are available.
 
-A mail message is constructed by the MailMessage object, this is either the
-object in Java or a JSON Object in other languages. The MailMessage object has
-properties from, to, cc, bcc, subject, text, html etc. that can be set by
-setters in Java or as keys in JSON, depending on which values are set, the
+A mail message is constructed as JSON. The MailMessage object has
+properties from, to, cc, bcc, subject, text, html etc. Depending on which values are set, the
 format of the generated MIME message will vary. The recipient address properties
-can either be a single address (String) or many addresses (List<String>).
+can either be a single address or a list of addresses.
 
 The MIME encoder supports us-ascii (7bit) headers/messages and utf8 (usually
 quoted-printable) headers/messages
@@ -91,11 +89,6 @@ mailClient.sendMail(message, result -> {
 
 == Mail-client data objects
 
-The objects used by the MailClient service are all @DataObject classes, which means that they have a few properties
-and can be converted from and to JSON. In Java the regular getter and setter methods can be used for the properties
-in Groovy you can use the property names directly. In JavaScript and Ruby, you can use a JSON object directly to
-construct or read the properties. The objects can be used fluently. 
-
 === MailMessage properties
 
 Email fields are Strings using the common formats for email with or without real
@@ -108,17 +101,17 @@ name
 The MailMessage object has the following properties
 
 * `from` String representing the From address and the MAIL FROM field
-* `to` String or List<String> representing the To addresses and the RCPT TO fields
+* `to` String or list of String representing the To addresses and the RCPT TO fields
 * `cc` same as to
 * `bcc` same as to
 * `bounceAddress` String representing the error address (MAIL FROM), if not set from is used
 * `text` String representing the text/plain part of the mail
 * `html` String representing the text/html part of the mail
-* `attachment` MailAttachment or List<MailAttachment> attachments of the message
+* `attachment` MailAttachment or list of MailAttachment attachments of the message
 * `headers` MultiMap representing headers to be added in addition to the headers necessary for the MIME Message
 * `fixedHeaders` boolean if true, only the headers provided as headers property will be set in the generated message
 
-the last two properties allow for all kinds of trickery to generate messages with custom headers, e.g. providing
+the last two properties allow manipulating the generate messages with custom headers, e.g. providing
 a message-id chosen by the calling program or setting different headers than would be generated by default. Unless you know
 what you are doing, this may generate invalid messages.
 
@@ -126,7 +119,7 @@ what you are doing, this may generate invalid messages.
 The MailAttachment object has the following properties
 
 * `data` Buffer containing the binary data of the attachment
-* `contentType` String of the Content-Type of the attachment (e.g. text/plain or text/plain charset="UTF8", default is application/octet-stream)
+* `contentType` String of the Content-Type of the attachment (e.g. text/plain or text/plain; charset="UTF8", default is application/octet-stream)
 * `description` String describing the attachment (this is put in the description header of the attachment), optional
 * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
 * `name` String filename of the attachment (this is put into the disposition and in the contentType headers of the attachment), optional
