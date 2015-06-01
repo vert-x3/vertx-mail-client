@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClientOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +32,8 @@ public class MailConfig {
   private String password;
   private boolean ssl;
   private boolean trustAll;
-  private NetClientOptions netClientOptions;
+  private String keyStore;
+  private String keyStorePassword;
   private String ownHostname;
   private int maxPoolSize;
   private int idleTimeout;
@@ -115,9 +115,8 @@ public class MailConfig {
     password = other.password;
     ssl = other.ssl;
     trustAll = other.trustAll;
-    if (other.netClientOptions != null) {
-      netClientOptions = new NetClientOptions(other.netClientOptions);
-    }
+    keyStore = other.keyStore;
+    keyStorePassword = other.keyStorePassword;
     authMethods = other.authMethods;
     ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
@@ -145,10 +144,8 @@ public class MailConfig {
     password = config.getString("password");
     ssl = config.getBoolean("ssl", false);
     trustAll = config.getBoolean("trustall", false);
-    JsonObject options = config.getJsonObject("netclientoptions");
-    if (options != null) {
-      netClientOptions = new NetClientOptions(options);
-    }
+    keyStore = config.getString("key_store");
+    keyStorePassword = config.getString("key_store_password");
     authMethods = config.getString("auth_methods");
     ownHostname = config.getString("own_hostname");
     maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
@@ -326,28 +323,42 @@ public class MailConfig {
   }
 
   /**
-   * get the NetClientOptions to be used when opening SMTP connections
-   * <p>
-   * when using a custom key store, the NetClientOptions are necessary to the
-   * set the correct jks options, see this example {@code io/vertx/ext/mail/MailLocalTest}
-   *
-   * @return the netClientOptions
+   * get the key store filename to be used when opening SMTP connections
+   * @return the keyStore
    */
-  public NetClientOptions getNetClientOptions() {
-    return netClientOptions;
+  public String getKeyStore() {
+    return keyStore;
   }
 
   /**
-   * set the NetClientOptions to be used when opening SMTP connections
+   * get the key store filename to be used when opening SMTP connections
    * <p>
    * if not set, an options object will be created based on other settings (ssl
    * and trustAll)
    *
-   * @param netClientOptions the netClientOptions to set
+   * @param keyStore the key store filename to be set
    * @return a reference to this, so the API can be used fluently
    */
-  public MailConfig setNetClientOptions(NetClientOptions netClientOptions) {
-    this.netClientOptions = netClientOptions;
+  public MailConfig setKeyStore(String keyStore) {
+    this.keyStore = keyStore;
+    return this;
+  }
+
+  /**
+   * get the key store password to be used when opening SMTP connections
+   * @return the keyStorePassword
+   */
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
+
+  /**
+   * get the key store password to be used when opening SMTP connections
+   * @param keyStorePassword the key store passwords to be set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setKeyStorePassword(String keyStorePassword) {
+    this.keyStorePassword = keyStorePassword;
     return this;
   }
 
@@ -498,11 +509,12 @@ public class MailConfig {
     if (trustAll) {
       json.put("trustall", trustAll);
     }
-    // TODO: how do we do this, if it is necessary at all?
-    // Issue #24
-    // if(netClientOptions != null) {
-    //   json.put("netclientoptions", netClientOptions);
-    // }
+    if (keyStore != null) {
+      json.put("key_store", keyStore);
+    }
+    if (keyStorePassword != null) {
+      json.put("key_store_password", keyStorePassword);
+    }
     if (authMethods != null) {
       json.put("auth_methods", authMethods);
     }
@@ -519,8 +531,8 @@ public class MailConfig {
   }
 
   private List<Object> getList() {
-    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions,
-        authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive);
+    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive);
   }
 
   /*
