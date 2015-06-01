@@ -48,27 +48,31 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection(conn -> {
-      log.debug("got 1st connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-
-      pool.getConnection(conn2 -> {
-        log.debug("got 2nd connection");
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got 1st connection");
         testContext.assertEquals(1, pool.connCount());
-        conn2.returnToPool();
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+
+        pool.getConnection(result2 -> {
+          if (result2.succeeded()) {
+            log.debug("got 2nd connection");
+            testContext.assertEquals(1, pool.connCount());
+            result2.result().returnToPool();
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 

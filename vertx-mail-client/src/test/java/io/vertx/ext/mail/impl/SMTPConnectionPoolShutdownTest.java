@@ -36,24 +36,26 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection(conn -> {
-      log.debug("got connection");
-      testContext.assertEquals(1, pool.connCount());
-      pool.close(v1 -> {
-        log.debug("pool.close finished");
-        closeFinished.set(true);
-      });
-      testContext.assertFalse(closeFinished.get(), "connection closed though it was still active");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      vertx.setTimer(1000, v -> {
-        testContext.assertTrue(closeFinished.get(), "connection not closed by pool.close()");
-        testContext.assertEquals(0, pool.connCount());
-        async.complete();
-      });
-    }, th -> {
-      log.info("exception", th);
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection");
+        testContext.assertEquals(1, pool.connCount());
+        pool.close(v1 -> {
+          log.debug("pool.close finished");
+          closeFinished.set(true);
+        });
+        testContext.assertFalse(closeFinished.get(), "connection closed though it was still active");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        vertx.setTimer(1000, v -> {
+          testContext.assertTrue(closeFinished.get(), "connection not closed by pool.close()");
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
+      } else {
+        log.info("exception", result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 

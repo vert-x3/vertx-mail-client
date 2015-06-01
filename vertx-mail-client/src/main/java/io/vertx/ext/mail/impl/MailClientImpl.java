@@ -44,8 +44,13 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        connectionPool.getConnection(conn -> sendMessage(message, conn, resultHandler, context),
-                                     t ->  handleError(t, resultHandler, context));
+        connectionPool.getConnection(result -> {
+          if (result.succeeded()) {
+            sendMessage(message, result.result(), resultHandler, context);
+          } else {
+            handleError(result.cause(), resultHandler, context);
+          }
+        });
       }
     } else {
       handleError("mail client has been closed", resultHandler, context);

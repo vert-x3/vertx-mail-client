@@ -42,16 +42,18 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
     Async async = testContext.async();
-    pool.getConnection(conn -> {
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      pool.close(v -> {
-        testContext.assertEquals(0, pool.connCount());
-        async.complete();
-      });
-    }, throwable -> {
-      testContext.fail(throwable);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        pool.close(v -> {
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
+      } else {
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -78,18 +80,20 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("have got a connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      pool.close();
-      vertx.setTimer(1000, v -> {
-        testContext.assertEquals(0, pool.connCount());
-        async.complete();
-      });
-    }, th -> {
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("have got a connection");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        pool.close();
+        vertx.setTimer(1000, v -> {
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
+      } else {
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -116,16 +120,18 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      pool.close(v -> {
-        testContext.assertEquals(0, pool.connCount());
-        log.info("connection pool stopped");
-        async.complete();
-      });
-    }, th -> {
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        pool.close(v -> {
+          testContext.assertEquals(0, pool.connCount());
+          log.info("connection pool stopped");
+          async.complete();
+        });
+      } else {
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -134,11 +140,13 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     pool.close();
     Async async = testContext.async();
-    pool.getConnection(conn -> {
-      testContext.fail("getConnectio() should fail");
-    }, th -> {
-      log.info(th);
-      async.complete();
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        testContext.fail("getConnection() should fail");
+      } else {
+        log.info(result.cause());
+        async.complete();
+      }
     });
   }
 
@@ -147,25 +155,29 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      testContext.assertEquals(1, pool.connCount());
-      pool.getConnection(conn2 -> {
-        testContext.assertNotEquals(conn, conn2);
-        testContext.assertEquals(2, pool.connCount());
-        conn.returnToPool();
-        conn2.returnToPool();
-        testContext.assertEquals(2, pool.connCount());
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        testContext.assertEquals(1, pool.connCount());
+        pool.getConnection(result2 -> {
+          if (result2.succeeded()) {
+            testContext.assertNotEquals(result.result(), result2.result());
+            testContext.assertEquals(2, pool.connCount());
+            result.result().returnToPool();
+            result2.result().returnToPool();
+            testContext.assertEquals(2, pool.connCount());
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -174,27 +186,31 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got 1st connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      pool.getConnection(conn2 -> {
-        log.debug("got 2nd connection");
-        testContext.assertEquals(conn, conn2);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got 1st connection");
         testContext.assertEquals(1, pool.connCount());
-        conn2.returnToPool();
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        pool.getConnection(result2 -> {
+          if (result.succeeded()) {
+            log.debug("got 2nd connection");
+            testContext.assertEquals(result.result(), result2.result());
+            testContext.assertEquals(1, pool.connCount());
+            result2.result().returnToPool();
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -208,25 +224,29 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     Async async = testContext.async();
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      pool.getConnection(conn2 -> {
-        testContext.assertEquals(conn, conn2);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
         testContext.assertEquals(1, pool.connCount());
-        conn2.returnToPool();
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        pool.getConnection(result2 -> {
+          if (result.succeeded()) {
+            testContext.assertEquals(result.result(), result2.result());
+            testContext.assertEquals(1, pool.connCount());
+            result2.result().returnToPool();
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+      } else  {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -242,30 +262,34 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     AtomicBoolean haveGotConnection = new AtomicBoolean(false);
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got connection 1st tme");
-      testContext.assertEquals(1, pool.connCount());
-      pool.getConnection(conn2 -> {
-        haveGotConnection.set(true);
-        log.debug("got connection 2nd time");
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection 1st tme");
         testContext.assertEquals(1, pool.connCount());
-        conn2.returnToPool();
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+        pool.getConnection(result2 -> {
+          if (result.succeeded()) {
+            haveGotConnection.set(true);
+            log.debug("got connection 2nd time");
+            testContext.assertEquals(1, pool.connCount());
+            result2.result().returnToPool();
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-      testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
-      log.debug("didn't get a connection 2nd time yet");
-      conn.returnToPool();
-      testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
-      log.debug("got a connection 2nd time");
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+        testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
+        log.debug("didn't get a connection 2nd time yet");
+        result.result().returnToPool();
+        testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
+        log.debug("got a connection 2nd time");
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -275,19 +299,21 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("1st connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      vertx.setTimer(1500, v -> {
-        testContext.assertEquals(0, pool.connCount());
-        log.debug("connection pool is empty");
-        pool.close(v2 -> async.complete());
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("1st connection");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        vertx.setTimer(1500, v -> {
+          testContext.assertEquals(0, pool.connCount());
+          log.debug("connection pool is empty");
+          pool.close(v2 -> async.complete());
+        });
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -303,22 +329,24 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      stopSMTP(); // this closes our dummy server and consequently our
-      // connection at the server end
-      vertx.setTimer(1, v -> {
-        pool.close(v2 -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        stopSMTP(); // this closes our dummy server and consequently our
+        // connection at the server end
+        vertx.setTimer(1, v -> {
+          pool.close(v2 -> {
+            testContext.assertEquals(0, pool.connCount());
+            async.complete();
+          });
         });
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -332,19 +360,21 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got connection");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      testContext.assertEquals(1, pool.connCount());
-      pool.close();
-      vertx.setTimer(1000, v -> {
-        testContext.assertEquals(0, pool.connCount());
-        async.complete();
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        testContext.assertEquals(1, pool.connCount());
+        pool.close();
+        vertx.setTimer(1000, v -> {
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -361,35 +391,39 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     AtomicBoolean haveGotConnection = new AtomicBoolean(false);
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got connection 1st tme");
-      testContext.assertEquals(1, pool.connCount());
-      pool.getConnection(conn2 -> {
-        haveGotConnection.set(true);
-        log.debug("got connection 2nd time");
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection 1st tme");
         testContext.assertEquals(1, pool.connCount());
-        conn2.returnToPool();
-        pool.close(v -> {
-          testContext.assertEquals(0, pool.connCount());
-          async.complete();
+        pool.getConnection(result2 -> {
+          if (result2.succeeded()) {
+            haveGotConnection.set(true);
+            log.debug("got connection 2nd time");
+            testContext.assertEquals(1, pool.connCount());
+            result2.result().returnToPool();
+            pool.close(v -> {
+              testContext.assertEquals(0, pool.connCount());
+              async.complete();
+            });
+          } else {
+            log.info(result2.cause());
+            testContext.fail(result2.cause());
+          }
         });
-      }, th -> {
-        log.info(th);
-        testContext.fail(th);
-      });
-      testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
-      testContext.assertEquals(1, pool.connCount());
-      log.debug("didn't get a connection 2nd time yet");
-      conn.returnToPool();
-      vertx.setTimer(1000, v -> {
-        testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
-        log.debug("got a connection 2nd time");
-        testContext.assertEquals(0, pool.connCount());
-        async2.complete();
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+        testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
+        testContext.assertEquals(1, pool.connCount());
+        log.debug("didn't get a connection 2nd time yet");
+        result.result().returnToPool();
+        vertx.setTimer(1000, v -> {
+          testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
+          log.debug("got a connection 2nd time");
+          testContext.assertEquals(0, pool.connCount());
+          async2.complete();
+        });
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 
@@ -404,21 +438,24 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     Async async = testContext.async();
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(conn -> {
-      log.debug("got connection");
-      testContext.assertEquals(1, pool.connCount());
-      pool.close();
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      vertx.setTimer(1000, v -> {
-        testContext.assertTrue(conn.isClosed(), "connection was not closed");
-        testContext.assertEquals(0, pool.connCount());
-        log.debug("connection is closed");
-        async.complete();
-      });
-    }, th -> {
-      log.info(th);
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection");
+        testContext.assertEquals(1, pool.connCount());
+        pool.close();
+        testContext.assertEquals(1, pool.connCount());
+        final SMTPConnection conn = result.result();
+        conn.returnToPool();
+        vertx.setTimer(1000, v -> {
+          testContext.assertTrue(conn.isClosed(), "connection was not closed");
+          testContext.assertEquals(0, pool.connCount());
+          log.debug("connection is closed");
+          async.complete();
+        });
+      } else {
+        log.info(result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 }
