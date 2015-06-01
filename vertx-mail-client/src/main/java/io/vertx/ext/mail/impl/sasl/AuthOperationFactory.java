@@ -32,6 +32,7 @@ public class AuthOperationFactory {
           }
         } catch (IllegalArgumentException | IllegalAccessException e) {
           // TODO Auto-generated catch block
+          // Issue #25
           e.printStackTrace();
         }
       }

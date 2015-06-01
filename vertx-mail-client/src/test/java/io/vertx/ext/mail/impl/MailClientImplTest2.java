@@ -30,6 +30,7 @@ public class MailClientImplTest2 extends SMTPTestWiser {
    * it goes through the MailClient interface and actually sends a mail)
    * (currently doesn't work)
    * TODO: this test needs asserts!
+   * Issue #26
    */
   @Test
   public final void testCloseWhileMailActive(TestContext testContext) {

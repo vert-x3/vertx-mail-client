@@ -157,8 +157,10 @@ class SMTPSendMail {
     createMailMessage();
     // convert message to escape . at the start of line
     // TODO: this is probably bad for large messages
+    // Issue #21
     // TODO: it is probably required to convert \n to \r\n to be completely
     // SMTP compliant
+    // Issue #22
     connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {

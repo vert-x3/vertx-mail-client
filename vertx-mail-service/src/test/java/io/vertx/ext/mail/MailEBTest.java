@@ -4,50 +4,42 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
-import java.util.concurrent.CountDownLatch;
-
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailEBTest extends SMTPTestDummy {
 
   private static final Logger log = LoggerFactory.getLogger(MailEBTest.class);
 
   @Test
-  public void mailTest() throws InterruptedException {
+  public void mailTest(TestContext testContext) {
     testSuccess(MailService.createEventBusProxy(vertx, "vertx.mail"));
   }
 
   @Before
-  public void startSMTP() {
-    smtpServer = new TestSmtpServer(vertx);
-    CountDownLatch latch = new CountDownLatch(1);
+  public void startVerticle(TestContext testContext) {
+    Async async = testContext.async();
+
     JsonObject config = new JsonObject("{\"config\":{\"address\":\"vertx.mail\",\"hostname\":\"localhost\",\"port\":1587}}");
     DeploymentOptions deploymentOptions = new DeploymentOptions(config);
     vertx.deployVerticle("io.vertx.ext.mail.MailServiceVerticle", deploymentOptions ,r -> {
       if(r.succeeded()) {
         log.info(r.result());
+        async.complete();
       } else {
         log.info("exception", r.cause());
+        testContext.fail(r.cause());
       }
-      latch.countDown();
     });
-    try {
-      latch.await();
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
-  }
-
-  @After
-  public void stopSMTP() {
-    smtpServer.stop();
   }
 
 }

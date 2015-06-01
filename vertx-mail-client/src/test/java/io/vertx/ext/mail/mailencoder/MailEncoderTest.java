@@ -217,6 +217,7 @@ public class MailEncoderTest {
   }
 
   // TODO would be better to check the decoded text?
+  // Issue #29
   @Test
   public void testTextPlainEncoded() {
     MailMessage message = new MailMessage();
