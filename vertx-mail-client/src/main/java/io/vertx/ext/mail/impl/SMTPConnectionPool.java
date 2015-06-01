@@ -5,6 +5,7 @@ import io.vertx.core.Vertx;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.mail.MailConfig;
@@ -36,10 +37,12 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
     NetClientOptions netClientOptions;
-    if (config.getNetClientOptions() == null) {
-      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
+    if (config.getKeyStore() != null) {
+      // assume that password could null if the keystore doesn't use one
+      netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
+          .setPassword(config.getKeyStorePassword()));
     } else {
-      netClientOptions = config.getNetClientOptions();
+      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
     }
     netClient = vertx.createNetClient(netClientOptions);
   }
