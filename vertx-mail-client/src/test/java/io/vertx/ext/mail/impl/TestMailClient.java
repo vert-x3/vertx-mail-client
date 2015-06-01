@@ -12,6 +12,8 @@ import io.vertx.ext.mail.MailResult;
  * MailClient providing a few internal getters for unit tests
  * <p>
  * TODO: it may be a better idea to construct mock objects e.g. with Mockito
+ * Issue #27
+ * 
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  *
  */
@@ -32,7 +34,6 @@ public class TestMailClient implements MailClient {
    */
   @Override
   public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
-    // TODO Auto-generated method stub
     return mailClient.sendMail(email, resultHandler);
   }
 

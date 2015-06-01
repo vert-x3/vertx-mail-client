@@ -50,15 +50,13 @@ mailService.send_mail(email) { |result,result_err|
 
 == Service listener
 
-To run the service listener that sends the mails, you need to start it seperately
+To run the service listener that sends the mails, you need to start it separately
 e.g. with the vertx command
 
 [source,shell]
 ----
 vertx run service:io.vertx.mail-service
 ----
-TODO: this command is probably not quite right
-
 or deploy the verticle inside your program.
 
 If you have a smtp server running on the machine on port 25, you can use the default config.

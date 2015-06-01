@@ -119,7 +119,8 @@ public class TestSmtpServer {
     closeWaitTime = time;
   }
 
-  // TODO: this assumes we are in a @After method of junit
+  // this assumes we are in a @After method of junit
+  // i.e. we are synchronous
   public void stop() {
     if (netServer != null) {
       CountDownLatch latch = new CountDownLatch(1);

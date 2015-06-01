@@ -57,6 +57,7 @@ public class MailClientImpl implements MailClient {
   // addresses work and some don't, for this an array or json object can be
   // returned with the list of successful addresses and the list of failed
   // addresses. this is not implemented yet
+  // Issue #20
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
                            Context context) {

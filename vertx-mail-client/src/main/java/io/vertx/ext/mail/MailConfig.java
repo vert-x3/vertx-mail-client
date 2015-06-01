@@ -499,6 +499,7 @@ public class MailConfig {
       json.put("trustall", trustAll);
     }
     // TODO: how do we do this, if it is necessary at all?
+    // Issue #24
     // if(netClientOptions != null) {
     //   json.put("netclientoptions", netClientOptions);
     // }

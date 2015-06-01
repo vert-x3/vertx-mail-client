@@ -55,10 +55,6 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     });
   }
 
-  // FIXME - need more tests that test with different values of maxSockets, and
-  // assert connCount
-  // also closing connections, returning to the pool, etc, etc
-
   /**
    * test closing an empty connection pool
    */

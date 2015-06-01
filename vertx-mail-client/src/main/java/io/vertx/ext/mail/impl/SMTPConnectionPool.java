@@ -45,6 +45,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   // FIXME Why not use Handler<AsyncResult<SMTPConnection>> - that's what it's for
+  // Issue #18
   void getConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
     log.debug("getConnection()");
     if (closed) {
@@ -79,6 +80,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   // responseEnded is from http
   // TODO: this method may not be called directly since it
   // doesn't set idle state on the connection
+  // Issue #19
   public synchronized void responseEnded(SMTPConnection conn) {
     checkReuseConnection(conn);
   }

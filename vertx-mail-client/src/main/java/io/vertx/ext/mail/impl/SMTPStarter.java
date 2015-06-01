@@ -9,6 +9,7 @@ import io.vertx.ext.mail.MailConfig;
 /**
  * TODO: this encapsulates initial dialogue and authentication, might as well
  * put authentication into the initial class
+ * Issue #23
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */

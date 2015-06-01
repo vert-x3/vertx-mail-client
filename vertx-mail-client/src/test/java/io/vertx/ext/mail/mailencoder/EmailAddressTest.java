@@ -22,6 +22,7 @@ public class EmailAddressTest {
     checkAddress("Last, First <user@example.com>", "[user@example.com,Last, First]");
     checkAddress("user@example.com (Last, First)", "[user@example.com,Last, First]");
     // TODO: should we consider this valid?
+    // Issue #28
     // <> can be used as MAIL FROM address
     // checkAddress("Mailer <>", "");
   }
