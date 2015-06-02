@@ -118,6 +118,32 @@ class SMTPConnection {
     }
   }
 
+  void writeLine(String str, boolean mayLog) {
+    if (mayLog) {
+      log.debug(str);
+    }
+    ns.write(str + "\r\n");
+  }
+
+  void writeLineWithDrainHandler(String str, boolean mayLog, Handler<Void> handler) {
+    if (mayLog) {
+      log.debug(str);
+    }
+    if (ns.writeQueueFull()) {
+      ns.drainHandler(v -> {
+        ns.write(str + "\r\n");
+        handler.handle(null);
+      });
+    } else {
+      ns.write(str + "\r\n");
+      handler.handle(null);
+    }
+  }
+
+  boolean writeQueueFull() {
+    return ns.writeQueueFull();
+  }
+
   private void handleError(String message) {
     handleError(new NoStackTraceThrowable(message));
   }

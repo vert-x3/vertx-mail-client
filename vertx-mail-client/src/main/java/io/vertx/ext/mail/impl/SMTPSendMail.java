@@ -154,13 +154,38 @@ class SMTPSendMail {
     // create the message here if it hasn't been created
     // for the size check above
     createMailMessage();
-    // convert message to escape . at the start of line
-    // TODO: this is probably bad for large messages
-    // Issue #21
-    // TODO: it is probably required to convert \n to \r\n to be completely
-    // SMTP compliant
-    // Issue #22
-    connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
+
+    sendLineByLine(0, mailMessage.length());
+  }
+
+  private void sendLineByLine(int index, int length) {
+    while (index < length) {
+      int nextIndex = mailMessage.indexOf('\n', index);
+      String line;
+      if (nextIndex == -1) {
+        line = mailMessage.substring(index);
+        nextIndex = length;
+      } else {
+        line = mailMessage.substring(index, nextIndex);
+        nextIndex++;
+      }
+      if (line.startsWith(".")) {
+        line = "." + line;
+      }
+      final int nextIndexFinal = nextIndex;
+      final boolean mayLog = nextIndex < 1000;
+      if(connection.writeQueueFull()) {
+        connection.writeLineWithDrainHandler(line, mayLog, v -> {
+          sendLineByLine(nextIndexFinal, length);
+        });
+        // call to our handler has finished the whole message, we just return after that
+        return;
+      } else {
+        connection.writeLine(line, mayLog);
+        index = nextIndex;
+      }
+    }
+    connection.write(".", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
         finishedHandler.handle(Future.succeededFuture(mailResult));
