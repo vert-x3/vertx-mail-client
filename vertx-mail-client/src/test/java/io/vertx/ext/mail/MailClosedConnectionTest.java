@@ -12,11 +12,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.subethamail.wiser.Wiser;
 
-/*
- first implementation of a SMTP client
- */
-
 /**
+ * FIXME: what does this test test specifically?
+ * it can probably be removed
+ * 
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)

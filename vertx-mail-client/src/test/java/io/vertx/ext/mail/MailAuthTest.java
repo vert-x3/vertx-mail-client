@@ -3,9 +3,8 @@ package io.vertx.ext.mail;
 import org.junit.Test;
 
 /**
+ * auth examples with failures mostly
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *         <p>
- *         auth examples with failures mostly
  */
 public class MailAuthTest extends SMTPTestDummy {
 
