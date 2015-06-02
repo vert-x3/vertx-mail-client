@@ -39,7 +39,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     keepAlive = config.isKeepAlive();
     NetClientOptions netClientOptions;
     if (config.getKeyStore() != null) {
-      // assume that password could null if the keystore doesn't use one
+      // assume that password could be null if the keystore doesn't use one
       netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
           .setPassword(config.getKeyStorePassword()));
     } else {
@@ -158,8 +158,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
       conn.close();
     } else {
       // if the pool is disabled, just close the connection
-      if (!keepAlive) {
-        log.debug("connection pool is disabled, immediately doing QUIT");
+      if (!keepAlive || closed) {
+        log.debug("connection pool is disabled or closed, immediately doing QUIT");
         conn.close();
       } else {
         log.debug("checking for waiting operations");
