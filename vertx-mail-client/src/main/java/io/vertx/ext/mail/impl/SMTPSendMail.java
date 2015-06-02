@@ -1,5 +1,6 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
@@ -9,6 +10,7 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
+import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,21 +20,18 @@ class SMTPSendMail {
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
 
   private final SMTPConnection connection;
-  private MailMessage email;
+  private final MailMessage email;
   private final MailConfig config;
-  private final Handler<MailResult> finishedHandler;
-  private final Handler<Throwable> exceptionHandler;
+  private final Handler<AsyncResult<MailResult>> finishedHandler;
   private final MailResult mailResult;
 
   private String mailMessage;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<MailResult> finishedHandler,
-               Handler<Throwable> exceptionHandler) {
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<AsyncResult<MailResult>> finishedHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
     this.finishedHandler = finishedHandler;
-    this.exceptionHandler = exceptionHandler;
     mailResult = new MailResult();
   }
 
@@ -45,14 +44,14 @@ class SMTPSendMail {
   /**
    * Check if message size is allowed if size is supported.
    * <p>
-   * returns true if the message is allowed, have to make sure
-   * that when returning from the handleError method it doesn't continue with the mail from
-   * operation
+   * returns true if the message is allowed, have to make sure that when returning from the handleError method it
+   * doesn't continue with the mail from operation
    */
   private boolean checkSize() {
-    if (connection.getCapa().getSize() > 0) {
+    final int size = connection.getCapa().getSize();
+    if (size > 0) {
       createMailMessage();
-      if (mailMessage.length() > connection.getCapa().getSize()) {
+      if (mailMessage.length() > size) {
         handleError("message exceeds allowed size limit");
         return false;
       } else {
@@ -132,7 +131,7 @@ class SMTPSendMail {
   }
 
   private void handleError(Throwable throwable) {
-    exceptionHandler.handle(throwable);
+    finishedHandler.handle(Future.failedFuture(throwable));
   }
 
   private void handleError(String message) {
@@ -164,7 +163,7 @@ class SMTPSendMail {
     connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
-        finishedHandler.handle(mailResult);
+        finishedHandler.handle(Future.succeededFuture(mailResult));
       } else {
         log.warn("sending data failed: " + message);
         handleError("sending data failed: " + message);
