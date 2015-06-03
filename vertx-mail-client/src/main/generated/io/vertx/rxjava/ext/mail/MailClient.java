@@ -61,7 +61,7 @@ public class MailClient {
   /**
    * send a single mail via MailClient
    * @param email MailMessage object containing the mail text, from/to, attachments etc
-   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains {@code {"result":"success"}}
+   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>}
    * @return this MailClient instance so the method can be used fluently
    */
   public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 

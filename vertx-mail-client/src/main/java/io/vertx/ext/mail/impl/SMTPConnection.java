@@ -118,6 +118,7 @@ class SMTPConnection {
     }
   }
 
+  // write single line not expecting a reply
   void writeLine(String str, boolean mayLog) {
     if (mayLog) {
       log.debug(str);
@@ -125,12 +126,15 @@ class SMTPConnection {
     ns.write(str + "\r\n");
   }
 
+  // write single line not expecting a reply, using drain handler
   void writeLineWithDrainHandler(String str, boolean mayLog, Handler<Void> handler) {
     if (mayLog) {
       log.debug(str);
     }
     if (ns.writeQueueFull()) {
       ns.drainHandler(v -> {
+        // avoid getting confused by being called twice
+        ns.drainHandler(null);
         ns.write(str + "\r\n");
         handler.handle(null);
       });

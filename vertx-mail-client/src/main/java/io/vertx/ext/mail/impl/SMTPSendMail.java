@@ -178,7 +178,7 @@ class SMTPSendMail {
         connection.writeLineWithDrainHandler(line, mayLog, v -> {
           sendLineByLine(nextIndexFinal, length);
         });
-        // call to our handler has finished the whole message, we just return after that
+        // call to our handler will finish the whole message, we just return here
         return;
       } else {
         connection.writeLine(line, mayLog);
