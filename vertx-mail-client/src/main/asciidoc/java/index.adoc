@@ -1,7 +1,6 @@
 = Vert.x Mail client (SMTP client implementation)
 
-Vert.x client for sending SMTP emails via a local mail server (e.g.
-postfix),
+Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
 by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
