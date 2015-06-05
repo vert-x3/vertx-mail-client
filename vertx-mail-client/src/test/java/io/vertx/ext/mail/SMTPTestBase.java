@@ -158,19 +158,17 @@ public class SMTPTestBase extends VertxTestBase {
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    vertx.runOnContext(v -> {
-      mailClient.sendMail(email, result -> {
-        log.info("mail finished");
-        pass.passOnce();
-        mailClient.close();
-        if (result.succeeded()) {
-          log.info(result.result().toString());
-          testContext.fail("this test should throw an Exception");
-        } else {
-          log.warn("got exception", result.cause());
-          async.complete();
-        }
-      });
+    mailClient.sendMail(email, result -> {
+      log.info("mail finished");
+      pass.passOnce();
+      mailClient.close();
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+        testContext.fail("this test should throw an Exception");
+      } else {
+        log.warn("got exception", result.cause());
+        async.complete();
+      }
     });
   }
 
@@ -182,35 +180,29 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * support running additional asserts after sending was successful
    * so we do not fail after we have called async.complete()
-   *
-   * @param mailClient
-   * @param email
-   * @param asserts
    */
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    vertx.runOnContext(v -> {
-      mailClient.sendMail(email, result -> {
-        log.info("mail finished");
-        pass.passOnce();
-        mailClient.close();
-        if (result.succeeded()) {
-          log.info(result.result().toString());
-          if (asserts != null) {
-            try {
-              asserts.doAsserts();
-            } catch (Exception e) {
-              testContext.fail(e.toString());
-            }
+    mailClient.sendMail(email, result -> {
+      log.info("mail finished");
+      pass.passOnce();
+      mailClient.close();
+      if (result.succeeded()) {
+        log.info(result.result().toString());
+        if (asserts != null) {
+          try {
+            asserts.doAsserts();
+          } catch (Exception e) {
+            testContext.fail(e);
           }
-          async.complete();
-        } else {
-          log.warn("got exception", result.cause());
-          testContext.fail(result.cause().toString());
         }
-      });
+        async.complete();
+      } else {
+        log.warn("got exception", result.cause());
+        testContext.fail(result.cause().toString());
+      }
     });
   }
 
