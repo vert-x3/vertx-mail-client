@@ -6,6 +6,7 @@ import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.test.core.VertxTestBase;
 
+import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -21,7 +22,7 @@ import org.junit.runner.Description;
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public class SMTPTestBase extends VertxTestBase {
+public abstract class SMTPTestBase extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
 
@@ -156,7 +157,7 @@ public class SMTPTestBase extends VertxTestBase {
 
   protected void testException(MailClient mailClient, MailMessage email) {
     Async async = testContext.async();
-    PassOnce pass = new PassOnce(s -> fail(s));
+    PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
     mailClient.sendMail(email, result -> {
       log.info("mail finished");
@@ -183,7 +184,7 @@ public class SMTPTestBase extends VertxTestBase {
    */
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
     Async async = testContext.async();
-    PassOnce pass = new PassOnce(s -> fail(s));
+    PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
     mailClient.sendMail(email, result -> {
       log.info("mail finished");
@@ -247,4 +248,32 @@ public class SMTPTestBase extends VertxTestBase {
        methodName = description.getMethodName();
      }
   };
+
+  /**
+   * Matcher assertThat, this is usually in VertxTestBase, we pass the failure to testContext
+   */
+  protected <T> void assertThat(T actual, Matcher<T> matcher) {
+    try {
+      super.assertThat(actual, matcher);
+    } catch (AssertionError e) {
+      testContext.fail(e);
+    }
+  }
+
+  @Override
+  public void setUp() throws Exception {
+    super.setUp();
+    startSMTP();
+  }
+
+  protected abstract void startSMTP();
+
+  @Override
+  public void tearDown() throws Exception {
+    stopSMTP();
+    super.tearDown();
+  }
+
+  protected abstract void stopSMTP();
+
 }

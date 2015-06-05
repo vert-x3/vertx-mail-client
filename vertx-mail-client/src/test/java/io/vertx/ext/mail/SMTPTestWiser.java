@@ -8,8 +8,6 @@ import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 
-import org.junit.After;
-import org.junit.Before;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -28,8 +26,7 @@ public class SMTPTestWiser extends SMTPTestBase {
 
   protected Wiser wiser;
 
-  @Before
-  public void startSMTP() {
+  protected void startSMTP() {
     wiser = new Wiser();
 
     wiser.setPort(1587);
@@ -66,8 +63,7 @@ public class SMTPTestWiser extends SMTPTestBase {
     wiser.start();
   }
 
-  @After
-  public void stopSMTP() {
+  protected void stopSMTP() {
     if (wiser != null) {
       wiser.stop();
     }
@@ -76,11 +72,11 @@ public class SMTPTestWiser extends SMTPTestBase {
   protected AdditionalAsserts assertExampleMessage() {
     return () -> {
       final WiserMessage message = wiser.getMessages().get(0);
-      assertEquals("from@example.com", message.getEnvelopeSender());
+      testContext.assertEquals("from@example.com", message.getEnvelopeSender());
       final MimeMessage mimeMessage = message.getMimeMessage();
       assertThat(mimeMessage.getContentType(), containsString("text/plain"));
-      assertEquals("Subject", mimeMessage.getSubject());
-      assertEquals("Message\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
+      testContext.assertEquals("Subject", mimeMessage.getSubject());
+      testContext.assertEquals("Message\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
     };
   }
 

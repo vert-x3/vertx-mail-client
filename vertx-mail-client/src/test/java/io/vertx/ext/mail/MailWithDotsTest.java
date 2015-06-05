@@ -71,7 +71,7 @@ public class MailWithDotsTest extends SMTPTestWiser {
     message.setText(".");
     testSuccess(mailClientLogin(), message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
-      assertEquals(".\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
+      testContext.assertEquals(".\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
     });
   }
 
@@ -80,7 +80,7 @@ public class MailWithDotsTest extends SMTPTestWiser {
     message.setText(text);
     testSuccess(mailClientLogin(), message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
-      assertEquals(text, TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
+      testContext.assertEquals(text, TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
     });
   }
 
