@@ -11,7 +11,6 @@ import org.junit.runner.RunWith;
 
 /**
  * test what happens when the server closes the connection if we use a pooled connection
- * <p>
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */

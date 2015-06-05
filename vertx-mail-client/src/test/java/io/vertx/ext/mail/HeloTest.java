@@ -6,11 +6,9 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-/*
- * Test a server that doesn't support EHLO
- */
-
 /**
+ * Test a server that doesn't support EHLO and a few errors in the server greeting
+ * 
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
@@ -100,7 +98,7 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void connectionRefusedTest(TestContext testContext) {
     this.testContext=testContext;
-    runTestException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
+    testException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test
@@ -122,7 +120,7 @@ public class HeloTest extends SMTPTestDummy {
       "221 2.0.0 Bye");
     smtpServer.setCloseImmediately(false);
 
-    runTestException(mailClientTLS());
+    testException(mailClientTLS());
   }
 
   @Test

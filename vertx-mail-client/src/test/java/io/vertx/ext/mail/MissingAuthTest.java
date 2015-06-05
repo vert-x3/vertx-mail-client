@@ -19,7 +19,7 @@ public class MissingAuthTest extends SMTPTestDummy {
   @Test
   public void mailTest(TestContext testContext) {
     this.testContext=testContext;
-    runTestException(mailClientLogin());
+    testException(mailClientLogin());
   }
 
 }

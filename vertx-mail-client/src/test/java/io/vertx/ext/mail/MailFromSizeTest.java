@@ -18,12 +18,6 @@ public class MailFromSizeTest extends SMTPTestDummy {
   @Test
   public void mailTest(TestContext testContext) {
     this.testContext=testContext;
-    testSuccess(mailClientDefault(), exampleMessage());
-  }
-
-  @Before
-  public void startSMTP() {
-    super.startSMTP();
     smtpServer.setDialogue(
         "220 example.com ESMTP",
         "EHLO",
@@ -39,8 +33,9 @@ public class MailFromSizeTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "QUIT",
         "221 2.0.0 Bye");
-
     smtpServer.setCloseImmediately(true);
+
+    testSuccess(mailClientDefault(), exampleMessage());
   }
 
 }

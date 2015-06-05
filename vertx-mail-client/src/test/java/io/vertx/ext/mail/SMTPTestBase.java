@@ -58,7 +58,7 @@ public class SMTPTestBase extends VertxTestBase {
   /**
    * @param mailClient
    */
-  protected void runTestException(final MailClient mailClient) {
+  protected void testException(final MailClient mailClient) {
     testException(mailClient, exampleMessage());
   }
 
@@ -158,17 +158,19 @@ public class SMTPTestBase extends VertxTestBase {
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    mailClient.sendMail(email, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      mailClient.close();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        testContext.fail("this test should throw an Exception");
-      } else {
-        log.warn("got exception", result.cause());
-        async.complete();
-      }
+    vertx.runOnContext(v -> {
+      mailClient.sendMail(email, result -> {
+        log.info("mail finished");
+        pass.passOnce();
+        mailClient.close();
+        if (result.succeeded()) {
+          log.info(result.result().toString());
+          testContext.fail("this test should throw an Exception");
+        } else {
+          log.warn("got exception", result.cause());
+          async.complete();
+        }
+      });
     });
   }
 
@@ -178,36 +180,37 @@ public class SMTPTestBase extends VertxTestBase {
 
 
   /**
-   * support running additional asserts after the sending was successfull
-   * so we do not fail after we have called testComplete()
+   * support running additional asserts after sending was successful
+   * so we do not fail after we have called async.complete()
    *
    * @param mailClient
    * @param email
    * @param asserts
    */
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
-
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
-    mailClient.sendMail(email, result -> {
-      log.info("mail finished");
-      pass.passOnce();
-      mailClient.close();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        if (asserts != null) {
-          try {
-            asserts.doAsserts();
-          } catch (Exception e) {
-            testContext.fail(e.toString());
+    vertx.runOnContext(v -> {
+      mailClient.sendMail(email, result -> {
+        log.info("mail finished");
+        pass.passOnce();
+        mailClient.close();
+        if (result.succeeded()) {
+          log.info(result.result().toString());
+          if (asserts != null) {
+            try {
+              asserts.doAsserts();
+            } catch (Exception e) {
+              testContext.fail(e.toString());
+            }
           }
+          async.complete();
+        } else {
+          log.warn("got exception", result.cause());
+          testContext.fail(result.cause().toString());
         }
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        testContext.fail(result.cause().toString());
-      }
+      });
     });
   }
 
@@ -219,10 +222,6 @@ public class SMTPTestBase extends VertxTestBase {
     testException(mailClientDefault(), email);
   }
 
-  protected void testException(MailClient mailClient) {
-    testException(mailClient, exampleMessage());
-  }
-
   protected void testSuccess(MailMessage email) {
     testSuccess(mailClientDefault(), email);
   }
@@ -232,7 +231,7 @@ public class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testException() {
-    runTestException(mailClientDefault());
+    testException(mailClientDefault());
   }
 
   @Before
