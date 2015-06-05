@@ -1,18 +1,23 @@
 package io.vertx.ext.mail;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * test that the SIZE option is added to the MAIL FROM command when ESMTP SIZE is supported
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailFromSizeTest extends SMTPTestDummy {
 
   @Test
-  public void mailTest() {
-
+  public void mailTest(TestContext testContext) {
+    this.testContext=testContext;
     testSuccess(mailClientDefault(), exampleMessage());
   }
 

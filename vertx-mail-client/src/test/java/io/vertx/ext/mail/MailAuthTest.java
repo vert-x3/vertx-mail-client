@@ -1,15 +1,21 @@
 package io.vertx.ext.mail;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * auth examples with failures mostly
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailAuthTest extends SMTPTestDummy {
 
   @Test
-  public void authLoginTest() {
+  public void authLoginTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -34,7 +40,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authLoginFailTest() {
+  public void authLoginFailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -50,7 +57,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authLoginStartFailTest() {
+  public void authLoginStartFailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -62,7 +70,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authLoginUsernameFailTest() {
+  public void authLoginUsernameFailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -76,7 +85,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authPlainTest() {
+  public void authPlainTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -97,7 +107,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authPlainFailTest() {
+  public void authPlainFailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -109,7 +120,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authCramMD5Test() {
+  public void authCramMD5Test(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -132,7 +144,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authCramMD5StartFailTest() {
+  public void authCramMD5StartFailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -144,7 +157,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authCramMD5FailTest() {
+  public void authCramMD5FailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -158,7 +172,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authJunkTest() {
+  public void authJunkTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -171,7 +186,8 @@ public class MailAuthTest extends SMTPTestDummy {
    * test we have Login REQUIRED but no login data in the config
    */
   @Test
-  public void authAuthDataMissingTest() {
+  public void authAuthDataMissingTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -181,7 +197,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authSelectMethodsTest() {
+  public void authSelectMethodsTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -206,7 +223,8 @@ public class MailAuthTest extends SMTPTestDummy {
   }
 
   @Test
-  public void authSelectMethodsNoneTest() {
+  public void authSelectMethodsNoneTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +

@@ -1,6 +1,10 @@
 package io.vertx.ext.mail;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /*
  * Test a server that doesn't support EHLO
@@ -9,10 +13,12 @@ import org.junit.Test;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class HeloTest extends SMTPTestDummy {
 
   @Test
-  public void mailEhloMissingTest() {
+  public void mailEhloMissingTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "402 4.5.2 Error: command not recognized",
@@ -33,7 +39,8 @@ public class HeloTest extends SMTPTestDummy {
   }
 
   @Test
-  public void mailNoEsmtpTest() {
+  public void mailNoEsmtpTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com",
       "HELO",
       "250 example.com",
@@ -55,7 +62,8 @@ public class HeloTest extends SMTPTestDummy {
    * Test what happens when a reply is sent after the QUIT reply
    */
   @Test
-  public void replyAfterQuitTest() {
+  public void replyAfterQuitTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
@@ -81,7 +89,8 @@ public class HeloTest extends SMTPTestDummy {
   }
 
   @Test
-  public void serverUnavailableTest() {
+  public void serverUnavailableTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("400 cannot talk to you right now");
     smtpServer.setCloseImmediately(true);
 
@@ -89,12 +98,14 @@ public class HeloTest extends SMTPTestDummy {
   }
 
   @Test
-  public void connectionRefusedTest() {
+  public void connectionRefusedTest(TestContext testContext) {
+    this.testContext=testContext;
     runTestException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test
-  public void stlsMissingTest() {
+  public void stlsMissingTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP multiline",
       "EHLO",
       "250-example.com\n" +
@@ -115,7 +126,8 @@ public class HeloTest extends SMTPTestDummy {
   }
 
   @Test
-  public void closeOnConnectTest() {
+  public void closeOnConnectTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("");
     smtpServer.setCloseImmediately(true);
 
@@ -129,7 +141,8 @@ public class HeloTest extends SMTPTestDummy {
    * capabilities
    */
   @Test
-  public void mailMultilineWelcomeTest() {
+  public void mailMultilineWelcomeTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220-example.com ESMTP multiline\n" +
         "220-this server uses a multi-line welcome message\n" +
         "220 this is supposed to confuse spammers",
@@ -156,7 +169,8 @@ public class HeloTest extends SMTPTestDummy {
    * banner message
    */
   @Test
-  public void closeAfterBannerTest() {
+  public void closeAfterBannerTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue("220 example.com ESMTP");
     smtpServer.setCloseImmediately(true);
 

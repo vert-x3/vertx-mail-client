@@ -8,12 +8,18 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.test.core.VertxTestBase;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailClientImplTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailClientImplTest.class);
@@ -24,42 +30,41 @@ public class MailClientImplTest extends VertxTestBase {
    * .
    */
   @Test
-  public final void testMailClientImpl() {
+  public final void testMailClientImpl(TestContext testContext) {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
-    assertNotNull(mailClient);
+    testContext.assertNotNull(mailClient);
   }
 
   /**
    * Test method for {@link MailClientImpl#close()}.
    */
   @Test
-  public final void testClose() {
+  public final void testClose(TestContext testContext) {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
     mailClient.close();
   }
 
   @Test(expected=IllegalStateException.class)
-  public final void test2xClose() {
+  public final void test2xClose(TestContext testContext) {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
     mailClient.close();
     mailClient.close();
   }
 
   @Test
-  public final void testClosedSend() {
+  public final void testClosedSend(TestContext testContext) {
+    Async async = testContext.async();
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
     mailClient.close();
     mailClient.sendMail(new MailMessage(), result -> {
       if (result.succeeded()) {
         log.info(result.result().toString());
-        fail("this test should throw an Exception");
+        testContext.fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
-        testComplete();
+        async.complete();
       }
     });
-
-    await();
   }
 
 }

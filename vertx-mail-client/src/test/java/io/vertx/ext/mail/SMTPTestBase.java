@@ -1,15 +1,17 @@
 package io.vertx.ext.mail;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.ext.unit.Async;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.test.core.VertxTestBase;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
-
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
 
 /**
  * Support functions for SMTP tests
@@ -24,6 +26,13 @@ public class SMTPTestBase extends VertxTestBase {
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
 
   private long testStartTime;
+
+  /*
+   * test context the unit test this is running with
+   * this is used to construct the Async objects and do the
+   * assert operations 
+   */
+  TestContext testContext;
 
   /**
    * @return
@@ -146,6 +155,7 @@ public class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testException(MailClient mailClient, MailMessage email) {
+    Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
     mailClient.sendMail(email, result -> {
@@ -154,14 +164,12 @@ public class SMTPTestBase extends VertxTestBase {
       mailClient.close();
       if (result.succeeded()) {
         log.info(result.result().toString());
-        fail("this test should throw an Exception");
+        testContext.fail("this test should throw an Exception");
       } else {
         log.warn("got exception", result.cause());
-        testComplete();
+        async.complete();
       }
     });
-
-    await();
   }
 
   protected void testSuccess(MailClient mailClient, MailMessage email) {
@@ -178,6 +186,8 @@ public class SMTPTestBase extends VertxTestBase {
    * @param asserts
    */
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
+
+    Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> fail(s));
 
     mailClient.sendMail(email, result -> {
@@ -190,17 +200,15 @@ public class SMTPTestBase extends VertxTestBase {
           try {
             asserts.doAsserts();
           } catch (Exception e) {
-            fail(e.toString());
+            testContext.fail(e.toString());
           }
         }
-        testComplete();
+        async.complete();
       } else {
         log.warn("got exception", result.cause());
-        fail(result.cause().toString());
+        testContext.fail(result.cause().toString());
       }
     });
-
-    await();
   }
 
   protected void testSuccess(MailClient mailClient) {
