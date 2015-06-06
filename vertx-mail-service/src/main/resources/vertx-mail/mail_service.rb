@@ -25,7 +25,7 @@ module VertxMail
       end
       raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(vertx,address)"
     end
-    # @param [Hash] email
+    # @param [Hash] email 
     # @yield 
     # @return [self]
     def send_mail(email=nil)

@@ -96,7 +96,7 @@ mailClient.sendMail(message, function (result, result_err) {
     console.log(result);
   } else {
     result_err.printStackTrace();
-  };
+  }
 });
 
 ----

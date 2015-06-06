@@ -8,7 +8,7 @@ import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
 
 /**

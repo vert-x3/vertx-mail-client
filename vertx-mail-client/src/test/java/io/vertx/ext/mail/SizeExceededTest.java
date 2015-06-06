@@ -1,7 +1,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import org.junit.Test;
 
 /**

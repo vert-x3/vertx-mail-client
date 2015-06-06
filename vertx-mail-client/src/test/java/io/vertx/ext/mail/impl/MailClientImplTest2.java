@@ -4,7 +4,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;

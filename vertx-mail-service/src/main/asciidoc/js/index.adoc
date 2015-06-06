@@ -43,7 +43,7 @@ mailService.sendMail(email, function (result, result_err) {
   } else {
     console.log("got exception");
     result_err.printStackTrace();
-  };
+  }
 });
 
 ----
