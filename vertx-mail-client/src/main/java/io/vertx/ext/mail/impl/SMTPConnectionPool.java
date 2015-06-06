@@ -139,15 +139,17 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         log.debug("found idle connection, checking");
         final SMTPConnection conn = idleConn;
         conn.useConnection();
-        new SMTPReset(conn, result -> {
-          if(result.succeeded()) {
-            handler.handle(Future.succeededFuture(conn));
-          } else {
-            conn.setBroken();
-            log.debug("using idle connection failed, create a new connection");
-            createNewConnection(handler);
-          }
-        }).start();
+        conn.getContext().runOnContext(v -> {
+          new SMTPReset(conn, result -> {
+            if (result.succeeded()) {
+              handler.handle(Future.succeededFuture(conn));
+            } else {
+              conn.setBroken();
+              log.debug("using idle connection failed, create a new connection");
+              createNewConnection(handler);
+            }
+          }).start();
+        });
       }
     }
   }
@@ -204,10 +206,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     createConnection(result -> {
       if (result.succeeded()) {
         allConnections.add(result.result());
-        handler.handle(result);
-      } else {
-        handler.handle(result);
       }
+      handler.handle(result);
     });
   }
 

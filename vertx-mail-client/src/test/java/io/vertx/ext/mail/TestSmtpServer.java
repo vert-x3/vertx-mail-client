@@ -81,13 +81,15 @@ public class TestSmtpServer {
             if (currentLine < dialogue.length) {
               String thisLine = dialogue[currentLine];
               boolean isRegexp = thisLine.startsWith("^");
-              if (!isRegexp && !inputLine.contains(thisLine)||
-                  isRegexp && !inputLine.matches(thisLine)) {
+              if (!isRegexp && !inputLine.contains(thisLine) || isRegexp && !inputLine.matches(thisLine)) {
                 socket.write("500 didn't expect that command\r\n");
+                log.info("sending 500 didn't expect that command");
+                // stop here
+                lines.set(dialogue.length);
               }
             } else {
-              // socket.write("500 out of lines\r\n");
-            log.info("out of lines, not sending additional reply");
+              log.info("out of lines, sending error reply");
+              socket.write("500 out of lines\r\n");
           }
           if (inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);
@@ -118,17 +120,20 @@ public class TestSmtpServer {
     }
   }
 
-  public void setDialogue(String... dialogue) {
+  public TestSmtpServer setDialogue(String... dialogue) {
     this.dialogue = dialogue;
+    return this;
   }
 
-  public void setCloseImmediately(boolean close) {
+  public TestSmtpServer setCloseImmediately(boolean close) {
     closeImmediately = close;
+    return this;
   }
 
-  public void setCloseWaitTime(int time) {
+  public TestSmtpServer setCloseWaitTime(int time) {
     log.debug("setting closeWaitTime to " + time);
     closeWaitTime = time;
+    return this;
   }
 
   // this assumes we are in a @After method of junit

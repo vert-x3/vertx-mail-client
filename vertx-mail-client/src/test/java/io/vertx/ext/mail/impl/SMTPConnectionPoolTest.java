@@ -1,9 +1,4 @@
-/**
- *
- */
 package io.vertx.ext.mail.impl;
-
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.impl.LoggerFactory;
@@ -12,6 +7,8 @@ import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -446,11 +443,13 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
         testContext.assertEquals(1, pool.connCount());
         final SMTPConnection conn = result.result();
         conn.returnToPool();
-        vertx.setTimer(1000, v -> {
-          testContext.assertTrue(conn.isClosed(), "connection was not closed");
-          testContext.assertEquals(0, pool.connCount());
-          log.debug("connection is closed");
-          async.complete();
+        vertx.runOnContext(v -> {
+          vertx.setTimer(1000, v2 -> {
+            testContext.assertTrue(conn.isClosed(), "connection was not closed");
+            testContext.assertEquals(0, pool.connCount());
+            log.debug("connection is closed");
+            async.complete();
+          });
         });
       } else {
         log.info(result.cause());

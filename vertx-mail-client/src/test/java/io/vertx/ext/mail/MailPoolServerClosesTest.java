@@ -5,7 +5,7 @@ import io.vertx.core.logging.impl.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Before;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -117,8 +117,8 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
    */
   @Test
   public void mailConnectionRsetFailTest(TestContext context) {
-    smtpServer.setCloseImmediately(false);
-    smtpServer.setDialogue("220 example.com ESMTP",
+    smtpServer.setCloseImmediately(false)
+      .setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
         "250-SIZE 1000000\n" +
@@ -130,8 +130,8 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       "DATA",
       "354 End data with <CR><LF>.<CR><LF>",
       "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-      "RSET",
-      "500 xxx");
+      "QUIT",
+      "220 bye bye");
 
     Async mail1 = context.async();
     Async mail2 = context.async();
@@ -170,7 +170,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     });
   }
 
-  @Before
+  @Override
   public void startSMTP() {
     super.startSMTP();
     smtpServer.setDialogue("220 example.com ESMTP",

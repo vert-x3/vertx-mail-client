@@ -1,5 +1,6 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -13,8 +14,7 @@ import io.vertx.ext.mail.MailConfig;
 /**
  * SMTP connection to a server.
  * <p>
- * Encapsulate the NetSocket connection and the data writing/reading, but not
- * the protocol itself
+ * Encapsulate the NetSocket connection and the data writing/reading
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
@@ -37,6 +37,7 @@ class SMTPConnection {
   private long idleTimerId;
   private int timeout;
   private boolean keepAlive;
+  private Context context;
 
   SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
     broken = true;
@@ -165,6 +166,7 @@ class SMTPConnection {
 
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
+        context = Vertx.currentContext();
         ns = asyncResult.result();
         socketClosed = false;
         ns.exceptionHandler(e -> {
@@ -261,15 +263,22 @@ class SMTPConnection {
   void quitCloseConnection() {
     if (!socketShutDown) {
       log.debug("shutting down connection");
-      // set the connection to in use to avoid it being used by another getConnection operation
-      useConnection();
-      new SMTPQuit(this, v -> {
+      if(socketClosed) {
+        log.debug("connection is already closed, only doing shutdown()");
         shutdown();
-        log.debug("connection is shut down");
-      }, th -> {
-        shutdown();
-        log.debug("connection is shut down", th);
-      }).start();
+      } else {
+        context.runOnContext(v1 -> {
+          // set the connection to in use to avoid it being used by another getConnection operation
+          useConnection();
+          new SMTPQuit(this, v -> {
+            shutdown();
+            log.debug("connection is shut down");
+          }, th -> {
+            shutdown();
+            log.debug("connection is shut down", th);
+          }).start();
+        });
+      }
     }
   }
 
@@ -357,5 +366,13 @@ class SMTPConnection {
    */
   boolean isClosed() {
     return socketClosed;
+  }
+
+  /**
+   * get the context associated with this connection
+   * @return
+   */
+  Context getContext() {
+    return context;
   }
 }
