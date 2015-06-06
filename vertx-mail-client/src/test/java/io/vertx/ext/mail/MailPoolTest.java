@@ -1,10 +1,11 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

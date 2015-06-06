@@ -3,8 +3,9 @@ package io.vertx.ext.mail;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.impl.LoggerFactory;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.test.core.VertxTestBase;
+
 import org.junit.Test;
 
 /*
