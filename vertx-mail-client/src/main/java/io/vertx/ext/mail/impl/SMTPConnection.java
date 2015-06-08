@@ -34,7 +34,7 @@ class SMTPConnection {
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
   private final Vertx vertx;
-  private long idleTimerId;
+  private long idleTimerId = -1;
   private int timeout;
   private boolean keepAlive;
   private Context context;
@@ -252,6 +252,8 @@ class SMTPConnection {
         idle = true;
         commandReplyHandler = null;
         listener.responseEnded(this);
+        log.info("setting error handler to null");
+        errorHandler = null;
       }
     }
   }
@@ -303,9 +305,10 @@ class SMTPConnection {
   }
 
   void cancelIdleTimer() {
-    if (keepAlive) {
-      log.debug("canceling timer on connection");
-      vertx.cancelTimer(idleTimerId);
+    if (keepAlive && idleTimerId != -1) {
+      log.debug("canceling timer on connection ("+idleTimerId+")");
+      context.runOnContext(v -> vertx.cancelTimer(idleTimerId));
+      idleTimerId = -1;
     }
   }
 

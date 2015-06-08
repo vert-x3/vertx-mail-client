@@ -443,13 +443,11 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
         testContext.assertEquals(1, pool.connCount());
         final SMTPConnection conn = result.result();
         conn.returnToPool();
-        vertx.runOnContext(v -> {
-          vertx.setTimer(1000, v2 -> {
-            testContext.assertTrue(conn.isClosed(), "connection was not closed");
-            testContext.assertEquals(0, pool.connCount());
-            log.debug("connection is closed");
-            async.complete();
-          });
+        vertx.setTimer(1000, v -> {
+          testContext.assertTrue(conn.isClosed(), "connection was not closed");
+          testContext.assertEquals(0, pool.connCount());
+          log.debug("connection is closed");
+          async.complete();
         });
       } else {
         log.info(result.cause());
