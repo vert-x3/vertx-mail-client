@@ -22,20 +22,20 @@ class SMTPSendMail {
   private final SMTPConnection connection;
   private final MailMessage email;
   private final MailConfig config;
-  private final Handler<AsyncResult<MailResult>> finishedHandler;
+  private final Handler<AsyncResult<MailResult>> resultHandler;
   private final MailResult mailResult;
 
   private String mailMessage;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<AsyncResult<MailResult>> finishedHandler) {
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<AsyncResult<MailResult>> resultHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
-    this.finishedHandler = finishedHandler;
+    this.resultHandler = resultHandler;
     mailResult = new MailResult();
   }
 
-  void startMail() {
+  void start() {
     if (checkSize()) {
       mailFromCmd();
     }
@@ -131,7 +131,7 @@ class SMTPSendMail {
   }
 
   private void handleError(Throwable throwable) {
-    finishedHandler.handle(Future.failedFuture(throwable));
+    resultHandler.handle(Future.failedFuture(throwable));
   }
 
   private void handleError(String message) {
@@ -188,7 +188,7 @@ class SMTPSendMail {
     connection.write(".", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
-        finishedHandler.handle(Future.succeededFuture(mailResult));
+        resultHandler.handle(Future.succeededFuture(mailResult));
       } else {
         log.warn("sending data failed: " + message);
         handleError("sending data failed: " + message);

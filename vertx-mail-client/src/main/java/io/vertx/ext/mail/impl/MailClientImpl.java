@@ -46,6 +46,7 @@ public class MailClientImpl implements MailClient {
       if (validateHeaders(message, resultHandler, context)) {
         connectionPool.getConnection(result -> {
           if (result.succeeded()) {
+            result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
             sendMessage(message, result.result(), resultHandler, context);
           } else {
             handleError(result.cause(), resultHandler, context);
@@ -73,7 +74,7 @@ public class MailClientImpl implements MailClient {
         conn.setBroken();
       }
       returnResult(result, resultHandler, context);
-    }).startMail();
+    }).start();
   }
 
   // do some validation before we open the connection
@@ -99,7 +100,7 @@ public class MailClientImpl implements MailClient {
   }
 
   private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    log.debug("handleError:" + t);
+    log.debug("handleError", t);
     returnResult(Future.failedFuture(t), resultHandler, context);
   }
 

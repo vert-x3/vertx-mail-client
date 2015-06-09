@@ -259,28 +259,25 @@ class SMTPConnection {
   }
 
   /**
-   * send QUIT and close the connection, this operation waits for the success of
-   * the quit command but will close the connection on exception as well
+   * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
+   * connection on exception as well
    */
   void quitCloseConnection() {
     if (!socketShutDown) {
-      log.debug("shutting down connection");
-      if(socketClosed) {
-        log.debug("connection is already closed, only doing shutdown()");
-        shutdown();
-      } else {
-        context.runOnContext(v1 -> {
+      context.runOnContext(v1 -> {
+        log.debug("shutting down connection");
+        if (socketClosed) {
+          log.debug("connection is already closed, only doing shutdown()");
+          shutdown();
+        } else {
           // set the connection to in use to avoid it being used by another getConnection operation
           useConnection();
           new SMTPQuit(this, v -> {
             shutdown();
             log.debug("connection is shut down");
-          }, th -> {
-            shutdown();
-            log.debug("connection is shut down with exception", th);
           }).start();
-        });
-      }
+        }
+      });
     }
   }
 
@@ -312,7 +309,7 @@ class SMTPConnection {
     }
   }
 
-  /*
+  /**
    * set error handler to a "local" handler to be reset later
    */
   private Handler<Throwable> prevErrorHandler = null;
@@ -325,8 +322,8 @@ class SMTPConnection {
     errorHandler = newHandler;
   }
 
-  /*
-   * reset error handler to default
+  /**
+   * reset error handler to previous
    */
   public void resetErrorHandler() {
     errorHandler = prevErrorHandler;
