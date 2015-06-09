@@ -277,7 +277,7 @@ class SMTPConnection {
             log.debug("connection is shut down");
           }, th -> {
             shutdown();
-            log.debug("connection is shut down", th);
+            log.debug("connection is shut down with exception", th);
           }).start();
         });
       }
