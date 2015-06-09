@@ -89,6 +89,6 @@ public class MailClient {
 
 
   public static MailClient newInstance(io.vertx.ext.mail.MailClient arg) {
-    return new MailClient(arg);
+    return arg != null ? new MailClient(arg) : null;
   }
 }

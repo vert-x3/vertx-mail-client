@@ -42,7 +42,7 @@ public class MailService extends MailClient {
    * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService createEventBusProxy(Vertx vertx, String address) {
-    def ret= new io.vertx.groovy.ext.mail.MailService(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address), io.vertx.ext.mail.MailService.class, io.vertx.groovy.ext.mail.MailService.class);
     return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {

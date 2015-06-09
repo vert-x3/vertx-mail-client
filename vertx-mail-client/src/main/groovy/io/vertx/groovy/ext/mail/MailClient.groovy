@@ -44,7 +44,7 @@ public class MailClient {
    * @return MailClient instance that can then be used to send multiple mails
    */
   public static MailClient create(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mail.MailClient(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**
