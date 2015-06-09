@@ -48,8 +48,6 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     netClient = vertx.createNetClient(netClientOptions);
   }
 
-  // FIXME Why not use Handler<AsyncResult<SMTPConnection>> - that's what it's for
-  // Issue #18
   void getConnection(Handler<AsyncResult<SMTPConnection>> resultHandler) {
     log.debug("getConnection()");
     if (closed) {
@@ -80,12 +78,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   // Lifecycle methods
 
   // Called when the send operation has finished
-  // TODO: this method should be called dataFinished,
-  // responseEnded is from http
-  // TODO: this method may not be called directly since it
-  // doesn't set idle state on the connection
-  // Issue #19
-  public synchronized void responseEnded(SMTPConnection conn) {
+  public synchronized void dataEnded(SMTPConnection conn) {
     checkReuseConnection(conn);
   }
 

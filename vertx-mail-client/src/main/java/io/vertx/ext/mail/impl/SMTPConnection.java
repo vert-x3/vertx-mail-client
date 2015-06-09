@@ -200,7 +200,7 @@ class SMTPConnection {
             }
             if (!socketShutDown) {
               shutdown();
-              listener.responseEnded(this);
+              listener.dataEnded(this);
             }
           }
         });
@@ -249,9 +249,8 @@ class SMTPConnection {
         quitCloseConnection();
       } else {
         log.debug("returning connection to pool");
-        idle = true;
         commandReplyHandler = null;
-        listener.responseEnded(this);
+        listener.dataEnded(this);
         log.info("setting error handler to null");
         errorHandler = null;
       }
@@ -291,6 +290,7 @@ class SMTPConnection {
 
   void setIdleTimer() {
     if (keepAlive) {
+      idle = true;
       log.debug("setting idle timer on connection");
       idleTimerId = vertx.setTimer(timeout * 1000, id -> {
         if (id == idleTimerId) {
@@ -339,7 +339,7 @@ class SMTPConnection {
       commandReplyHandler = null;
       log.debug("closing connection");
       shutdown();
-      listener.responseEnded(this);
+      listener.dataEnded(this);
     } else {
       log.debug("connection is already set to broken");
     }
