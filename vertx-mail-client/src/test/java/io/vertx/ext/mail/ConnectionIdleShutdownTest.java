@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class PoolIdleTest extends SMTPTestDummy {
+public class ConnectionIdleShutdownTest extends SMTPTestDummy {
 
-  private static final Logger log = LoggerFactory.getLogger(PoolIdleTest.class);
+  private static final Logger log = LoggerFactory.getLogger(ConnectionIdleShutdownTest.class);
 
   MailClient mailClient;
 
