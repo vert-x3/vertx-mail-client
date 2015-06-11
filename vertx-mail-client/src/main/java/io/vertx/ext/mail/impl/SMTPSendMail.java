@@ -111,22 +111,36 @@ class SMTPSendMail {
     try {
       EmailAddress toAddr = new EmailAddress(recipientAddrs.get(i));
       connection.write("RCPT TO:<" + toAddr.getEmail() + ">", message -> {
-        log.debug("RCPT TO result: " + message);
         if (StatusCode.isStatusOk(message)) {
+          log.debug("RCPT TO result: " + message);
           mailResult.getRecipients().add(toAddr.getEmail());
-          if (i + 1 < recipientAddrs.size()) {
-            rcptToCmd(recipientAddrs, i + 1);
-          } else {
-            dataCmd();
-          }
+          nextRcpt(recipientAddrs, i);
         } else {
-          log.warn("recipient address not accepted: " + message);
-          handleError("recipient address not accepted: " + message);
+          if (config.isAllowRcptErrors()) {
+            log.warn("recipient address not accepted, continuing: " + message);
+            nextRcpt(recipientAddrs, i);
+          } else {
+            log.warn("recipient address not accepted: " + message);
+            handleError("recipient address not accepted: " + message);
+          }
         }
       });
     } catch (IllegalArgumentException e) {
       log.error("address exception", e);
       handleError(e);
+    }
+  }
+
+  private void nextRcpt(List<String> recipientAddrs, int i) {
+    if (i + 1 < recipientAddrs.size()) {
+      rcptToCmd(recipientAddrs, i + 1);
+    } else {
+      if(mailResult.getRecipients().size()>0) {
+        dataCmd();
+      } else {
+        log.warn("no recipient addresses were accepted, not sending mail");
+        handleError("no recipient addresses were accepted, not sending mail");
+      }
     }
   }
 

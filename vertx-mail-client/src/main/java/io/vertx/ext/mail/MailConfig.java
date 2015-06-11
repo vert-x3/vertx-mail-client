@@ -38,6 +38,7 @@ public class MailConfig {
   private int maxPoolSize;
   private int idleTimeout;
   private boolean keepAlive;
+  private boolean allowRcptErrors;
 
   /**
    * construct a config object with default options
@@ -122,6 +123,7 @@ public class MailConfig {
     maxPoolSize = other.maxPoolSize;
     idleTimeout = other.idleTimeout;
     keepAlive = other.keepAlive;
+    allowRcptErrors = other.allowRcptErrors;
   }
 
   /**
@@ -151,6 +153,7 @@ public class MailConfig {
     maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
     idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
     keepAlive = config.getBoolean("keep_alive", true);
+    allowRcptErrors = config.getBoolean("allow_rcpt_errors", false);
   }
 
   /**
@@ -481,6 +484,30 @@ public class MailConfig {
   }
 
   /**
+   * get if sending allows rcpt errors (default is false)
+   *<p>
+   * if true, the mail will be sent to the recipients that the server accepted, if any
+   *<p>
+   * @return the allowRcptErrors
+   */
+  public boolean isAllowRcptErrors() {
+    return allowRcptErrors;
+  }
+
+  /**
+   * set if sending allows rcpt errors
+   * @param allowRcptErrors the allowRcptErrors to set (default is false)
+   *<p>
+   * if true, the mail will be sent to the recipients that the server accepted, if any
+   *<p>
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
+    this.allowRcptErrors = allowRcptErrors;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -526,13 +553,16 @@ public class MailConfig {
     if (keepAlive == false) {
       json.put("keep_alive", keepAlive);
     }
+    if (allowRcptErrors == true) {
+      json.put("allow_rcpt_errors", allowRcptErrors);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive, allowRcptErrors);
   }
 
   /*

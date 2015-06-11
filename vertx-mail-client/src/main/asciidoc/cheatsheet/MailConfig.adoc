@@ -88,4 +88,9 @@ set if connection pool is enabled
 <p>
  if the connection pooling is disabled, the max number of sockets is enforced nevertheless
 <p>+++
+
+|[[allowRcptErrors]]`allowRcptErrors`
+|`Boolean`
+|+++
+set if sending allows rcpt errors+++
 |===

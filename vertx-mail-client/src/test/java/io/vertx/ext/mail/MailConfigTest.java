@@ -45,8 +45,9 @@ public class MailConfigTest {
   public void toJsonTest5() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setKeepAlive(false);
+    mailConfig.setAllowRcptErrors(true);
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false,\"allow_rcpt_errors\":true}",
       mailConfig.toJson().toString());
   }
 
@@ -128,6 +129,10 @@ public class MailConfigTest {
     new MailConfig().setPort(-1);
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testPortIllegal2() {
+    new MailConfig().setPort(65536);
+  }
 
   @Test
   public void testStarttls() {
@@ -230,6 +235,15 @@ public class MailConfigTest {
     assertFalse(mailConfig.isKeepAlive());
     mailConfig.setKeepAlive(true);
     assertTrue(mailConfig.isKeepAlive());
+  }
+
+  @Test
+  public void testAllowRcptErrors() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setAllowRcptErrors(false);
+    assertFalse(mailConfig.isAllowRcptErrors());
+    mailConfig.setAllowRcptErrors(true);
+    assertTrue(mailConfig.isAllowRcptErrors());
   }
 
   @Test

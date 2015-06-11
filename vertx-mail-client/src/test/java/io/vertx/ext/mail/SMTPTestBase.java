@@ -202,7 +202,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
         async.complete();
       } else {
         log.warn("got exception", result.cause());
-        testContext.fail(result.cause().toString());
+        testContext.fail(result.cause());
       }
     });
   }
