@@ -21,8 +21,6 @@ public class MailPoolTest extends SMTPTestWiser {
 
   @Test
   public void mailTest(TestContext context) {
-    log.info("starting");
-
     Async async = context.async();
 
     MailClient mailClient = MailClient.create(vertx, configNoSSL());

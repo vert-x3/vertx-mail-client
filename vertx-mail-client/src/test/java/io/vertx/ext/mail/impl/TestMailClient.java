@@ -48,4 +48,12 @@ public class TestMailClient implements MailClient {
   public SMTPConnectionPool getConnectionPool() {
     return mailClient.getConnectionPool();
   }
+
+  /**
+   * get the connection count of the pool
+   * @return SMTPConnectionPool
+   */
+  public int connCount() {
+    return mailClient.getConnectionPool().connCount();
+  }
 }
