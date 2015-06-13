@@ -219,7 +219,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   private static class Waiter {
-    final Handler<AsyncResult<SMTPConnection>> handler;
+    private final Handler<AsyncResult<SMTPConnection>> handler;
 
     private Waiter(Handler<AsyncResult<SMTPConnection>> handler) {
       this.handler = handler;

@@ -1,7 +1,7 @@
 == MailAttachment
 
 ++++
- represent a mail attachment that can be used in a MailMessage
+ Represent a mail attachment that can be used in a MailMessage.
 ++++
 '''
 

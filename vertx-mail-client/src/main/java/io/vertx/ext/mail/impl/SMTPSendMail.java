@@ -1,6 +1,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
@@ -10,7 +11,6 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
-import io.vertx.core.Future;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -135,7 +135,7 @@ class SMTPSendMail {
     if (i + 1 < recipientAddrs.size()) {
       rcptToCmd(recipientAddrs, i + 1);
     } else {
-      if(mailResult.getRecipients().size()>0) {
+      if (mailResult.getRecipients().size() > 0) {
         dataCmd();
       } else {
         log.warn("no recipient addresses were accepted, not sending mail");
@@ -188,7 +188,7 @@ class SMTPSendMail {
       }
       final int nextIndexFinal = nextIndex;
       final boolean mayLog = nextIndex < 1000;
-      if(connection.writeQueueFull()) {
+      if (connection.writeQueueFull()) {
         connection.writeLineWithDrainHandler(line, mayLog, v -> {
           sendLineByLine(nextIndexFinal, length);
         });

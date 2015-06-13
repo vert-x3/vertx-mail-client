@@ -149,4 +149,4 @@ The configuration has the following properties
 The MailResult object has the following members
 
 * `messageID` the Message-ID of the generated mail
-* `recipients` the list of recipients the mail was sent to
+* `recipients` the list of recipients the mail was sent to (if allowRcptErrors is true, this may be fewer than the intended recipients)

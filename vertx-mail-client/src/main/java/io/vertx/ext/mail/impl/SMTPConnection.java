@@ -303,9 +303,10 @@ class SMTPConnection {
 
   void cancelIdleTimer() {
     if (keepAlive && idleTimerId != -1) {
-      log.debug("canceling timer on connection ("+idleTimerId+")");
-      context.runOnContext(v -> vertx.cancelTimer(idleTimerId));
-      idleTimerId = -1;
+      context.runOnContext(v -> {
+        vertx.cancelTimer(idleTimerId);
+        idleTimerId = -1;
+      });
     }
   }
 
