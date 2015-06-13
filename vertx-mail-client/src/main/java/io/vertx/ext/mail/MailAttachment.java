@@ -37,7 +37,7 @@ public class MailAttachment {
    */
   public MailAttachment(final MailAttachment other) {
     Objects.requireNonNull(other);
-    this.data = other.data == null ? null : Buffer.buffer().appendBuffer(other.data);
+    this.data = other.data == null ? null : other.data.copy();
     this.name = other.name;
     this.contentType = other.contentType;
     this.disposition = other.disposition;
