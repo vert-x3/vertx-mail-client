@@ -1,6 +1,3 @@
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 import java.lang.reflect.Field;
@@ -12,8 +9,14 @@ import java.util.Set;
  */
 public class AuthOperationFactory {
 
-  static final Class<?>[] authList = new Class<?>[] { AuthDigestMD5.class, AuthCramSHA256.class, AuthCramSHA1.class,
-      AuthCramMD5.class, AuthPlain.class, AuthLogin.class };
+  static final Class<?>[] authList = new Class<?>[] {
+      AuthDigestMD5.class,
+      AuthCramSHA256.class,
+      AuthCramSHA1.class,
+      AuthCramMD5.class,
+      AuthPlain.class,
+      AuthLogin.class
+  };
 
   public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods)
       throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException,

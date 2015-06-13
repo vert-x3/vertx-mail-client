@@ -125,7 +125,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         log.debug("create a new connection");
         createNewConnection(handler);
       } else {
-        if(idleConn.isClosed()) {
+        if (idleConn.isClosed()) {
           log.warn("idle connection is closed already, this may cause a problem");
         }
         // if we have found a connection, run a RSET command, this checks if the connection
