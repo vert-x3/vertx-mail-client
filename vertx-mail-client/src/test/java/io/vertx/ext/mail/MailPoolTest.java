@@ -5,6 +5,7 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -20,8 +21,6 @@ public class MailPoolTest extends SMTPTestWiser {
 
   @Test
   public void mailTest(TestContext context) {
-    log.info("starting");
-
     Async async = context.async();
 
     MailClient mailClient = MailClient.create(vertx, configNoSSL());

@@ -1,7 +1,6 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClientOptions;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -46,8 +45,19 @@ public class MailConfigTest {
   public void toJsonTest5() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setKeepAlive(false);
+    mailConfig.setAllowRcptErrors(true);
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"keep_alive\":false,\"allow_rcpt_errors\":true}",
+      mailConfig.toJson().toString());
+  }
+
+  @Test
+  public void toJsonTest6() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setKeyStore("keyStore");
+    mailConfig.setKeyStorePassword("keyStorePassword");
+    assertEquals(
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"key_store\":\"keyStore\",\"key_store_password\":\"keyStorePassword\",\"max_pool_size\":10,\"idle_timeout\":300}",
       mailConfig.toJson().toString());
   }
 
@@ -109,6 +119,22 @@ public class MailConfigTest {
   }
 
   @Test
+  public void testPort() {
+    MailConfig mailConfig = new MailConfig();
+    assertEquals(12345, mailConfig.setPort(12345).getPort());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testPortIllegal() {
+    new MailConfig().setPort(-1);
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testPortIllegal2() {
+    new MailConfig().setPort(65536);
+  }
+
+  @Test
   public void testStarttls() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setStarttls(StartTLSOptions.REQUIRED);
@@ -158,31 +184,17 @@ public class MailConfigTest {
   }
 
   @Test
-  public void testNetClientOptions() {
+  public void testKeyStore() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setNetClientOptions(new NetClientOptions());
-    assertEquals(new NetClientOptions(), mailConfig.getNetClientOptions());
+    mailConfig.setKeyStore("asdfasdf");
+    assertEquals("asdfasdf", mailConfig.getKeyStore());
   }
 
   @Test
-  public void testNetClientOptionsFromMailConfig() {
+  public void testKeyStorePasswprd() {
     MailConfig mailConfig = new MailConfig();
-    final NetClientOptions netClientOptions = new NetClientOptions();
-    netClientOptions.setSsl(true);
-    mailConfig.setNetClientOptions(netClientOptions);
-    final NetClientOptions netClientOptions2 = new MailConfig(mailConfig).getNetClientOptions();
-    // assert that we have not just assigned the value
-    assertFalse(netClientOptions == netClientOptions2);
-    assertEquals(netClientOptions, netClientOptions2);
-  }
-
-  @Test
-  public void testNetClientOptionsFromJson() {
-    String jsonString = "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"max_pool_size\":10,\"idle_timeout\":300,\"netclientoptions\":{\"ssl\":true}}";
-    MailConfig mailConfig = new MailConfig(new JsonObject(jsonString));
-    MailConfig mailConfig2 = new MailConfig()
-      .setNetClientOptions(new NetClientOptions().setSsl(true));
-    assertEquals(mailConfig2, mailConfig);
+    mailConfig.setKeyStorePassword("qwertyqwerty");
+    assertEquals("qwertyqwerty", mailConfig.getKeyStorePassword());
   }
 
   @Test
@@ -199,11 +211,21 @@ public class MailConfigTest {
     assertEquals(123, mailConfig.getMaxPoolSize());
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void testMaxPoolSizeIllegal() {
+    new MailConfig().setMaxPoolSize(0);
+  }
+
   @Test
   public void testIdleTimeout() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setIdleTimeout(99);
     assertEquals(99, mailConfig.getIdleTimeout());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testIdleTimeoutIllegal() {
+    new MailConfig().setIdleTimeout(0);
   }
 
   @Test
@@ -213,6 +235,15 @@ public class MailConfigTest {
     assertFalse(mailConfig.isKeepAlive());
     mailConfig.setKeepAlive(true);
     assertTrue(mailConfig.isKeepAlive());
+  }
+
+  @Test
+  public void testAllowRcptErrors() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setAllowRcptErrors(false);
+    assertFalse(mailConfig.isAllowRcptErrors());
+    mailConfig.setAllowRcptErrors(true);
+    assertTrue(mailConfig.isAllowRcptErrors());
   }
 
   @Test

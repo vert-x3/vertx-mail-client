@@ -41,9 +41,7 @@ public class UtilsTest {
         .base64("**********************************************************************************************")));
   }
 
-  // convert windows style line endings
-  // TODO: not sure why the java8 base64 classes use CRLF
-  // Issue #30 
+  // convert windows style to unix style line endings, this probably necessary for the unit tests only
   private String conv2nl(String string) {
     return string.replace("\r\n", "\n");
   }

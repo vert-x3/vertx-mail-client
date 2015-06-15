@@ -1,10 +1,12 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.mail.MailConfig;
@@ -36,22 +38,22 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
     NetClientOptions netClientOptions;
-    if (config.getNetClientOptions() == null) {
-      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
+    if (config.getKeyStore() != null) {
+      // assume that password could be null if the keystore doesn't use one
+      netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
+          .setPassword(config.getKeyStorePassword()));
     } else {
-      netClientOptions = config.getNetClientOptions();
+      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
     }
     netClient = vertx.createNetClient(netClientOptions);
   }
 
-  // FIXME Why not use Handler<AsyncResult<SMTPConnection>> - that's what it's for
-  // Issue #18
-  void getConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
+  void getConnection(Handler<AsyncResult<SMTPConnection>> resultHandler) {
     log.debug("getConnection()");
     if (closed) {
-      errorHandler.handle(new NoStackTraceThrowable("connection pool is closed"));
+      resultHandler.handle(Future.failedFuture("connection pool is closed"));
     } else {
-      getConnection0(resultHandler, errorHandler);
+      getConnection0(resultHandler);
     }
   }
 
@@ -76,12 +78,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   // Lifecycle methods
 
   // Called when the send operation has finished
-  // TODO: this method should be called dataFinished,
-  // responseEnded is from http
-  // TODO: this method may not be called directly since it
-  // doesn't set idle state on the connection
-  // Issue #19
-  public synchronized void responseEnded(SMTPConnection conn) {
+  public synchronized void dataEnded(SMTPConnection conn) {
     checkReuseConnection(conn);
   }
 
@@ -97,7 +94,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     if (waiter != null) {
       // There's a waiter - so it can have a new connection
       log.debug("creating new connection for waiter");
-      createNewConnection(waiter.handler, waiter.connectionExceptionHandler);
+      createNewConnection(waiter.handler);
     }
     if (closed && connCount == 0) {
       log.debug("all connections closed, closing NetClient");
@@ -110,8 +107,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   // Private methods
 
-  private synchronized void getConnection0(Handler<SMTPConnection> handler,
-      Handler<Throwable> connectionExceptionHandler) {
+  private synchronized void getConnection0(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection idleConn = null;
     for (SMTPConnection conn : allConnections) {
       if (!conn.isBroken() && conn.isIdle()) {
@@ -122,13 +118,16 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     if (idleConn == null && connCount >= maxSockets) {
       // Wait in queue
       log.debug("waiting for a free socket");
-      waiters.add(new Waiter(handler, connectionExceptionHandler));
+      waiters.add(new Waiter(handler));
     } else {
       if (idleConn == null) {
         // Create a new connection
         log.debug("create a new connection");
-        createNewConnection(handler, connectionExceptionHandler);
+        createNewConnection(handler);
       } else {
+        if (idleConn.isClosed()) {
+          log.warn("idle connection is closed already, this may cause a problem");
+        }
         // if we have found a connection, run a RSET command, this checks if the connection
         // is really usable. If this fails, we create a new connection. we may run over the connection limit
         // since the close operation is not finished before we open the new connection, however it will be closed
@@ -136,11 +135,17 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         log.debug("found idle connection, checking");
         final SMTPConnection conn = idleConn;
         conn.useConnection();
-        new SMTPReset(conn, v -> handler.handle(conn), v -> {
-          conn.setBroken();
-          log.debug("using idle connection failed, create a new connection");
-          createNewConnection(handler, connectionExceptionHandler);
-        }).start();
+        conn.getContext().runOnContext(v -> {
+          new SMTPReset(conn, result -> {
+            if (result.succeeded()) {
+              handler.handle(Future.succeededFuture(conn));
+            } else {
+              conn.setBroken();
+              log.debug("using idle connection failed, create a new connection");
+              createNewConnection(handler);
+            }
+          }).start();
+        });
       }
     }
   }
@@ -151,8 +156,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
       conn.close();
     } else {
       // if the pool is disabled, just close the connection
-      if (!keepAlive) {
-        log.debug("connection pool is disabled, immediately doing QUIT");
+      if (!keepAlive || closed) {
+        log.debug("connection pool is disabled or pool is already closed, immediately doing QUIT");
         conn.close();
       } else {
         log.debug("checking for waiting operations");
@@ -160,7 +165,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         if (waiter != null) {
           log.debug("running one waiting operation");
           conn.useConnection();
-          waiter.handler.handle(conn);
+          waiter.handler.handle(Future.succeededFuture(conn));
         } else {
           log.debug("keeping connection idle");
           conn.setIdleTimer();
@@ -192,26 +197,32 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     }
   }
 
-  private void createNewConnection(Handler<SMTPConnection> handler, Handler<Throwable> connectionExceptionHandler) {
+  private void createNewConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     connCount++;
-    createConnection(conn -> {
-      allConnections.add(conn);
-      handler.handle(conn);
-    }, connectionExceptionHandler);
+    createConnection(result -> {
+      if (result.succeeded()) {
+        allConnections.add(result.result());
+      }
+      handler.handle(result);
+    });
   }
 
-  private void createConnection(Handler<SMTPConnection> resultHandler, Handler<Throwable> errorHandler) {
+  private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection conn = new SMTPConnection(netClient, vertx, this);
-    new SMTPStarter(vertx, conn, config, v -> resultHandler.handle(conn), errorHandler).start();
+    new SMTPStarter(vertx, conn, config, result -> {
+      if (result.succeeded()) {
+        handler.handle(Future.succeededFuture(conn));
+      } else {
+        handler.handle(Future.failedFuture(result.cause()));
+      }
+    }).start();
   }
 
   private static class Waiter {
-    final Handler<SMTPConnection> handler;
-    final Handler<Throwable> connectionExceptionHandler;
+    private final Handler<AsyncResult<SMTPConnection>> handler;
 
-    private Waiter(Handler<SMTPConnection> handler, Handler<Throwable> connectionExceptionHandler) {
+    private Waiter(Handler<AsyncResult<SMTPConnection>> handler) {
       this.handler = handler;
-      this.connectionExceptionHandler = connectionExceptionHandler;
     }
   }
 }

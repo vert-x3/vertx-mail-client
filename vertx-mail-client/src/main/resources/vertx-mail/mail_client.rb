@@ -27,7 +27,7 @@ module VertxMail
     end
     #  send a single mail via MailClient
     # @param [Hash] email MailMessage object containing the mail text, from/to, attachments etc
-    # @yield will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>}
+    # @yield will be called when the operation is finished or it fails (may be null to ignore the result)
     # @return [self]
     def send_mail(email=nil)
       if email.class == Hash && block_given?

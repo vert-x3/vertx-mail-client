@@ -4,15 +4,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * represent a mail address with an email address part and an optional full name
- * e.g. <br>
+ * represent a mail address with an email address part and an optional full name e.g. <br>
  * {@code user@example.com} <br>
  * {@code user@example.com (This User)} <br>
  * {@code Another User <other@example.net>}
  * <p>
- * the constructor will validate the address catching format errors like excess
- * spaces, newlines the test is not very strict, for example an IDN address will
- * be considered valid, even though SMTP doesn't work with that yet
+ * the constructor will validate the address catching format errors like excess spaces, newlines the test is not very
+ * strict, for example an IDN address will be considered valid, even though SMTP doesn't work with that yet
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
@@ -20,7 +18,7 @@ public class EmailAddress {
 
   private static final Pattern PATTERN_EMAIL = Pattern.compile("([^(\\s]+) *\\((.*)\\)");
   private static final Pattern PATTERN_EMAIL_ANGLE = Pattern.compile("([^<]*[^< ])? *\\<([^>]*)\\>");
-  private static final Pattern PATTERN_EMAIL_INVALID = Pattern.compile("[^\\s,<>]+@[^\\s,<>]+");
+  private static final Pattern PATTERN_EMAIL_INVALID = Pattern.compile("([^\\s,<>]+@[^\\s,<>]+)|");
 
   private String email;
   private String name;
@@ -89,6 +87,10 @@ public class EmailAddress {
    * @return representation of the address
    */
   public String toString() {
-    return "[" + email + "," + name + "]";
+    if (name.isEmpty()) {
+      return "[" + email + "]";
+    } else {
+      return "[" + email + "," + name + "]";
+    }
   }
 }

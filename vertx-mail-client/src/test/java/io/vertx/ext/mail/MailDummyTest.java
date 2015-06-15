@@ -1,24 +1,31 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.buffer.Buffer;
-import org.junit.Test;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailDummyTest extends SMTPTestDummy {
 
   @Test
-  public void mailTest() {
+  public void mailTest(TestContext testContext) {
+    this.testContext=testContext;
     testSuccess();
   }
 
   @Test
-  public void mailHtml() throws UnsupportedEncodingException {
+  public void mailHtml(TestContext testContext) throws UnsupportedEncodingException {
+    this.testContext=testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
 
     MailMessage email = new MailMessage()
@@ -51,7 +58,8 @@ public class MailDummyTest extends SMTPTestDummy {
   }
 
   @Test
-  public void mailTestNoBody() {
+  public void mailTestNoBody(TestContext testContext) {
+    this.testContext=testContext;
     MailMessage email = new MailMessage()
       .setFrom("user@example.com")
       .setTo("user@example.com")
@@ -68,10 +76,11 @@ public class MailDummyTest extends SMTPTestDummy {
    * @throws InterruptedException
    */
   @Test
-  public void mailTestNoResult() throws InterruptedException {
-    mailClientDefault().sendMail(exampleMessage(), null);
-
-    Thread.sleep(2000);
+  public void mailTestNoResult(TestContext testContext) throws InterruptedException {
+    final MailClient mailClient = mailClientDefault();
+    mailClient.sendMail(exampleMessage(), null);
+    Thread.sleep(1000);
+    mailClient.close();
   }
 
 }

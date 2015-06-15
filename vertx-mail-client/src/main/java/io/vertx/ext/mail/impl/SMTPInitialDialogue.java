@@ -49,7 +49,7 @@ class SMTPInitialDialogue {
   }
 
   private boolean isEsmtpSupported(String message) {
-    // note that message in this case is the inital reply from the server
+    // note that message in this case is the initial reply from the server
     // e.g. 220 example.com ESMTP Postfix
     return message.contains("ESMTP");
   }
@@ -65,8 +65,7 @@ class SMTPInitialDialogue {
             if (connection.getCapa().isStartTLS()
               && !connection.isSsl()
               && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
-              // do not start TLS if we are connected with SSL
-              // or are already in TLS
+              // do not start TLS if we are connected with SSL or are already in TLS
               startTLSCmd();
             } else {
               finished();

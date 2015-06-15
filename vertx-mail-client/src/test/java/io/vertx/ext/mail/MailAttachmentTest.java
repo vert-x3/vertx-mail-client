@@ -37,6 +37,18 @@ public class MailAttachmentTest {
     assertEquals(message, new MailAttachment(message));
   }
 
+  @Test
+  public void testConstructorFromClassDoesCopy() {
+    MailAttachment message = new MailAttachment();
+
+    Buffer data = Buffer.buffer("asdf");
+    message.setData(data);
+
+    final MailAttachment copy = new MailAttachment(message);
+    assertEquals(message.getData(), copy.getData());
+    assertFalse("Buffer not copied", message.getData()==copy.getData());
+  }
+
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
     new MailAttachment((JsonObject) null);

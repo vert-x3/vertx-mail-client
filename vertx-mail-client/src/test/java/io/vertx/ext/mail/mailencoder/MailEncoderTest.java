@@ -1,5 +1,9 @@
 package io.vertx.ext.mail.mailencoder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.junit.Assert.assertEquals;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -9,17 +13,15 @@ import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.TestUtils;
 
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.junit.Assert.assertEquals;
+import javax.mail.BodyPart;
+import javax.mail.internet.MimeMultipart;
+
+import org.junit.Test;
 
 public class MailEncoderTest {
 
@@ -64,54 +66,71 @@ public class MailEncoderTest {
    * NPE at least
    */
   @Test
-  public void testEmptyMsg() {
+  public void testEmptyMsg() throws Exception {
     MailMessage message = new MailMessage();
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Message-ID:"));
+    assertThat(TestUtils.getMessage(mime).getHeader("Message-ID")[0], containsString(".vertxmail."));
   }
 
   @Test
-  public void testSubject() {
+  public void testSubject() throws Exception {
     MailMessage message = new MailMessage();
-    message.setSubject("this is the subject");
+    final String subject = "this is the subject";
+    message.setSubject(subject);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Subject: this is the subject\n"));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testFrom() {
+  public void testFrom() throws Exception {
     MailMessage message = new MailMessage();
     message.setFrom("user@example.com (Username)");
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("From: user@example.com (Username)\n"));
+    assertEquals("Username <user@example.com>", TestUtils.getMessage(mime).getFrom()[0].toString());
   }
 
   @Test
-  public void testTo() {
+  public void testTo() throws Exception {
     MailMessage message = new MailMessage();
     message.setTo("user@example.com (Username)");
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("To: user@example.com (Username)\n"));
+    assertEquals("Username <user@example.com>", TestUtils.getMessage(mime).getAllRecipients()[0].toString());
   }
 
   @Test
-  public void testTo1() {
+  public void testTo1() throws Exception {
     MailMessage message = new MailMessage();
     message.setTo(Arrays.asList("user@example.com (Username)"));
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("To: user@example.com (Username)\n"));
+    assertEquals("Username <user@example.com>", TestUtils.getMessage(mime).getAllRecipients()[0].toString());
   }
 
   @Test
-  public void testTo2() {
+  public void testTo2() throws Exception {
     MailMessage message = new MailMessage();
     message.setTo(Arrays.asList("user@example.com (Username)", "user2@example.com"));
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("To: user@example.com (Username),user2@example.com\n"));
+    assertEquals("Username <user@example.com>", TestUtils.getMessage(mime).getAllRecipients()[0].toString());
+    assertEquals("user2@example.com", TestUtils.getMessage(mime).getAllRecipients()[1].toString());
   }
 
   @Test
-  public void testToMany() {
+  public void testToEncoded() throws Exception {
+    MailMessage message = new MailMessage();
+    message.setTo("user@example.com (Username ÄÖÜ)");
+    String mime = new MailEncoder(message, null).encode();
+    assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?Username_=C3=84=C3=96=C3=9C?=)\n"));
+    assertEquals("=?UTF-8?Q?Username_=C3=84=C3=96=C3=9C?= <user@example.com>", TestUtils.getMessage(mime).getAllRecipients()[0].toString());
+  }
+
+  @Test
+  public void testToMany() throws Exception {
     MailMessage message = new MailMessage();
     List<String> to = new ArrayList<String>();
     for (int i = 0; i < 20; i++) {
@@ -123,11 +142,16 @@ public class MailEncoderTest {
       + " user4@example.com,user5@example.com,user6@example.com,user7@example.com,\n"
       + " user8@example.com,user9@example.com,user10@example.com,user11@example.com,\n"
       + " user12@example.com,user13@example.com,user14@example.com,\n"
-      + " user15@example.com,user16@example.com,user17@example.com,\n" + " user18@example.com,user19@example.com\n"));
+      + " user15@example.com,user16@example.com,user17@example.com,\n"
+      + " user18@example.com,user19@example.com\n"));
+
+    assertEquals(
+        "[user0@example.com, user1@example.com, user2@example.com, user3@example.com, user4@example.com, user5@example.com, user6@example.com, user7@example.com, user8@example.com, user9@example.com, user10@example.com, user11@example.com, user12@example.com, user13@example.com, user14@example.com, user15@example.com, user16@example.com, user17@example.com, user18@example.com, user19@example.com]",
+        Arrays.asList(TestUtils.getMessage(mime).getAllRecipients()).toString());
   }
 
   @Test
-  public void testToManyName() {
+  public void testToManyName() throws Exception {
     MailMessage message = new MailMessage();
     List<String> to = new ArrayList<String>();
     for (int i = 0; i < 20; i++) {
@@ -147,10 +171,14 @@ public class MailEncoderTest {
       + " user15@example.com (Some User Name),user16@example.com\n"
       + " (Some User Name),user17@example.com (Some User Name),\n"
       + " user18@example.com (Some User Name),user19@example.com\n" + " (Some User Name)\n"));
+
+    assertEquals(
+        "[Some User Name <user0@example.com>, Some User Name <user1@example.com>, Some User Name <user2@example.com>, Some User Name <user3@example.com>, Some User Name <user4@example.com>, Some User Name <user5@example.com>, Some User Name <user6@example.com>, Some User Name <user7@example.com>, Some User Name <user8@example.com>, Some User Name <user9@example.com>, Some User Name <user10@example.com>, Some User Name <user11@example.com>, Some User Name <user12@example.com>, Some User Name <user13@example.com>, Some User Name <user14@example.com>, Some User Name <user15@example.com>, Some User Name <user16@example.com>, Some User Name <user17@example.com>, Some User Name <user18@example.com>, Some User Name <user19@example.com>]",
+        Arrays.asList(TestUtils.getMessage(mime).getAllRecipients()).toString());
   }
 
   @Test
-  public void testToManyEncoded() {
+  public void testToManyEncoded() throws Exception {
     MailMessage message = new MailMessage();
     List<String> to = new ArrayList<String>();
     for (int i = 0; i < 20; i++) {
@@ -197,29 +225,29 @@ public class MailEncoderTest {
   }
 
   @Test
-  public void testTextPlain() {
+  public void testTextPlain() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "the quick brown fox jumps over the lazy dog";
     message.setText(text);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Content-Type: text/plain"));
     assertThat(mime, containsString(text));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
   @Test
-  public void testTextHtml() {
+  public void testTextHtml() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "the <b>quick brown fox</b> jumps over the lazy dog";
     message.setHtml(text);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Content-Type: text/html"));
     assertThat(mime, containsString(text));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
-  // TODO would be better to check the decoded text?
-  // Issue #29
   @Test
-  public void testTextPlainEncoded() {
+  public void testTextPlainEncoded() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "Zwölf Boxkämpfer jagen Viktor quer über den großen Sylter Deich";
     final String encodedtext = "Zw=C3=B6lf Boxk=C3=A4mpfer jagen Viktor quer =C3=BCber den gro=C3=9Fen Sylt=\n"
@@ -228,10 +256,11 @@ public class MailEncoderTest {
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Content-Type: text/html"));
     assertThat(mime, containsString(encodedtext));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
   @Test
-  public void testTextHtmlEncoded() {
+  public void testTextHtmlEncoded() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "<a href=\"http://vertx.io/\">go\u00a0to\u00a0vertx.io</a>";
     final String encodedtext = "<a href=3D\"http://vertx.io/\">go=C2=A0to=C2=A0vertx.io</a>";
@@ -239,20 +268,22 @@ public class MailEncoderTest {
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("Content-Type: text/html"));
     assertThat(mime, containsString(encodedtext));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
   @Test
-  public void testSubjectEncoded() {
+  public void testSubjectEncoded() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "subject with äöü_=??=";
     final String encodedSubject = "=?UTF-8?Q?subject_with_=C3=A4=C3=B6=C3=BC=5F=3D=3F=3F=3D?=";
     message.setSubject(subject);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testSubjectEncodedLong() {
+  public void testSubjectEncodedLong() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "ä=======================================================================================";
     final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
@@ -263,10 +294,11 @@ public class MailEncoderTest {
     message.setSubject(subject);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testSubjectEncodedLong2() {
+  public void testSubjectEncodedLong2() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "ä****************************************************************************************************************";
     final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4*************************************************?=\n"
@@ -274,36 +306,40 @@ public class MailEncoderTest {
     message.setSubject(subject);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testSubjectEncodedNul() {
+  public void testSubjectEncodedNul() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "\0";
     final String encodedSubject = "=00";
     message.setSubject(subject);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testTextPlain76Chars() {
+  public void testTextPlain76Chars() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "ä**********************************************************************";
     final String encodedSubject = "=C3=A4**********************************************************************";
     message.setText(text);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
   @Test
-  public void testTextPlainEOLSpace() {
+  public void testTextPlainEOLSpace() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "ä ";
     final String encodedSubject = "=C3=A4=20";
     message.setText(text);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals(text, TestUtils.getMessage(mime).getContent());
   }
 
   /**
@@ -314,25 +350,28 @@ public class MailEncoderTest {
    * create a twice encoded subject
    */
   @Test
-  public void testSubjectAlreadyEncoded() {
+  public void testSubjectAlreadyEncoded() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "Re: =?ISO-8859-1?Q?Hello_=FC?=";
     final String encodedSubject = "Re: =?ISO-8859-1?Q?Hello_=FC?=";
-    message.setText(text);
+    message.setSubject(text);
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString(encodedSubject));
+    assertEquals("Re: Hello ü", TestUtils.getMessage(mime).getSubject());
   }
 
   @Test
-  public void testToEmailOnly() {
+  public void testToEmailOnly() throws Exception {
     MailMessage message = new MailMessage();
-    message.setTo("user@example.com");
+    final String to = "user@example.com";
+    message.setTo(to);
     String mime = new MailEncoder(message, null).encode();
-    assertThat(mime, containsString("user@example.com"));
+    assertThat(mime, containsString(to));
+    assertEquals(to, TestUtils.getMessage(mime).getAllRecipients()[0].toString());
   }
 
   @Test
-  public void testAttachment() {
+  public void testAttachment() throws Exception {
     MailMessage message = new MailMessage();
     MailAttachment attachment = new MailAttachment();
     attachment.setContentType("application/x-something")
@@ -345,14 +384,22 @@ public class MailEncoderTest {
     assertThat(mime, containsString("Content-Type: application/x-something; name=file.txt"));
     assertThat(mime, containsString("Content-Description: description"));
     assertThat(mime, containsString("Content-Disposition: attachment; filename=file.txt"));
+
+    BodyPart part = ((MimeMultipart) TestUtils.getMessage(mime).getContent()).getBodyPart(0);
+    assertEquals("***", TestUtils.inputStreamToString(part.getInputStream()));
+    assertEquals("attachment", part.getDisposition());
+    assertEquals("file.txt", part.getFileName());
+    assertEquals("description", part.getDescription());
+    assertEquals("application/x-something; name=file.txt", part.getContentType());
   }
 
   @Test
-  public void testRealnameComma() {
+  public void testRealnameComma() throws Exception {
     MailMessage message = new MailMessage();
     message.setTo("Last, First <user@example.com>");
     String mime = new MailEncoder(message, null).encode();
     assertThat(mime, containsString("user@example.com (Last, First)"));
+    assertEquals("\"Last, First\" <user@example.com>", TestUtils.getMessage(mime).getAllRecipients()[0].toString());
   }
 
   @Test

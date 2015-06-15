@@ -14,7 +14,6 @@ import org.junit.Test;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
- *
  */
 public class MailResultTest {
 

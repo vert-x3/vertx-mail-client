@@ -196,7 +196,7 @@ abstract class AuthDigest extends AuthBaseClass {
    * @return
    */
   private String addQuotes(String string) {
-    return "\"" + string.replaceAll("\"", "\\\"") + "\"";
+    return "\"" + string.replace("\"", "\\\"") + "\"";
   }
 
   /**

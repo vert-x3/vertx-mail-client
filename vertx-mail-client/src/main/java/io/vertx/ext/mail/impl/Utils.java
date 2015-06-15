@@ -11,7 +11,7 @@ import java.util.Set;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public class Utils {
+public final class Utils {
 
   /**
    *
@@ -25,7 +25,7 @@ public class Utils {
    * @param auths list of auth methods as String (e.g. "PLAIN LOGIN CRAM-MD5")
    * @return Set of supported auth methods
    */
-  public static Set<String> parseCapaAuth(String auths) {
+  public static Set<String> parseCapaAuth(final String auths) {
     Set<String> authSet = new HashSet<String>();
     for (String a : splitByChar(auths, ' ')) {
       authSet.add(a);
@@ -40,7 +40,7 @@ public class Utils {
    * @param ch      the char between which we split
    * @return List<String> of the split lines
    */
-  static List<String> splitByChar(String message, char ch) {
+  static List<String> splitByChar(final String message, final char ch) {
     List<String> lines = new ArrayList<String>();
     int index = 0;
     int nextIndex;

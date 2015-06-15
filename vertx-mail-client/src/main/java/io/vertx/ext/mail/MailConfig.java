@@ -2,7 +2,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.net.NetClientOptions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -33,11 +32,13 @@ public class MailConfig {
   private String password;
   private boolean ssl;
   private boolean trustAll;
-  private NetClientOptions netClientOptions;
+  private String keyStore;
+  private String keyStorePassword;
   private String ownHostname;
   private int maxPoolSize;
   private int idleTimeout;
   private boolean keepAlive;
+  private boolean allowRcptErrors;
 
   /**
    * construct a config object with default options
@@ -115,14 +116,14 @@ public class MailConfig {
     password = other.password;
     ssl = other.ssl;
     trustAll = other.trustAll;
-    if (other.netClientOptions != null) {
-      netClientOptions = new NetClientOptions(other.netClientOptions);
-    }
+    keyStore = other.keyStore;
+    keyStorePassword = other.keyStorePassword;
     authMethods = other.authMethods;
     ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
     idleTimeout = other.idleTimeout;
     keepAlive = other.keepAlive;
+    allowRcptErrors = other.allowRcptErrors;
   }
 
   /**
@@ -145,15 +146,14 @@ public class MailConfig {
     password = config.getString("password");
     ssl = config.getBoolean("ssl", false);
     trustAll = config.getBoolean("trustall", false);
-    JsonObject options = config.getJsonObject("netclientoptions");
-    if (options != null) {
-      netClientOptions = new NetClientOptions(options);
-    }
+    keyStore = config.getString("key_store");
+    keyStorePassword = config.getString("key_store_password");
     authMethods = config.getString("auth_methods");
     ownHostname = config.getString("own_hostname");
     maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
     idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
     keepAlive = config.getBoolean("keep_alive", true);
+    allowRcptErrors = config.getBoolean("allow_rcpt_errors", false);
   }
 
   /**
@@ -326,28 +326,42 @@ public class MailConfig {
   }
 
   /**
-   * get the NetClientOptions to be used when opening SMTP connections
-   * <p>
-   * when using a custom key store, the NetClientOptions are necessary to the
-   * set the correct jks options, see this example {@code io/vertx/ext/mail/MailLocalTest}
-   *
-   * @return the netClientOptions
+   * get the key store filename to be used when opening SMTP connections
+   * @return the keyStore
    */
-  public NetClientOptions getNetClientOptions() {
-    return netClientOptions;
+  public String getKeyStore() {
+    return keyStore;
   }
 
   /**
-   * set the NetClientOptions to be used when opening SMTP connections
+   * get the key store filename to be used when opening SMTP connections
    * <p>
    * if not set, an options object will be created based on other settings (ssl
    * and trustAll)
    *
-   * @param netClientOptions the netClientOptions to set
+   * @param keyStore the key store filename to be set
    * @return a reference to this, so the API can be used fluently
    */
-  public MailConfig setNetClientOptions(NetClientOptions netClientOptions) {
-    this.netClientOptions = netClientOptions;
+  public MailConfig setKeyStore(String keyStore) {
+    this.keyStore = keyStore;
+    return this;
+  }
+
+  /**
+   * get the key store password to be used when opening SMTP connections
+   * @return the keyStorePassword
+   */
+  public String getKeyStorePassword() {
+    return keyStorePassword;
+  }
+
+  /**
+   * get the key store password to be used when opening SMTP connections
+   * @param keyStorePassword the key store passwords to be set
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setKeyStorePassword(String keyStorePassword) {
+    this.keyStorePassword = keyStorePassword;
     return this;
   }
 
@@ -470,6 +484,30 @@ public class MailConfig {
   }
 
   /**
+   * get if sending allows rcpt errors (default is false)
+   *<p>
+   * if true, the mail will be sent to the recipients that the server accepted, if any
+   *<p>
+   * @return the allowRcptErrors
+   */
+  public boolean isAllowRcptErrors() {
+    return allowRcptErrors;
+  }
+
+  /**
+   * set if sending allows rcpt errors
+   * @param allowRcptErrors the allowRcptErrors to set (default is false)
+   *<p>
+   * if true, the mail will be sent to the recipients that the server accepted, if any
+   *<p>
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
+    this.allowRcptErrors = allowRcptErrors;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -498,11 +536,12 @@ public class MailConfig {
     if (trustAll) {
       json.put("trustall", trustAll);
     }
-    // TODO: how do we do this, if it is necessary at all?
-    // Issue #24
-    // if(netClientOptions != null) {
-    //   json.put("netclientoptions", netClientOptions);
-    // }
+    if (keyStore != null) {
+      json.put("key_store", keyStore);
+    }
+    if (keyStorePassword != null) {
+      json.put("key_store_password", keyStorePassword);
+    }
     if (authMethods != null) {
       json.put("auth_methods", authMethods);
     }
@@ -511,16 +550,19 @@ public class MailConfig {
     }
     json.put("max_pool_size", maxPoolSize);
     json.put("idle_timeout", idleTimeout);
-    if (keepAlive == false) {
+    if (!keepAlive) {
       json.put("keep_alive", keepAlive);
+    }
+    if (allowRcptErrors) {
+      json.put("allow_rcpt_errors", allowRcptErrors);
     }
 
     return json;
   }
 
   private List<Object> getList() {
-    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, netClientOptions,
-        authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive);
+    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive, allowRcptErrors);
   }
 
   /*
