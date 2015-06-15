@@ -4,14 +4,13 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * this test uses a message that exceeds the SIZE limit of the smtp server (uses the mockup server that just plays a
  * file)
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)

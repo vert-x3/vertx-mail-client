@@ -53,7 +53,7 @@ public class MailClient {
    * @param config MailConfig configuration to be used for sending mails
    * @return MailClient instance that can then be used to send multiple mails
    */
-  public static MailClient create(Vertx vertx, MailConfig config) { 
+  public static MailClient create(Vertx vertx, MailConfig config) {
     MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx) vertx.getDelegate(), config));
     return ret;
   }
@@ -64,7 +64,7 @@ public class MailClient {
    * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result)
    * @return this MailClient instance so the method can be used fluently
    */
-  public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
+  public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
     this.delegate.sendMail(email, resultHandler);
     return this;
   }
@@ -72,9 +72,9 @@ public class MailClient {
   /**
    * send a single mail via MailClient
    * @param email MailMessage object containing the mail text, from/to, attachments etc
-   * @return 
+   * @return
    */
-  public Observable<MailResult> sendMailObservable(MailMessage email) { 
+  public Observable<MailResult> sendMailObservable(MailMessage email) {
     io.vertx.rx.java.ObservableFuture<MailResult> resultHandler = io.vertx.rx.java.RxHelper.observableFuture();
     sendMail(email, resultHandler.toHandler());
     return resultHandler;
@@ -83,7 +83,7 @@ public class MailClient {
   /**
    * close the MailClient
    */
-  public void close() { 
+  public void close() {
     this.delegate.close();
   }
 

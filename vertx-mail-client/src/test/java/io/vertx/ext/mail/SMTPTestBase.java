@@ -14,6 +14,10 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.test.core.VertxTestBase;
+
 /**
  * Support functions for SMTP tests
  * <p>
@@ -31,7 +35,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
   /*
    * test context the unit test this is running with
    * this is used to construct the Async objects and do the
-   * assert operations 
+   * assert operations
    */
   TestContext testContext;
 
