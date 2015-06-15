@@ -21,7 +21,7 @@ module VertxMail
     # @return [::VertxMail::MailClient] MailClient instance that can then be used to send multiple mails
     def self.create(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::VertxMail::MailClient.new(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
       end
       raise ArgumentError, "Invalid arguments when calling create(vertx,config)"
     end

@@ -24,10 +24,6 @@ var MailConfig = io.vertx.ext.mail.MailConfig;
 var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
- SMTP mail client for Vert.x
- <p>
- A simple asynchronous API for sending mails from Vert.x applications
-
  @class
 */
 var MailClient = function(j_val) {
@@ -36,21 +32,20 @@ var MailClient = function(j_val) {
   var that = this;
 
   /**
-   send a single mail via MailClient
 
    @public
-   @param email {Object} MailMessage object containing the mail text, from/to, attachments etc 
-   @param resultHandler {function} will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>} 
-   @return {MailClient} this MailClient instance so the method can be used fluently
+   @param arg0 {Object} 
+   @param arg1 {function} 
+   @return {MailClient}
    */
-  this.sendMail = function(email, resultHandler) {
+  this.sendMail = function(arg0, arg1) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
+      j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](arg0 != null ? new MailMessage(new JsonObject(JSON.stringify(arg0))) : null, function(ar) {
       if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result().toJson()), null);
+        arg1(utils.convReturnJson(ar.result().toJson()), null);
       } else {
-        resultHandler(null, ar.cause());
+        arg1(null, ar.cause());
       }
     });
       return that;
@@ -58,7 +53,6 @@ var MailClient = function(j_val) {
   };
 
   /**
-   close the MailClient
 
    @public
 
@@ -77,12 +71,11 @@ var MailClient = function(j_val) {
 };
 
 /**
- create an instance of MailClient that is running in the local JVM
 
  @memberof module:vertx-mail-js/mail_client
- @param vertx {Vertx} the Vertx instance the operation will be run in 
- @param config {Object} MailConfig configuration to be used for sending mails 
- @return {MailClient} MailClient instance that can then be used to send multiple mails
+ @param vertx {Vertx} 
+ @param config {Object} 
+ @return {MailClient}
  */
 MailClient.create = function(vertx, config) {
   var __args = arguments;
