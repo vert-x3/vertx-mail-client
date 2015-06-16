@@ -139,13 +139,13 @@ public abstract class SMTPTestBase extends VertxTestBase {
     return new MailMessage("from@example.com", "user@example.com", "Subject", "Message");
   }
 
-  static MailMessage largeMessage;
+  static volatile MailMessage largeMessage;
 
   /**
    * create a large message to be able to test timing of operations
    * the message is about 1MB and will take about a second to send on the fake server
    */
-  protected MailMessage largeMessage() {
+  protected static MailMessage largeMessage() {
     // this is not thread safe, but we do not have to be
     if (largeMessage == null) {
       StringBuilder sb = new StringBuilder(1024 * 1024);

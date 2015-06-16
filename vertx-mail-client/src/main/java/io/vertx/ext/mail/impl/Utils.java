@@ -38,10 +38,10 @@ public final class Utils {
    *
    * @param message the string to split
    * @param ch      the char between which we split
-   * @return List<String> of the split lines
+   * @return the list lines
    */
   static List<String> splitByChar(final String message, final char ch) {
-    List<String> lines = new ArrayList<String>();
+    List<String> lines = new ArrayList<>();
     int index = 0;
     int nextIndex;
     while ((nextIndex = message.indexOf(ch, index)) != -1) {

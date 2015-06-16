@@ -50,10 +50,6 @@ class Utils {
     }
   }
 
-  /**
-   * @param ch
-   * @return
-   */
   private static String encodeChar(char ch) {
     if (ch < 16) {
       return "=0" + Integer.toHexString(ch).toUpperCase(Locale.ENGLISH);

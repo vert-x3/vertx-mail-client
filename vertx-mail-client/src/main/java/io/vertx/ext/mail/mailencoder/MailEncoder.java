@@ -73,7 +73,7 @@ public class MailEncoder {
 
     List<MailAttachment> attachments = message.getAttachment();
     if (attachments != null) {
-      List<EncodedPart> parts = new ArrayList<EncodedPart>();
+      List<EncodedPart> parts = new ArrayList<>();
       if (mainPart != null) {
         parts.add(mainPart);
       }

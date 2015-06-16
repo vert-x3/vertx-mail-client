@@ -179,8 +179,7 @@ public class MailAttachment {
   }
 
   private List<Object> getList() {
-    final List<Object> objects = Arrays.asList(data, name, disposition, description);
-    return objects;
+    return Arrays.asList(data, name, disposition, description);
   }
 
   @Override

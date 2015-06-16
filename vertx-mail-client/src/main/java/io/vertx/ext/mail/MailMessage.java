@@ -6,10 +6,7 @@ import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * represent a mail message that can be sent via the MailClient
@@ -83,9 +80,9 @@ public class MailMessage {
       List<MailAttachment> list;
       Object object = json.getValue("attachment");
       if (object instanceof JsonObject) {
-        list = Arrays.asList(new MailAttachment((JsonObject) object));
+        list = Collections.singletonList(new MailAttachment((JsonObject) object));
       } else if (object instanceof JsonArray) {
-        list = new ArrayList<MailAttachment>();
+        list = new ArrayList<>();
         for (Object attach : (JsonArray) object) {
           list.add(new MailAttachment((JsonObject) attach));
         }
@@ -99,10 +96,6 @@ public class MailMessage {
     }
   }
 
-  /**
-   * @param json
-   * @return
-   */
   private MultiMap jsonToMultiMap(JsonObject json) {
     JsonObject jsonHeaders = json.getJsonObject("headers");
     MultiMap headers = new CaseInsensitiveHeaders();
@@ -449,10 +442,6 @@ public class MailMessage {
     return json;
   }
 
-  /**
-   * @param headers
-   * @return
-   */
   private JsonObject multiMapJson(MultiMap headers) {
     JsonObject json = new JsonObject();
     for (String key : headers.names()) {
@@ -503,12 +492,12 @@ public class MailMessage {
     if (list == null) {
       return null;
     } else {
-      return new ArrayList<String>(list);
+      return new ArrayList<>(list);
     }
   }
 
   private List<String> asList(String to) {
-    List<String> list = new ArrayList<String>(1);
+    List<String> list = new ArrayList<>(1);
     list.add(to);
     return list;
   }

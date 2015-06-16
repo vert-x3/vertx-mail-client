@@ -110,12 +110,14 @@ public class MailConfigTest {
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromMailConfigNull() {
-    new MailConfig((MailConfig) null);
+    final MailConfig config = new MailConfig((MailConfig) null);
+    assertNotNull(config);
   }
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
-    new MailConfig((JsonObject) null);
+    final MailConfig config = new MailConfig((JsonObject) null);
+    assertNotNull(config);
   }
 
   @Test
@@ -251,8 +253,6 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     assertEquals(mailConfig, mailConfig);
     assertEquals(mailConfig, new MailConfig());
-    assertFalse(mailConfig.equals(null));
-    assertFalse(mailConfig.equals(""));
   }
 
   @Test

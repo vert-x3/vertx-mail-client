@@ -6,12 +6,14 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 public class MailAttachmentTest {
 
   @Test
   public void testConstructor() {
-    new MailAttachment();
+    final MailAttachment attachment = new MailAttachment();
+    assertNotNull(attachment);
   }
 
   @Test
@@ -33,7 +35,6 @@ public class MailAttachmentTest {
   @Test
   public void testConstructorFromClass() {
     MailAttachment message = new MailAttachment();
-
     assertEquals(message, new MailAttachment(message));
   }
 
@@ -51,12 +52,14 @@ public class MailAttachmentTest {
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
-    new MailAttachment((JsonObject) null);
+    final MailAttachment attachment = new MailAttachment((JsonObject) null);
+    assertNotNull(attachment);
   }
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromMailAttachmentNull() {
-    new MailAttachment((MailAttachment) null);
+    final MailAttachment attachment = new MailAttachment((MailAttachment) null);
+    assertNotNull(attachment);
   }
 
   @Test
@@ -79,8 +82,6 @@ public class MailAttachmentTest {
     MailAttachment mailAttachment = new MailAttachment();
     assertEquals(mailAttachment, mailAttachment);
     assertEquals(mailAttachment, new MailAttachment());
-    assertFalse(mailAttachment.equals(null));
-    assertFalse(mailAttachment.equals(""));
   }
 
   @Test

@@ -9,7 +9,11 @@ import java.util.Set;
  */
 public class AuthOperationFactory {
 
-  static final Class<?>[] authList = new Class<?>[] {
+  private AuthOperationFactory() {
+    // Avoid direct instantiation.
+  }
+
+  private static final Class<?>[] authList = new Class<?>[] {
       AuthDigestMD5.class,
       AuthCramSHA256.class,
       AuthCramSHA1.class,
@@ -27,7 +31,7 @@ public class AuthOperationFactory {
       for (Field f : fields) {
         f.setAccessible(true);
         String fieldName = f.getName();
-        if (fieldName.equals("AUTH_NAME")) {
+        if ("AUTH_NAME".equals(fieldName)) {
           String authName = (String) f.get(null);
           if (allowedMethods.contains(authName)) {
             classToUse = authClass;

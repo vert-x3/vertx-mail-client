@@ -116,7 +116,7 @@ public class TestSmtpServer {
     try {
       latch.await();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      log.error("interrupted while waiting for countdown latch", e);
     }
   }
 
@@ -145,7 +145,7 @@ public class TestSmtpServer {
       try {
         latch.await();
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        log.error("interrupted while waiting for countdown latch", e);
       }
       netServer = null;
     }
