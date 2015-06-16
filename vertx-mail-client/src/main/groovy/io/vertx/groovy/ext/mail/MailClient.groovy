@@ -44,13 +44,13 @@ public class MailClient {
    * @return MailClient instance that can then be used to send multiple mails
    */
   public static MailClient create(Vertx vertx, Map<String, Object> config) {
-    def ret= new io.vertx.groovy.ext.mail.MailClient(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null));
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**
    * send a single mail via MailClient
    * @param email MailMessage object containing the mail text, from/to, attachments etc (see <a href="../../../../../../../cheatsheet/MailMessage.html">MailMessage</a>)
-   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>}
+   * @param resultHandler will be called when the operation is finished or it fails (may be null to ignore the result)
    * @return this MailClient instance so the method can be used fluently
    */
   public MailClient sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
@@ -58,7 +58,7 @@ public class MailClient {
       public void handle(AsyncResult<io.vertx.ext.mail.MailResult> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result(event.result()?.toJson()?.getMap())
+          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()?.toJson()))
         } else {
           f = InternalHelper.<Map<String, Object>>failure(event.cause())
         }

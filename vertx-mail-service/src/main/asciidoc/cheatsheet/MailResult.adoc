@@ -1,0 +1,14 @@
+== MailResult
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+
+|[[messageID]]`messageID`
+|`String`
+|-
+|[[recipients]]`recipients`
+|`Array of String`
+|-|===

@@ -15,23 +15,23 @@
  */
 /**
  * = Vert.x Mail client (SMTP client implementation)
- * 
+ *
  * Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
  * by external mail server (e.g. googlemail or aol).
  * 
  * The client supports a few additional auth methods like DIGEST-MD5 and has full
  * support for TLS and SSL and is completely asynchronous. The client supports
  * connection pooling to keep connections open for an specific time to be reused.
- * 
+ *
  * == Creating a client
- * 
+ *
  * You can send mails by creating a client that opens SMTP connections from the local jvm.
  *
  * The client uses a configuration object, the default config is created as empty
  * object and will connect to localhost port 25, which should be ok in a standard
  * Linux environment where you have Postfix or similar mail server running on
  * the local machine. For all possible properties of the config object, see below.
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#createClient}
@@ -44,7 +44,7 @@
  * ----
  *
  * == Sending mails
- * 
+ *
  * Once the client object is created, you can use it to send mails. Since the
  * sending of the mails works asynchronous in vert.x, the result handler will be
  * called when the mail operation finishes. You can start many mail send operations
@@ -55,27 +55,27 @@
  * properties from, to, cc, bcc, subject, text, html etc. Depending on which values are set, the
  * format of the generated MIME message will vary. The recipient address properties
  * can either be a single address or a list of addresses.
- * 
+ *
  * The MIME encoder supports us-ascii (7bit) headers/messages and utf8 (usually
  * quoted-printable) headers/messages
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#mailMessage}
  * ----
- * 
+ *
  * Attachments can be created by the MailAttachment object using data stored in a Buffer,
  * this supports base64 attachments.
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#attachment}
  * ----
  * When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
  * the send operation is finished or it failed.
- * 
+ *
  * A mail is sent as follows:
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#sendMail}
@@ -84,16 +84,16 @@
  * == Mail-client data objects
  *
  * === MailMessage properties
- * 
+ *
  * Email fields are Strings using the common formats for email with or without real
  * name
- * 
+ *
  * * `username@example.com`
  * * `username@example.com (Firstname Lastname)`
  * * `Firstname Lastname <username@example.com>`
- * 
+ *
  * The MailMessage object has the following properties
- * 
+ *
  * * `from` String representing the From address and the MAIL FROM field
  * * `to` String or list of String representing the To addresses and the RCPT TO fields
  * * `cc` same as to
@@ -111,7 +111,7 @@
  *
  * === MailAttachment properties
  * The MailAttachment object has the following properties
- * 
+ *
  * * `data` Buffer containing the binary data of the attachment
  * * `contentType` String of the Content-Type of the attachment (e.g. text/plain or text/plain; charset="UTF8", default is application/octet-stream)
  * * `description` String describing the attachment (this is put in the description header of the attachment), optional
@@ -119,9 +119,9 @@
  * * `name` String filename of the attachment (this is put into the disposition and in the contentType headers of the attachment), optional
  *
  * === MailConfig options
- * 
+ *
  * The configuration has the following properties
- * 
+ *
  * * `hostname` the hostname of the smtp server to connect to (default is localhost)
  * * `port` the port of the smtp server to connect to (default is 25)
  * * `startTLS` StartTLSOptions either DISABLED, OPTIONAL or REQUIRED, default is OPTIONAL
@@ -135,13 +135,15 @@
  * * `idleTimeout` int timeout in seconds that a connection is kept open after a mail has been sent (default is 300)
  * * `maxPoolSize` int max number of open connections kept in the pool or to be opened at one time (regardless if pooling is enabled or not), default is 10
  * * `trustAll` boolean whether to accept all certs from the server (default is false)
- * * `netClientOptions` NetClientOptions object to be used when connecting to the server port, this allows for example to set a custom keystore to use a self-defined certificate or a "custom" CA
- * 
+ * * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
+ * * `keyStorePassword` String password used to decrypt the key store
+ * * `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted
+ *
  * === MailResult object
  * The MailResult object has the following members
- * 
+ *
  * * `messageID` the Message-ID of the generated mail
- * * `recipients` the list of recipients the mail was sent to
+ * * `recipients` the list of recipients the mail was sent to (if allowRcptErrors is true, this may be fewer than the intended recipients)
  *
  */
 @Document(fileName = "index.adoc")

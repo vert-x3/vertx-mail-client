@@ -10,6 +10,7 @@ import io.vertx.ext.mail.impl.sasl.AuthOperation;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import io.vertx.ext.mail.impl.sasl.CryptUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 /**
@@ -73,8 +74,16 @@ class SMTPAuthentication {
     // if we have defined a choice of methods, only use these
     // this works for example to avoid plain text pw methods with
     // "CRAM-SHA1 CRAM-MD5"
-    AuthOperation authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(),
-      intersectAllowedMethods());
+    AuthOperation authOperation;
+    try {
+      authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(),
+          intersectAllowedMethods());
+    } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException
+        | NoSuchMethodException | SecurityException ex) {
+      log.warn("authentication factory threw exception", ex);
+      handleError(ex);
+      return;
+    }
 
     if (authOperation != null) {
       authCmdStep(authOperation, null);
@@ -123,6 +132,10 @@ class SMTPAuthentication {
 
   private void handleError(String message) {
     errorHandler.handle(new NoStackTraceThrowable(message));
+  }
+
+  private void handleError(Throwable th) {
+    errorHandler.handle(th);
   }
 
 }

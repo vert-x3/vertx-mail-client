@@ -91,7 +91,7 @@ A mail is sent as follows:
 
 [source,ruby]
 ----
-mailClient.send_mail(message) { |result,result_err|
+mailClient.send_mail(message) { |result_err,result|
   if (result_err == nil)
     puts result
   else
@@ -155,10 +155,12 @@ The configuration has the following properties
 * `idleTimeout` int timeout in seconds that a connection is kept open after a mail has been sent (default is 300)
 * `maxPoolSize` int max number of open connections kept in the pool or to be opened at one time (regardless if pooling is enabled or not), default is 10
 * `trustAll` boolean whether to accept all certs from the server (default is false)
-* `netClientOptions` NetClientOptions object to be used when connecting to the server port, this allows for example to set a custom keystore to use a self-defined certificate or a "custom" CA
+* `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
+* `keyStorePassword` String password used to decrypt the key store
+* `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted
 
 === MailResult object
 The MailResult object has the following members
 
 * `messageID` the Message-ID of the generated mail
-* `recipients` the list of recipients the mail was sent to
+* `recipients` the list of recipients the mail was sent to (if allowRcptErrors is true, this may be fewer than the intended recipients)

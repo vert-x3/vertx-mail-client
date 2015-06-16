@@ -73,6 +73,6 @@ public class MailService extends MailClient {
 
 
   public static MailService newInstance(io.vertx.ext.mail.MailService arg) {
-    return new MailService(arg);
+    return arg != null ? new MailService(arg) : null;
   }
 }

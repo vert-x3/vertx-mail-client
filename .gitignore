@@ -21,3 +21,5 @@ test-tmp
 *.class
 src/gen
 .vertx
+sonar-project.properties
+.sonar*

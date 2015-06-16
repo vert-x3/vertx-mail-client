@@ -1,6 +1,3 @@
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 import java.lang.reflect.Field;
@@ -12,39 +9,39 @@ import java.util.Set;
  */
 public class AuthOperationFactory {
 
-  static final Class<?>[] authList = new Class<?>[]{AuthDigestMD5.class, AuthCramSHA256.class, AuthCramSHA1.class,
-    AuthCramMD5.class, AuthPlain.class, AuthLogin.class};
+  private AuthOperationFactory() {
+    // Avoid direct instantiation.
+  }
 
-  public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
+  private static final Class<?>[] authList = new Class<?>[] {
+      AuthDigestMD5.class,
+      AuthCramSHA256.class,
+      AuthCramSHA1.class,
+      AuthCramMD5.class,
+      AuthPlain.class,
+      AuthLogin.class
+  };
+
+  public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods)
+      throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException,
+      NoSuchMethodException, SecurityException {
     Class<?> classToUse = null;
     for (Class<?> authClass : authList) {
       Field[] fields = authClass.getDeclaredFields();
       for (Field f : fields) {
-        try {
-          f.setAccessible(true);
-          String fieldName = f.getName();
-          if (fieldName.equals("AUTH_NAME")) {
-            String authName = (String) f.get(null);
-            if (allowedMethods.contains(authName)) {
-              classToUse = authClass;
-              break;
-            }
+        f.setAccessible(true);
+        String fieldName = f.getName();
+        if ("AUTH_NAME".equals(fieldName)) {
+          String authName = (String) f.get(null);
+          if (allowedMethods.contains(authName)) {
+            classToUse = authClass;
+            break;
           }
-        } catch (IllegalArgumentException | IllegalAccessException e) {
-          // TODO Auto-generated catch block
-          // Issue #25
-          e.printStackTrace();
         }
       }
     }
     if (classToUse != null) {
-      try {
-        return (AuthOperation) classToUse.getConstructor(String.class, String.class).newInstance(username, password);
-      } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-        | NoSuchMethodException | SecurityException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
-      }
+      return (AuthOperation) classToUse.getConstructor(String.class, String.class).newInstance(username, password);
     }
     return null;
   }

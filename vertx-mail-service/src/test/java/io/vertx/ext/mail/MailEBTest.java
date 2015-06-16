@@ -22,6 +22,7 @@ public class MailEBTest extends SMTPTestDummy {
 
   @Test
   public void mailTest(TestContext testContext) {
+    this.testContext=testContext;
     testSuccess(MailService.createEventBusProxy(vertx, "vertx.mail"));
   }
 

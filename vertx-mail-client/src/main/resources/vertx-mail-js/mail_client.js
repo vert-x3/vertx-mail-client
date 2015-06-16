@@ -40,7 +40,7 @@ var MailClient = function(j_val) {
 
    @public
    @param email {Object} MailMessage object containing the mail text, from/to, attachments etc 
-   @param resultHandler {function} will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>} 
+   @param resultHandler {function} will be called when the operation is finished or it fails (may be null to ignore the result) 
    @return {MailClient} this MailClient instance so the method can be used fluently
    */
   this.sendMail = function(email, resultHandler) {
@@ -87,7 +87,7 @@ var MailClient = function(j_val) {
 MailClient.create = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
-    return new MailClient(JMailClient["create(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null));
+    return utils.convReturnVertxGen(JMailClient["create(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null), MailClient);
   } else utils.invalidArgs();
 };
 

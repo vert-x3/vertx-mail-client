@@ -21,13 +21,13 @@ module VertxMail
     # @return [::VertxMail::MailClient] MailClient instance that can then be used to send multiple mails
     def self.create(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::VertxMail::MailClient.new(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))))
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
       end
       raise ArgumentError, "Invalid arguments when calling create(vertx,config)"
     end
     #  send a single mail via MailClient
     # @param [Hash] email MailMessage object containing the mail text, from/to, attachments etc
-    # @yield will be called when the operation is finished or it fails (may be null to ignore the result) the result JsonObject currently only contains <code>{"result":"success"</code>}
+    # @yield will be called when the operation is finished or it fails (may be null to ignore the result)
     # @return [self]
     def send_mail(email=nil)
       if email.class == Hash && block_given?

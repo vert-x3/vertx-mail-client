@@ -34,7 +34,6 @@ public interface MailClient {
    * @param email         MailMessage object containing the mail text, from/to, attachments etc
    * @param resultHandler will be called when the operation is finished or it fails
    *                      (may be null to ignore the result)
-   *                      the result JsonObject currently only contains {@code {"result":"success"}}
    * @return this MailClient instance so the method can be used fluently
    */
   @Fluent

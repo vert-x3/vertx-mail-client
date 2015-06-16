@@ -1,5 +1,7 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
@@ -18,25 +20,22 @@ class SMTPSendMail {
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
 
   private final SMTPConnection connection;
-  private MailMessage email;
+  private final MailMessage email;
   private final MailConfig config;
-  private final Handler<MailResult> finishedHandler;
-  private final Handler<Throwable> exceptionHandler;
+  private final Handler<AsyncResult<MailResult>> resultHandler;
   private final MailResult mailResult;
 
   private String mailMessage;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<MailResult> finishedHandler,
-               Handler<Throwable> exceptionHandler) {
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<AsyncResult<MailResult>> resultHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
-    this.finishedHandler = finishedHandler;
-    this.exceptionHandler = exceptionHandler;
+    this.resultHandler = resultHandler;
     mailResult = new MailResult();
   }
 
-  void startMail() {
+  void start() {
     if (checkSize()) {
       mailFromCmd();
     }
@@ -45,14 +44,14 @@ class SMTPSendMail {
   /**
    * Check if message size is allowed if size is supported.
    * <p>
-   * returns true if the message is allowed, have to make sure
-   * that when returning from the handleError method it doesn't continue with the mail from
-   * operation
+   * returns true if the message is allowed, have to make sure that when returning from the handleError method it
+   * doesn't continue with the mail from operation
    */
   private boolean checkSize() {
-    if (connection.getCapa().getSize() > 0) {
+    final int size = connection.getCapa().getSize();
+    if (size > 0) {
       createMailMessage();
-      if (mailMessage.length() > connection.getCapa().getSize()) {
+      if (mailMessage.length() > size) {
         handleError("message exceeds allowed size limit");
         return false;
       } else {
@@ -112,17 +111,18 @@ class SMTPSendMail {
     try {
       EmailAddress toAddr = new EmailAddress(recipientAddrs.get(i));
       connection.write("RCPT TO:<" + toAddr.getEmail() + ">", message -> {
-        log.debug("RCPT TO result: " + message);
         if (StatusCode.isStatusOk(message)) {
+          log.debug("RCPT TO result: " + message);
           mailResult.getRecipients().add(toAddr.getEmail());
-          if (i + 1 < recipientAddrs.size()) {
-            rcptToCmd(recipientAddrs, i + 1);
-          } else {
-            dataCmd();
-          }
+          nextRcpt(recipientAddrs, i);
         } else {
-          log.warn("recipient address not accepted: " + message);
-          handleError("recipient address not accepted: " + message);
+          if (config.isAllowRcptErrors()) {
+            log.warn("recipient address not accepted, continuing: " + message);
+            nextRcpt(recipientAddrs, i);
+          } else {
+            log.warn("recipient address not accepted: " + message);
+            handleError("recipient address not accepted: " + message);
+          }
         }
       });
     } catch (IllegalArgumentException e) {
@@ -131,8 +131,21 @@ class SMTPSendMail {
     }
   }
 
+  private void nextRcpt(List<String> recipientAddrs, int i) {
+    if (i + 1 < recipientAddrs.size()) {
+      rcptToCmd(recipientAddrs, i + 1);
+    } else {
+      if (mailResult.getRecipients().size() > 0) {
+        dataCmd();
+      } else {
+        log.warn("no recipient addresses were accepted, not sending mail");
+        handleError("no recipient addresses were accepted, not sending mail");
+      }
+    }
+  }
+
   private void handleError(Throwable throwable) {
-    exceptionHandler.handle(throwable);
+    resultHandler.handle(Future.failedFuture(throwable));
   }
 
   private void handleError(String message) {
@@ -155,16 +168,41 @@ class SMTPSendMail {
     // create the message here if it hasn't been created
     // for the size check above
     createMailMessage();
-    // convert message to escape . at the start of line
-    // TODO: this is probably bad for large messages
-    // Issue #21
-    // TODO: it is probably required to convert \n to \r\n to be completely
-    // SMTP compliant
-    // Issue #22
-    connection.write(mailMessage.replaceAll("\n\\.", "\n..") + "\r\n.", message -> {
+
+    sendLineByLine(0, mailMessage.length());
+  }
+
+  private void sendLineByLine(int index, int length) {
+    while (index < length) {
+      int nextIndex = mailMessage.indexOf('\n', index);
+      String line;
+      if (nextIndex == -1) {
+        line = mailMessage.substring(index);
+        nextIndex = length;
+      } else {
+        line = mailMessage.substring(index, nextIndex);
+        nextIndex++;
+      }
+      if (line.startsWith(".")) {
+        line = "." + line;
+      }
+      final int nextIndexFinal = nextIndex;
+      final boolean mayLog = nextIndex < 1000;
+      if (connection.writeQueueFull()) {
+        connection.writeLineWithDrainHandler(line, mayLog, v -> {
+          sendLineByLine(nextIndexFinal, length);
+        });
+        // call to our handler will finish the whole message, we just return here
+        return;
+      } else {
+        connection.writeLine(line, mayLog);
+        index = nextIndex;
+      }
+    }
+    connection.write(".", message -> {
       log.debug("maildata result: " + message);
       if (StatusCode.isStatusOk(message)) {
-        finishedHandler.handle(mailResult);
+        resultHandler.handle(Future.succeededFuture(mailResult));
       } else {
         log.warn("sending data failed: " + message);
         handleError("sending data failed: " + message);

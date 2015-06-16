@@ -44,8 +44,14 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        connectionPool.getConnection(conn -> sendMessage(message, conn, resultHandler, context),
-                                     t ->  handleError(t, resultHandler, context));
+        connectionPool.getConnection(result -> {
+          if (result.succeeded()) {
+            result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
+            sendMessage(message, result.result(), resultHandler, context);
+          } else {
+            handleError(result.cause(), resultHandler, context);
+          }
+        });
       }
     } else {
       handleError("mail client has been closed", resultHandler, context);
@@ -60,14 +66,15 @@ public class MailClientImpl implements MailClient {
   // Issue #20
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
-                           Context context) {
-    new SMTPSendMail(conn, email, config, mailResult -> {
-      conn.returnToPool();
-      returnResult(Future.succeededFuture(mailResult), resultHandler, context);
-    }, t -> {
-      conn.setBroken();
-      handleError(t, resultHandler, context);
-    }).startMail();
+      Context context) {
+    new SMTPSendMail(conn, email, config, result -> {
+      if (result.succeeded()) {
+        conn.returnToPool();
+      } else {
+        conn.setBroken();
+      }
+      returnResult(result, resultHandler, context);
+    }).start();
   }
 
   // do some validation before we open the connection
@@ -93,7 +100,7 @@ public class MailClientImpl implements MailClient {
   }
 
   private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    log.debug("handleError:" + t);
+    log.debug("handleError", t);
     returnResult(Future.failedFuture(t), resultHandler, context);
   }
 
@@ -114,6 +121,5 @@ public class MailClientImpl implements MailClient {
 
   SMTPConnectionPool getConnectionPool() {
     return connectionPool;
-    
   }
 }

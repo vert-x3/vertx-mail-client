@@ -8,10 +8,10 @@ public class EmailAddressTest {
 
   @Test
   public void testEmail() {
-    checkAddress("user@example.com", "[user@example.com,]");
+    checkAddress("user@example.com", "[user@example.com]");
     checkAddress("user@example.com (a user)", "[user@example.com,a user]");
     checkAddress("user@example.com (\u00e4\u00f6\u00fc)", "[user@example.com,\u00e4\u00f6\u00fc]");
-    checkAddress("<user@example.com>", "[user@example.com,]");
+    checkAddress("<user@example.com>", "[user@example.com]");
     checkAddress("User Name <user@example.com>", "[user@example.com,User Name]");
     // a few quirky examples, all valid though :-)
     checkAddress("user@example.com (\\\"User Name\\\")", "[user@example.com,\\\"User Name\\\"]");
@@ -21,20 +21,15 @@ public class EmailAddressTest {
     checkAddress("\"Last, First\" <user@example.com>", "[user@example.com,\"Last, First\"]");
     checkAddress("Last, First <user@example.com>", "[user@example.com,Last, First]");
     checkAddress("user@example.com (Last, First)", "[user@example.com,Last, First]");
-    // TODO: should we consider this valid?
-    // Issue #28
     // <> can be used as MAIL FROM address
-    // checkAddress("Mailer <>", "");
+    checkAddress("", "[]");
+    checkAddress("<>", "[]");
+    checkAddress("Mailer <>", "[,Mailer]");
   }
 
   private void checkAddress(String input, String string) {
     EmailAddress emailAddress = new EmailAddress(input);
     assertEquals(string, emailAddress.toString());
-  }
-
-  @Test(expected = IllegalArgumentException.class)
-  public void testEmailInvalid() {
-    new EmailAddress("");
   }
 
   @Test(expected = IllegalArgumentException.class)

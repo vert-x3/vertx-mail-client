@@ -20,19 +20,19 @@ public class MailResult {
 
   public MailResult() {
     messageID = null;
-    recipients = new ArrayList<String>();
+    recipients = new ArrayList<>();
   }
 
   public MailResult(MailResult other) {
     messageID = other.messageID;
-    recipients = new ArrayList<String>(other.recipients);
+    recipients = new ArrayList<>(other.recipients);
   }
 
   @SuppressWarnings("unchecked")
   public MailResult(JsonObject json) {
     messageID = json.getString("message_id");
     JsonArray jsonArray = json.getJsonArray("recipients");
-    recipients = jsonArray == null ? new ArrayList<String>() : (List<String>) jsonArray.getList();
+    recipients = jsonArray == null ? new ArrayList<>() : (List<String>) jsonArray.getList();
   }
 
   public JsonObject toJson() {

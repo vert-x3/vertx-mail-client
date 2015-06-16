@@ -11,9 +11,10 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/*
+/**
  * really dumb mock test server that just replays a number of lines
- * as response. this doesn't check any conditions at all.  
+ * as response. It checks the commands sent by the client either as substring or as regexp
+ * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public class TestSmtpServer {
 
@@ -28,9 +29,20 @@ public class TestSmtpServer {
    * set up server with a default reply that works for EHLO and no login with one recipient
    */
   public TestSmtpServer(Vertx vertx) {
-    setDialogue("220 example.com ESMTP", "EHLO", "250-example.com\n" + "250-SIZE 1000000\n" + "250 PIPELINING",
-        "MAIL FROM:", "250 2.1.0 Ok", "RCPT TO:", "250 2.1.5 Ok", "DATA", "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789", "QUIT", "221 2.0.0 Bye");
+    setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n"
+            + "250-SIZE 1000000\n"
+            + "250 PIPELINING",
+        "MAIL FROM:",
+        "250 2.1.0 Ok",
+        "RCPT TO:",
+        "250 2.1.5 Ok",
+        "DATA",
+        "354 End data with <CR><LF>.<CR><LF>",
+        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
+        "221 2.0.0 Bye");
     startServer(vertx);
   }
 
@@ -69,13 +81,15 @@ public class TestSmtpServer {
             if (currentLine < dialogue.length) {
               String thisLine = dialogue[currentLine];
               boolean isRegexp = thisLine.startsWith("^");
-              if (!isRegexp && !inputLine.contains(thisLine)||
-                  isRegexp && !inputLine.matches(thisLine)) {
+              if (!isRegexp && !inputLine.contains(thisLine) || isRegexp && !inputLine.matches(thisLine)) {
                 socket.write("500 didn't expect that command\r\n");
+                log.info("sending 500 didn't expect that command");
+                // stop here
+                lines.set(dialogue.length);
               }
             } else {
-              // socket.write("500 out of lines\r\n");
-            log.info("out of lines, not sending additional reply");
+              log.info("out of lines, sending error reply");
+              socket.write("500 out of lines\r\n");
           }
           if (inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);
@@ -102,21 +116,24 @@ public class TestSmtpServer {
     try {
       latch.await();
     } catch (InterruptedException e) {
-      e.printStackTrace();
+      log.error("interrupted while waiting for countdown latch", e);
     }
   }
 
-  public void setDialogue(String... dialogue) {
+  public TestSmtpServer setDialogue(String... dialogue) {
     this.dialogue = dialogue;
+    return this;
   }
 
-  public void setCloseImmediately(boolean close) {
+  public TestSmtpServer setCloseImmediately(boolean close) {
     closeImmediately = close;
+    return this;
   }
 
-  public void setCloseWaitTime(int time) {
+  public TestSmtpServer setCloseWaitTime(int time) {
     log.debug("setting closeWaitTime to " + time);
     closeWaitTime = time;
+    return this;
   }
 
   // this assumes we are in a @After method of junit
@@ -128,7 +145,7 @@ public class TestSmtpServer {
       try {
         latch.await();
       } catch (InterruptedException e) {
-        e.printStackTrace();
+        log.error("interrupted while waiting for countdown latch", e);
       }
       netServer = null;
     }

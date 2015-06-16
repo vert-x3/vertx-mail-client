@@ -1,7 +1,5 @@
 package io.vertx.ext.mail.impl;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -9,6 +7,8 @@ import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,24 +36,26 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection(conn -> {
-      log.debug("got connection");
-      testContext.assertEquals(1, pool.connCount());
-      pool.close(v1 -> {
-        log.debug("pool.close finished");
-        closeFinished.set(true);
-      });
-      testContext.assertFalse(closeFinished.get(), "connection closed though it was still active");
-      testContext.assertEquals(1, pool.connCount());
-      conn.returnToPool();
-      vertx.setTimer(1000, v -> {
-        testContext.assertTrue(closeFinished.get(), "connection not closed by pool.close()");
-        testContext.assertEquals(0, pool.connCount());
-        async.complete();
-      });
-    }, th -> {
-      log.info("exception", th);
-      testContext.fail(th);
+    pool.getConnection(result -> {
+      if (result.succeeded()) {
+        log.debug("got connection");
+        testContext.assertEquals(1, pool.connCount());
+        pool.close(v1 -> {
+          log.debug("pool.close finished");
+          closeFinished.set(true);
+        });
+        testContext.assertFalse(closeFinished.get(), "connection closed though it was still active");
+        testContext.assertEquals(1, pool.connCount());
+        result.result().returnToPool();
+        vertx.setTimer(1000, v1 -> {
+          testContext.assertTrue(closeFinished.get(), "connection not closed by pool.close()");
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
+        });
+      } else {
+        log.info("exception", result.cause());
+        testContext.fail(result.cause());
+      }
     });
   }
 

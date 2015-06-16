@@ -1,24 +1,23 @@
 package io.vertx.ext.mail;
 
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
+
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 /**
  * test that the SIZE option is added to the MAIL FROM command when ESMTP SIZE is supported
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@RunWith(VertxUnitRunner.class)
 public class MailFromSizeTest extends SMTPTestDummy {
 
   @Test
-  public void mailTest() {
-
-    testSuccess(mailClientDefault(), exampleMessage());
-  }
-
-  @Before
-  public void startSMTP() {
-    super.startSMTP();
+  public void mailTest(TestContext testContext) {
+    this.testContext=testContext;
     smtpServer.setDialogue(
         "220 example.com ESMTP",
         "EHLO",
@@ -34,8 +33,9 @@ public class MailFromSizeTest extends SMTPTestDummy {
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "QUIT",
         "221 2.0.0 Bye");
-
     smtpServer.setCloseImmediately(true);
+
+    testSuccess(mailClientDefault(), exampleMessage());
   }
 
 }

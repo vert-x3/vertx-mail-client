@@ -14,40 +14,38 @@
  * under the License.
  */
 
-/** @module vertx-mail-js/mail_service */
+/** @module vertx-mail-js/mail_client */
 var utils = require('vertx-js/util/utils');
-var MailClient = require('vertx-mail-js/mail_client');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
-var JMailService = io.vertx.ext.mail.MailService;
+var JMailClient = io.vertx.ext.mail.MailClient;
+var MailConfig = io.vertx.ext.mail.MailConfig;
 var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
-
  @class
 */
-var MailService = function(j_val) {
+var MailClient = function(j_val) {
 
-  var j_mailService = j_val;
+  var j_mailClient = j_val;
   var that = this;
-  MailClient.call(this, j_val);
 
   /**
 
    @public
-   @param email {Object} 
-   @param resultHandler {function} 
-   @return {MailService}
+   @param arg0 {Object} 
+   @param arg1 {function} 
+   @return {MailClient}
    */
-  this.sendMail = function(email, resultHandler) {
+  this.sendMail = function(arg0, arg1) {
     var __args = arguments;
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
-      j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
+      j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](arg0 != null ? new MailMessage(new JsonObject(JSON.stringify(arg0))) : null, function(ar) {
       if (ar.succeeded()) {
-        resultHandler(utils.convReturnJson(ar.result().toJson()), null);
+        arg1(utils.convReturnJson(ar.result().toJson()), null);
       } else {
-        resultHandler(null, ar.cause());
+        arg1(null, ar.cause());
       }
     });
       return that;
@@ -62,30 +60,29 @@ var MailService = function(j_val) {
   this.close = function() {
     var __args = arguments;
     if (__args.length === 0) {
-      j_mailService["close()"]();
+      j_mailClient["close()"]();
     } else utils.invalidArgs();
   };
 
   // A reference to the underlying Java delegate
   // NOTE! This is an internal API and must not be used in user code.
   // If you rely on this property your code is likely to break if we change it / remove it without warning.
-  this._jdel = j_mailService;
+  this._jdel = j_mailClient;
 };
 
 /**
- create a proxy of  MailService that delegates to the mail service running somewhere else via the event bus
 
- @memberof module:vertx-mail-js/mail_service
- @param vertx {Vertx} the Vertx instance the proxy will be run in 
- @param address {string} the eb address of the mail service running somewhere, default is "vertx.mail" 
- @return {MailService} MailService instance that can then be used to send multiple mails
+ @memberof module:vertx-mail-js/mail_client
+ @param vertx {Vertx} 
+ @param config {Object} 
+ @return {MailClient}
  */
-MailService.createEventBusProxy = function(vertx, address) {
+MailClient.create = function(vertx, config) {
   var __args = arguments;
-  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return utils.convReturnVertxGen(JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address), MailService);
+  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
+    return utils.convReturnVertxGen(JMailClient["create(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null), MailClient);
   } else utils.invalidArgs();
 };
 
 // We export the Constructor function
-module.exports = MailService;
+module.exports = MailClient;

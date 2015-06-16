@@ -1,5 +1,6 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
@@ -13,8 +14,7 @@ import io.vertx.ext.mail.MailConfig;
 /**
  * SMTP connection to a server.
  * <p>
- * Encapsulate the NetSocket connection and the data writing/reading, but not
- * the protocol itself
+ * Encapsulate the NetSocket connection and the data writing/reading
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
@@ -34,9 +34,10 @@ class SMTPConnection {
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
   private final Vertx vertx;
-  private long idleTimerId;
+  private long idleTimerId = -1;
   private int timeout;
   private boolean keepAlive;
+  private Context context;
 
   SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
     broken = true;
@@ -118,6 +119,36 @@ class SMTPConnection {
     }
   }
 
+  // write single line not expecting a reply
+  void writeLine(String str, boolean mayLog) {
+    if (mayLog) {
+      log.debug(str);
+    }
+    ns.write(str + "\r\n");
+  }
+
+  // write single line not expecting a reply, using drain handler
+  void writeLineWithDrainHandler(String str, boolean mayLog, Handler<Void> handler) {
+    if (mayLog) {
+      log.debug(str);
+    }
+    if (ns.writeQueueFull()) {
+      ns.drainHandler(v -> {
+        // avoid getting confused by being called twice
+        ns.drainHandler(null);
+        ns.write(str + "\r\n");
+        handler.handle(null);
+      });
+    } else {
+      ns.write(str + "\r\n");
+      handler.handle(null);
+    }
+  }
+
+  boolean writeQueueFull() {
+    return ns.writeQueueFull();
+  }
+
   private void handleError(String message) {
     handleError(new NoStackTraceThrowable(message));
   }
@@ -135,6 +166,7 @@ class SMTPConnection {
 
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
+        context = Vertx.currentContext();
         ns = asyncResult.result();
         socketClosed = false;
         ns.exceptionHandler(e -> {
@@ -168,7 +200,7 @@ class SMTPConnection {
             }
             if (!socketShutDown) {
               shutdown();
-              listener.responseEnded(this);
+              listener.dataEnded(this);
             }
           }
         });
@@ -217,29 +249,34 @@ class SMTPConnection {
         quitCloseConnection();
       } else {
         log.debug("returning connection to pool");
-        idle = true;
         commandReplyHandler = null;
-        listener.responseEnded(this);
+        listener.dataEnded(this);
+        log.info("setting error handler to null");
+        errorHandler = null;
       }
     }
   }
 
   /**
-   * send QUIT and close the connection, this operation waits for the success of
-   * the quit command but will close the connection on exception as well
+   * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
+   * connection on exception as well
    */
   void quitCloseConnection() {
     if (!socketShutDown) {
-      log.debug("shutting down connection");
-      // set the connection to in use to avoid it being used by another getConnection operation
-      useConnection();
-      new SMTPQuit(this, v -> {
-        shutdown();
-        log.debug("connection is shut down");
-      }, th -> {
-        shutdown();
-        log.debug("connection is shut down", th);
-      }).start();
+      context.runOnContext(v1 -> {
+        log.debug("shutting down connection");
+        if (socketClosed) {
+          log.debug("connection is already closed, only doing shutdown()");
+          shutdown();
+        } else {
+          // set the connection to in use to avoid it being used by another getConnection operation
+          useConnection();
+          new SMTPQuit(this, v -> {
+            shutdown();
+            log.debug("connection is shut down");
+          }).start();
+        }
+      });
     }
   }
 
@@ -253,6 +290,7 @@ class SMTPConnection {
 
   void setIdleTimer() {
     if (keepAlive) {
+      idle = true;
       log.debug("setting idle timer on connection");
       idleTimerId = vertx.setTimer(timeout * 1000, id -> {
         if (id == idleTimerId) {
@@ -264,13 +302,15 @@ class SMTPConnection {
   }
 
   void cancelIdleTimer() {
-    if (keepAlive) {
-      log.debug("canceling timer on connection");
-      vertx.cancelTimer(idleTimerId);
+    if (keepAlive && idleTimerId != -1) {
+      context.runOnContext(v -> {
+        vertx.cancelTimer(idleTimerId);
+        idleTimerId = -1;
+      });
     }
   }
 
-  /*
+  /**
    * set error handler to a "local" handler to be reset later
    */
   private Handler<Throwable> prevErrorHandler = null;
@@ -283,8 +323,8 @@ class SMTPConnection {
     errorHandler = newHandler;
   }
 
-  /*
-   * reset error handler to default
+  /**
+   * reset error handler to previous
    */
   public void resetErrorHandler() {
     errorHandler = prevErrorHandler;
@@ -300,7 +340,7 @@ class SMTPConnection {
       commandReplyHandler = null;
       log.debug("closing connection");
       shutdown();
-      listener.responseEnded(this);
+      listener.dataEnded(this);
     } else {
       log.debug("connection is already set to broken");
     }
@@ -327,5 +367,13 @@ class SMTPConnection {
    */
   boolean isClosed() {
     return socketClosed;
+  }
+
+  /**
+   * get the context associated with this connection
+   * @return
+   */
+  Context getContext() {
+    return context;
   }
 }

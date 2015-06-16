@@ -25,30 +25,30 @@
  * on the local network by the event bus.
  *
  * === Service client
- * 
+ *
  * The service client only needs the name of the service address as parameter, the
  * default is "vertx.mail".
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#createService}
  * ----
- * 
+ *
  * The behaviour of MailClient and MailService is the same, if you like you can use the
  * MailClient interface to store the MailService instance.
  *
  * A more complete example for sending a mail via the event bus is this:
- * 
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#exampleService}
  * ----
  *
  * == Service listener
- * 
+ *
  * To run the service listener that sends the mails, you need to start it separately
  * e.g. with the vertx command
- * 
+ *
  * [source,shell]
  * ----
  * vertx run service:io.vertx.mail-service

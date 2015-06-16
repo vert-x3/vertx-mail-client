@@ -1,9 +1,10 @@
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.Future;
 
 /**
  * Handle the reset command, this is mostly used to check if the connection is
@@ -14,15 +15,13 @@ import io.vertx.core.logging.LoggerFactory;
 class SMTPReset {
 
   SMTPConnection connection;
-  Handler<Void> finishedHandler;
-  Handler<Throwable> errorHandler;
+  Handler<AsyncResult<Void>> handler;
 
   private static final Logger log = LoggerFactory.getLogger(SMTPReset.class);
 
-  public SMTPReset(SMTPConnection connection, Handler<Void> finishedHandler, Handler<Throwable> errorHandler) {
+  public SMTPReset(SMTPConnection connection, Handler<AsyncResult<Void>> finishedHandler) {
     this.connection = connection;
-    this.finishedHandler = finishedHandler;
-    this.errorHandler = errorHandler;
+    this.handler = finishedHandler;
   }
 
   public void start() {
@@ -49,11 +48,11 @@ class SMTPReset {
    *
    */
   private void finished() {
-    finishedHandler.handle(null);
+    handler.handle(Future.succeededFuture(null));
   }
 
   private void handleError(String message) {
-    errorHandler.handle(new NoStackTraceThrowable(message));
+    handler.handle(Future.failedFuture(message));
   }
 
 }
