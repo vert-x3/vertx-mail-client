@@ -36,7 +36,7 @@ email = {
   'to' => "user@example.com"
 }
 
-mailService.send_mail(email) { |result,result_err|
+mailService.send_mail(email) { |result_err,result|
   puts "mail finished"
   if (result_err == nil)
     puts result

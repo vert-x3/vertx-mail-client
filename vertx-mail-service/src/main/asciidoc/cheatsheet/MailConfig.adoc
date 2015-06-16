@@ -24,8 +24,11 @@
 |[[trustAll]]`trustAll`
 |`Boolean`
 |-
-|[[netClientOptions]]`netClientOptions`
-|`link:NetClientOptions.html[NetClientOptions]`
+|[[keyStore]]`keyStore`
+|`String`
+|-
+|[[keyStorePassword]]`keyStorePassword`
+|`String`
 |-
 |[[authMethods]]`authMethods`
 |`String`
@@ -40,5 +43,8 @@
 |`Number`
 |-
 |[[keepAlive]]`keepAlive`
+|`Boolean`
+|-
+|[[allowRcptErrors]]`allowRcptErrors`
 |`Boolean`
 |-|===
