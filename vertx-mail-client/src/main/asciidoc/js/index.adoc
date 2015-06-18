@@ -21,7 +21,7 @@ the local machine. For all possible properties of the config object, see below.
 var MailClient = require("vertx-mail-js/mail_client");
 var config = {
 };
-var mailClient = MailClient.create(vertx, config);
+var mailClient = MailClient.createShared(vertx, config);
 
 ----
 
@@ -36,7 +36,7 @@ config.port = 587;
 config.starttls = 'REQUIRED';
 config.username = "user";
 config.password = "password";
-var mailClient = MailClient.create(vertx, config);
+var mailClient = MailClient.createShared(vertx, config);
 
 ----
 

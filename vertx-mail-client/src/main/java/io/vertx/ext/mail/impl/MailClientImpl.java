@@ -27,10 +27,19 @@ public class MailClientImpl implements MailClient {
 
   private volatile boolean closed = false;
 
-  public MailClientImpl(Vertx vertx, MailConfig config) {
+  public MailClientImpl(Vertx vertx, MailConfig config, boolean shared) {
     this.vertx = vertx;
     this.config = config;
-    this.connectionPool = new SMTPConnectionPool(vertx, config);
+    if (shared) {
+      SMTPConnectionPool pool = SharedPools.findPool(config);
+      if (pool == null) {
+        pool = new SMTPConnectionPool(vertx, config);
+        SharedPools.storePool(config, pool);
+      }
+      this.connectionPool = pool;
+    } else {
+      this.connectionPool = new SMTPConnectionPool(vertx, config);
+    }
   }
 
   @Override

@@ -38,13 +38,24 @@ public class MailClient {
     return delegate;
   }
   /**
-   * create an instance of MailClient that is running in the local JVM
+   * create an instance of MailClient that is running in the local JVM. This client will share the connection pool with other instances
+   * using the equal MailConfig object
    * @param vertx the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails (see <a href="../../../../../../../cheatsheet/MailConfig.html">MailConfig</a>)
    * @return MailClient instance that can then be used to send multiple mails
    */
-  public static MailClient create(Vertx vertx, Map<String, Object> config) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
+  public static MailClient createShared(Vertx vertx, Map<String, Object> config) {
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
+    return ret;
+  }
+  /**
+   * create an instance of MailClient that is running in the local JVM. This client will not share the connection pool with other instances
+   * @param vertx the Vertx instance the operation will be run in
+   * @param config MailConfig configuration to be used for sending mails (see <a href="../../../../../../../cheatsheet/MailConfig.html">MailConfig</a>)
+   * @return MailClient instance that can then be used to send multiple mails
+   */
+  public static MailClient createNonShared(Vertx vertx, Map<String, Object> config) {
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**

@@ -15,15 +15,26 @@ module VertxMail
     def j_del
       @j_del
     end
-    #  create an instance of MailClient that is running in the local JVM
+    #  create an instance of MailClient that is running in the local JVM. This client will share the connection pool with other instances
+    #  using the equal MailConfig object
     # @param [::Vertx::Vertx] vertx the Vertx instance the operation will be run in
     # @param [Hash] config MailConfig configuration to be used for sending mails
     # @return [::VertxMail::MailClient] MailClient instance that can then be used to send multiple mails
-    def self.create(vertx=nil,config=nil)
+    def self.create_shared(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create(vertx,config)"
+      raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config)"
+    end
+    #  create an instance of MailClient that is running in the local JVM. This client will not share the connection pool with other instances
+    # @param [::Vertx::Vertx] vertx the Vertx instance the operation will be run in
+    # @param [Hash] config MailConfig configuration to be used for sending mails
+    # @return [::VertxMail::MailClient] MailClient instance that can then be used to send multiple mails
+    def self.create_non_shared(vertx=nil,config=nil)
+      if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
+      end
+      raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
     end
     #  send a single mail via MailClient
     # @param [Hash] email MailMessage object containing the mail text, from/to, attachments etc

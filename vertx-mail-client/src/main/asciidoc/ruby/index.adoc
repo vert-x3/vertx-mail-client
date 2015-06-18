@@ -21,7 +21,7 @@ the local machine. For all possible properties of the config object, see below.
 require 'vertx-mail/mail_client'
 config = {
 }
-mailClient = VertxMail::MailClient.create(vertx, config)
+mailClient = VertxMail::MailClient.create_shared(vertx, config)
 
 ----
 
@@ -36,7 +36,7 @@ config['port'] = 587
 config['starttls'] = :REQUIRED
 config['username'] = "user"
 config['password'] = "password"
-mailClient = VertxMail::MailClient.create(vertx, config)
+mailClient = VertxMail::MailClient.create_shared(vertx, config)
 
 ----
 
