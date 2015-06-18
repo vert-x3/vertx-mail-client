@@ -290,30 +290,6 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
     });
   }
 
-  @Test
-  public final void testIdleConnectionTimeout(TestContext testContext) {
-    final MailConfig config = configNoSSL().setIdleTimeout(1);
-    Async async = testContext.async();
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
-    testContext.assertEquals(0, pool.connCount());
-    pool.getConnection(result -> {
-      if (result.succeeded()) {
-        log.debug("1st connection");
-        testContext.assertEquals(1, pool.connCount());
-        result.result().returnToPool();
-        testContext.assertEquals(1, pool.connCount());
-        vertx.setTimer(1500, v -> {
-          testContext.assertEquals(0, pool.connCount());
-          log.debug("connection pool is empty");
-          pool.close(v2 -> async.complete());
-        });
-      } else {
-        log.info(result.cause());
-        testContext.fail(result.cause());
-      }
-    });
-  }
-
   /**
    * test what happens if the server closes the connection while idle
    * <p>
