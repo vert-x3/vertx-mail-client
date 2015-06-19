@@ -3,14 +3,14 @@
  */
 package io.vertx.ext.mail;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import io.vertx.core.json.JsonObject;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -59,7 +59,7 @@ public class MailResultTest {
     MailResult result = new MailResult();
     result.setMessageID("12345");
     result.setRecipients(Arrays.asList("user1","user2"));
-    assertEquals("{\"message_id\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toJson().encode());
+    assertEquals("{\"messageId\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toJson().encode());
   }
 
   /**
@@ -121,7 +121,7 @@ public class MailResultTest {
     MailResult result = new MailResult();
     result.setMessageID("12345");
     result.setRecipients(Arrays.asList("user1","user2"));
-    assertEquals("{\"message_id\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toString());
+    assertEquals("{\"messageId\":\"12345\",\"recipients\":[\"user1\",\"user2\"]}", result.toString());
   }
 
 }

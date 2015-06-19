@@ -19,7 +19,7 @@ public class MailAttachmentTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailAttachment().toJson().encode());
-    assertEquals("{\"data\":\"ZGF0YQ==\",\"content-type\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\"}",
+    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\"}",
       new MailAttachment()
         .setData(Buffer.buffer("data"))
         .setContentType("text/plain")

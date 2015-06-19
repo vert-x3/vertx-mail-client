@@ -145,15 +145,15 @@ public class MailConfig {
     username = config.getString("username");
     password = config.getString("password");
     ssl = config.getBoolean("ssl", false);
-    trustAll = config.getBoolean("trustall", false);
-    keyStore = config.getString("key_store");
-    keyStorePassword = config.getString("key_store_password");
-    authMethods = config.getString("auth_methods");
-    ownHostname = config.getString("own_hostname");
-    maxPoolSize = config.getInteger("max_pool_size", DEFAULT_MAX_POOL_SIZE);
-    idleTimeout = config.getInteger("idle_timeout", DEFAULT_IDLE_TIMEOUT);
-    keepAlive = config.getBoolean("keep_alive", true);
-    allowRcptErrors = config.getBoolean("allow_rcpt_errors", false);
+    trustAll = config.getBoolean("trustAll", false);
+    keyStore = config.getString("keyStore");
+    keyStorePassword = config.getString("keyStorePassword");
+    authMethods = config.getString("authMethods");
+    ownHostname = config.getString("ownHostname");
+    maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
+    idleTimeout = config.getInteger("idleTimeout", DEFAULT_IDLE_TIMEOUT);
+    keepAlive = config.getBoolean("keepAlive", true);
+    allowRcptErrors = config.getBoolean("allowRcptErrors", false);
   }
 
   /**
@@ -534,27 +534,27 @@ public class MailConfig {
       json.put("ssl", ssl);
     }
     if (trustAll) {
-      json.put("trustall", trustAll);
+      json.put("trustAll", trustAll);
     }
     if (keyStore != null) {
-      json.put("key_store", keyStore);
+      json.put("keyStore", keyStore);
     }
     if (keyStorePassword != null) {
-      json.put("key_store_password", keyStorePassword);
+      json.put("keyStorePassword", keyStorePassword);
     }
     if (authMethods != null) {
-      json.put("auth_methods", authMethods);
+      json.put("authMethods", authMethods);
     }
     if (ownHostname != null) {
-      json.put("own_hostname", ownHostname);
+      json.put("ownHostname", ownHostname);
     }
-    json.put("max_pool_size", maxPoolSize);
-    json.put("idle_timeout", idleTimeout);
+    json.put("maxPoolSize", maxPoolSize);
+    json.put("idleTimeout", idleTimeout);
     if (!keepAlive) {
-      json.put("keep_alive", keepAlive);
+      json.put("keepAlive", keepAlive);
     }
     if (allowRcptErrors) {
-      json.put("allow_rcpt_errors", allowRcptErrors);
+      json.put("allowRcptErrors", allowRcptErrors);
     }
 
     return json;
