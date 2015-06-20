@@ -53,7 +53,7 @@ public class MailAttachment {
     Objects.requireNonNull(json);
     this.data = json.getBinary("data") == null ? null : Buffer.buffer(json.getBinary("data"));
     this.name = json.getString("name");
-    this.contentType = json.getString("content-type");
+    this.contentType = json.getString("contentType");
     this.disposition = json.getString("disposition");
     this.description = json.getString("description");
   }
@@ -172,7 +172,7 @@ public class MailAttachment {
       putIfNotNull(json, "data", data.getBytes());
     }
     putIfNotNull(json, "name", name);
-    putIfNotNull(json, "content-type", contentType);
+    putIfNotNull(json, "contentType", contentType);
     putIfNotNull(json, "disposition", disposition);
     putIfNotNull(json, "description", description);
     return json;
