@@ -16,12 +16,12 @@
 /**
  * = Vert.x Mail client (SMTP client implementation)
  *
- * Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
- * by external mail server (e.g. googlemail or aol).
- * 
+ * Vert.x client for sending SMTP emails via a local mail server
+ * (e.g. postfix) or by external mail server (e.g. googlemail or aol).
+ *
  * The client supports a few additional auth methods like DIGEST-MD5 and has full
  * support for TLS and SSL and is completely asynchronous. The client supports
- * connection pooling to keep connections open for an specific time to be reused.
+ * connection pooling to keep connections open to be reused.
  *
  * == Creating a client
  *
@@ -32,6 +32,11 @@
  * Linux environment where you have Postfix or similar mail server running on
  * the local machine. For all possible properties of the config object, see below.
  *
+ * The client can use a connection pool of the SMTP connections to get rid of the overhead of
+ * connecting each time to the server, negotiating TLS and login (this function can be
+ * turned off by setting keepAlive = false). A client can either be shared or non-shared,
+ * if it is shared, one connection pool will be used for all clients using the same config.
+ *
  * [source,$lang]
  * ----
  * {@link examples.Examples#createClient}
@@ -41,6 +46,14 @@
  * [source,$lang]
  * ----
  * {@link examples.Examples#createClient2}
+ * ----
+ *
+ * The unshared client can be created the same way, it has a different connection pool for
+ * each client instance.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#createNonsharedClient}
  * ----
  *
  * == Sending mails

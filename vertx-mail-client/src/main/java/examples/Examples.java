@@ -32,6 +32,11 @@ public class Examples {
     MailClient mailClient = MailClient.createShared(vertx, config);
   }
 
+  public void createNonsharedClient(Vertx vertx) {
+    MailConfig config = new MailConfig();
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
+  }
+
   public void mailMessage(Vertx vertx) {
     MailMessage message = new MailMessage();
     message.setFrom("user@example.com (Example User)");
