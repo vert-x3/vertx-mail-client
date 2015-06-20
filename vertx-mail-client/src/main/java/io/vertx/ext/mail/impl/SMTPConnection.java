@@ -157,8 +157,11 @@ class SMTPConnection {
     broken = false;
     idle = false;
 
+    log.debug("client.connect()");
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
+      log.debug("connect() finished");
       if (asyncResult.succeeded()) {
+        log.debug("connect() succeeded");
         context = Vertx.currentContext();
         ns = asyncResult.result();
         socketClosed = false;
@@ -208,6 +211,7 @@ class SMTPConnection {
             currentHandler.handle(buffer.toString());
           }
         });
+        log.debug("ns.handler()");
         ns.handler(mlp);
       } else {
         log.error("exception on connect", asyncResult.cause());
