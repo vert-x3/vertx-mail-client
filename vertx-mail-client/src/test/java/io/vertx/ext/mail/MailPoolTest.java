@@ -23,7 +23,7 @@ public class MailPoolTest extends SMTPTestWiser {
   public void mailTest(TestContext context) {
     Async async = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -61,7 +61,7 @@ public class MailPoolTest extends SMTPTestWiser {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -102,7 +102,7 @@ public class MailPoolTest extends SMTPTestWiser {
 
       log.info("starting");
 
-      MailClient mailClient = MailClient.create(vertx, configNoSSL());
+      MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
       MailMessage email = exampleMessage();
 

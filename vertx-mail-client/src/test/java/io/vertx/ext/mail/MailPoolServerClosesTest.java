@@ -31,7 +31,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -78,7 +78,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -136,7 +136,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
@@ -194,7 +194,7 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     Async mail1 = context.async();
     Async mail2 = context.async();
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 

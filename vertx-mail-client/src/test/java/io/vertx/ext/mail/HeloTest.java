@@ -98,7 +98,7 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void connectionRefusedTest(TestContext testContext) {
     this.testContext=testContext;
-    testException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
+    testException(MailClient.createNonShared(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test

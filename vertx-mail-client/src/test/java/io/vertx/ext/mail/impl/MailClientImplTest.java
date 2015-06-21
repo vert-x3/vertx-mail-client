@@ -24,14 +24,9 @@ public class MailClientImplTest extends VertxTestBase {
 
   private static final Logger log = LoggerFactory.getLogger(MailClientImplTest.class);
 
-  /**
-   * Test method for
-   * {@link MailClientImpl#MailClientImpl(io.vertx.core.Vertx, io.vertx.ext.mail.MailConfig)}
-   * .
-   */
   @Test
   public final void testMailClientImpl(TestContext testContext) {
-    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
     testContext.assertNotNull(mailClient);
   }
 
@@ -40,13 +35,13 @@ public class MailClientImplTest extends VertxTestBase {
    */
   @Test
   public final void testClose(TestContext testContext) {
-    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
     mailClient.close();
   }
 
   @Test(expected=IllegalStateException.class)
   public final void test2xClose(TestContext testContext) {
-    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
     mailClient.close();
     mailClient.close();
   }
@@ -54,7 +49,7 @@ public class MailClientImplTest extends VertxTestBase {
   @Test
   public final void testClosedSend(TestContext testContext) {
     Async async = testContext.async();
-    MailClient mailClient = new MailClientImpl(vertx, new MailConfig());
+    MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
     mailClient.close();
     mailClient.sendMail(new MailMessage(), result -> {
       if (result.succeeded()) {

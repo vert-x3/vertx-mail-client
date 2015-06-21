@@ -21,7 +21,7 @@ the local machine. For all possible properties of the config object, see below.
 [source,java]
 ----
 MailConfig config = new MailConfig();
-MailClient mailClient = MailClient.create(vertx, config);
+MailClient mailClient = MailClient.createNonShared(vertx, config);
 ----
 
 A more elaborate example using a mailserver that requires login via TLS
@@ -33,7 +33,7 @@ config.setPort(587);
 config.setStarttls(StartTLSOptions.REQUIRED);
 config.setUsername("user");
 config.setPassword("password");
-MailClient mailClient = MailClient.create(vertx, config);
+MailClient mailClient = MailClient.createNonShared(vertx, config);
 ----
 
 == Sending mails

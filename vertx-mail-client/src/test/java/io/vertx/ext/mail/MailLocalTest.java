@@ -24,24 +24,24 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTestTLSTrustAll(TestContext testContext) {
     this.testContext=testContext;
-    MailClient mailClient = MailClient.create(vertx,
-        configLogin().setStarttls(StartTLSOptions.REQUIRED).setTrustAll(true));
+    MailClient mailClient = MailClient.createNonShared(vertx,
+      configLogin().setStarttls(StartTLSOptions.REQUIRED).setTrustAll(true));
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
   @Test
   public void mailTestTLSNoTrust(TestContext testContext) {
     this.testContext=testContext;
-    MailClient mailClient = MailClient.create(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
+    MailClient mailClient = MailClient.createNonShared(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
     testException(mailClient, exampleMessage());
   }
 
   @Test
   public void mailTestTLSCorrectCert(TestContext testContext) {
     this.testContext=testContext;
-    MailClient mailClient = MailClient.create(vertx,
-        configLogin().setStarttls(StartTLSOptions.REQUIRED).setKeyStore("src/test/resources/certs/keystore.jks")
-            .setKeyStorePassword("password"));
+    MailClient mailClient = MailClient.createNonShared(vertx,
+      configLogin().setStarttls(StartTLSOptions.REQUIRED).setKeyStore("src/test/resources/certs/keystore.jks")
+        .setKeyStorePassword("password"));
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 

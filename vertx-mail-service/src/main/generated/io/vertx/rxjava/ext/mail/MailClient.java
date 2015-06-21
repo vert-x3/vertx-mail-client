@@ -39,8 +39,18 @@ public class MailClient {
     return delegate;
   }
 
-  public static MailClient create(Vertx vertx, MailConfig config) { 
-    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx) vertx.getDelegate(), config));
+  public static MailClient createNonShared(Vertx vertx, MailConfig config) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
+    return ret;
+  }
+
+  public static MailClient createShared(Vertx vertx, MailConfig config, String poolName) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config, poolName));
+    return ret;
+  }
+
+  public static MailClient createShared(Vertx vertx, MailConfig config) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
     return ret;
   }
 

@@ -1,12 +1,10 @@
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.shareddata.LocalMap;
+import io.vertx.core.shareddata.Shareable;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
@@ -21,21 +19,28 @@ public class MailClientImpl implements MailClient {
 
   private static final Logger log = LoggerFactory.getLogger(MailClientImpl.class);
 
+  private static final String POOL_LOCAL_MAP_NAME = "__vertx.MailClient.pools";
+
   private final Vertx vertx;
   private final MailConfig config;
   private final SMTPConnectionPool connectionPool;
+  private final MailHolder holder;
 
   private volatile boolean closed = false;
 
-  public MailClientImpl(Vertx vertx, MailConfig config) {
+  public MailClientImpl(Vertx vertx, MailConfig config, String poolName) {
     this.vertx = vertx;
     this.config = config;
-    this.connectionPool = new SMTPConnectionPool(vertx, config);
+    this.holder = lookupHolder(poolName, config);
+    this.connectionPool = holder.pool();
   }
 
   @Override
   public void close() {
-    connectionPool.close();
+    if (closed) {
+      throw new IllegalStateException("Already closed");
+    }
+    holder.close();
     closed = true;
   }
 
@@ -121,5 +126,56 @@ public class MailClientImpl implements MailClient {
 
   SMTPConnectionPool getConnectionPool() {
     return connectionPool;
+  }
+
+  private MailHolder lookupHolder(String poolName, MailConfig config) {
+    synchronized (vertx) {
+      LocalMap<String, MailHolder> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
+      MailHolder theHolder = map.get(poolName);
+      if (theHolder == null) {
+        theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName));
+        map.put(poolName, theHolder);
+      } else {
+        theHolder.incRefCount();
+      }
+      return theHolder;
+    }
+  }
+
+  private void removeFromMap(LocalMap<String, MailHolder> map, String dataSourceName) {
+    synchronized (vertx) {
+      map.remove(dataSourceName);
+      if (map.isEmpty()) {
+        map.close();
+      }
+    }
+  }
+
+  private static class MailHolder implements Shareable {
+    final SMTPConnectionPool pool;
+    final Runnable closeRunner;
+    int refCount = 1;
+
+    public MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
+      this.closeRunner = closeRunner;
+      this.pool= new SMTPConnectionPool(vertx, config);
+    }
+
+    SMTPConnectionPool pool() {
+      return pool;
+    }
+
+    synchronized void incRefCount() {
+      refCount++;
+    }
+
+    synchronized void close() {
+      if (--refCount == 0) {
+        pool.close();
+        if (closeRunner != null) {
+          closeRunner.run();
+        }
+      }
+    }
   }
 }

@@ -21,6 +21,8 @@ var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMailClient = io.vertx.ext.mail.MailClient;
 var MailConfig = io.vertx.ext.mail.MailConfig;
+var MailConfig = io.vertx.ext.mail.MailConfig;
+var MailConfig = io.vertx.ext.mail.MailConfig;
 var MailMessage = io.vertx.ext.mail.MailMessage;
 
 /**
@@ -77,17 +79,36 @@ var MailClient = function(j_val) {
 };
 
 /**
- create an instance of MailClient that is running in the local JVM
+ create a non shared instance of the mail client
 
  @memberof module:vertx-mail-js/mail_client
  @param vertx {Vertx} the Vertx instance the operation will be run in 
  @param config {Object} MailConfig configuration to be used for sending mails 
  @return {MailClient} MailClient instance that can then be used to send multiple mails
  */
-MailClient.create = function(vertx, config) {
+MailClient.createNonShared = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
-    return utils.convReturnVertxGen(JMailClient["create(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null), MailClient);
+    return utils.convReturnVertxGen(JMailClient["createNonShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null), MailClient);
+  } else utils.invalidArgs();
+};
+
+/**
+ Create a Mail client which shares its data source with any other Mongo clients created with the same
+ pool name
+
+ @memberof module:vertx-mail-js/mail_client
+ @param vertx {Vertx} the Vert.x instance 
+ @param config {Object} the configuration 
+ @param poolName {string} the pool name 
+ @return {MailClient} the client
+ */
+MailClient.createShared = function() {
+  var __args = arguments;
+  if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object') {
+    return utils.convReturnVertxGen(JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null), MailClient);
+  }else if (__args.length === 3 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'object' && typeof __args[2] === 'string') {
+    return utils.convReturnVertxGen(JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig,java.lang.String)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null, __args[2]), MailClient);
   } else utils.invalidArgs();
 };
 
