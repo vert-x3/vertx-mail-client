@@ -18,26 +18,14 @@ import io.vertx.ext.mail.impl.MailClientImpl;
 public interface MailClient {
 
   /**
-   * create an instance of MailClient that is running in the local JVM. This client will share the connection pool with other instances
-   * using the equal MailConfig object
+   * create an instance of MailClient that is running in the local JVM
    *
    * @param vertx  the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails
    * @return MailClient instance that can then be used to send multiple mails
    */
-  static MailClient createShared(Vertx vertx, MailConfig config) {
-    return new MailClientImpl(vertx, config, true);
-  }
-
-  /**
-   * create an instance of MailClient that is running in the local JVM. This client will not share the connection pool with other instances
-   *
-   * @param vertx  the Vertx instance the operation will be run in
-   * @param config MailConfig configuration to be used for sending mails
-   * @return MailClient instance that can then be used to send multiple mails
-   */
-  static MailClient createNonShared(Vertx vertx, MailConfig config) {
-    return new MailClientImpl(vertx, config, false);
+  static MailClient create(Vertx vertx, MailConfig config) {
+    return new MailClientImpl(vertx, config);
   }
 
   /**

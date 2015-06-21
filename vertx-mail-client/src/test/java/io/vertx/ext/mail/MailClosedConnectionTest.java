@@ -32,7 +32,7 @@ public class MailClosedConnectionTest {
 
     Async async = context.async();
 
-    MailClient mailClient = MailClient.createShared(vertx, mailConfig());
+    MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email = new MailMessage()
       .setFrom("user@example.com")
@@ -58,7 +58,7 @@ public class MailClosedConnectionTest {
 
     Async async = context.async();
 
-    MailClient mailClient = MailClient.createShared(vertx, mailConfig());
+    MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email = new MailMessage()
       .setFrom("user@example.com")

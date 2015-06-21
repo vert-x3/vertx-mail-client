@@ -23,7 +23,7 @@ public class MailServiceVerticle extends AbstractVerticle {
   @Override
   public void start() {
 
-    service = new MailServiceImpl(MailClient.createShared(vertx, new MailConfig(config())));
+    service = new MailServiceImpl(MailClient.create(vertx, new MailConfig(config())));
 
     // And register it on the event bus against the configured address
     final String address = config().getString("address");
