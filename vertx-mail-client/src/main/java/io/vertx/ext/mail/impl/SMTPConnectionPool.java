@@ -15,7 +15,6 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
@@ -30,8 +29,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private final MailConfig config;
   private boolean closed = false;
   private int connCount;
-  private final AtomicInteger useCounter = new AtomicInteger(0); 
-  
+
   private Handler<Void> closeFinishedHandler;
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
@@ -64,18 +62,12 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   synchronized void close(Handler<Void> finishedHandler) {
-    if (useCounter.decrementAndGet()>0) {
-      if (finishedHandler != null) {
-        finishedHandler.handle(null);
-      }
+    if (closed) {
+      throw new IllegalStateException("pool is already closed");
     } else {
-      if (closed) {
-        throw new IllegalStateException("pool is already closed");
-      } else {
-        closed = true;
-        closeFinishedHandler = finishedHandler;
-        closeAllConnections();
-      }
+      closed = true;
+      closeFinishedHandler = finishedHandler;
+      closeAllConnections();
     }
   }
 
@@ -176,7 +168,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
           waiter.handler.handle(Future.succeededFuture(conn));
         } else {
           log.debug("keeping connection idle");
-          conn.setIdle();
+          conn.setIdleTimer();
         }
       }
     }
@@ -232,19 +224,5 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     private Waiter(Handler<AsyncResult<SMTPConnection>> handler) {
       this.handler = handler;
     }
-  }
-
-  /**
-   * 
-   */
-  public void use() {
-    useCounter.incrementAndGet();
-  }
-
-  /**
-   * @return
-   */
-  public boolean isClosed() {
-    return closed;
   }
 }

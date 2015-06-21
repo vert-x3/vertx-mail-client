@@ -15,20 +15,11 @@ module VertxMail
     # @param [::Vertx::Vertx] vertx 
     # @param [Hash] config 
     # @return [::VertxMail::MailClient]
-    def self.create_shared(vertx=nil,config=nil)
+    def self.create(vertx=nil,config=nil)
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
+        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:create, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config)"
-    end
-    # @param [::Vertx::Vertx] vertx 
-    # @param [Hash] config 
-    # @return [::VertxMail::MailClient]
-    def self.create_non_shared(vertx=nil,config=nil)
-      if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
-        return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
-      end
-      raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
+      raise ArgumentError, "Invalid arguments when calling create(vertx,config)"
     end
     # @param [Hash] arg0 
     # @yield 

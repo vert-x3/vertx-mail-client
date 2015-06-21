@@ -193,7 +193,7 @@ public class MailAuthTest extends SMTPTestDummy {
       "250-example.com\n" +
         "250 AUTH PLAIN");
 
-    testException(MailClient.createShared(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
+    testException(MailClient.create(vertx, defaultConfig().setLogin(LoginOption.REQUIRED)));
   }
 
   @Test
@@ -219,7 +219,7 @@ public class MailAuthTest extends SMTPTestDummy {
       "QUIT",
       "221 2.0.0 Bye");
 
-    testSuccess(MailClient.createShared(vertx, configLogin().setAuthMethods("LOGIN CRAM-MD5")));
+    testSuccess(MailClient.create(vertx, configLogin().setAuthMethods("LOGIN CRAM-MD5")));
   }
 
   @Test
@@ -230,7 +230,7 @@ public class MailAuthTest extends SMTPTestDummy {
       "250-example.com\n" +
         "250 AUTH PLAIN LOGIN");
 
-    testException(MailClient.createShared(vertx, configLogin().setAuthMethods("DIGEST-MD5 CRAM-MD5")));
+    testException(MailClient.create(vertx, configLogin().setAuthMethods("DIGEST-MD5 CRAM-MD5")));
   }
 
 }

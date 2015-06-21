@@ -21,8 +21,8 @@ public class TestMailClient implements MailClient {
    * @param vertx
    * @param config
    */
-  public TestMailClient(Vertx vertx, MailConfig config, boolean shared) {
-    mailClient = new MailClientImpl(vertx, config, shared);
+  public TestMailClient(Vertx vertx, MailConfig config) {
+    mailClient = new MailClientImpl(vertx, config);
   }
 
   /* (non-Javadoc)

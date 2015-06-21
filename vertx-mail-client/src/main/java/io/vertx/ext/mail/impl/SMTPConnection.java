@@ -33,6 +33,10 @@ class SMTPConnection {
   private final NetClient client;
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
+  private final Vertx vertx;
+  private long idleTimerId = -1;
+  private int timeout;
+  private boolean keepAlive;
   private Context context;
 
   SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
@@ -42,6 +46,7 @@ class SMTPConnection {
     socketClosed = false;
     socketShutDown = false;
     this.client = client;
+    this.vertx = vertx;
     this.listener = listener;
   }
 
@@ -156,12 +161,11 @@ class SMTPConnection {
     this.errorHandler = errorHandler;
     broken = false;
     idle = false;
+    timeout = config.getIdleTimeout();
+    keepAlive = config.isKeepAlive();
 
-    log.debug("client.connect()");
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
-      log.debug("connect() finished");
       if (asyncResult.succeeded()) {
-        log.debug("connect() succeeded");
         context = Vertx.currentContext();
         ns = asyncResult.result();
         socketClosed = false;
@@ -211,7 +215,6 @@ class SMTPConnection {
             currentHandler.handle(buffer.toString());
           }
         });
-        log.debug("ns.handler()");
         ns.handler(mlp);
       } else {
         log.error("exception on connect", asyncResult.cause());
@@ -282,13 +285,29 @@ class SMTPConnection {
    */
   public void useConnection() {
     idle = false;
+    cancelIdleTimer();
   }
 
-  /**
-   * mark a connection as no longer in use
-   */
-  public void setIdle() {
-    idle = true;
+  void setIdleTimer() {
+    if (keepAlive) {
+      idle = true;
+      log.debug("setting idle timer on connection");
+      idleTimerId = vertx.setTimer(timeout * 1000, id -> {
+        if (id == idleTimerId) {
+          log.debug("idle timeout reached, closing connection");
+          quitCloseConnection();
+        }
+      });
+    }
+  }
+
+  void cancelIdleTimer() {
+    if (keepAlive && idleTimerId != -1) {
+      context.runOnContext(v -> {
+        vertx.cancelTimer(idleTimerId);
+        idleTimerId = -1;
+      });
+    }
   }
 
   /**

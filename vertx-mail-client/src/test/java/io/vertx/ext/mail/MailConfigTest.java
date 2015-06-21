@@ -10,7 +10,7 @@ public class MailConfigTest {
   @Test
   public void toJsonTest() {
     MailConfig mailConfig = new MailConfig();
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10}", mailConfig
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"idleTimeout\":300}", mailConfig
       .toJson().toString());
   }
 
@@ -19,7 +19,7 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername("username").setPassword("password").setSsl(true);
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"maxPoolSize\":10}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"maxPoolSize\":10,\"idleTimeout\":300}",
       mailConfig.toJson().toString());
   }
 
@@ -27,7 +27,7 @@ public class MailConfigTest {
   public void toJsonTest3() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname(null).setPort(0).setStarttls(null).setLogin(null);
-    assertEquals("{\"port\":0,\"maxPoolSize\":10}", mailConfig.toJson().toString());
+    assertEquals("{\"port\":0,\"maxPoolSize\":10,\"idleTimeout\":300}", mailConfig.toJson().toString());
   }
 
   @Test
@@ -37,7 +37,7 @@ public class MailConfigTest {
     mailConfig.setAuthMethods("PLAIN");
     mailConfig.setOwnHostname("example.com");
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustAll\":true,\"authMethods\":\"PLAIN\",\"ownHostname\":\"example.com\",\"maxPoolSize\":10}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustAll\":true,\"authMethods\":\"PLAIN\",\"ownHostname\":\"example.com\",\"maxPoolSize\":10,\"idleTimeout\":300}",
       mailConfig.toJson().toString());
   }
 
@@ -47,7 +47,7 @@ public class MailConfigTest {
     mailConfig.setKeepAlive(false);
     mailConfig.setAllowRcptErrors(true);
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"keepAlive\":false,\"allowRcptErrors\":true}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"idleTimeout\":300,\"keepAlive\":false,\"allowRcptErrors\":true}",
       mailConfig.toJson().toString());
   }
 
@@ -57,7 +57,7 @@ public class MailConfigTest {
     mailConfig.setKeyStore("keyStore");
     mailConfig.setKeyStorePassword("keyStorePassword");
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"keyStore\":\"keyStore\",\"keyStorePassword\":\"keyStorePassword\",\"maxPoolSize\":10}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"keyStore\":\"keyStore\",\"keyStorePassword\":\"keyStorePassword\",\"maxPoolSize\":10,\"idleTimeout\":300}",
       mailConfig.toJson().toString());
   }
 
@@ -75,14 +75,14 @@ public class MailConfigTest {
   public void newJsonEmptyTest() {
     JsonObject json = new JsonObject("{}");
     MailConfig mailConfig = new MailConfig(json);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"maxPoolSize\":10}", mailConfig.toJson().encode());
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"maxPoolSize\":10,\"idleTimeout\":300}", mailConfig.toJson().encode());
   }
 
   @Test
   public void testConstructorFromMailConfig() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname("asdfasdf").setPort(1234);
-    assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10}",
+    assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"idleTimeout\":300}",
       new MailConfig(mailConfig).toJson().encode());
   }
 
@@ -216,6 +216,18 @@ public class MailConfigTest {
   @Test(expected = IllegalArgumentException.class)
   public void testMaxPoolSizeIllegal() {
     new MailConfig().setMaxPoolSize(0);
+  }
+
+  @Test
+  public void testIdleTimeout() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setIdleTimeout(99);
+    assertEquals(99, mailConfig.getIdleTimeout());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public void testIdleTimeoutIllegal() {
+    new MailConfig().setIdleTimeout(0);
   }
 
   @Test

@@ -43,21 +43,21 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * @return
    */
   protected MailClient mailClientDefault() {
-    return MailClient.createShared(vertx, defaultConfig());
+    return MailClient.create(vertx, defaultConfig());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientLogin() {
-    return MailClient.createShared(vertx, configLogin());
+    return MailClient.create(vertx, configLogin());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientLogin(String user, String pw) {
-    return MailClient.createShared(vertx, configLogin(user, pw));
+    return MailClient.create(vertx, configLogin(user, pw));
   }
 
   /**
@@ -71,21 +71,21 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * @return
    */
   protected MailClient mailClientTLS() {
-    return MailClient.createShared(vertx, configTLS());
+    return MailClient.create(vertx, configTLS());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientTLSTrustAll() {
-    return MailClient.createShared(vertx, configTLSTrustAll());
+    return MailClient.create(vertx, configTLSTrustAll());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientNoSSL() {
-    return MailClient.createShared(vertx, configNoSSL());
+    return MailClient.create(vertx, configNoSSL());
   }
 
   /**
