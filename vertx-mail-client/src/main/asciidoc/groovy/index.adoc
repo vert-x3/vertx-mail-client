@@ -22,7 +22,7 @@ the local machine. For all possible properties of the config object, see below.
 ----
 import io.vertx.groovy.ext.mail.MailClient
 def config = [:]
-def mailClient = MailClient.create(vertx, config)
+def mailClient = MailClient.createNonShared(vertx, config)
 
 ----
 
@@ -37,7 +37,7 @@ config.port = 587
 config.starttls = StartTLSOptions.REQUIRED
 config.username = "user"
 config.password = "password"
-def mailClient = MailClient.create(vertx, config)
+def mailClient = MailClient.createNonShared(vertx, config)
 
 ----
 

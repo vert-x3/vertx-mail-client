@@ -19,7 +19,7 @@ public class Examples {
 
   public void createClient(Vertx vertx) {
     MailConfig config = new MailConfig();
-    MailClient mailClient = MailClient.create(vertx, config);
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
   }
 
   public void createClient2(Vertx vertx) {
@@ -29,7 +29,7 @@ public class Examples {
     config.setStarttls(StartTLSOptions.REQUIRED);
     config.setUsername("user");
     config.setPassword("password");
-    MailClient mailClient = MailClient.create(vertx, config);
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
   }
 
   public void mailMessage(Vertx vertx) {

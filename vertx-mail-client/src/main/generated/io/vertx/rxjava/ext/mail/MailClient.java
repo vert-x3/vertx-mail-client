@@ -48,13 +48,37 @@ public class MailClient {
   }
 
   /**
-   * create an instance of MailClient that is running in the local JVM
+   * create a non shared instance of the mail client
    * @param vertx the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails
    * @return MailClient instance that can then be used to send multiple mails
    */
-  public static MailClient create(Vertx vertx, MailConfig config) { 
-    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.create((io.vertx.core.Vertx) vertx.getDelegate(), config));
+  public static MailClient createNonShared(Vertx vertx, MailConfig config) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
+    return ret;
+  }
+
+  /**
+   * Create a Mail client which shares its data source with any other Mongo clients created with the same
+   * pool name
+   * @param vertx the Vert.x instance
+   * @param config the configuration
+   * @param poolName the pool name
+   * @return the client
+   */
+  public static MailClient createShared(Vertx vertx, MailConfig config, String poolName) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config, poolName));
+    return ret;
+  }
+
+  /**
+   * Like {@link io.vertx.rxjava.ext.mail.MailClient#createShared} but with the default pool name
+   * @param vertx the Vert.x instance
+   * @param config the configuration
+   * @return the client
+   */
+  public static MailClient createShared(Vertx vertx, MailConfig config) { 
+    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
     return ret;
   }
 

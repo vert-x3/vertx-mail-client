@@ -38,7 +38,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
 
     MailConfig config = configNoSSL()
         .setAllowRcptErrors(true);
-    MailClient mailClient = MailClient.create(vertx, config);
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
 
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
@@ -76,7 +76,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
 
     MailConfig config = configNoSSL()
         .setAllowRcptErrors(true);
-    MailClient mailClient = MailClient.create(vertx, config);
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
 
     testException(mailClient, mail);
   }

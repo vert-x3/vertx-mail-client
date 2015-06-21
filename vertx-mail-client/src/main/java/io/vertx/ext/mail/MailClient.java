@@ -7,6 +7,8 @@ import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mail.impl.MailClientImpl;
 
+import java.util.UUID;
+
 /**
  * SMTP mail client for Vert.x
  * <p>
@@ -18,14 +20,42 @@ import io.vertx.ext.mail.impl.MailClientImpl;
 public interface MailClient {
 
   /**
-   * create an instance of MailClient that is running in the local JVM
+   * The name of the default pool
+   */
+  String DEFAULT_POOL_NAME = "DEFAULT_POOL";
+
+  /**
+   * create a non shared instance of the mail client
    *
    * @param vertx  the Vertx instance the operation will be run in
    * @param config MailConfig configuration to be used for sending mails
    * @return MailClient instance that can then be used to send multiple mails
    */
-  static MailClient create(Vertx vertx, MailConfig config) {
-    return new MailClientImpl(vertx, config);
+  static MailClient createNonShared(Vertx vertx, MailConfig config) {
+    return new MailClientImpl(vertx, config, UUID.randomUUID().toString());
+  }
+
+  /**
+   * Create a Mail client which shares its data source with any other Mongo clients created with the same
+   * pool name
+   *
+   * @param vertx  the Vert.x instance
+   * @param config  the configuration
+   * @param poolName  the pool name
+   * @return the client
+   */
+  static MailClient createShared(Vertx vertx, MailConfig config, String poolName) {
+    return new MailClientImpl(vertx, config, poolName);
+  }
+
+  /**
+   * Like {@link #createShared(io.vertx.core.Vertx, MailConfig, String)} but with the default pool name
+   * @param vertx  the Vert.x instance
+   * @param config  the configuration
+   * @return the client
+   */
+  static MailClient createShared(Vertx vertx, MailConfig config) {
+    return new MailClientImpl(vertx, config, DEFAULT_POOL_NAME);
   }
 
   /**

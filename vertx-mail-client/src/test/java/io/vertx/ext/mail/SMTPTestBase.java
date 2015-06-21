@@ -14,10 +14,6 @@ import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
-import io.vertx.test.core.VertxTestBase;
-
 /**
  * Support functions for SMTP tests
  * <p>
@@ -43,21 +39,21 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * @return
    */
   protected MailClient mailClientDefault() {
-    return MailClient.create(vertx, defaultConfig());
+    return MailClient.createNonShared(vertx, defaultConfig());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientLogin() {
-    return MailClient.create(vertx, configLogin());
+    return MailClient.createNonShared(vertx, configLogin());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientLogin(String user, String pw) {
-    return MailClient.create(vertx, configLogin(user, pw));
+    return MailClient.createNonShared(vertx, configLogin(user, pw));
   }
 
   /**
@@ -71,21 +67,21 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * @return
    */
   protected MailClient mailClientTLS() {
-    return MailClient.create(vertx, configTLS());
+    return MailClient.createNonShared(vertx, configTLS());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientTLSTrustAll() {
-    return MailClient.create(vertx, configTLSTrustAll());
+    return MailClient.createNonShared(vertx, configTLSTrustAll());
   }
 
   /**
    * @return
    */
   protected MailClient mailClientNoSSL() {
-    return MailClient.create(vertx, configNoSSL());
+    return MailClient.createNonShared(vertx, configNoSSL());
   }
 
   /**

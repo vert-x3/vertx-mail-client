@@ -22,7 +22,7 @@ public class TestMailClient implements MailClient {
    * @param config
    */
   public TestMailClient(Vertx vertx, MailConfig config) {
-    mailClient = new MailClientImpl(vertx, config);
+    mailClient = new MailClientImpl(vertx, config, "foo");
   }
 
   /* (non-Javadoc)

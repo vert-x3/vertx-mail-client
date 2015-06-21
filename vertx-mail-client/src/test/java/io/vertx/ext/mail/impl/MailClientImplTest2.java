@@ -2,12 +2,10 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -30,7 +28,7 @@ public class MailClientImplTest2 extends SMTPTestWiser {
     Async async = testContext.async();
     Async async2 = testContext.async();
 
-    MailClientImpl mailClient = new MailClientImpl(vertx, configNoSSL());
+    MailClientImpl mailClient = new MailClientImpl(vertx, configNoSSL(), "foo");
 
     testContext.assertEquals(0, mailClient.getConnectionPool().connCount());
 
