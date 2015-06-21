@@ -64,12 +64,6 @@ public class MailClientImpl implements MailClient {
     return this;
   }
 
-  // TODO when sending mails to multiple recipients it is possible that some
-  // addresses work and some don't, for this an array or json object can be
-  // returned with the list of successful addresses and the list of failed
-  // addresses. this is not implemented yet
-  // Issue #20
-
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
       Context context) {
     new SMTPSendMail(conn, email, config, result -> {

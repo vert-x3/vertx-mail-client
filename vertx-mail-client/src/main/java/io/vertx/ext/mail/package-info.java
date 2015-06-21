@@ -16,12 +16,12 @@
 /**
  * = Vert.x Mail client (SMTP client implementation)
  *
- * Vert.x client for sending SMTP emails via a local mail server (e.g. postfix),
- * by external mail server (e.g. googlemail or aol).
+ * Vert.x client for sending SMTP emails via a local mail server
+ * (e.g. postfix) or by external mail server (e.g. googlemail or aol).
  * 
  * The client supports a few additional auth methods like DIGEST-MD5 and has full
  * support for TLS and SSL and is completely asynchronous. The client supports
- * connection pooling to keep connections open for an specific time to be reused.
+ * connection pooling to keep connections open to be reused.
  *
  * == Creating a client
  *
@@ -32,9 +32,21 @@
  * Linux environment where you have Postfix or similar mail server running on
  * the local machine. For all possible properties of the config object, see below.
  *
+ * The client can use a connection pool of the SMTP connections to get rid of the overhead of
+ * connecting each time to the server, negotiating TLS and login (this function can be
+ * turned off by setting keepAlive = false). A client can either be shared or non-shared,
+ * if it is shared, the same connection pool will be used for all clients using the same identifier.
+ *
  * [source,$lang]
  * ----
- * {@link examples.Examples#createClient}
+ * {@link examples.Examples#createSharedClient}
+ * ----
+ *
+ * The unshared client can be created the same way leaving out the identifier.
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#createNonSharedClient}
  * ----
  *
  * A more elaborate example using a mailserver that requires login via TLS
@@ -116,7 +128,7 @@
  * * `contentType` String of the Content-Type of the attachment (e.g. text/plain or text/plain; charset="UTF8", default is application/octet-stream)
  * * `description` String describing the attachment (this is put in the description header of the attachment), optional
  * * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
- * * `name` String filename of the attachment (this is put into the disposition and in the contentType headers of the attachment), optional
+ * * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
  *
  * === MailConfig options
  *
@@ -132,7 +144,6 @@
  * * `ehloHostname` String to used in EHLO and for creating the message-id, if not set, the own hostname will be used, which may not be a good choice if it doesn't contain a FQDN or is localhost
  * * `authMethods` String space separated list of allowed auth methods, this can be used to disallow some auth methods or define one required auth method
  * * `keepAlive` boolean if connection pooling is enabled (default is true)
- * * `idleTimeout` int timeout in seconds that a connection is kept open after a mail has been sent (default is 300)
  * * `maxPoolSize` int max number of open connections kept in the pool or to be opened at one time (regardless if pooling is enabled or not), default is 10
  * * `trustAll` boolean whether to accept all certs from the server (default is false)
  * * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
