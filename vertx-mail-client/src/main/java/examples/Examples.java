@@ -17,7 +17,12 @@ import io.vertx.ext.mail.StartTLSOptions;
 @Source
 public class Examples {
 
-  public void createClient(Vertx vertx) {
+  public void createSharedClient(Vertx vertx) {
+    MailConfig config = new MailConfig();
+    MailClient mailClient = MailClient.createShared(vertx, config, "exampleclient");
+  }
+
+  public void createNonSharedClient(Vertx vertx) {
     MailConfig config = new MailConfig();
     MailClient mailClient = MailClient.createNonShared(vertx, config);
   }
