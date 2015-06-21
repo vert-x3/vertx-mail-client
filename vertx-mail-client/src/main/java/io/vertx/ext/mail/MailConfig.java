@@ -9,7 +9,7 @@ import java.util.Locale;
 
 /**
  * represents the configuration of a mail service with mail server hostname,
- * port, security options, login options and login/password
+ * port, security options, login options and login/password etc
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
@@ -21,7 +21,6 @@ public class MailConfig {
   public static final int DEFAULT_PORT = 25;
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_MAX_POOL_SIZE = 10;
-  public static final int DEFAULT_IDLE_TIMEOUT = 300;
 
   private String hostname;
   private int port;
@@ -36,7 +35,6 @@ public class MailConfig {
   private String keyStorePassword;
   private String ownHostname;
   private int maxPoolSize;
-  private int idleTimeout;
   private boolean keepAlive;
   private boolean allowRcptErrors;
 
@@ -49,7 +47,6 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    idleTimeout = DEFAULT_IDLE_TIMEOUT;
     keepAlive = true;
   }
 
@@ -64,7 +61,6 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    idleTimeout = DEFAULT_IDLE_TIMEOUT;
     keepAlive = true;
   }
 
@@ -80,7 +76,6 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    idleTimeout = DEFAULT_IDLE_TIMEOUT;
     keepAlive = true;
   }
 
@@ -98,7 +93,6 @@ public class MailConfig {
     this.starttls = starttls;
     this.login = login;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    idleTimeout = DEFAULT_IDLE_TIMEOUT;
     keepAlive = true;
   }
 
@@ -121,7 +115,6 @@ public class MailConfig {
     authMethods = other.authMethods;
     ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
-    idleTimeout = other.idleTimeout;
     keepAlive = other.keepAlive;
     allowRcptErrors = other.allowRcptErrors;
   }
@@ -151,7 +144,6 @@ public class MailConfig {
     authMethods = config.getString("authMethods");
     ownHostname = config.getString("ownHostname");
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
-    idleTimeout = config.getInteger("idleTimeout", DEFAULT_IDLE_TIMEOUT);
     keepAlive = config.getBoolean("keepAlive", true);
     allowRcptErrors = config.getBoolean("allowRcptErrors", false);
   }
@@ -435,30 +427,6 @@ public class MailConfig {
   }
 
   /**
-   * get the timeout for idle smtp connections (in seconds)
-   * if not set the default is 300 seconds
-   *
-   * @return idle timeout value
-   */
-  public int getIdleTimeout() {
-    return idleTimeout;
-  }
-
-  /**
-   * set the timeout for idle smtp connections (in seconds)
-   * if not set, the default is 300 seconds
-   *
-   * @return this to be able to use the object fluently
-   */
-  public MailConfig setIdleTimeout(int idleTimeout) {
-    if (idleTimeout < 1) {
-      throw new IllegalArgumentException("idleTimeout must be > 0");
-    }
-    this.idleTimeout = idleTimeout;
-    return this;
-  }
-
-  /**
    * get if connection pool is enabled
    * default is true
    *<p>
@@ -549,7 +517,6 @@ public class MailConfig {
       json.put("ownHostname", ownHostname);
     }
     json.put("maxPoolSize", maxPoolSize);
-    json.put("idleTimeout", idleTimeout);
     if (!keepAlive) {
       json.put("keepAlive", keepAlive);
     }
@@ -562,14 +529,9 @@ public class MailConfig {
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, idleTimeout, keepAlive, allowRcptErrors);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors);
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#equals(java.lang.Object)
-   */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -583,11 +545,6 @@ public class MailConfig {
     return getList().equals(config.getList());
   }
 
-  /*
-   * (non-Javadoc)
-   * 
-   * @see java.lang.Object#hashCode()
-   */
   @Override
   public int hashCode() {
     return getList().hashCode();

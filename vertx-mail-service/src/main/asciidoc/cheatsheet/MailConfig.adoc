@@ -39,9 +39,6 @@
 |[[maxPoolSize]]`maxPoolSize`
 |`Number`
 |-
-|[[idleTimeout]]`idleTimeout`
-|`Number`
-|-
 |[[keepAlive]]`keepAlive`
 |`Boolean`
 |-
