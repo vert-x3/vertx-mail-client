@@ -1,9 +1,7 @@
 = Vert.x Mail client (SMTP client implementation)
 
 Vert.x client for sending SMTP emails via a local mail server
-(e.g.
-
-postfix) or by external mail server (e.g. googlemail or aol).
+(e.g. postfix) or by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
 support for TLS and SSL and is completely asynchronous. The client supports
@@ -31,6 +29,12 @@ config = {
 mailClient = VertxMail::MailClient.create_shared(vertx, config, "exampleclient")
 
 ----
+The first call to MailClient.createShared will actually create the pool with the specified config.
+Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
+
+If you leave out the pool identifier, a default pool will be created. Note that the clients are
+shared in the scope of a vertx instance only (so two different vertx will have different pools with the
+same identifier).
 
 The unshared client can be created the same way leaving out the identifier.
 
