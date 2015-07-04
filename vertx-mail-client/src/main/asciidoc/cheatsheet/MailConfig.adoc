@@ -74,12 +74,6 @@ set the hostname to be used for HELO/EHLO and the Message-ID+++
 set the max allowed number of open connections to the mail server
  if not set the default is 10+++
 
-|[[idleTimeout]]`idleTimeout`
-|`Number`
-|+++
-set the timeout for idle smtp connections (in seconds)
- if not set, the default is 300 seconds+++
-
 |[[keepAlive]]`keepAlive`
 |`Boolean`
 |+++

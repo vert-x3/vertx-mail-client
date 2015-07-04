@@ -27,10 +27,10 @@ import io.vertx.ext.mail.MailResult
 */
 @CompileStatic
 public class MailService extends MailClient {
-  final def io.vertx.ext.mail.MailService delegate;
-  public MailService(io.vertx.ext.mail.MailService delegate) {
-    super(delegate);
-    this.delegate = delegate;
+  private final def io.vertx.ext.mail.MailService delegate;
+  public MailService(Object delegate) {
+    super((io.vertx.ext.mail.MailService) delegate);
+    this.delegate = (io.vertx.ext.mail.MailService) delegate;
   }
   public Object getDelegate() {
     return delegate;
@@ -42,11 +42,11 @@ public class MailService extends MailClient {
    * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService createEventBusProxy(Vertx vertx, String address) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address), io.vertx.ext.mail.MailService.class, io.vertx.groovy.ext.mail.MailService.class);
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address), io.vertx.groovy.ext.mail.MailService.class);
     return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    this.delegate.sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) this.delegate).sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mail.MailResult> event) {
         AsyncResult<Map<String, Object>> f
         if (event.succeeded()) {
@@ -60,6 +60,6 @@ public class MailService extends MailClient {
     return this;
   }
   public void close() {
-    this.delegate.close();
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) this.delegate).close();
   }
 }
