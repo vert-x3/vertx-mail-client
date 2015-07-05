@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
+import org.junit.rules.Timeout;
 import org.junit.runner.Description;
 
 /**
@@ -23,6 +24,9 @@ import org.junit.runner.Description;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public abstract class SMTPTestBase extends VertxTestBase {
+
+  @Rule
+  public Timeout rule = Timeout.seconds(10);
 
   private static final Logger log = LoggerFactory.getLogger(SMTPTestBase.class);
 
