@@ -4,6 +4,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.Timeout;
 import io.vertx.test.core.VertxTestBase;
 
 import org.hamcrest.Matcher;
@@ -12,7 +13,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
-import org.junit.rules.Timeout;
 import org.junit.runner.Description;
 
 /**
@@ -25,6 +25,7 @@ import org.junit.runner.Description;
  */
 public abstract class SMTPTestBase extends VertxTestBase {
 
+  // run all smtp tests with a timeout of 10 seconds
   @Rule
   public Timeout rule = Timeout.seconds(10);
 
