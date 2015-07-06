@@ -23,6 +23,26 @@
  * support for TLS and SSL and is completely asynchronous. The client supports
  * connection pooling to keep connections open to be reused.
  *
+ * To use this project, add the following dependency to the _dependencies_ section of your build descriptor:
+ *
+ * * Maven (in your `pom.xml`):
+ *
+ * [source,xml,subs="+attributes"]
+ * ----
+ * <dependency>
+ *   <groupId>{maven-groupId}</groupId>
+ *   <artifactId>{maven-artifactId}</artifactId>
+ *   <version>{maven-version}</version>
+ * </dependency>
+ * ----
+ *
+ * * Gradle (in your `build.gradle` file):
+ *
+ * [source,groovy,subs="+attributes"]
+ * ----
+ * compile {maven-groupId}:{maven-artifactId}:{maven-version}
+ * ----
+ *
  * == Creating a client
  *
  * You can send mails by creating a client that opens SMTP connections from the local jvm.
