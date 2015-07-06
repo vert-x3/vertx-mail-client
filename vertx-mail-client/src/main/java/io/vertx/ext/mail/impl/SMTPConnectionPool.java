@@ -168,7 +168,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
           waiter.handler.handle(Future.succeededFuture(conn));
         } else {
           log.debug("keeping connection idle");
-          conn.setIdleTimer();
+          conn.setIdle();
         }
       }
     }
@@ -208,7 +208,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
-    SMTPConnection conn = new SMTPConnection(netClient, vertx, this);
+    SMTPConnection conn = new SMTPConnection(netClient, this);
     new SMTPStarter(vertx, conn, config, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));

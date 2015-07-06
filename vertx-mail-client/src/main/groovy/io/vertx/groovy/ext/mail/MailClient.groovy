@@ -30,9 +30,9 @@ import io.vertx.ext.mail.MailResult
 */
 @CompileStatic
 public class MailClient {
-  final def io.vertx.ext.mail.MailClient delegate;
-  public MailClient(io.vertx.ext.mail.MailClient delegate) {
-    this.delegate = delegate;
+  private final def io.vertx.ext.mail.MailClient delegate;
+  public MailClient(Object delegate) {
+    this.delegate = (io.vertx.ext.mail.MailClient) delegate;
   }
   public Object getDelegate() {
     return delegate;
@@ -44,7 +44,7 @@ public class MailClient {
    * @return MailClient instance that can then be used to send multiple mails
    */
   public static MailClient createNonShared(Vertx vertx, Map<String, Object> config) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**
@@ -56,7 +56,7 @@ public class MailClient {
    * @return the client
    */
   public static MailClient createShared(Vertx vertx, Map<String, Object> config, String poolName) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null, poolName), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null, poolName), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**
@@ -66,7 +66,7 @@ public class MailClient {
    * @return the client
    */
   public static MailClient createShared(Vertx vertx, Map<String, Object> config) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.ext.mail.MailClient.class, io.vertx.groovy.ext.mail.MailClient.class);
+    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   /**

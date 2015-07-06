@@ -33,20 +33,15 @@ class SMTPConnection {
   private final NetClient client;
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
-  private final Vertx vertx;
-  private long idleTimerId = -1;
-  private int timeout;
-  private boolean keepAlive;
   private Context context;
 
-  SMTPConnection(NetClient client, Vertx vertx, ConnectionLifeCycleListener listener) {
+  SMTPConnection(NetClient client, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
     doShutdown = false;
     socketClosed = false;
     socketShutDown = false;
     this.client = client;
-    this.vertx = vertx;
     this.listener = listener;
   }
 
@@ -161,8 +156,6 @@ class SMTPConnection {
     this.errorHandler = errorHandler;
     broken = false;
     idle = false;
-    timeout = config.getIdleTimeout();
-    keepAlive = config.isKeepAlive();
 
     client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
@@ -283,31 +276,15 @@ class SMTPConnection {
   /**
    * mark a connection as being used again
    */
-  public void useConnection() {
+  void useConnection() {
     idle = false;
-    cancelIdleTimer();
   }
 
-  void setIdleTimer() {
-    if (keepAlive) {
-      idle = true;
-      log.debug("setting idle timer on connection");
-      idleTimerId = vertx.setTimer(timeout * 1000, id -> {
-        if (id == idleTimerId) {
-          log.debug("idle timeout reached, closing connection");
-          quitCloseConnection();
-        }
-      });
-    }
-  }
-
-  void cancelIdleTimer() {
-    if (keepAlive && idleTimerId != -1) {
-      context.runOnContext(v -> {
-        vertx.cancelTimer(idleTimerId);
-        idleTimerId = -1;
-      });
-    }
+  /**
+   * mark a connection as free
+   */
+  void setIdle() {
+    idle = true;
   }
 
   /**

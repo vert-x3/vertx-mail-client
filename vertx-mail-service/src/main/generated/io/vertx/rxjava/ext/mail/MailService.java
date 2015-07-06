@@ -57,7 +57,7 @@ public class MailService extends MailClient {
   }
 
   public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
-    this.delegate.sendMail(email, resultHandler);
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) delegate).sendMail(email, resultHandler);
     return this;
   }
 
@@ -68,7 +68,7 @@ public class MailService extends MailClient {
   }
 
   public void close() { 
-    this.delegate.close();
+    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) delegate).close();
   }
 
 
