@@ -36,8 +36,12 @@ class SMTPSendMail {
   }
 
   void start() {
-    if (checkSize()) {
-      mailFromCmd();
+    try{
+      if (checkSize()) {
+        mailFromCmd();
+      }
+    }catch(Exception e){
+      handleError(e);
     }
   }
 
