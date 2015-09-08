@@ -6,19 +6,25 @@
 |===
 ^|Name | Type ^| Description
 
+|[[attachment]]`attachment`
+|`link:MailAttachment.html[MailAttachment]`
+|-
+|[[bcc]]`bcc`
+|`String`
+|-
 |[[bounceAddress]]`bounceAddress`
-|`String`
-|-
-|[[from]]`from`
-|`String`
-|-
-|[[to]]`to`
 |`String`
 |-
 |[[cc]]`cc`
 |`String`
 |-
-|[[bcc]]`bcc`
+|[[fixedHeaders]]`fixedHeaders`
+|`Boolean`
+|-
+|[[from]]`from`
+|`String`
+|-
+|[[html]]`html`
 |`String`
 |-
 |[[subject]]`subject`
@@ -27,12 +33,6 @@
 |[[text]]`text`
 |`String`
 |-
-|[[html]]`html`
+|[[to]]`to`
 |`String`
-|-
-|[[attachment]]`attachment`
-|`link:MailAttachment.html[MailAttachment]`
-|-
-|[[fixedHeaders]]`fixedHeaders`
-|`Boolean`
 |-|===

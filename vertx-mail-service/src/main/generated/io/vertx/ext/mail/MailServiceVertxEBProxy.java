@@ -31,6 +31,7 @@ import java.util.stream.Collectors;
 import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.ext.mail.MailService;
 import io.vertx.core.Vertx;
+import io.vertx.ext.mail.MailClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
@@ -44,11 +45,17 @@ public class MailServiceVertxEBProxy implements MailService {
 
   private Vertx _vertx;
   private String _address;
+  private DeliveryOptions _options;
   private boolean closed;
 
   public MailServiceVertxEBProxy(Vertx vertx, String address) {
+    this(vertx, address, null);
+  }
+
+  public MailServiceVertxEBProxy(Vertx vertx, String address, DeliveryOptions options) {
     this._vertx = vertx;
     this._address = address;
+    this._options = options;
   }
 
   public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
@@ -58,7 +65,7 @@ public class MailServiceVertxEBProxy implements MailService {
     }
     JsonObject _json = new JsonObject();
     _json.put("email", email == null ? null : email.toJson());
-    DeliveryOptions _deliveryOptions = new DeliveryOptions();
+    DeliveryOptions _deliveryOptions = (_options != null) ? new DeliveryOptions(_options) : new DeliveryOptions();
     _deliveryOptions.addHeader("action", "sendMail");
     _vertx.eventBus().<JsonObject>send(_address, _json, _deliveryOptions, res -> {
       if (res.failed()) {
