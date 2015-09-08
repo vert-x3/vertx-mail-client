@@ -39,7 +39,6 @@ import io.vertx.serviceproxy.ProxyHelper;
 import io.vertx.serviceproxy.ProxyHandler;
 import io.vertx.ext.mail.MailService;
 import io.vertx.core.Vertx;
-import io.vertx.ext.mail.MailClient;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.ext.mail.MailMessage;
@@ -60,10 +59,10 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
   private final long timeoutSeconds;
 
   public MailServiceVertxProxyHandler(Vertx vertx, MailService service) {
-    this(vertx, service, DEFAULT_CONNECTION_TIMEOUT);
-  }
+    this(vertx, service, DEFAULT_CONNECTION_TIMEOUT);  }
 
-  public MailServiceVertxProxyHandler(Vertx vertx, MailService service, long timeoutInSecond) {
+  public MailServiceVertxProxyHandler(Vertx vertx, MailService service,
+    long timeoutInSecond) {
     this(vertx, service, true, timeoutInSecond);
   }
 
@@ -136,7 +135,6 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     }
   }
-
   private <T> Handler<AsyncResult<T>> createHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -146,7 +144,6 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
-
   private <T> Handler<AsyncResult<List<T>>> createListHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -156,7 +153,6 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
-
   private <T> Handler<AsyncResult<Set<T>>> createSetHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -166,7 +162,6 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
-
   private Handler<AsyncResult<List<Character>>> createListCharHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -180,7 +175,6 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
-
   private Handler<AsyncResult<Set<Character>>> createSetCharHandler(Message msg) {
     return res -> {
       if (res.failed()) {
@@ -194,15 +188,12 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
       }
     };
   }
-
   private <T> Map<String, T> convertMap(Map map) {
     return (Map<String, T>)map;
   }
-
   private <T> List<T> convertList(List list) {
     return (List<T>)list;
   }
-
   private <T> Set<T> convertSet(List list) {
     return new HashSet<T>((List<T>)list);
   }

@@ -11,32 +11,36 @@
 |===
 ^|Name | Type ^| Description
 
-|[[allowRcptErrors]]`allowRcptErrors`
-|`Boolean`
-|+++
-set if sending allows rcpt errors+++
-
-|[[authMethods]]`authMethods`
-|`String`
-|+++
-set string of allowed auth methods.
- if set only these methods will be used
- if the server supports them. If null or empty all supported methods may be
- used+++
-
 |[[hostname]]`hostname`
 |`String`
 |+++
 Set the hostname of the smtp server.+++
 
-|[[keepAlive]]`keepAlive`
+|[[port]]`port`
+|`Number`
+|+++
+Set the port of the smtp server.+++
+
+|[[username]]`username`
+|`String`
+|+++
+Set the username for the login.+++
+
+|[[password]]`password`
+|`String`
+|+++
+Set the password for the login.+++
+
+|[[ssl]]`ssl`
 |`Boolean`
 |+++
-set if connection pool is enabled
- default is true
-<p>
- if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-<p>+++
+Set the sslOnConnect mode for the connection.+++
+
+|[[trustAll]]`trustAll`
+|`Boolean`
+|+++
+set whether to trust all certificates on ssl connect the option is also
+ applied to STARTTLS operation+++
 
 |[[keyStore]]`keyStore`
 |`String`
@@ -51,54 +55,36 @@ get the key store filename to be used when opening SMTP connections
 |+++
 get the key store password to be used when opening SMTP connections+++
 
-|[[login]]`login`
-|`Enum`
+|[[authMethods]]`authMethods`
+|`String`
 |+++
-Set the login mode for the connection.
- <p>
- Either DISABLED, OPTIONAL or REQUIRED+++
-
-|[[maxPoolSize]]`maxPoolSize`
-|`Number (int)`
-|+++
-set the max allowed number of open connections to the mail server
- if not set the default is 10+++
+set string of allowed auth methods.
+ if set only these methods will be used
+ if the server supports them. If null or empty all supported methods may be
+ used+++
 
 |[[ownHostname]]`ownHostname`
 |`String`
 |+++
 set the hostname to be used for HELO/EHLO and the Message-ID+++
 
-|[[password]]`password`
-|`String`
+|[[maxPoolSize]]`maxPoolSize`
+|`Number`
 |+++
-Set the password for the login.+++
+set the max allowed number of open connections to the mail server
+ if not set the default is 10+++
 
-|[[port]]`port`
-|`Number (int)`
-|+++
-Set the port of the smtp server.+++
-
-|[[ssl]]`ssl`
+|[[keepAlive]]`keepAlive`
 |`Boolean`
 |+++
-Set the sslOnConnect mode for the connection.+++
+set if connection pool is enabled
+ default is true
+<p>
+ if the connection pooling is disabled, the max number of sockets is enforced nevertheless
+<p>+++
 
-|[[starttls]]`starttls`
-|`Enum`
-|+++
-Set the tls security mode for the connection.
- <p>
- Either NONE, OPTIONAL or REQUIRED+++
-
-|[[trustAll]]`trustAll`
+|[[allowRcptErrors]]`allowRcptErrors`
 |`Boolean`
 |+++
-set whether to trust all certificates on ssl connect the option is also
- applied to STARTTLS operation+++
-
-|[[username]]`username`
-|`String`
-|+++
-Set the username for the login.+++
+set if sending allows rcpt errors+++
 |===

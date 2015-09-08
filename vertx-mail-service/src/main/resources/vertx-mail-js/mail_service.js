@@ -16,14 +16,12 @@
 
 /** @module vertx-mail-js/mail_service */
 var utils = require('vertx-js/util/utils');
-var Vertx = require('vertx-js/vertx');
 var MailClient = require('vertx-mail-js/mail_client');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
 var JMailService = io.vertx.ext.mail.MailService;
 var MailMessage = io.vertx.ext.mail.MailMessage;
-var MailResult = io.vertx.ext.mail.MailResult;
 
 /**
 
@@ -47,7 +45,7 @@ var MailService = function(j_val) {
     if (__args.length === 2 && typeof __args[0] === 'object' && typeof __args[1] === 'function') {
       j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
       if (ar.succeeded()) {
-        resultHandler(utils.convReturnDataObject(ar.result()), null);
+        resultHandler(utils.convReturnJson(ar.result().toJson()), null);
       } else {
         resultHandler(null, ar.cause());
       }

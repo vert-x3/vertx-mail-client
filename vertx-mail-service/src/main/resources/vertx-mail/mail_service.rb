@@ -1,4 +1,3 @@
-require 'vertx/vertx'
 require 'vertx-mail/mail_client'
 require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mail.MailService
