@@ -6,22 +6,16 @@
 |===
 ^|Name | Type ^| Description
 
+|[[allowRcptErrors]]`allowRcptErrors`
+|`Boolean`
+|-
+|[[authMethods]]`authMethods`
+|`String`
+|-
 |[[hostname]]`hostname`
 |`String`
 |-
-|[[port]]`port`
-|`Number`
-|-
-|[[username]]`username`
-|`String`
-|-
-|[[password]]`password`
-|`String`
-|-
-|[[ssl]]`ssl`
-|`Boolean`
-|-
-|[[trustAll]]`trustAll`
+|[[keepAlive]]`keepAlive`
 |`Boolean`
 |-
 |[[keyStore]]`keyStore`
@@ -30,18 +24,30 @@
 |[[keyStorePassword]]`keyStorePassword`
 |`String`
 |-
-|[[authMethods]]`authMethods`
-|`String`
+|[[login]]`login`
+|`Enum`
+|-
+|[[maxPoolSize]]`maxPoolSize`
+|`Number (int)`
 |-
 |[[ownHostname]]`ownHostname`
 |`String`
 |-
-|[[maxPoolSize]]`maxPoolSize`
-|`Number`
+|[[password]]`password`
+|`String`
 |-
-|[[keepAlive]]`keepAlive`
+|[[port]]`port`
+|`Number (int)`
+|-
+|[[ssl]]`ssl`
 |`Boolean`
 |-
-|[[allowRcptErrors]]`allowRcptErrors`
+|[[starttls]]`starttls`
+|`Enum`
+|-
+|[[trustAll]]`trustAll`
 |`Boolean`
+|-
+|[[username]]`username`
+|`String`
 |-|===
