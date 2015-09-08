@@ -10,43 +10,30 @@
 |===
 ^|Name | Type ^| Description
 
-|[[attachment]]`attachment`
-|`link:MailAttachment.html[MailAttachment]`
-|+++
-set a single attachment of this mail the result of getAttachment when using
- this method returns an unmodifiable list, if you want to be able to add
- attachments later, please use
- <code>setAttachment(new ArrayList<MailAttachment>())</code> instead+++
-
-|[[bcc]]`bcc`
-|`String`
-|+++
-helper method for single recipient+++
-
 |[[bounceAddress]]`bounceAddress`
 |`String`
 |+++
 set bounce address of this mail+++
-
-|[[cc]]`cc`
-|`String`
-|+++
-helper method for single recipient+++
-
-|[[fixedHeaders]]`fixedHeaders`
-|`Boolean`
-|+++
-set whether our own headers should be the only headers added to the message+++
 
 |[[from]]`from`
 |`String`
 |+++
 set from address of this mail+++
 
-|[[html]]`html`
+|[[to]]`to`
 |`String`
 |+++
-set the html text of this mail+++
+helper method for single recipient+++
+
+|[[cc]]`cc`
+|`String`
+|+++
+helper method for single recipient+++
+
+|[[bcc]]`bcc`
+|`String`
+|+++
+helper method for single recipient+++
 
 |[[subject]]`subject`
 |`String`
@@ -58,8 +45,21 @@ set the subject of this mail+++
 |+++
 set the plain text of this mail+++
 
-|[[to]]`to`
+|[[html]]`html`
 |`String`
 |+++
-helper method for single recipient+++
+set the html text of this mail+++
+
+|[[attachment]]`attachment`
+|`link:MailAttachment.html[MailAttachment]`
+|+++
+set a single attachment of this mail the result of getAttachment when using
+ this method returns an unmodifiable list, if you want to be able to add
+ attachments later, please use
+ <code>setAttachment(new ArrayList<MailAttachment>())</code> instead+++
+
+|[[fixedHeaders]]`fixedHeaders`
+|`Boolean`
+|+++
+set whether our own headers should be the only headers added to the message+++
 |===
