@@ -10,23 +10,28 @@
 |===
 ^|Name | Type ^| Description
 
-|[[name]]`name`
-|`String`
-|+++
-set the name+++
-
 |[[contentType]]`contentType`
 |`String`
 |+++
 set the Content-Type+++
+
+|[[data]]`data`
+|`Buffer`
+|+++
+set the data+++
+
+|[[description]]`description`
+|`String`
+|+++
+set the description field to be used in the attachment+++
 
 |[[disposition]]`disposition`
 |`String`
 |+++
 set the disposition field to be used in the attachment+++
 
-|[[description]]`description`
+|[[name]]`name`
 |`String`
 |+++
-set the description field to be used in the attachment+++
+set the name+++
 |===

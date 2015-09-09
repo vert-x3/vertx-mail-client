@@ -6,15 +6,18 @@
 |===
 ^|Name | Type ^| Description
 
-|[[name]]`name`
+|[[contentType]]`contentType`
 |`String`
 |-
-|[[contentType]]`contentType`
+|[[data]]`data`
+|`Buffer`
+|-
+|[[description]]`description`
 |`String`
 |-
 |[[disposition]]`disposition`
 |`String`
 |-
-|[[description]]`description`
+|[[name]]`name`
 |`String`
 |-|===
