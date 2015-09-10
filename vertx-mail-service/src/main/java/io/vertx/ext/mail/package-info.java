@@ -79,7 +79,7 @@
  *
  */
 @Document(fileName = "index.adoc")
-@GenModule(name = "vertx-mail") package io.vertx.ext.mail;
+@ModuleGen(name = "vertx-mail", groupPackage = "io.vertx") package io.vertx.ext.mail;
 
-import io.vertx.codegen.annotations.GenModule;
+import io.vertx.codegen.annotations.ModuleGen;
 import io.vertx.docgen.Document;
