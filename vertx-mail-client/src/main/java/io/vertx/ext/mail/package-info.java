@@ -30,9 +30,9 @@
  * [source,xml,subs="+attributes"]
  * ----
  * <dependency>
- *   <groupId>{maven-groupId}</groupId>
- *   <artifactId>{maven-artifactId}</artifactId>
- *   <version>{maven-version}</version>
+ *   <groupId>${maven.groupId}</groupId>
+ *   <artifactId>${maven.artifactId}</artifactId>
+ *   <version>${maven.version}</version>
  * </dependency>
  * ----
  *
@@ -40,7 +40,7 @@
  *
  * [source,groovy,subs="+attributes"]
  * ----
- * compile {maven-groupId}:{maven-artifactId}:{maven-version}
+ * compile ${maven.groupId}:${maven.artifactId}:${maven.version}
  * ----
  *
  * == Creating a client
@@ -88,7 +88,7 @@
  * called when the mail operation finishes. You can start many mail send operations
  * in parallel, the connection pool will limit the number of concurrent operations
  * so that new operations will wait in queue if no slots are available.
- * 
+ *
  * A mail message is constructed as JSON. The MailMessage object has
  * properties from, to, cc, bcc, subject, text, html etc. Depending on which values are set, the
  * format of the generated MIME message will vary. The recipient address properties
@@ -189,4 +189,3 @@ package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.ModuleGen;
 import io.vertx.docgen.Document;
-

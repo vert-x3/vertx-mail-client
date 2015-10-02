@@ -109,31 +109,36 @@ public class MailServiceVertxProxyHandler extends ProxyHandler {
   }
 
   public void handle(Message<JsonObject> msg) {
-    JsonObject json = msg.body();
-    String action = msg.headers().get("action");
-    if (action == null) {
-      throw new IllegalStateException("action not specified");
-    }
-    accessed();
-    switch (action) {
+    try {
+      JsonObject json = msg.body();
+      String action = msg.headers().get("action");
+      if (action == null) {
+        throw new IllegalStateException("action not specified");
+      }
+      accessed();
+      switch (action) {
 
-      case "sendMail": {
-        service.sendMail(json.getJsonObject("email") == null ? null : new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), res -> {
-          if (res.failed()) {
-            msg.fail(-1, res.cause().getMessage());
-          } else {
-            msg.reply(res.result() == null ? null : res.result().toJson());
-          }
-       });
-        break;
+        case "sendMail": {
+          service.sendMail(json.getJsonObject("email") == null ? null : new io.vertx.ext.mail.MailMessage(json.getJsonObject("email")), res -> {
+            if (res.failed()) {
+              msg.fail(-1, res.cause().getMessage());
+            } else {
+              msg.reply(res.result() == null ? null : res.result().toJson());
+            }
+         });
+          break;
+        }
+        case "close": {
+          service.close();
+          break;
+        }
+        default: {
+          throw new IllegalStateException("Invalid action: " + action);
+        }
       }
-      case "close": {
-        service.close();
-        break;
-      }
-      default: {
-        throw new IllegalStateException("Invalid action: " + action);
-      }
+    } catch (Throwable t) {
+      msg.fail(-1, t.getMessage());
+      throw t;
     }
   }
 

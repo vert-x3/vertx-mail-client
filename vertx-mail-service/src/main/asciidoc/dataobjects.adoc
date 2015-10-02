@@ -1,0 +1,74 @@
+= Cheatsheets
+
+[[MailAttachment]]
+== MailAttachment
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[contentType]]`contentType`|`String`|-
+|[[data]]`data`|`Buffer`|-
+|[[description]]`description`|`String`|-
+|[[disposition]]`disposition`|`String`|-
+|[[name]]`name`|`String`|-
+|===
+
+[[MailConfig]]
+== MailConfig
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[allowRcptErrors]]`allowRcptErrors`|`Boolean`|-
+|[[authMethods]]`authMethods`|`String`|-
+|[[hostname]]`hostname`|`String`|-
+|[[keepAlive]]`keepAlive`|`Boolean`|-
+|[[keyStore]]`keyStore`|`String`|-
+|[[keyStorePassword]]`keyStorePassword`|`String`|-
+|[[login]]`login`|`link:enums.html#LoginOption[LoginOption]`|-
+|[[maxPoolSize]]`maxPoolSize`|`Number (int)`|-
+|[[ownHostname]]`ownHostname`|`String`|-
+|[[password]]`password`|`String`|-
+|[[port]]`port`|`Number (int)`|-
+|[[ssl]]`ssl`|`Boolean`|-
+|[[starttls]]`starttls`|`link:enums.html#StartTLSOptions[StartTLSOptions]`|-
+|[[trustAll]]`trustAll`|`Boolean`|-
+|[[username]]`username`|`String`|-
+|===
+
+[[MailMessage]]
+== MailMessage
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[attachment]]`attachment`|`link:dataobjects.html#MailAttachment[MailAttachment]`|-
+|[[bcc]]`bcc`|`String`|-
+|[[bounceAddress]]`bounceAddress`|`String`|-
+|[[cc]]`cc`|`String`|-
+|[[fixedHeaders]]`fixedHeaders`|`Boolean`|-
+|[[from]]`from`|`String`|-
+|[[html]]`html`|`String`|-
+|[[subject]]`subject`|`String`|-
+|[[text]]`text`|`String`|-
+|[[to]]`to`|`String`|-
+|===
+
+[[MailResult]]
+== MailResult
+
+
+[cols=">25%,^25%,50%"]
+[frame="topbot"]
+|===
+^|Name | Type ^| Description
+|[[messageID]]`messageID`|`String`|-
+|[[recipients]]`recipients`|`Array of String`|-
+|===
+
