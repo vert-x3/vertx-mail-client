@@ -24,7 +24,7 @@ import org.junit.runner.RunWith;
 
 /**
  * Test a server that doesn't support EHLO and a few errors in the server greeting
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
@@ -190,5 +190,34 @@ public class HeloTest extends SMTPTestDummy {
 
     testException();
   }
+
+  /*
+   * test that we try to use EHLO when the server sends esmtp not all uppercase
+   * (https://github.com/vert-x3/vertx-mail-client/issues/46)
+   *
+   * the check for "ESMTP" is mostly a hack to avoid sending EHLO to a server that doesn't support it, which is not very
+   * likely anymore, unless you have a firewall that blocks ESMTP commands. In this case the complete server helo
+   * message is probably blocked anyway.
+   */
+  @Test
+  public void esmtpCheckTest(TestContext testContext) {
+    this.testContext=testContext;
+    smtpServer.setDialogue("220 example.com Esmtp",
+      "EHLO",
+      "250 example.com",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+      "QUIT",
+      "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
+
+    testSuccess();
+  }
+
 
 }

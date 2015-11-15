@@ -22,12 +22,18 @@ package io.vertx.ext.mail.impl;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public final class Utils {
+
+  private static final Logger log = LoggerFactory.getLogger(Utils.class);
 
   /**
    *
@@ -66,6 +72,14 @@ public final class Utils {
     }
     lines.add(message.substring(index));
     return lines;
+  }
+
+  static boolean isEsmtpSupported(String message) {
+    // note that message in this case is the initial reply from the server
+    // e.g. 220 example.com ESMTP Postfix
+    final boolean esmtpSupported = message.toUpperCase(Locale.ENGLISH).contains("ESMTP");
+    log.debug("isEsmtpSupported:"+esmtpSupported);
+    return esmtpSupported;
   }
 
 }
