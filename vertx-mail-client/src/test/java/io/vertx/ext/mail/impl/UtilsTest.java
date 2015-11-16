@@ -13,6 +13,7 @@
  *
  *  You may elect to redistribute this code under either of these licenses.
  */
+
 package io.vertx.ext.mail.impl;
 
 import org.junit.Test;
@@ -27,7 +28,8 @@ import static org.junit.Assert.assertFalse;
 public class UtilsTest {
 
   /**
-   * Test method for {@link io.vertx.ext.mail.impl.SMTPInitialDialogue#isEsmtpSupported(java.lang.String)}.
+   * Test method for {@link io.vertx.ext.mail.impl.SMTPInitialDialogue#isEsmtpSupported(java.lang.String)}. check if we
+   * can detect ESMTP support with upper/lower case chars and not if the string contains only SMTP
    */
   @Test
   public void testIsEsmtpSupported() {
