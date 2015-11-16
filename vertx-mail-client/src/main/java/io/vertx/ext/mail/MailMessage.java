@@ -17,6 +17,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
@@ -218,6 +219,7 @@ public class MailMessage {
    * @param to to address
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailMessage setTo(String to) {
     List<String> toList = new ArrayList<String>();
     toList.add(to);
@@ -251,6 +253,7 @@ public class MailMessage {
    * @param cc cc address
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailMessage setCc(String cc) {
     List<String> ccList = new ArrayList<String>();
     ccList.add(cc);
@@ -284,6 +287,7 @@ public class MailMessage {
    * @param bcc bcc address
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailMessage setBcc(String bcc) {
     List<String> bccList = new ArrayList<String>();
     bccList.add(bcc);
@@ -380,6 +384,7 @@ public class MailMessage {
    * @param attachment the attachment to add
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailMessage setAttachment(MailAttachment attachment) {
     List<MailAttachment> attachmentList = new ArrayList<MailAttachment>();
     attachmentList.add(attachment);

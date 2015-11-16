@@ -48,16 +48,16 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
-|[[attachment]]`attachment`|`link:dataobjects.html#MailAttachment[MailAttachment]`|-
-|[[bcc]]`bcc`|`String`|-
+|[[attachment]]`attachment`|`Array of link:dataobjects.html#MailAttachment[MailAttachment]`|-
+|[[bcc]]`bcc`|`Array of String`|-
 |[[bounceAddress]]`bounceAddress`|`String`|-
-|[[cc]]`cc`|`String`|-
+|[[cc]]`cc`|`Array of String`|-
 |[[fixedHeaders]]`fixedHeaders`|`Boolean`|-
 |[[from]]`from`|`String`|-
 |[[html]]`html`|`String`|-
 |[[subject]]`subject`|`String`|-
 |[[text]]`text`|`String`|-
-|[[to]]`to`|`String`|-
+|[[to]]`to`|`Array of String`|-
 |===
 
 [[MailResult]]
