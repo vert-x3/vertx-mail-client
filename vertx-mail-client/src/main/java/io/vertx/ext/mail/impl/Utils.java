@@ -14,23 +14,26 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public final class Utils {
 
+  private static final Logger log = LoggerFactory.getLogger(Utils.class);
+
   /**
-   *
+   * utility class only
    */
   private Utils() {
   }
@@ -66,6 +69,25 @@ public final class Utils {
     }
     lines.add(message.substring(index));
     return lines;
+  }
+
+  /**
+   * check if the welcome line of the SMTP server advertises ESMTP support
+   *
+   * this is mostly a hack to avoid trying EHLO command on servers that do not support it (e.g. a server behind a
+   * firewall with policy enforcement that overwrites all unknown text with ***).
+   *
+   * Some servers use "Esmtp" so we do a case-insensitive check. The Locale.ENGLISH parameter is required to avoid
+   * issues with locale settings that change ASCII chars (and to keep pmd happy)
+   *
+   * @param message
+   *          the initial reply from the server (e.g. "220 example.com ESMTP Postfix")
+   * @return true if ESMTP is (probably) supported
+   */
+  static boolean isEsmtpSupported(String message) {
+    final boolean esmtpSupported = message.toUpperCase(Locale.ENGLISH).contains("ESMTP");
+    log.debug("isEsmtpSupported:" + esmtpSupported);
+    return esmtpSupported;
   }
 
 }
