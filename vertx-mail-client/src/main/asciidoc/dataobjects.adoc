@@ -14,23 +14,23 @@
 ^|Name | Type ^| Description
 |[[contentType]]`contentType`|`String`|
 +++
-get the Content-Type
+set the Content-Type
 +++
 |[[data]]`data`|`Buffer`|
 +++
-get the data
+set the data
 +++
 |[[description]]`description`|`String`|
 +++
-get the description field
+set the description field to be used in the attachment
 +++
 |[[disposition]]`disposition`|`String`|
 +++
-get the disposition field
+set the disposition field to be used in the attachment
 +++
 |[[name]]`name`|`String`|
 +++
-get the name
+set the name
 +++
 |===
 
@@ -49,24 +49,22 @@ get the name
 ^|Name | Type ^| Description
 |[[allowRcptErrors]]`allowRcptErrors`|`Boolean`|
 +++
-get if sending allows rcpt errors (default is false)
-<p>
- if true, the mail will be sent to the recipients that the server accepted, if any
-<p>
+set if sending allows rcpt errors
 +++
 |[[authMethods]]`authMethods`|`String`|
 +++
-get string of allowed auth methods, if set only these methods will be used
+set string of allowed auth methods.
+ if set only these methods will be used
  if the server supports them. If null or empty all supported methods may be
  used
 +++
 |[[hostname]]`hostname`|`String`|
 +++
-get the hostname of the mailserver
+Set the hostname of the smtp server.
 +++
 |[[keepAlive]]`keepAlive`|`Boolean`|
 +++
-get if connection pool is enabled
+set if connection pool is enabled
  default is true
 <p>
  if the connection pooling is disabled, the max number of sockets is enforced nevertheless
@@ -75,6 +73,9 @@ get if connection pool is enabled
 |[[keyStore]]`keyStore`|`String`|
 +++
 get the key store filename to be used when opening SMTP connections
+ <p>
+ if not set, an options object will be created based on other settings (ssl
+ and trustAll)
 +++
 |[[keyStorePassword]]`keyStorePassword`|`String`|
 +++
@@ -82,40 +83,45 @@ get the key store password to be used when opening SMTP connections
 +++
 |[[login]]`login`|`link:enums.html#LoginOption[LoginOption]`|
 +++
-get login options
+Set the login mode for the connection.
+ <p>
+ Either DISABLED, OPTIONAL or REQUIRED
 +++
 |[[maxPoolSize]]`maxPoolSize`|`Number (int)`|
 +++
-get the max allowed number of open connections to the mailserver
+set the max allowed number of open connections to the mail server
  if not set the default is 10
 +++
 |[[ownHostname]]`ownHostname`|`String`|
 +++
-get the hostname to be used for HELO/EHLO and the Message-ID
+set the hostname to be used for HELO/EHLO and the Message-ID
 +++
 |[[password]]`password`|`String`|
 +++
-get password
+Set the password for the login.
 +++
 |[[port]]`port`|`Number (int)`|
 +++
-get the port of the mailserver
+Set the port of the smtp server.
 +++
 |[[ssl]]`ssl`|`Boolean`|
 +++
-get whether ssl is used on connect
+Set the sslOnConnect mode for the connection.
 +++
 |[[starttls]]`starttls`|`link:enums.html#StartTLSOptions[StartTLSOptions]`|
 +++
-get security (TLS) options
+Set the tls security mode for the connection.
+ <p>
+ Either NONE, OPTIONAL or REQUIRED
 +++
 |[[trustAll]]`trustAll`|`Boolean`|
 +++
-get whether to trust all certificates on ssl connect
+set whether to trust all certificates on ssl connect the option is also
+ applied to STARTTLS operation
 +++
 |[[username]]`username`|`String`|
 +++
-get username
+Set the username for the login.
 +++
 |===
 
@@ -133,43 +139,43 @@ get username
 ^|Name | Type ^| Description
 |[[attachment]]`attachment`|`Array of link:dataobjects.html#MailAttachment[MailAttachment]`|
 +++
-get the list of attachments of this mail
+set the list of attachments of this mail
 +++
 |[[bcc]]`bcc`|`Array of String`|
 +++
-get list of bcc addresses
+set list of bcc addresses
 +++
 |[[bounceAddress]]`bounceAddress`|`String`|
 +++
-get bounce address of this mail
+set bounce address of this mail
 +++
 |[[cc]]`cc`|`Array of String`|
 +++
-get list of cc addresses
+set list of cc addresses
 +++
 |[[fixedHeaders]]`fixedHeaders`|`Boolean`|
 +++
-get whether our own headers should be the only headers added to the message
+set whether our own headers should be the only headers added to the message
 +++
 |[[from]]`from`|`String`|
 +++
-get from address of this mail
+set from address of this mail
 +++
 |[[html]]`html`|`String`|
 +++
-get the html text of this mail
+set the html text of this mail
 +++
 |[[subject]]`subject`|`String`|
 +++
-get the subject of this mail
+set the subject of this mail
 +++
 |[[text]]`text`|`String`|
 +++
-get the plain text of this mail
+set the plain text of this mail
 +++
 |[[to]]`to`|`Array of String`|
 +++
-get list of to addresses
+set list of to addresses
 +++
 |===
 
@@ -187,11 +193,11 @@ get list of to addresses
 ^|Name | Type ^| Description
 |[[messageID]]`messageID`|`String`|
 +++
-@return the messageID
+@param messageID the messageID to set
 +++
 |[[recipients]]`recipients`|`Array of String`|
 +++
-@return the recipients
+@param recipients the recipients to set
 +++
 |===
 
