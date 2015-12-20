@@ -43,6 +43,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private final Set<SMTPConnection> allConnections = new HashSet<>();
   private final NetClient netClient;
   private final MailConfig config;
+  private String hostname;
   private boolean closed = false;
   private int connCount;
 
@@ -64,8 +65,9 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     netClient = vertx.createNetClient(netClientOptions);
   }
 
-  void getConnection(Handler<AsyncResult<SMTPConnection>> resultHandler) {
+  void getConnection(String hostname, Handler<AsyncResult<SMTPConnection>> resultHandler) {
     log.debug("getConnection()");
+    this.hostname = hostname;
     if (closed) {
       resultHandler.handle(Future.failedFuture("connection pool is closed"));
     } else {
@@ -225,7 +227,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection conn = new SMTPConnection(netClient, this);
-    new SMTPStarter(vertx, conn, config, result -> {
+    new SMTPStarter(vertx, conn, config, hostname, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));
       } else {

@@ -33,14 +33,16 @@ class SMTPStarter {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPStarter.class);
 
-  Vertx vertx;
-  SMTPConnection connection;
-  MailConfig config;
-  Handler<AsyncResult<Void>> handler;
+  private final Vertx vertx;
+  private final SMTPConnection connection;
+  private String hostname;
+  private final MailConfig config;
+  private final Handler<AsyncResult<Void>> handler;
 
-  SMTPStarter(Vertx vertx, SMTPConnection connection, MailConfig config, Handler<AsyncResult<Void>> handler) {
+  SMTPStarter(Vertx vertx, SMTPConnection connection, MailConfig config, String hostname, Handler<AsyncResult<Void>> handler) {
     this.vertx = vertx;
     this.connection = connection;
+    this.hostname = hostname;
     this.config = config;
     this.handler = handler;
   }
@@ -52,7 +54,7 @@ class SMTPStarter {
 
   private void serverGreeting(String message) {
     log.debug("SMTPInitialDialogue");
-    new SMTPInitialDialogue(connection, config, v -> doAuthentication(), this::handleError).start(message);
+    new SMTPInitialDialogue(connection, config, hostname, v -> doAuthentication(), this::handleError).start(message);
   }
 
   private void doAuthentication() {

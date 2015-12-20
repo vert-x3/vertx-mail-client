@@ -17,8 +17,6 @@
 package io.vertx.ext.mail.mailencoder;
 
 import java.io.UnsupportedEncodingException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
@@ -102,18 +100,8 @@ class Utils {
     return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + count.getAndIncrement();
   }
 
-  static String generateMessageID(String setHostname) {
-    String hostname = setHostname != null ? setHostname : getMyHostname();
+  static String generateMessageID(String hostname) {
     return "<msg." + System.currentTimeMillis() + ".vertxmail." + count.getAndIncrement() + "@" + hostname + ">";
-  }
-
-  private static String getMyHostname() {
-    try {
-      InetAddress ip = InetAddress.getLocalHost();
-      return ip.getCanonicalHostName();
-    } catch (UnknownHostException e) {
-      return "localhost";
-    }
   }
 
   /*

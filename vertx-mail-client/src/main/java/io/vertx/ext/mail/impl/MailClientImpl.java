@@ -41,6 +41,9 @@ public class MailClientImpl implements MailClient {
   private final MailConfig config;
   private final SMTPConnectionPool connectionPool;
   private final MailHolder holder;
+  // hostname will cache getOwnhostname/getHostname result, we have to resolve only once
+  // this cannot be done in the constructor since it is async, so its not final
+  private String hostname = null;
 
   private volatile boolean closed = false;
 
@@ -65,14 +68,28 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        connectionPool.getConnection(result -> {
-          if (result.succeeded()) {
-            result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
-            sendMessage(message, result.result(), resultHandler, context);
-          } else {
-            handleError(result.cause(), resultHandler, context);
-          }
-        });
+        vertx.executeBlocking(
+            fut -> {
+              if (hostname == null) {
+                if(config.getOwnHostname() != null) {
+                  hostname = config.getOwnHostname();
+                } else {
+                  hostname = Utils.getHostname();
+                }
+              }
+              log.info("hostname: "+hostname);
+              fut.complete(null);
+            },
+            res -> {
+              connectionPool.getConnection(hostname, result -> {
+                if (result.succeeded()) {
+                  result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
+                  sendMessage(message, result.result(), resultHandler, context);
+                } else {
+                  handleError(result.cause(), resultHandler, context);
+                }
+              });
+            });
       }
     } else {
       handleError("mail client has been closed", resultHandler, context);
@@ -82,7 +99,7 @@ public class MailClientImpl implements MailClient {
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
       Context context) {
-    new SMTPSendMail(conn, email, config, result -> {
+    new SMTPSendMail(conn, email, config, hostname, result -> {
       if (result.succeeded()) {
         conn.returnToPool();
       } else {
@@ -99,8 +116,8 @@ public class MailClientImpl implements MailClient {
       handleError("sender address is not present", resultHandler, context);
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
-      && (email.getCc() == null || email.getCc().size() == 0)
-      && (email.getBcc() == null || email.getBcc().size() == 0)) {
+        && (email.getCc() == null || email.getCc().size() == 0)
+        && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
       handleError("no recipient addresses are present", resultHandler, context);
       return false;
@@ -143,6 +160,7 @@ public class MailClientImpl implements MailClient {
       LocalMap<String, MailHolder> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
       MailHolder theHolder = map.get(poolName);
       if (theHolder == null) {
+        log.info("holder hostname: "+hostname);
         theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName));
         map.put(poolName, theHolder);
       } else {
