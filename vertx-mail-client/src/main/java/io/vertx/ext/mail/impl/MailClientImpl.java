@@ -160,7 +160,6 @@ public class MailClientImpl implements MailClient {
       LocalMap<String, MailHolder> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
       MailHolder theHolder = map.get(poolName);
       if (theHolder == null) {
-        log.info("holder hostname: "+hostname);
         theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName));
         map.put(poolName, theHolder);
       } else {
