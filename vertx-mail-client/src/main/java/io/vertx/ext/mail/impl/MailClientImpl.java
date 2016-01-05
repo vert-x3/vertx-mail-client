@@ -71,7 +71,7 @@ public class MailClientImpl implements MailClient {
         vertx.executeBlocking(
             fut -> {
               if (hostname == null) {
-                if(config.getOwnHostname() != null) {
+                if (config.getOwnHostname() != null) {
                   hostname = config.getOwnHostname();
                 } else {
                   hostname = Utils.getHostname();
