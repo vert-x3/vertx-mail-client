@@ -68,38 +68,45 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        vertx.<String>executeBlocking(
-            fut -> {
-              String hname = hostname;
-              if (hname == null) {
+        if (hostname == null) {
+          vertx.<String>executeBlocking(
+              fut -> {
+                String hname;
                 if (config.getOwnHostname() != null) {
                   hname = config.getOwnHostname();
                 } else {
                   hname = Utils.getHostname();
                 }
-              }
-              fut.complete(hname);
-            },
-            res -> {
-              if (res.succeeded()) {
-                hostname = res.result();
-                connectionPool.getConnection(hostname, result -> {
-                  if (result.succeeded()) {
-                    result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
-                    sendMessage(message, result.result(), resultHandler, context);
-                  } else {
-                    handleError(result.cause(), resultHandler, context);
-                  }
-                });
-              } else {
-                handleError(res.cause(), resultHandler, context);
-              }
-            });
+                fut.complete(hname);
+              },
+              res -> {
+                if (res.succeeded()) {
+                  hostname = res.result();
+                  getConnection(message, resultHandler, context);
+                } else {
+                  handleError(res.cause(), resultHandler, context);
+                }
+              });
+        } else {
+          getConnection(message, resultHandler, context);
+        }
       }
     } else {
       handleError("mail client has been closed", resultHandler, context);
     }
     return this;
+  }
+
+  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+    connectionPool.getConnection(hostname, result -> {
+      if (result.succeeded()) {
+        final SMTPConnection connection = result.result();
+        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
+        sendMessage(message, connection, resultHandler, context);
+      } else {
+        handleError(result.cause(), resultHandler, context);
+      }
+    });
   }
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
