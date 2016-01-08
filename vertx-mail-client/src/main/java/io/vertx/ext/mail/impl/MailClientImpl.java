@@ -68,27 +68,32 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        vertx.executeBlocking(
+        vertx.<String>executeBlocking(
             fut -> {
-              if (hostname == null) {
+              String hname = hostname;
+              if (hname == null) {
                 if (config.getOwnHostname() != null) {
-                  hostname = config.getOwnHostname();
+                  hname = config.getOwnHostname();
                 } else {
-                  hostname = Utils.getHostname();
+                  hname = Utils.getHostname();
                 }
               }
-              log.info("hostname: "+hostname);
-              fut.complete(null);
+              fut.complete(hname);
             },
             res -> {
-              connectionPool.getConnection(hostname, result -> {
-                if (result.succeeded()) {
-                  result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
-                  sendMessage(message, result.result(), resultHandler, context);
-                } else {
-                  handleError(result.cause(), resultHandler, context);
-                }
-              });
+              if (res.succeeded()) {
+                hostname = res.result();
+                connectionPool.getConnection(hostname, result -> {
+                  if (result.succeeded()) {
+                    result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
+                    sendMessage(message, result.result(), resultHandler, context);
+                  } else {
+                    handleError(result.cause(), resultHandler, context);
+                  }
+                });
+              } else {
+                handleError(res.cause(), resultHandler, context);
+              }
             });
       }
     } else {

@@ -36,7 +36,6 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnectionPool.class);
 
-  private final Vertx vertx;
   private final int maxSockets;
   private final boolean keepAlive;
   private final Queue<Waiter> waiters = new ArrayDeque<>();
@@ -50,7 +49,6 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private Handler<Void> closeFinishedHandler;
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
-    this.vertx = vertx;
     this.config = config;
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
@@ -227,7 +225,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection conn = new SMTPConnection(netClient, this);
-    new SMTPStarter(vertx, conn, config, hostname, result -> {
+    new SMTPStarter(conn, config, hostname, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));
       } else {

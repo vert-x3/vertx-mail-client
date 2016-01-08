@@ -17,12 +17,11 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
-import io.vertx.core.Future;
 
 /**
  * this encapsulates open connection, initial dialogue and authentication
@@ -33,14 +32,12 @@ class SMTPStarter {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPStarter.class);
 
-  private final Vertx vertx;
   private final SMTPConnection connection;
   private String hostname;
   private final MailConfig config;
   private final Handler<AsyncResult<Void>> handler;
 
-  SMTPStarter(Vertx vertx, SMTPConnection connection, MailConfig config, String hostname, Handler<AsyncResult<Void>> handler) {
-    this.vertx = vertx;
+  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, Handler<AsyncResult<Void>> handler) {
     this.connection = connection;
     this.hostname = hostname;
     this.config = config;
