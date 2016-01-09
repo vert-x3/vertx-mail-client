@@ -23,9 +23,6 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 /**
  * Handle welcome line, EHLO/HELO, capabilities
  * and STARTTLS if necessary
@@ -43,10 +40,13 @@ class SMTPInitialDialogue {
 
   private MailConfig config;
 
-  public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, Handler<Void> finishedHandler,
+  private String hostname;
+
+  public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
                              Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
+    this.hostname = hostname;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
   }
@@ -67,7 +67,7 @@ class SMTPInitialDialogue {
   private void ehloCmd() {
     connection
       .write(
-        "EHLO " + getMyHostname(),
+        "EHLO " + hostname,
         message -> {
           log.debug("EHLO result: " + message);
           if (StatusCode.isStatusOk(message)) {
@@ -92,7 +92,7 @@ class SMTPInitialDialogue {
   }
 
   private void heloCmd() {
-    connection.write("HELO " + getMyHostname(), message -> {
+    connection.write("HELO " + hostname, message -> {
       log.debug("HELO result: " + message);
       if (StatusCode.isStatusOk(message)) {
         finished();
@@ -112,26 +112,7 @@ class SMTPInitialDialogue {
 //  }
 
   /**
-   * get the hostname either from config or by resolving our own address
-   *
-   * @return the hostname
-   */
-  private String getMyHostname() {
-    if (config.getOwnHostname() != null) {
-      return config.getOwnHostname();
-    } else {
-      try {
-        InetAddress ip = InetAddress.getLocalHost();
-        return ip.getCanonicalHostName();
-      } catch (UnknownHostException e) {
-        // as a last resort, use localhost
-        return "localhost";
-      }
-    }
-  }
-
-  /**
-   *
+   * run STARTTLS command and redo EHLO
    */
   private void startTLSCmd() {
     connection.write("STARTTLS", message -> {

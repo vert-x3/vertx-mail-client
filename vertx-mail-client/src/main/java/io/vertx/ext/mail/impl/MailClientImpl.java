@@ -41,6 +41,9 @@ public class MailClientImpl implements MailClient {
   private final MailConfig config;
   private final SMTPConnectionPool connectionPool;
   private final MailHolder holder;
+  // hostname will cache getOwnhostname/getHostname result, we have to resolve only once
+  // this cannot be done in the constructor since it is async, so its not final
+  private String hostname = null;
 
   private volatile boolean closed = false;
 
@@ -65,14 +68,28 @@ public class MailClientImpl implements MailClient {
     Context context = vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
-        connectionPool.getConnection(result -> {
-          if (result.succeeded()) {
-            result.result().setErrorHandler(th -> handleError(th, resultHandler, context));
-            sendMessage(message, result.result(), resultHandler, context);
-          } else {
-            handleError(result.cause(), resultHandler, context);
-          }
-        });
+        if (hostname == null) {
+          vertx.<String>executeBlocking(
+              fut -> {
+                String hname;
+                if (config.getOwnHostname() != null) {
+                  hname = config.getOwnHostname();
+                } else {
+                  hname = Utils.getHostname();
+                }
+                fut.complete(hname);
+              },
+              res -> {
+                if (res.succeeded()) {
+                  hostname = res.result();
+                  getConnection(message, resultHandler, context);
+                } else {
+                  handleError(res.cause(), resultHandler, context);
+                }
+              });
+        } else {
+          getConnection(message, resultHandler, context);
+        }
       }
     } else {
       handleError("mail client has been closed", resultHandler, context);
@@ -80,9 +97,21 @@ public class MailClientImpl implements MailClient {
     return this;
   }
 
+  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+    connectionPool.getConnection(hostname, result -> {
+      if (result.succeeded()) {
+        final SMTPConnection connection = result.result();
+        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
+        sendMessage(message, connection, resultHandler, context);
+      } else {
+        handleError(result.cause(), resultHandler, context);
+      }
+    });
+  }
+
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
       Context context) {
-    new SMTPSendMail(conn, email, config, result -> {
+    new SMTPSendMail(conn, email, config, hostname, result -> {
       if (result.succeeded()) {
         conn.returnToPool();
       } else {
@@ -99,8 +128,8 @@ public class MailClientImpl implements MailClient {
       handleError("sender address is not present", resultHandler, context);
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
-      && (email.getCc() == null || email.getCc().size() == 0)
-      && (email.getBcc() == null || email.getBcc().size() == 0)) {
+        && (email.getCc() == null || email.getCc().size() == 0)
+        && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
       handleError("no recipient addresses are present", resultHandler, context);
       return false;

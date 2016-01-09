@@ -36,20 +36,19 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnectionPool.class);
 
-  private final Vertx vertx;
   private final int maxSockets;
   private final boolean keepAlive;
   private final Queue<Waiter> waiters = new ArrayDeque<>();
   private final Set<SMTPConnection> allConnections = new HashSet<>();
   private final NetClient netClient;
   private final MailConfig config;
+  private String hostname;
   private boolean closed = false;
   private int connCount;
 
   private Handler<Void> closeFinishedHandler;
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
-    this.vertx = vertx;
     this.config = config;
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
@@ -64,8 +63,9 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     netClient = vertx.createNetClient(netClientOptions);
   }
 
-  void getConnection(Handler<AsyncResult<SMTPConnection>> resultHandler) {
+  void getConnection(String hostname, Handler<AsyncResult<SMTPConnection>> resultHandler) {
     log.debug("getConnection()");
+    this.hostname = hostname;
     if (closed) {
       resultHandler.handle(Future.failedFuture("connection pool is closed"));
     } else {
@@ -225,7 +225,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection conn = new SMTPConnection(netClient, this);
-    new SMTPStarter(vertx, conn, config, result -> {
+    new SMTPStarter(conn, config, hostname, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));
       } else {

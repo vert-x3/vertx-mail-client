@@ -40,15 +40,17 @@ class SMTPSendMail {
   private final MailConfig config;
   private final Handler<AsyncResult<MailResult>> resultHandler;
   private final MailResult mailResult;
+  private final String hostname;
 
   private String mailMessage;
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, Handler<AsyncResult<MailResult>> resultHandler) {
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, String hostname, Handler<AsyncResult<MailResult>> resultHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
     this.resultHandler = resultHandler;
     mailResult = new MailResult();
+    this.hostname = hostname;
   }
 
   void start() {
@@ -235,7 +237,7 @@ class SMTPSendMail {
    */
   private void createMailMessage() {
     if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email, config.getOwnHostname());
+      MailEncoder encoder = new MailEncoder(email, hostname);
       mailMessage = encoder.encode();
       mailResult.setMessageID(encoder.getMessageID());
     }

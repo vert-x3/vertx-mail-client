@@ -16,6 +16,8 @@
 
 package io.vertx.ext.mail.impl;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -88,6 +90,23 @@ public final class Utils {
     final boolean esmtpSupported = message.toUpperCase(Locale.ENGLISH).contains("ESMTP");
     log.debug("isEsmtpSupported:" + esmtpSupported);
     return esmtpSupported;
+  }
+
+  /**
+   * get the hostname by resolving our own address
+   *
+   * this method is not async due to dns call, we run this with executeBlocking
+   *
+   * @return the hostname
+   */
+  public static String getHostname() {
+    try {
+      InetAddress ip = InetAddress.getLocalHost();
+      return ip.getCanonicalHostName();
+    } catch (UnknownHostException e) {
+      // as a last resort, use localhost
+      return "localhost";
+    }
   }
 
 }
