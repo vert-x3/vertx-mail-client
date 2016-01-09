@@ -95,7 +95,7 @@ public final class Utils {
   /**
    * get the hostname by resolving our own address
    *
-   * this method is not async due to dns call, we run this with executeBlocking
+   * this method is not async due to possible dns call, we run this with executeBlocking
    *
    * @return the hostname
    */
@@ -105,6 +105,8 @@ public final class Utils {
       return ip.getCanonicalHostName();
     } catch (UnknownHostException e) {
       // as a last resort, use localhost
+      // another common convention would be to use the clients ip address
+      // like [192.168.1.1] or [127.0.0.1]
       return "localhost";
     }
   }
