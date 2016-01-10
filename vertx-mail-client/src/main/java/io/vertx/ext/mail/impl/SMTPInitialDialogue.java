@@ -107,10 +107,6 @@ class SMTPInitialDialogue {
     errorHandler.handle(new NoStackTraceThrowable(message));
   }
 
-//  private void handleError(Throwable throwable) {
-//    errorHandler.handle(throwable);
-//  }
-
   /**
    * run STARTTLS command and redo EHLO
    */

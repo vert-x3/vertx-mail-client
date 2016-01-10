@@ -139,9 +139,6 @@ class SMTPAuthentication {
     });
   }
 
-  /**
-   *
-   */
   private void finished() {
     finishedHandler.handle(null);
   }
