@@ -54,7 +54,7 @@ class SMTPInitialDialogue {
   public void start(final String message) {
     log.debug("server greeting: " + message);
     if (StatusCode.isStatusOk(message)) {
-      if (Utils.isEsmtpSupported(message)) {
+      if (config.isForceEsmtp() || Utils.isEsmtpSupported(message)) {
         ehloCmd();
       } else {
         heloCmd();

@@ -53,6 +53,7 @@ public class MailConfig {
   private int maxPoolSize;
   private boolean keepAlive;
   private boolean allowRcptErrors;
+  private boolean forceEsmtp;
 
   /**
    * construct a config object with default options
@@ -488,6 +489,30 @@ public class MailConfig {
    */
   public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
     this.allowRcptErrors = allowRcptErrors;
+    return this;
+  }
+
+  /**
+   * get if using esmtp even though the server does not announce it
+   *<p>
+   * if true, we will assume esmtp even though the server does not contain "esmtp" in the header
+   *<p>
+   * @return the esmtp force mode
+   */
+  public boolean isForceEsmtp() {
+    return forceEsmtp;
+  }
+
+  /**
+   * set if using esmtp even though the server does not announce it
+   * @param forceEsmtp esmtp force mode to set (default is false)
+   *<p>
+   * if true, we will assume esmtp even though the server does not contain "esmtp" in the header
+   *<p>
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setForceEsmtp(boolean forceEsmtp) {
+    this.forceEsmtp = forceEsmtp;
     return this;
   }
 

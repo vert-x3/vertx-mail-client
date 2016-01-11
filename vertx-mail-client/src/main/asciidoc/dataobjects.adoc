@@ -58,6 +58,10 @@ set string of allowed auth methods.
  if the server supports them. If null or empty all supported methods may be
  used
 +++
+|[[forceEsmtp]]`forceEsmtp`|`Boolean`|
++++
+set if using esmtp even though the server does not announce it
++++
 |[[hostname]]`hostname`|`String`|
 +++
 Set the hostname of the smtp server.
