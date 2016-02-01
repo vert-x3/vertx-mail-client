@@ -25,6 +25,7 @@
 ^|Name | Type ^| Description
 |[[allowRcptErrors]]`allowRcptErrors`|`Boolean`|-
 |[[authMethods]]`authMethods`|`String`|-
+|[[blockingHostnameResolution]]`blockingHostnameResolution`|`Boolean`|-
 |[[hostname]]`hostname`|`String`|-
 |[[keepAlive]]`keepAlive`|`Boolean`|-
 |[[keyStore]]`keyStore`|`String`|-
