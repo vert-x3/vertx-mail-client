@@ -37,6 +37,9 @@ public class MailConfig {
   public static final int DEFAULT_PORT = 25;
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_MAX_POOL_SIZE = 10;
+  public static final boolean DEFAULT_BLOCKING_HOST_RESOLUTION = false;
+  public static final boolean DEFAULT_KEEP_ALIVE = true;
+
 
   private String hostname;
   private int port;
@@ -53,6 +56,7 @@ public class MailConfig {
   private int maxPoolSize;
   private boolean keepAlive;
   private boolean allowRcptErrors;
+  private boolean blockingHostnameResolution;
 
   /**
    * construct a config object with default options
@@ -63,7 +67,8 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = true;
+    keepAlive = DEFAULT_KEEP_ALIVE;
+    blockingHostnameResolution = DEFAULT_BLOCKING_HOST_RESOLUTION;
   }
 
   /**
@@ -77,7 +82,8 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = true;
+    keepAlive = DEFAULT_KEEP_ALIVE;
+    blockingHostnameResolution = DEFAULT_BLOCKING_HOST_RESOLUTION;
   }
 
   /**
@@ -92,7 +98,8 @@ public class MailConfig {
     starttls = DEFAULT_TLS;
     login = DEFAULT_LOGIN;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = true;
+    keepAlive = DEFAULT_KEEP_ALIVE;
+    blockingHostnameResolution = DEFAULT_BLOCKING_HOST_RESOLUTION;
   }
 
   /**
@@ -109,7 +116,8 @@ public class MailConfig {
     this.starttls = starttls;
     this.login = login;
     maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = true;
+    keepAlive = DEFAULT_KEEP_ALIVE;
+    blockingHostnameResolution = DEFAULT_BLOCKING_HOST_RESOLUTION;
   }
 
   /**
@@ -133,6 +141,7 @@ public class MailConfig {
     maxPoolSize = other.maxPoolSize;
     keepAlive = other.keepAlive;
     allowRcptErrors = other.allowRcptErrors;
+    blockingHostnameResolution = other.blockingHostnameResolution;
   }
 
   /**
@@ -160,8 +169,9 @@ public class MailConfig {
     authMethods = config.getString("authMethods");
     ownHostname = config.getString("ownHostname");
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
-    keepAlive = config.getBoolean("keepAlive", true);
+    keepAlive = config.getBoolean("keepAlive", DEFAULT_KEEP_ALIVE);
     allowRcptErrors = config.getBoolean("allowRcptErrors", false);
+    blockingHostnameResolution = config.getBoolean("blockingHostnameResolution", DEFAULT_BLOCKING_HOST_RESOLUTION);
   }
 
   /**
@@ -335,6 +345,7 @@ public class MailConfig {
 
   /**
    * get the key store filename to be used when opening SMTP connections
+   *
    * @return the keyStore
    */
   public String getKeyStore() {
@@ -357,6 +368,7 @@ public class MailConfig {
 
   /**
    * get the key store password to be used when opening SMTP connections
+   *
    * @return the keyStorePassword
    */
   public String getKeyStorePassword() {
@@ -365,6 +377,7 @@ public class MailConfig {
 
   /**
    * get the key store password to be used when opening SMTP connections
+   *
    * @param keyStorePassword the key store passwords to be set
    * @return a reference to this, so the API can be used fluently
    */
@@ -445,9 +458,10 @@ public class MailConfig {
   /**
    * get if connection pool is enabled
    * default is true
-   *<p>
+   * <p>
    * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-   *<p>
+   * <p>
+   *
    * @return keep alive value
    */
   public boolean isKeepAlive() {
@@ -457,9 +471,10 @@ public class MailConfig {
   /**
    * set if connection pool is enabled
    * default is true
-   *<p>
+   * <p>
    * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-   *<p>
+   * <p>
+   *
    * @return this to be able to use the object fluently
    */
   public MailConfig setKeepAlive(boolean keepAlive) {
@@ -469,9 +484,10 @@ public class MailConfig {
 
   /**
    * get if sending allows rcpt errors (default is false)
-   *<p>
+   * <p>
    * if true, the mail will be sent to the recipients that the server accepted, if any
-   *<p>
+   * <p>
+   *
    * @return the allowRcptErrors
    */
   public boolean isAllowRcptErrors() {
@@ -480,10 +496,11 @@ public class MailConfig {
 
   /**
    * set if sending allows rcpt errors
+   *
    * @param allowRcptErrors the allowRcptErrors to set (default is false)
-   *<p>
-   * if true, the mail will be sent to the recipients that the server accepted, if any
-   *<p>
+   *                        <p>
+   *                        if true, the mail will be sent to the recipients that the server accepted, if any
+   *                        <p>
    * @return this to be able to use the object fluently
    */
   public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
@@ -539,13 +556,16 @@ public class MailConfig {
     if (allowRcptErrors) {
       json.put("allowRcptErrors", allowRcptErrors);
     }
+    if (blockingHostnameResolution) {
+      json.put(("blockingHostnameResolution"), blockingHostnameResolution);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, blockingHostnameResolution);
   }
 
   /*
@@ -576,4 +596,38 @@ public class MailConfig {
     return getList().hashCode();
   }
 
+  /**
+   * Checks whether or not the resolution of the host should be made in an executeBlocking block. This is because DNS
+   * resolution may blocks the event loop for slow DNS server (or because the network is slow).
+   *
+   * This option should only be used for host specified using a domain name (so not IP).
+   *
+   * This option is a temporary work-around, as blocking DNS resolution would be handled in vert.x core in later
+   * version.
+   *
+   * @return whether or not the DNS resolution of the host name should be made in a blocking block. {@code false} by
+   * default.
+   */
+  public boolean isBlockingHostnameResolution() {
+    return blockingHostnameResolution;
+  }
+
+  /**
+   * Sets whether or not the SMTP host name resolution should be executed in an executeBlocking block. This is because DNS
+   * resolution may blocks the event loop for slow DNS server (or because the network is slow).
+   *
+   * This option should only be used for host specified using a domain name (so not IP).
+   *
+   * This option is a temporary work-around, as blocking DNS resolution would be handled in vert.x core in later
+   * version.
+   *
+   * @param blockingHostnameResolution {@code true} to execute the DNS resolution using a blocking manner, {@code false}
+   *                               otherwise. {@code false} by default.
+   *
+   * @return the current {@link MailConfig}
+   */
+  public MailConfig setBlockingHostnameResolution(boolean blockingHostnameResolution) {
+    this.blockingHostnameResolution = blockingHostnameResolution;
+    return this;
+  }
 }

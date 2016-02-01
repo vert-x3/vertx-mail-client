@@ -16,9 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Context;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
@@ -26,6 +24,11 @@ import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.MailConfig;
+
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
+import static com.sun.org.apache.xalan.internal.xsltc.compiler.util.Type.String;
 
 /**
  * SMTP connection to a server.
@@ -37,6 +40,8 @@ import io.vertx.ext.mail.MailConfig;
 class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+
+  private final Vertx vertx;
 
   private NetSocket ns;
   private boolean socketClosed;
@@ -51,7 +56,7 @@ class SMTPConnection {
   private final ConnectionLifeCycleListener listener;
   private Context context;
 
-  SMTPConnection(NetClient client, ConnectionLifeCycleListener listener) {
+  SMTPConnection(Vertx vertx, NetClient client, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
     doShutdown = false;
@@ -59,6 +64,7 @@ class SMTPConnection {
     socketShutDown = false;
     this.client = client;
     this.listener = listener;
+    this.vertx = vertx;
   }
 
   /**
@@ -173,7 +179,31 @@ class SMTPConnection {
     broken = false;
     idle = false;
 
-    client.connect(config.getPort(), config.getHostname(), asyncResult -> {
+    if (config.isBlockingHostnameResolution()) {
+      // We need to resolve the DNS name in an executeBlocking block to avoid blocking the event loop if the DNS server
+      // is very slow
+      vertx.<String>executeBlocking(fut -> {
+        // This triggers the resolution of the address.
+        InetSocketAddress address = new InetSocketAddress(config.getHostname(), config.getPort());
+        if (address.isUnresolved()) {
+          fut.fail("Cannot resolve " + config.getHostname());
+        } else {
+          fut.complete(address.getAddress().getHostAddress());
+        }
+      }, ip -> {
+        if (ip.failed()) {
+          errorHandler.handle(ip.cause());
+          return;
+        }
+        connect(config, initialReplyHandler, ip.result());
+      });
+    } else {
+      connect(config, initialReplyHandler, config.getHostname());
+    }
+  }
+
+  private void connect(MailConfig config, Handler<String> initialReplyHandler, String host) {
+    client.connect(config.getPort(), host, asyncResult -> {
       if (asyncResult.succeeded()) {
         context = Vertx.currentContext();
         ns = asyncResult.result();
