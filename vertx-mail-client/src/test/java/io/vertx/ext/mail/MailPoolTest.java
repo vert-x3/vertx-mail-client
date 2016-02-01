@@ -71,41 +71,6 @@ public class MailPoolTest extends SMTPTestWiser {
   }
 
   @Test
-  public void mailTestWithBlockingDNSResolution(TestContext context) {
-    Async async = context.async();
-
-    MailClient mailClient = MailClient.createNonShared(vertx, configNoSSL().setBlockingHostnameResolution(true));
-
-    MailMessage email = exampleMessage();
-
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
-    mailClient.sendMail(email, result -> {
-      log.info("mail finished");
-      pass1.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mailClient.sendMail(email, result2 -> {
-          log.info("mail finished");
-          pass2.passOnce();
-          mailClient.close();
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            async.complete();
-          } else {
-            log.warn("got exception", result2.cause());
-            context.fail(result2.cause());
-          }
-        });
-      } else {
-        log.warn("got exception", result.cause());
-        context.fail(result.cause());
-      }
-    });
-  }
-
-  @Test
   public void mailConcurrentTest(TestContext context) {
     log.info("starting");
 

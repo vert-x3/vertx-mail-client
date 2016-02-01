@@ -58,16 +58,6 @@ set string of allowed auth methods.
  if the server supports them. If null or empty all supported methods may be
  used
 +++
-|[[blockingHostnameResolution]]`blockingHostnameResolution`|`Boolean`|
-+++
-Sets whether or not the SMTP host name resolution should be executed in an executeBlocking block. This is because DNS
- resolution may blocks the event loop for slow DNS server (or because the network is slow).
-
- This option should only be used for host specified using a domain name (so not IP).
-
- This option is a temporary work-around, as blocking DNS resolution would be handled in vert.x core in later
- version.
-+++
 |[[hostname]]`hostname`|`String`|
 +++
 Set the hostname of the smtp server.

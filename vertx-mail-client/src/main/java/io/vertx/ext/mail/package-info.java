@@ -175,8 +175,6 @@
  * * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
  * * `keyStorePassword` String password used to decrypt the key store
  * * `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted
- * * `blockingHostnameResolution` boolean if true, resolve the server host name in an blocking block. This is because
- * on slow DNS server, DNS resolution may block the event loop (default is false).
  *
  * === MailResult object
  * The MailResult object has the following members
