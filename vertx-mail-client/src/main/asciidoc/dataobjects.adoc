@@ -66,9 +66,9 @@ Set the hostname of the smtp server.
 +++
 set if connection pool is enabled
  default is true
-<p>
+ <p>
  if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-<p>
+ <p>
 +++
 |[[keyStore]]`keyStore`|`String`|
 +++

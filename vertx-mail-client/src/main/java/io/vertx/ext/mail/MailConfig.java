@@ -62,7 +62,7 @@ public class MailConfig {
    * construct a config object with default options
    */
   public MailConfig() {
-    // USe default values.
+    // Use the default values.
   }
 
   /**
@@ -71,6 +71,7 @@ public class MailConfig {
    * @param hostname the hostname of the mail server
    */
   public MailConfig(String hostname) {
+    this();
     this.hostname = hostname;
   }
 
@@ -81,6 +82,7 @@ public class MailConfig {
    * @param port     the port of the mail server
    */
   public MailConfig(String hostname, int port) {
+    this();
     this.hostname = hostname;
     this.port = port;
   }
@@ -94,8 +96,7 @@ public class MailConfig {
    * @param login    whether to use Login or not
    */
   public MailConfig(String hostname, int port, StartTLSOptions starttls, LoginOption login) {
-    this.hostname = hostname;
-    this.port = port;
+    this(hostname, port);
     this.starttls = starttls;
     this.login = login;
   }
@@ -330,6 +331,7 @@ public class MailConfig {
 
   /**
    * get the key store filename to be used when opening SMTP connections
+   *
    * @return the keyStore
    */
   public String getKeyStore() {
@@ -352,6 +354,7 @@ public class MailConfig {
 
   /**
    * get the key store password to be used when opening SMTP connections
+   *
    * @return the keyStorePassword
    */
   public String getKeyStorePassword() {
@@ -360,6 +363,7 @@ public class MailConfig {
 
   /**
    * get the key store password to be used when opening SMTP connections
+   *
    * @param keyStorePassword the key store passwords to be set
    * @return a reference to this, so the API can be used fluently
    */
@@ -440,9 +444,10 @@ public class MailConfig {
   /**
    * get if connection pool is enabled
    * default is true
-   *<p>
+   * <p>
    * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-   *<p>
+   * <p>
+   *
    * @return keep alive value
    */
   public boolean isKeepAlive() {
@@ -452,9 +457,10 @@ public class MailConfig {
   /**
    * set if connection pool is enabled
    * default is true
-   *<p>
+   * <p>
    * if the connection pooling is disabled, the max number of sockets is enforced nevertheless
-   *<p>
+   * <p>
+   *
    * @return this to be able to use the object fluently
    */
   public MailConfig setKeepAlive(boolean keepAlive) {
@@ -464,9 +470,10 @@ public class MailConfig {
 
   /**
    * get if sending allows rcpt errors (default is false)
-   *<p>
+   * <p>
    * if true, the mail will be sent to the recipients that the server accepted, if any
-   *<p>
+   * <p>
+   *
    * @return the allowRcptErrors
    */
   public boolean isAllowRcptErrors() {
@@ -475,10 +482,11 @@ public class MailConfig {
 
   /**
    * set if sending allows rcpt errors
+   *
    * @param allowRcptErrors the allowRcptErrors to set (default is false)
-   *<p>
-   * if true, the mail will be sent to the recipients that the server accepted, if any
-   *<p>
+   *                        <p>
+   *                        if true, the mail will be sent to the recipients that the server accepted, if any
+   *                        <p>
    * @return this to be able to use the object fluently
    */
   public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
@@ -570,5 +578,4 @@ public class MailConfig {
   public int hashCode() {
     return getList().hashCode();
   }
-
 }
