@@ -31,6 +31,17 @@ public class MailConfigTest {
   }
 
   @Test
+  public void toJsonDoesNotIntroduceNullValues() {
+    MailConfig mailConfig = new MailConfig();
+    MailConfig config = new MailConfig(mailConfig.toJson());
+    assertNotNull(config.getHostname());
+    assertEquals(config.getPort(), 25);
+    assertEquals(config.getStarttls(), StartTLSOptions.OPTIONAL);
+    assertEquals(config.getLogin(), LoginOption.NONE);
+    assertEquals(config.getMaxPoolSize(), 10);
+  }
+
+  @Test
   public void toJsonTest2() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setUsername("username").setPassword("password").setSsl(true);
@@ -91,7 +102,8 @@ public class MailConfigTest {
   public void newJsonEmptyTest() {
     JsonObject json = new JsonObject("{}");
     MailConfig mailConfig = new MailConfig(json);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"maxPoolSize\":10}", mailConfig.toJson().encode());
+    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"," +
+        "\"maxPoolSize\":10}", mailConfig.toJson().encode());
   }
 
   @Test
