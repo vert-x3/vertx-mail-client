@@ -37,35 +37,32 @@ public class MailConfig {
   public static final int DEFAULT_PORT = 25;
   public static final String DEFAULT_HOST = "localhost";
   public static final int DEFAULT_MAX_POOL_SIZE = 10;
+  public static final boolean DEFAULT_SSL = false;
+  public static final boolean DEFAULT_TRUST_ALL = false;
+  public static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
   public static final boolean DEFAULT_KEEP_ALIVE = true;
 
-
-  private String hostname;
-  private int port;
-  private StartTLSOptions starttls;
-  private LoginOption login;
+  private String hostname = DEFAULT_HOST;
+  private int port = DEFAULT_PORT;
+  private StartTLSOptions starttls = DEFAULT_TLS;
+  private LoginOption login = DEFAULT_LOGIN;
   private String authMethods;
   private String username;
   private String password;
-  private boolean ssl;
-  private boolean trustAll;
+  private boolean ssl = DEFAULT_SSL;
+  private boolean trustAll = DEFAULT_TRUST_ALL;
   private String keyStore;
   private String keyStorePassword;
   private String ownHostname;
-  private int maxPoolSize;
-  private boolean keepAlive;
-  private boolean allowRcptErrors;
+  private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
+  private boolean keepAlive = DEFAULT_KEEP_ALIVE;
+  private boolean allowRcptErrors = DEFAULT_ALLOW_RCPT_ERRORS;
 
   /**
    * construct a config object with default options
    */
   public MailConfig() {
-    hostname = DEFAULT_HOST;
-    port = DEFAULT_PORT;
-    starttls = DEFAULT_TLS;
-    login = DEFAULT_LOGIN;
-    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = DEFAULT_KEEP_ALIVE;
+    // Use the default values.
   }
 
   /**
@@ -74,12 +71,8 @@ public class MailConfig {
    * @param hostname the hostname of the mail server
    */
   public MailConfig(String hostname) {
+    this();
     this.hostname = hostname;
-    port = DEFAULT_PORT;
-    starttls = DEFAULT_TLS;
-    login = DEFAULT_LOGIN;
-    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = DEFAULT_KEEP_ALIVE;
   }
 
   /**
@@ -89,12 +82,9 @@ public class MailConfig {
    * @param port     the port of the mail server
    */
   public MailConfig(String hostname, int port) {
+    this();
     this.hostname = hostname;
     this.port = port;
-    starttls = DEFAULT_TLS;
-    login = DEFAULT_LOGIN;
-    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = DEFAULT_KEEP_ALIVE;
   }
 
   /**
@@ -106,12 +96,9 @@ public class MailConfig {
    * @param login    whether to use Login or not
    */
   public MailConfig(String hostname, int port, StartTLSOptions starttls, LoginOption login) {
-    this.hostname = hostname;
-    this.port = port;
+    this(hostname, port);
     this.starttls = starttls;
     this.login = login;
-    maxPoolSize = DEFAULT_MAX_POOL_SIZE;
-    keepAlive = DEFAULT_KEEP_ALIVE;
   }
 
   /**
@@ -145,25 +132,32 @@ public class MailConfig {
   public MailConfig(JsonObject config) {
     hostname = config.getString("hostname", DEFAULT_HOST);
     port = config.getInteger("port", DEFAULT_PORT);
+
     String starttlsOption = config.getString("starttls");
     if (starttlsOption != null) {
       starttls = StartTLSOptions.valueOf(starttlsOption.toUpperCase(Locale.ENGLISH));
+    } else {
+      starttls = DEFAULT_TLS;
     }
+
     String loginOption = config.getString("login");
     if (loginOption != null) {
       login = LoginOption.valueOf(loginOption.toUpperCase(Locale.ENGLISH));
+    } else {
+      login = DEFAULT_LOGIN;
     }
+
     username = config.getString("username");
     password = config.getString("password");
-    ssl = config.getBoolean("ssl", false);
-    trustAll = config.getBoolean("trustAll", false);
+    ssl = config.getBoolean("ssl", DEFAULT_SSL);
+    trustAll = config.getBoolean("trustAll", DEFAULT_TRUST_ALL);
     keyStore = config.getString("keyStore");
     keyStorePassword = config.getString("keyStorePassword");
     authMethods = config.getString("authMethods");
     ownHostname = config.getString("ownHostname");
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
     keepAlive = config.getBoolean("keepAlive", DEFAULT_KEEP_ALIVE);
-    allowRcptErrors = config.getBoolean("allowRcptErrors", false);
+    allowRcptErrors = config.getBoolean("allowRcptErrors", DEFAULT_ALLOW_RCPT_ERRORS);
   }
 
   /**
@@ -524,10 +518,10 @@ public class MailConfig {
       json.put("password", password);
     }
     if (ssl) {
-      json.put("ssl", ssl);
+      json.put("ssl", true);
     }
     if (trustAll) {
-      json.put("trustAll", trustAll);
+      json.put("trustAll", true);
     }
     if (keyStore != null) {
       json.put("keyStore", keyStore);
@@ -543,10 +537,10 @@ public class MailConfig {
     }
     json.put("maxPoolSize", maxPoolSize);
     if (!keepAlive) {
-      json.put("keepAlive", keepAlive);
+      json.put("keepAlive", false);
     }
     if (allowRcptErrors) {
-      json.put("allowRcptErrors", allowRcptErrors);
+      json.put("allowRcptErrors", true);
     }
 
     return json;
