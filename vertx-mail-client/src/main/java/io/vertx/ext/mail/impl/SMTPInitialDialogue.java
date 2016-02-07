@@ -54,7 +54,7 @@ class SMTPInitialDialogue {
   public void start(final String message) {
     log.debug("server greeting: " + message);
     if (StatusCode.isStatusOk(message)) {
-      if (Utils.isEsmtpSupported(message)) {
+      if (!config.isDisableEsmtp()) {
         ehloCmd();
       } else {
         heloCmd();
@@ -82,11 +82,10 @@ class SMTPInitialDialogue {
             }
           } else {
             // if EHLO fails, assume we have to do HELO
-            if (StatusCode.isStatusTemporary(message)) {
-              heloCmd();
-            } else {
-              handleError("EHLO failed with " + message);
-            }
+            // if the command is not supported, the response is probably
+            // a 5xx error code and we should be able to continue, if not
+            // the options disableEsmtp has to be set
+            heloCmd();
           }
         });
   }
