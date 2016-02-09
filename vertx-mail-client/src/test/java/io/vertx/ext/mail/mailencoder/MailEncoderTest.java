@@ -524,4 +524,15 @@ public class MailEncoderTest {
     assertThat(mime, containsString("=09"));
   }
 
+  @Test
+  public void testAdditionalHeadersAttachment() {
+    MailMessage message = new MailMessage();
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("XXX"))
+      .setHeaders(new CaseInsensitiveHeaders().add("X-Header", "value"));
+    message.setAttachment(attachment);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("X-Header: value"));
+  }
+
 }

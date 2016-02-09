@@ -56,6 +56,7 @@
 |[[fixedHeaders]]`fixedHeaders`|`Boolean`|-
 |[[from]]`from`|`String`|-
 |[[html]]`html`|`String`|-
+|[[inlineAttachment]]`inlineAttachment`|`Array of link:dataobjects.html#MailAttachment[MailAttachment]`|-
 |[[subject]]`subject`|`String`|-
 |[[text]]`text`|`String`|-
 |[[to]]`to`|`Array of String`|-

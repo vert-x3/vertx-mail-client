@@ -176,7 +176,7 @@ public class MailMessageTest {
   @Test
   public void testHash() {
     assertEquals(new MailMessage().hashCode(), new MailMessage().hashCode());
-    assertEquals(-1263218388, new MailMessage().setFrom("user@example.com").hashCode());
+    assertEquals(-505101474, new MailMessage().setFrom("user@example.com").hashCode());
   }
 
   @Test

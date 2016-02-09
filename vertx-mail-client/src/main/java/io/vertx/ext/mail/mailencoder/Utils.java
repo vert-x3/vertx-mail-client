@@ -94,15 +94,6 @@ class Utils {
     return false;
   }
 
-  static String base64(String string) {
-    try {
-      return Base64.getMimeEncoder().encodeToString(string.getBytes("ISO-8859-1"));
-    } catch (UnsupportedEncodingException e) {
-      // doesn't happen
-      return "";
-    }
-  }
-
   private static AtomicInteger count = new AtomicInteger(0);
 
   static String generateBoundary() {
@@ -237,8 +228,10 @@ class Utils {
     return format.format(new Date());
   }
 
+  private final static byte lf[] = { 10 };
+  
   public static String base64(byte[] bytes) {
-    return Base64.getMimeEncoder().encodeToString(bytes);
+    return Base64.getMimeEncoder(76, lf).encodeToString(bytes);
   }
 
 }

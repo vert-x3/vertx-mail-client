@@ -48,18 +48,12 @@ public class UtilsTest {
   }
 
   @Test
-  public void testBase64() {
-    assertEquals("", Utils.base64(""));
-    assertEquals("Kg==", Utils.base64("*"));
+  public void testBase64() throws Exception {
+    assertEquals("", Utils.base64("".getBytes("ISO-8859-1")));
+    assertEquals("Kg==", Utils.base64("*".getBytes("ISO-8859-1")));
     assertEquals("KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq\n"
         + "KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg==",
-      conv2nl(Utils
-        .base64("**********************************************************************************************")));
-  }
-
-  // convert windows style to unix style line endings, this probably necessary for the unit tests only
-  private String conv2nl(String string) {
-    return string.replace("\r\n", "\n");
+      Utils.base64("**********************************************************************************************".getBytes("ISO-8859-1")));
   }
 
 }
