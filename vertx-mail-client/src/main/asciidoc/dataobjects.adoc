@@ -50,6 +50,9 @@ set the name
 |[[allowRcptErrors]]`allowRcptErrors`|`Boolean`|
 +++
 set if sending allows rcpt errors
+ <p>
+ if true, the mail will be sent to the recipients that the server accepted, if any
+ <p>
 +++
 |[[authMethods]]`authMethods`|`String`|
 +++
@@ -57,6 +60,19 @@ set string of allowed auth methods.
  if set only these methods will be used
  if the server supports them. If null or empty all supported methods may be
  used
++++
+|[[disableEsmtp]]`disableEsmtp`|`Boolean`|
++++
+set if ESMTP should be tried as first command (EHLO)
+ <p>
+ rfc 1869 states that clients should always attempt EHLO as first command to determine if ESMTP
+ is supported, if this returns an error code, HELO is tried to use old SMTP.
+ If there is a server that does not support EHLO and does not give an error code back, the connection
+ should be closed and retried with HELO. We do not do that and rather support turning off ESMTP with a
+ setting. The odds of this actually happening are very small since the client will not connect to arbitrary
+ smtp hosts on the internet. Since the client knows that is connects to a host that doesn't support ESMTP/EHLO
+ in that way, the property has to be set to false.
+ <p>
 +++
 |[[hostname]]`hostname`|`String`|
 +++

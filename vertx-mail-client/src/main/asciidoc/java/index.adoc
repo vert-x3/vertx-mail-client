@@ -182,6 +182,7 @@ The configuration has the following properties
 * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
 * `keyStorePassword` String password used to decrypt the key store
 * `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted
+* `disableEsmtp` boolean if true, ESMTP-related commands will not be used (set if your smtp server doesn't even give a proper error response code for the EHLO command)
 
 === MailResult object
 The MailResult object has the following members

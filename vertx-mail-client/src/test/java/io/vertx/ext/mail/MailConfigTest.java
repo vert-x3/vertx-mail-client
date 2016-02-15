@@ -73,8 +73,9 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setKeepAlive(false);
     mailConfig.setAllowRcptErrors(true);
+    mailConfig.setDisableEsmtp(true);
     assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"keepAlive\":false,\"allowRcptErrors\":true}",
+      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"keepAlive\":false,\"allowRcptErrors\":true,\"disableEsmtp\":true}",
       mailConfig.toJson().toString());
   }
 
@@ -262,6 +263,15 @@ public class MailConfigTest {
     assertFalse(mailConfig.isAllowRcptErrors());
     mailConfig.setAllowRcptErrors(true);
     assertTrue(mailConfig.isAllowRcptErrors());
+  }
+
+  @Test
+  public void testDisableEsmtp() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setDisableEsmtp(false);
+    assertFalse(mailConfig.isDisableEsmtp());
+    mailConfig.setDisableEsmtp(true);
+    assertTrue(mailConfig.isDisableEsmtp());
   }
 
   @Test

@@ -52,11 +52,41 @@ public class HeloTest extends SMTPTestDummy {
     testSuccess();
   }
 
+  /*
+   * if the server does not even answer correctly to EHLO, we can turn it off
+   */
+  @Test
+  public void mailNoEhloTest(TestContext testContext) {
+    this.testContext=testContext;
+    smtpServer.setDialogue("220 example.com",
+      "HELO",
+      "250 example.com",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+      "QUIT",
+      "221 2.0.0 Bye");
+    smtpServer.setCloseImmediately(false);
+
+    MailConfig mailConfig = defaultConfig();
+    mailConfig.setDisableEsmtp(true);
+    testSuccess(MailClient.createNonShared(vertx, mailConfig), exampleMessage());
+  }
+
+  /*
+   * if the server does not support ESMTP, but gives an valid error response to EHLO
+   */
   @Test
   public void mailNoEsmtpTest(TestContext testContext) {
     this.testContext=testContext;
     smtpServer.setDialogue("220 example.com",
-      "HELO",
+      "EHLO ",
+      "502 EHLO command not understood",
+      "HELO ",
       "250 example.com",
       "MAIL FROM",
       "250 2.1.0 Ok",

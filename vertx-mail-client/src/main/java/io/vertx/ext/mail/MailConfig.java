@@ -41,6 +41,7 @@ public class MailConfig {
   public static final boolean DEFAULT_TRUST_ALL = false;
   public static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
   public static final boolean DEFAULT_KEEP_ALIVE = true;
+  public static final boolean DEFAULT_DISABLE_ESMTP = false;
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -57,6 +58,7 @@ public class MailConfig {
   private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
   private boolean keepAlive = DEFAULT_KEEP_ALIVE;
   private boolean allowRcptErrors = DEFAULT_ALLOW_RCPT_ERRORS;
+  private boolean disableEsmtp = DEFAULT_DISABLE_ESMTP;
 
   /**
    * construct a config object with default options
@@ -482,15 +484,53 @@ public class MailConfig {
 
   /**
    * set if sending allows rcpt errors
+   * <p>
+   * if true, the mail will be sent to the recipients that the server accepted, if any
+   * <p>
    *
    * @param allowRcptErrors the allowRcptErrors to set (default is false)
-   *                        <p>
-   *                        if true, the mail will be sent to the recipients that the server accepted, if any
-   *                        <p>
    * @return this to be able to use the object fluently
    */
   public MailConfig setAllowRcptErrors(boolean allowRcptErrors) {
     this.allowRcptErrors = allowRcptErrors;
+    return this;
+  }
+
+  /**
+   * get if ESMTP should be tried as first command (EHLO) (default is true)
+   * <p>
+   * rfc 1869 states that clients should always attempt EHLO as first command to determine if ESMTP
+   * is supported, if this returns an error code, HELO is tried to use old SMTP.
+   * If there is a server that does not support EHLO and does not give an error code back, the connection
+   * should be closed and retried with HELO. We do not do that and rather support turning off ESMTP with a
+   * setting. The odds of this actually happening are very small since the client will not connect to arbitrary
+   * smtp hosts on the internet. Since the client knows that is connects to a host that doesn't support ESMTP/EHLO
+   * in that way, the property has to be set to false.
+   * <p>
+   *
+   * @return the disableEsmtp
+   */
+  public boolean isDisableEsmtp() {
+    return disableEsmtp;
+  }
+
+  /**
+   * set if ESMTP should be tried as first command (EHLO)
+   * <p>
+   * rfc 1869 states that clients should always attempt EHLO as first command to determine if ESMTP
+   * is supported, if this returns an error code, HELO is tried to use old SMTP.
+   * If there is a server that does not support EHLO and does not give an error code back, the connection
+   * should be closed and retried with HELO. We do not do that and rather support turning off ESMTP with a
+   * setting. The odds of this actually happening are very small since the client will not connect to arbitrary
+   * smtp hosts on the internet. Since the client knows that is connects to a host that doesn't support ESMTP/EHLO
+   * in that way, the property has to be set to false.
+   * <p>
+   *
+   * @param disableEsmtp the disableEsmtp to set (default is true)
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setDisableEsmtp(boolean disableEsmtp) {
+    this.disableEsmtp = disableEsmtp;
     return this;
   }
 
@@ -542,13 +582,16 @@ public class MailConfig {
     if (allowRcptErrors) {
       json.put("allowRcptErrors", true);
     }
+    if (disableEsmtp) {
+      json.put("disableEsmtp", true);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp);
   }
 
   /*
