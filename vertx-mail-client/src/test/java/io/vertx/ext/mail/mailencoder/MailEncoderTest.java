@@ -502,4 +502,26 @@ public class MailEncoderTest {
     assertThat(mime, containsString("@myhostname.example.com"));
   }
 
+  /*
+   *  test that tabs not not turn on quoted-printable encoding unless there are
+   *  other chars that make it necessary 
+   */
+  @Test
+  public void testMailTextContainsTabs() throws Exception {
+    MailMessage message = new MailMessage();
+    message.setText("\t\n");
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("\t"));
+    assertThat(mime, not(containsString("=09")));
+  }
+
+  @Test
+  public void testMailTextContainsTabs2() throws Exception {
+    MailMessage message = new MailMessage();
+    message.setText("\tä\n");
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, not(containsString("\t")));
+    assertThat(mime, containsString("=09"));
+  }
+
 }

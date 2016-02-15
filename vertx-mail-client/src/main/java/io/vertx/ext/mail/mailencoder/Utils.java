@@ -72,13 +72,22 @@ class Utils {
     }
   }
 
+  /*
+   * check if a single char must be encoded as qp, this assumes we
+   * already have decided that we have to encode the text
+   */
   static boolean mustEncode(char ch) {
     return ch >= 128 || ch < 10 || ch >= 11 && ch < 32 || ch == '=';
   }
 
+  /*
+   * check if a String must be encoded as qp, this allows tab and = chars
+   * if these are there are no other chars to encode
+   */
   static boolean mustEncode(String s) {
     for (int i = 0; i < s.length(); i++) {
-      if (s.charAt(i) != '=' && mustEncode(s.charAt(i))) {
+      final char ch = s.charAt(i);
+      if (ch != '=' && ch != '\t' && mustEncode(ch)) {
         return true;
       }
     }
