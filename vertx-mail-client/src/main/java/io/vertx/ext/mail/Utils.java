@@ -17,10 +17,9 @@ import io.vertx.core.json.JsonObject;
  */
 class Utils {
 
-  /**
-   * @param headers
-   * @return
-   */
+  private Utils() {
+  }
+
   static JsonObject multiMapToJson(final MultiMap headers) {
     JsonObject json = new JsonObject();
     for (String key : headers.names()) {

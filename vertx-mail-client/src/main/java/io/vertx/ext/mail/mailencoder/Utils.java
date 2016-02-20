@@ -229,8 +229,12 @@ class Utils {
   }
 
   private final static byte lf[] = { 10 };
-  
-  public static String base64(byte[] bytes) {
+
+  /*
+   * base64 with lf line terminators, the crlf will be added in the write operation
+   * in DATA
+   */
+  static String base64(byte[] bytes) {
     return Base64.getMimeEncoder(76, lf).encodeToString(bytes);
   }
 
