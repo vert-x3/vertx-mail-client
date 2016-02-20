@@ -535,4 +535,23 @@ public class MailEncoderTest {
     assertThat(mime, containsString("X-Header: value"));
   }
 
+  @Test
+  public void testInlineAttachment() {
+    MailMessage message = new MailMessage();
+    message.setHtml("this is a html message");
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("XXX"))
+      .setDisposition("inline");
+    message.setInlineAttachment(attachment);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("multipart/related"));
+  }
+
+  @Test
+  public void testGetMessageID() {
+    MailMessage message = new MailMessage();
+    final MailEncoder encoder = new MailEncoder(message, HOSTNAME);
+    encoder.encode();
+    assertThat(encoder.getMessageID(), containsString(HOSTNAME));
+  }
 }
