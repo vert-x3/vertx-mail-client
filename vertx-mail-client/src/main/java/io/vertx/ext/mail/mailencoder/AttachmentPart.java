@@ -49,7 +49,7 @@ class AttachmentPart extends EncodedPart {
       disposition += "; filename=" + name;
     }
     headers.set("Content-Disposition", disposition);
-
+    headers.set("Content-ID", "<" + name + ">");
     part = Utils.base64(attachment.getData().getBytes());
   }
 
