@@ -58,8 +58,8 @@ class Utils {
     }
   }
 
-  static List<String> asList(String to) {
-    List<String> list = new ArrayList<>(1);
+  static <T> List<T> asList(T to) {
+    List<T> list = new ArrayList<>(1);
     list.add(to);
     return list;
   }

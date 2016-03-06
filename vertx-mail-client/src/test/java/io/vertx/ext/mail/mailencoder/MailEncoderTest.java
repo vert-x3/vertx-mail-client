@@ -554,4 +554,27 @@ public class MailEncoderTest {
     encoder.encode();
     assertThat(encoder.getMessageID(), containsString(HOSTNAME));
   }
+
+  @Test
+  public void testHtmlWithInlineImg() {
+    MailMessage email = new MailMessage()
+        .setFrom("user@example.net")
+        .setTo("user@example.net")
+        .setSubject("Test email")
+        .setText("this mail is readable as html only")
+        .setHtml("<img src=\"cid:image1@localhost\">");
+
+    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("******"));
+    attachment.setContentType("image/jpg");
+    //    attachment.setName("jessicaalba-campari-lo-1168708249.jpg");
+    attachment.setDisposition("inline");
+    attachment.setHeaders(new CaseInsensitiveHeaders().add("Content-ID", "image1@localhost"));
+    list.add(attachment);
+    email.setInlineAttachment(list);
+
+    System.out.println(new MailEncoder(email, HOSTNAME).encode());
+  }
+
 }

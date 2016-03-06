@@ -51,6 +51,9 @@ public class UtilsTest {
   public void testBase64() throws Exception {
     assertEquals("", Utils.base64("".getBytes("ISO-8859-1")));
     assertEquals("Kg==", Utils.base64("*".getBytes("ISO-8859-1")));
+    assertEquals("Kio=", Utils.base64("**".getBytes("ISO-8859-1")));
+    assertEquals("Kioq", Utils.base64("***".getBytes("ISO-8859-1")));
+    assertEquals("KioqKg==", Utils.base64("****".getBytes("ISO-8859-1")));
     assertEquals("KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq\n"
         + "KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg==",
       Utils.base64("**********************************************************************************************".getBytes("ISO-8859-1")));

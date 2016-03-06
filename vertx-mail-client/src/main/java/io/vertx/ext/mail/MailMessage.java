@@ -375,9 +375,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setAttachment(MailAttachment attachment) {
-    List<MailAttachment> attachmentList = new ArrayList<MailAttachment>();
-    attachmentList.add(attachment);
-    this.attachment = attachmentList;
+    this.attachment = Utils.asList(attachment);
     return this;
   }
 
@@ -409,9 +407,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setInlineAttachment(MailAttachment inlineAttachment) {
-    List<MailAttachment> attachmentList = new ArrayList<MailAttachment>();
-    attachmentList.add(inlineAttachment);
-    this.inlineAttachment = attachmentList;
+    this.inlineAttachment = Utils.asList(inlineAttachment);
     return this;
   }
 
