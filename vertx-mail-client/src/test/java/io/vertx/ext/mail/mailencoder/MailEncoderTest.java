@@ -568,7 +568,7 @@ public class MailEncoderTest {
     MailAttachment attachment = new MailAttachment();
     attachment.setData(Buffer.buffer("******"));
     attachment.setContentType("image/jpg");
-    //    attachment.setName("jessicaalba-campari-lo-1168708249.jpg");
+    attachment.setName("image1.jpg");
     attachment.setDisposition("inline");
     attachment.setHeaders(new CaseInsensitiveHeaders().add("Content-ID", "image1@localhost"));
     list.add(attachment);
