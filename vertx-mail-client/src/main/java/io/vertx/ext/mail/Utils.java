@@ -4,6 +4,7 @@
 package io.vertx.ext.mail;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import io.vertx.core.MultiMap;
@@ -58,11 +59,8 @@ class Utils {
     }
   }
 
-  static <T> List<T> asList(T to) {
-    List<T> list = new ArrayList<>(1);
-    list.add(to);
-    return list;
+  static <T> List<T> asList(T element) {
+    return Collections.singletonList(element);
   }
-
 
 }
