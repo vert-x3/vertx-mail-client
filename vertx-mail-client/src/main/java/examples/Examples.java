@@ -16,6 +16,7 @@
 
 package examples;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.docgen.Source;
@@ -59,7 +60,7 @@ public class Examples {
     message.setTo("recipient@example.org");
     message.setCc("Another User <another@example.net>");
     message.setText("this is the plain message text");
-    message.setHtml("this is html text <a href=\"\">vertx.io</a>");
+    message.setHtml("this is html text <a href=\"http://vertx.io\">vertx.io</a>");
   }
 
   public void attachment(Vertx vertx, MailMessage message) {
@@ -68,6 +69,16 @@ public class Examples {
     attachment.setData(Buffer.buffer("attachment file"));
 
     message.setAttachment(attachment);
+  }
+
+  public void inlineAttachment(Vertx vertx, MailMessage message) {
+    MailAttachment attachment = new MailAttachment();
+    attachment.setContentType("image/jpeg");
+    attachment.setData(Buffer.buffer("image data"));
+    attachment.setDisposition("inline");
+    attachment.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Content-ID", "<image1@example.com>"));
+
+    message.setInlineAttachment(attachment);
   }
 
   public void sendMail(Vertx vertx, MailMessage message, MailClient mailClient) {
