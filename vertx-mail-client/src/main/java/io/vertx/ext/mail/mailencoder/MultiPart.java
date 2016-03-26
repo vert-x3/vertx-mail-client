@@ -36,11 +36,11 @@ class MultiPart extends EncodedPart {
       sb.append(boundary);
       sb.append('\n');
       sb.append(part.asString());
-      sb.append('\n');
+      sb.append("\n\n");
     }
     sb.append("--");
     sb.append(boundary);
-    sb.append("--\n");
+    sb.append("--");
     part = sb.toString();
   }
 

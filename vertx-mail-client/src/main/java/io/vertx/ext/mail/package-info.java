@@ -109,6 +109,16 @@
  * ----
  * {@link examples.Examples#attachment}
  * ----
+ *
+ * When using inline attachments (usually images), it is possible to reference the images within a html message
+ * to display html with the images included in the mail. 
+ * Images can be referenced as <img src="cid:contentid@domain"> in the html text, the corresponding image has Disposition:
+ * inline and the Content-ID header as "<contentid@domain>" 
+ *
+ * [source,$lang]
+ * ----
+ * {@link examples.Examples#inlineAttachment}
+ * ----
  * When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
  * the send operation is finished or it failed.
  *
@@ -140,6 +150,7 @@
  * * `text` String representing the text/plain part of the mail
  * * `html` String representing the text/html part of the mail
  * * `attachment` MailAttachment or list of MailAttachment attachments of the message
+ * * `inlineAttachment` MailAttachment or list of MailAttachment of inline attachments of the message (usually images)
  * * `headers` MultiMap representing headers to be added in addition to the headers necessary for the MIME Message
  * * `fixedHeaders` boolean if true, only the headers provided as headers property will be set in the generated message
  *
@@ -155,6 +166,7 @@
  * * `description` String describing the attachment (this is put in the description header of the attachment), optional
  * * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
  * * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
+ * * `headers` MultiMap of headers for the attachment in addition to the default ones, e.g. "Content-ID", optional
  *
  * === MailConfig options
  *

@@ -98,7 +98,7 @@ message.setFrom("user@example.com (Example User)");
 message.setTo("recipient@example.org");
 message.setCc("Another User <another@example.net>");
 message.setText("this is the plain message text");
-message.setHtml("this is html text <a href=\"\">vertx.io</a>");
+message.setHtml("this is html text <a href=\"http://vertx.io\">vertx.io</a>");
 ----
 
 Attachments can be created by the MailAttachment object using data stored in a Buffer,
@@ -111,6 +111,22 @@ attachment.setContentType("text/plain");
 attachment.setData(Buffer.buffer("attachment file"));
 
 message.setAttachment(attachment);
+----
+
+When using inline attachments (usually images), it is possible to reference the images within a html message
+to display html with the images included in the mail. 
+Images can be referenced as <img src="cid:contentid@domain"> in the html text, the corresponding image has Disposition:
+inline and the Content-ID header as "<contentid@domain>" 
+
+[source,java]
+----
+MailAttachment attachment = new MailAttachment();
+attachment.setContentType("image/jpeg");
+attachment.setData(Buffer.buffer("image data"));
+attachment.setDisposition("inline");
+attachment.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Content-ID", "<image1@example.com>"));
+
+message.setInlineAttachment(attachment);
 ----
 When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
 the send operation is finished or it failed.
@@ -149,6 +165,7 @@ The MailMessage object has the following properties
 * `text` String representing the text/plain part of the mail
 * `html` String representing the text/html part of the mail
 * `attachment` MailAttachment or list of MailAttachment attachments of the message
+* `inlineAttachment` MailAttachment or list of MailAttachment of inline attachments of the message (usually images)
 * `headers` MultiMap representing headers to be added in addition to the headers necessary for the MIME Message
 * `fixedHeaders` boolean if true, only the headers provided as headers property will be set in the generated message
 
@@ -164,6 +181,7 @@ The MailAttachment object has the following properties
 * `description` String describing the attachment (this is put in the description header of the attachment), optional
 * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
 * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
+* `headers` MultiMap of headers for the attachment in addition to the default ones, e.g. "Content-ID", optional
 
 === MailConfig options
 

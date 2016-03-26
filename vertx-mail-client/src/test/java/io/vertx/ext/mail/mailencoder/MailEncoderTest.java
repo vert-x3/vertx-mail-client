@@ -524,4 +524,57 @@ public class MailEncoderTest {
     assertThat(mime, containsString("=09"));
   }
 
+  @Test
+  public void testAdditionalHeadersAttachment() {
+    MailMessage message = new MailMessage();
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("XXX"))
+      .setHeaders(new CaseInsensitiveHeaders().add("X-Header", "value"));
+    message.setAttachment(attachment);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("X-Header: value"));
+  }
+
+  @Test
+  public void testInlineAttachment() {
+    MailMessage message = new MailMessage();
+    message.setHtml("this is a html message");
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("XXX"))
+      .setDisposition("inline");
+    message.setInlineAttachment(attachment);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("multipart/related"));
+  }
+
+  @Test
+  public void testGetMessageID() {
+    MailMessage message = new MailMessage();
+    final MailEncoder encoder = new MailEncoder(message, HOSTNAME);
+    encoder.encode();
+    assertThat(encoder.getMessageID(), containsString(HOSTNAME));
+  }
+
+  @Test
+  public void testHtmlWithInlineImg() {
+    MailMessage email = new MailMessage()
+        .setFrom("user@example.net")
+        .setTo("user@example.net")
+        .setSubject("Test email")
+        .setText("this mail is readable as html only")
+        .setHtml("<img src=\"cid:image1@localhost\">");
+
+    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("******"));
+    attachment.setContentType("image/jpg");
+    attachment.setName("image1.jpg");
+    attachment.setDisposition("inline");
+    attachment.setHeaders(new CaseInsensitiveHeaders().add("Content-ID", "image1@localhost"));
+    list.add(attachment);
+    email.setInlineAttachment(list);
+
+    System.out.println(new MailEncoder(email, HOSTNAME).encode());
+  }
+
 }
