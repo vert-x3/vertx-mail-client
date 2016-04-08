@@ -1,7 +1,9 @@
 = Vert.x Mail client (SMTP client implementation)
 
 Vert.x client for sending SMTP emails via a local mail server
-(e.g. postfix) or by external mail server (e.g. googlemail or aol).
+(e.g.
+
+postfix) or by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
 support for TLS and SSL and is completely asynchronous. The client supports
@@ -103,7 +105,7 @@ message.from = "user@example.com (Example User)"
 message.to = "recipient@example.org"
 message.cc = "Another User <another@example.net>"
 message.text = "this is the plain message text"
-message.html = "this is html text <a href=\"\">vertx.io</a>"
+message.html = "this is html text <a href=\"http://vertx.io\">vertx.io</a>"
 
 ----
 
@@ -118,6 +120,25 @@ attachment.contentType = "text/plain"
 attachment.data = Buffer.buffer("attachment file")
 
 message.attachment = attachment
+
+----
+
+When using inline attachments (usually images), it is possible to reference the images within a html message
+to display html with the images included in the mail. 
+Images can be referenced as <img src="cid:contentid@domain"> in the html text, the corresponding image has Disposition:
+inline and the Content-ID header as "<contentid@domain>" 
+
+[source,groovy]
+----
+import io.vertx.groovy.core.buffer.Buffer
+import io.vertx.groovy.core.MultiMap
+def attachment = [:]
+attachment.contentType = "image/jpeg"
+attachment.data = Buffer.buffer("image data")
+attachment.disposition = "inline"
+attachment.headers = MultiMap.caseInsensitiveMultiMap().add("Content-ID", "<image1@example.com>")
+
+message.inlineAttachment = attachment
 
 ----
 When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
@@ -158,6 +179,7 @@ The MailMessage object has the following properties
 * `text` String representing the text/plain part of the mail
 * `html` String representing the text/html part of the mail
 * `attachment` MailAttachment or list of MailAttachment attachments of the message
+* `inlineAttachment` MailAttachment or list of MailAttachment of inline attachments of the message (usually images)
 * `headers` MultiMap representing headers to be added in addition to the headers necessary for the MIME Message
 * `fixedHeaders` boolean if true, only the headers provided as headers property will be set in the generated message
 
@@ -173,6 +195,7 @@ The MailAttachment object has the following properties
 * `description` String describing the attachment (this is put in the description header of the attachment), optional
 * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
 * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
+* `headers` MultiMap of headers for the attachment in addition to the default ones, e.g. "Content-ID", optional
 
 === MailConfig options
 

@@ -181,6 +181,10 @@ set from address of this mail
 +++
 set the html text of this mail
 +++
+|[[inlineAttachment]]`inlineAttachment`|`Array of link:dataobjects.html#MailAttachment[MailAttachment]`|
++++
+set the list of inline attachments of this mail
++++
 |[[subject]]`subject`|`String`|
 +++
 set the subject of this mail

@@ -49,6 +49,9 @@ class AttachmentPart extends EncodedPart {
       disposition += "; filename=" + name;
     }
     headers.set("Content-Disposition", disposition);
+    if (attachment.getHeaders() != null) {
+      headers.addAll(attachment.getHeaders());
+    }
 
     part = Utils.base64(attachment.getData().getBytes());
   }

@@ -77,11 +77,11 @@ public class MailEncoder {
     String html = message.getHtml();
 
     if (text != null && html != null) {
-      mainPart = new MultiPart(Arrays.asList(new TextPart(text, "plain"), new TextPart(html, "html")), "alternative");
+      mainPart = new MultiPart(Arrays.asList(new TextPart(text, "plain"), htmlPart()), "alternative");
     } else if (text != null) {
       mainPart = new TextPart(text, "plain");
     } else if (html != null) {
-      mainPart = new TextPart(html, "html");
+      mainPart = htmlPart();
     } else {
       // message with only attachments
       mainPart = null;
@@ -109,6 +109,25 @@ public class MailEncoder {
     completeMessage.headers = createHeaders(completeMessage.headers);
 
     return completeMessage.asString();
+  }
+
+  /**
+   * @param html
+   * @return
+   */
+  private EncodedPart htmlPart() {
+    EncodedPart mainPart;
+    if (message.getInlineAttachment() != null) {
+      List<EncodedPart> parts = new ArrayList<>();
+      parts.add(new TextPart(message.getHtml(), "html"));
+      for (MailAttachment a : message.getInlineAttachment()) {
+        parts.add(new AttachmentPart(a));
+      }
+      mainPart = new MultiPart(parts, "related");
+    } else {
+      mainPart = new TextPart(message.getHtml(), "html");
+    }
+    return mainPart;
   }
 
   /**

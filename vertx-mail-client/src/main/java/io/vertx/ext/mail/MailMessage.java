@@ -41,6 +41,7 @@ public class MailMessage {
   private String subject;
   private String text;
   private String html;
+  private List<MailAttachment> inlineAttachment;
   private List<MailAttachment> attachment;
   private MultiMap headers = null;
   private boolean fixedHeaders = false;
@@ -67,15 +68,26 @@ public class MailMessage {
     this.text = other.text;
     this.html = other.html;
     if (other.attachment != null) {
-      List<MailAttachment> newList = new ArrayList<MailAttachment>(other.attachment.size());
-      for (MailAttachment a : other.attachment) {
-        newList.add(new MailAttachment(a));
-      }
-      this.attachment = newList;
+      this.attachment = copyAttachments(other.attachment);
+    }
+    if (other.inlineAttachment != null) {
+      this.inlineAttachment = copyAttachments(other.inlineAttachment);
     }
     if (other.headers != null) {
       headers = new CaseInsensitiveHeaders().addAll(other.headers);
     }
+  }
+
+  /**
+   * @param other
+   * @return
+   */
+  private List<MailAttachment> copyAttachments(List<MailAttachment> attachment) {
+    List<MailAttachment> newList = new ArrayList<MailAttachment>(attachment.size());
+    for (MailAttachment a : attachment) {
+      newList.add(new MailAttachment(a));
+    }
+    return newList;
   }
 
   /**
@@ -87,55 +99,41 @@ public class MailMessage {
     Objects.requireNonNull(json);
     bounceAddress = json.getString("bounceAddress");
     from = json.getString("from");
-    to = getKeyAsStringOrList(json, "to");
-    cc = getKeyAsStringOrList(json, "cc");
-    bcc = getKeyAsStringOrList(json, "bcc");
+    to = Utils.getKeyAsStringOrList(json, "to");
+    cc = Utils.getKeyAsStringOrList(json, "cc");
+    bcc = Utils.getKeyAsStringOrList(json, "bcc");
     subject = json.getString("subject");
     text = json.getString("text");
     html = json.getString("html");
+    if (json.containsKey("inline_attachment")) {
+      inlineAttachment = copyJsonAttachment(json.getValue("inline_attachment"));
+    }
     if (json.containsKey("attachment")) {
-      List<MailAttachment> list;
-      Object object = json.getValue("attachment");
-      if (object instanceof JsonObject) {
-        list = Collections.singletonList(new MailAttachment((JsonObject) object));
-      } else if (object instanceof JsonArray) {
-        list = new ArrayList<>();
-        for (Object attach : (JsonArray) object) {
-          list.add(new MailAttachment((JsonObject) attach));
-        }
-      } else {
-        throw new IllegalArgumentException("invalid attachment type");
-      }
-      attachment = list;
+      attachment = copyJsonAttachment(json.getValue("attachment"));
     }
     if (json.containsKey("headers")) {
-      headers = jsonToMultiMap(json);
+      headers = Utils.jsonToMultiMap(json.getJsonObject("headers"));
     }
   }
 
-  private MultiMap jsonToMultiMap(JsonObject json) {
-    JsonObject jsonHeaders = json.getJsonObject("headers");
-    MultiMap headers = new CaseInsensitiveHeaders();
-    for (String key : jsonHeaders.getMap().keySet()) {
-      headers.add(key, getKeyAsStringOrList(jsonHeaders, key));
-    }
-    return headers;
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<String> getKeyAsStringOrList(JsonObject json, String key) {
-    Object value = json.getValue(key);
-    if (value == null) {
-      return null;
-    } else {
-      if (value instanceof String) {
-        return asList((String) value);
-      } else if (value instanceof JsonArray) {
-        return (List<String>) ((JsonArray) value).getList();
-      } else {
-        throw new IllegalArgumentException("invalid attachment type");
+  /**
+   * @param json
+   * @return
+   * @throws IllegalArgumentException
+   */
+  private List<MailAttachment> copyJsonAttachment(Object object) throws IllegalArgumentException {
+    List<MailAttachment> list;
+    if (object instanceof JsonObject) {
+      list = Collections.singletonList(new MailAttachment((JsonObject) object));
+    } else if (object instanceof JsonArray) {
+      list = new ArrayList<>();
+      for (Object attach : (JsonArray) object) {
+        list.add(new MailAttachment((JsonObject) attach));
       }
+    } else {
+      throw new IllegalArgumentException("invalid attachment type");
     }
+    return list;
   }
 
   /**
@@ -148,7 +146,7 @@ public class MailMessage {
    */
   public MailMessage(String from, String to, String subject, String text) {
     this.from = from;
-    this.to = asList(to);
+    this.to = Utils.asList(to);
     this.subject = subject;
     this.text = text;
   }
@@ -221,9 +219,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setTo(String to) {
-    List<String> toList = new ArrayList<String>();
-    toList.add(to);
-    this.to = toList;
+    this.to = Utils.asList(to);
     return this;
   }
 
@@ -255,9 +251,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setCc(String cc) {
-    List<String> ccList = new ArrayList<String>();
-    ccList.add(cc);
-    this.cc = ccList;
+    this.cc = Utils.asList(cc);
     return this;
   }
 
@@ -289,9 +283,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setBcc(String bcc) {
-    List<String> bccList = new ArrayList<String>();
-    bccList.add(bcc);
-    this.bcc = bccList;
+    this.bcc = Utils.asList(bcc);
     return this;
   }
 
@@ -376,19 +368,46 @@ public class MailMessage {
   }
 
   /**
-   * set a single attachment of this mail the result of getAttachment when using
-   * this method returns an unmodifiable list, if you want to be able to add
-   * attachments later, please use
-   * {@code setAttachment(new ArrayList<MailAttachment>())} instead
+   * set a single attachment of this mail
    *
    * @param attachment the attachment to add
    * @return this to be able to use it fluently
    */
   @GenIgnore
   public MailMessage setAttachment(MailAttachment attachment) {
-    List<MailAttachment> attachmentList = new ArrayList<MailAttachment>();
-    attachmentList.add(attachment);
-    this.attachment = attachmentList;
+    this.attachment = Utils.asList(attachment);
+    return this;
+  }
+
+  /**
+   * get the list of inline attachments of this mail
+   *
+   * @return List of attachment
+   */
+  public List<MailAttachment> getInlineAttachment() {
+    return inlineAttachment;
+  }
+
+  /**
+   * set the list of inline attachments of this mail
+   *
+   * @param inlineAttachment List of attachment
+   * @return this to be able to use it fluently
+   */
+  public MailMessage setInlineAttachment(List<MailAttachment> inlineAttachment) {
+    this.inlineAttachment = inlineAttachment;
+    return this;
+  }
+
+  /**
+   * set a single inline attachment of this mail
+   *
+   * @param inlineAttachment the attachment to add
+   * @return this to be able to use it fluently
+   */
+  @GenIgnore
+  public MailMessage setInlineAttachment(MailAttachment inlineAttachment) {
+    this.inlineAttachment = Utils.asList(inlineAttachment);
     return this;
   }
 
@@ -439,23 +458,22 @@ public class MailMessage {
    */
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
-    putIfNotNull(json, "bounceAddress", bounceAddress);
-    putIfNotNull(json, "from", from);
-    putIfNotNull(json, "to", to);
-    putIfNotNull(json, "cc", cc);
-    putIfNotNull(json, "bcc", bcc);
-    putIfNotNull(json, "subject", subject);
-    putIfNotNull(json, "text", text);
-    putIfNotNull(json, "html", html);
+    Utils.putIfNotNull(json, "bounceAddress", bounceAddress);
+    Utils.putIfNotNull(json, "from", from);
+    Utils.putIfNotNull(json, "to", to);
+    Utils.putIfNotNull(json, "cc", cc);
+    Utils.putIfNotNull(json, "bcc", bcc);
+    Utils.putIfNotNull(json, "subject", subject);
+    Utils.putIfNotNull(json, "text", text);
+    Utils.putIfNotNull(json, "html", html);
     if (attachment != null) {
-      JsonArray array = new JsonArray();
-      for (MailAttachment a : attachment) {
-        array.add(a.toJson());
-      }
-      json.put("attachment", array);
+      json.put("attachment", attachmentsToJson(attachment));
+    }
+    if (inlineAttachment != null) {
+      json.put("inline_attachment", attachmentsToJson(inlineAttachment));
     }
     if (headers != null) {
-      json.put("headers", multiMapJson(headers));
+      json.put("headers", Utils.multiMapToJson(headers));
     }
     if (fixedHeaders) {
       json.put("fixedheaders", true);
@@ -463,16 +481,16 @@ public class MailMessage {
     return json;
   }
 
-  private JsonObject multiMapJson(MultiMap headers) {
-    JsonObject json = new JsonObject();
-    for (String key : headers.names()) {
-      json.put(key, headers.getAll(key));
+  private JsonArray attachmentsToJson(List<MailAttachment> attachments) {
+    JsonArray array = new JsonArray();
+    for (MailAttachment a : attachments) {
+      array.add(a.toJson());
     }
-    return json;
+    return array;
   }
-
+  
   private List<Object> getList() {
-    return Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment, headers, fixedHeaders);
+    return Arrays.asList(bounceAddress, from, to, cc, bcc, subject, text, html, attachment, inlineAttachment, headers, fixedHeaders);
   }
 
   /*
@@ -503,23 +521,11 @@ public class MailMessage {
     return getList().hashCode();
   }
 
-  private void putIfNotNull(JsonObject json, String key, Object value) {
-    if (value != null) {
-      json.put(key, value);
-    }
-  }
-
   private List<String> copyList(List<String> list) {
     if (list == null) {
       return null;
     } else {
       return new ArrayList<>(list);
     }
-  }
-
-  private List<String> asList(String to) {
-    List<String> list = new ArrayList<>(1);
-    list.add(to);
-    return list;
   }
 }

@@ -17,7 +17,9 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 
 import java.util.Arrays;
@@ -38,6 +40,7 @@ public class MailAttachment {
   private String contentType;
   private String disposition;
   private String description;
+  private MultiMap headers;
 
   /**
    * construct an empty MailAttachment object that can be filled with the
@@ -58,6 +61,8 @@ public class MailAttachment {
     this.contentType = other.contentType;
     this.disposition = other.disposition;
     this.description = other.description;
+    this.description = other.description;
+    this.headers = other.headers == null ? null : new CaseInsensitiveHeaders().addAll(other.headers);
   }
 
   /**
@@ -72,6 +77,10 @@ public class MailAttachment {
     this.contentType = json.getString("contentType");
     this.disposition = json.getString("disposition");
     this.description = json.getString("description");
+    JsonObject headers = json.getJsonObject("headers");
+    if (headers != null) {
+      this.headers = Utils.jsonToMultiMap(headers);
+    }
   }
 
   /**
@@ -178,6 +187,26 @@ public class MailAttachment {
   }
 
   /**
+   * get the headers to be added for this attachment
+   *
+   * @return the headers
+   */
+  public MultiMap getHeaders() {
+    return headers;
+  }
+
+  /**
+   * set the headers to be added for this attachment
+   *
+   * @param headers the headers to be added
+   * @return this to be able to use it fluently
+   */
+  public MailAttachment setHeaders(final MultiMap headers) {
+    this.headers = headers;
+    return this;
+  }
+
+  /**
    * convert this object to JSON representation
    *
    * @return the JSON object
@@ -185,17 +214,20 @@ public class MailAttachment {
   public JsonObject toJson() {
     JsonObject json = new JsonObject();
     if (data != null) {
-      putIfNotNull(json, "data", data.getBytes());
+      json.put("data", data.getBytes());
     }
-    putIfNotNull(json, "name", name);
-    putIfNotNull(json, "contentType", contentType);
-    putIfNotNull(json, "disposition", disposition);
-    putIfNotNull(json, "description", description);
+    Utils.putIfNotNull(json, "name", name);
+    Utils.putIfNotNull(json, "contentType", contentType);
+    Utils.putIfNotNull(json, "disposition", disposition);
+    Utils.putIfNotNull(json, "description", description);
+    if (headers != null) {
+      json.put("headers", Utils.multiMapToJson(headers));
+    }
     return json;
   }
 
   private List<Object> getList() {
-    return Arrays.asList(data, name, disposition, description);
+    return Arrays.asList(data, name, disposition, description, headers);
   }
 
   @Override
@@ -213,12 +245,6 @@ public class MailAttachment {
   @Override
   public int hashCode() {
     return getList().hashCode();
-  }
-
-  private void putIfNotNull(final JsonObject json, final String key, final Object value) {
-    if (value != null) {
-      json.put(key, value);
-    }
   }
 
 }
