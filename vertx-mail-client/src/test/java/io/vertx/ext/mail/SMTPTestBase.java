@@ -84,6 +84,10 @@ public abstract class SMTPTestBase extends VertxTestBase {
     testException(mailClient, exampleMessage());
   }
 
+  protected void testException(final MailClient mailClient, Class<? extends Exception> exceptionClass) {
+    testException(mailClient, exampleMessage(), exceptionClass);
+  }
+
   /**
    * @return
    */
@@ -177,6 +181,10 @@ public abstract class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testException(MailClient mailClient, MailMessage email) {
+    testException(mailClient, email, null);
+  }
+
+  protected void testException(MailClient mailClient, MailMessage email, Class<? extends Exception> exceptionClass) {
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
@@ -188,8 +196,13 @@ public abstract class SMTPTestBase extends VertxTestBase {
         log.info(result.result().toString());
         testContext.fail("this test should throw an Exception");
       } else {
-        log.warn("got exception", result.cause());
-        async.complete();
+        final Throwable cause = result.cause();
+        log.warn("got exception", cause);
+        if(exceptionClass == null || exceptionClass.equals(cause.getClass())) {
+          async.complete();
+        } else {
+          testContext.fail("didn't get expected exception "+exceptionClass+" but "+cause.getClass());
+        }
       }
     });
   }

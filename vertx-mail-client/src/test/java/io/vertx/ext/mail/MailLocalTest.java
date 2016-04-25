@@ -16,11 +16,12 @@
 
 package io.vertx.ext.mail;
 
-import io.vertx.ext.unit.TestContext;
-import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import io.netty.handler.codec.DecoderException;
+import io.vertx.ext.unit.TestContext;
+import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 /**
  * this test uses a local SMTP server (wiser from subethasmtp) since this server supports SSL/TLS, the tests relating to
@@ -49,15 +50,24 @@ public class MailLocalTest extends SMTPTestWiser {
   public void mailTestTLSNoTrust(TestContext testContext) {
     this.testContext=testContext;
     MailClient mailClient = MailClient.createNonShared(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
-    testException(mailClient, exampleMessage());
+    testException(mailClient, DecoderException.class);
   }
 
   @Test
   public void mailTestTLSCorrectCert(TestContext testContext) {
-    this.testContext=testContext;
-    MailClient mailClient = MailClient.createNonShared(vertx,
-      configLogin().setStarttls(StartTLSOptions.REQUIRED).setKeyStore("src/test/resources/certs/keystore.jks")
-        .setKeyStorePassword("password"));
+    this.testContext = testContext;
+    final MailConfig config = configLogin().setStarttls(StartTLSOptions.REQUIRED)
+        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    testSuccess(mailClient, exampleMessage(), assertExampleMessage());
+  }
+
+  @Test
+  public void mailTestTLSCase(TestContext testContext) {
+    this.testContext = testContext;
+    final MailConfig config = configLogin().setHostname("LOCALHOST").setStarttls(StartTLSOptions.REQUIRED)
+        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 

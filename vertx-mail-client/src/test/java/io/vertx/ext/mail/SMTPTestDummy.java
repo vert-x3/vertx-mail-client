@@ -29,7 +29,7 @@ public class SMTPTestDummy extends SMTPTestBase {
   protected TestSmtpServer smtpServer;
 
   protected void startSMTP() {
-    smtpServer = new TestSmtpServer(vertx);
+    smtpServer = new TestSmtpServer(vertx, false, null);
   }
 
   protected void stopSMTP() {
