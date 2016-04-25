@@ -70,8 +70,8 @@ public class TestSmtpServer {
   private void startServer(Vertx vertx) {
     NetServerOptions nsOptions = new NetServerOptions();
     nsOptions.setPort(ssl ? 1465 : 1587);
-    if( ssl ) {
-      if(keystore == null) {
+    if (ssl) {
+      if (keystore == null) {
         keystore = "src/test/resources/certs/server.jks";
       }
       JksOptions jksOptions = new JksOptions().setPath(keystore).setPassword("password");

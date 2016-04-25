@@ -16,7 +16,7 @@
 
 /**
  * delegate class to instantiate a SSLSocketFactory using our test keystore. this one uses a cert
- * with only "localhost" as subject name, while the default uses "localhost", "127.0.0.1" and "[::1]"
+ * with only "localhost" as alt subject name, while the default uses "localhost", "127.0.0.1" and "[::1]"
  */
 package io.vertx.ext.mail;
 
