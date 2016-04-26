@@ -17,7 +17,6 @@
 package io.vertx.rxjava.ext.mail;
 
 import java.util.Map;
-import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.rxjava.core.Vertx;
@@ -54,7 +53,7 @@ public class MailClient {
    * @return MailClient instance that can then be used to send multiple mails
    */
   public static MailClient createNonShared(Vertx vertx, MailConfig config) { 
-    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
+    MailClient ret = MailClient.newInstance(io.vertx.ext.mail.MailClient.createNonShared((io.vertx.core.Vertx)vertx.getDelegate(), config));
     return ret;
   }
 
@@ -67,7 +66,7 @@ public class MailClient {
    * @return the client
    */
   public static MailClient createShared(Vertx vertx, MailConfig config, String poolName) { 
-    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config, poolName));
+    MailClient ret = MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config, poolName));
     return ret;
   }
 
@@ -78,7 +77,7 @@ public class MailClient {
    * @return the client
    */
   public static MailClient createShared(Vertx vertx, MailConfig config) { 
-    MailClient ret= MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx) vertx.getDelegate(), config));
+    MailClient ret = MailClient.newInstance(io.vertx.ext.mail.MailClient.createShared((io.vertx.core.Vertx)vertx.getDelegate(), config));
     return ret;
   }
 
@@ -89,7 +88,15 @@ public class MailClient {
    * @return this MailClient instance so the method can be used fluently
    */
   public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
-    this.delegate.sendMail(email, resultHandler);
+    delegate.sendMail(email, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
     return this;
   }
 
@@ -108,7 +115,7 @@ public class MailClient {
    * close the MailClient
    */
   public void close() { 
-    this.delegate.close();
+    delegate.close();
   }
 
 

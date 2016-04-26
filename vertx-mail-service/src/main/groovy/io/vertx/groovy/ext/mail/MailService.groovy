@@ -43,24 +43,22 @@ public class MailService extends MailClient {
    * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService createEventBusProxy(Vertx vertx, String address) {
-    def ret= InternalHelper.safeCreate(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address), io.vertx.groovy.ext.mail.MailService.class);
+    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailService.createEventBusProxy(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, address), io.vertx.groovy.ext.mail.MailService.class);
     return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) this.delegate).sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> event) {
-        AsyncResult<Map<String, Object>> f
-        if (event.succeeded()) {
-          f = InternalHelper.<Map<String, Object>>result((Map<String, Object>)InternalHelper.wrapObject(event.result()?.toJson()))
+    ((io.vertx.ext.mail.MailService) delegate).sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
         } else {
-          f = InternalHelper.<Map<String, Object>>failure(event.cause())
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
         }
-        resultHandler.handle(f)
       }
-    });
+    } : null);
     return this;
   }
   public void close() {
-    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) this.delegate).close();
+    ((io.vertx.ext.mail.MailService) delegate).close();
   }
 }

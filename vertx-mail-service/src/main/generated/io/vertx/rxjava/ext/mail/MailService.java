@@ -17,7 +17,6 @@
 package io.vertx.rxjava.ext.mail;
 
 import java.util.Map;
-import io.vertx.lang.rxjava.InternalHelper;
 import rx.Observable;
 import io.vertx.rxjava.core.Vertx;
 import io.vertx.core.AsyncResult;
@@ -52,12 +51,20 @@ public class MailService extends MailClient {
    * @return MailService instance that can then be used to send multiple mails
    */
   public static MailService createEventBusProxy(Vertx vertx, String address) { 
-    MailService ret= MailService.newInstance(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx) vertx.getDelegate(), address));
+    MailService ret = MailService.newInstance(io.vertx.ext.mail.MailService.createEventBusProxy((io.vertx.core.Vertx)vertx.getDelegate(), address));
     return ret;
   }
 
   public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
-    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) delegate).sendMail(email, resultHandler);
+    ((io.vertx.ext.mail.MailService) delegate).sendMail(email, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
+        if (ar.succeeded()) {
+          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
+        } else {
+          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
+        }
+      }
+    });
     return this;
   }
 
@@ -68,7 +75,7 @@ public class MailService extends MailClient {
   }
 
   public void close() { 
-    ( /* Work around for https://jira.codehaus.org/browse/GROOVY-6970 */ (io.vertx.ext.mail.MailService) delegate).close();
+    ((io.vertx.ext.mail.MailService) delegate).close();
   }
 
 
