@@ -19,6 +19,7 @@ package io.vertx.ext.mail;
 import io.vertx.core.Vertx;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
 import io.vertx.core.parsetools.RecordParser;
@@ -41,10 +42,12 @@ public class TestSmtpServer {
   private boolean closeImmediately = false;
   private int closeWaitTime = 10;
 
+  private boolean ssl = false; 
+  private String keystore = null;
   /*
    * set up server with a default reply that works for EHLO and no login with one recipient
    */
-  public TestSmtpServer(Vertx vertx) {
+  public TestSmtpServer(Vertx vertx, boolean ssl, String keystore) {
     setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n"
@@ -59,12 +62,21 @@ public class TestSmtpServer {
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "QUIT",
         "221 2.0.0 Bye");
+    setSsl(ssl);
+    this.keystore = keystore;
     startServer(vertx);
   }
 
   private void startServer(Vertx vertx) {
     NetServerOptions nsOptions = new NetServerOptions();
-    nsOptions.setPort(1587);
+    nsOptions.setPort(ssl ? 1465 : 1587);
+    if (ssl) {
+      if (keystore == null) {
+        keystore = "src/test/resources/certs/server.jks";
+      }
+      JksOptions jksOptions = new JksOptions().setPath(keystore).setPassword("password");
+      nsOptions.setSsl(true).setKeyStoreOptions(jksOptions);
+    }
     netServer = vertx.createNetServer(nsOptions);
 
     netServer.connectHandler(socket -> {
@@ -149,6 +161,11 @@ public class TestSmtpServer {
   public TestSmtpServer setCloseWaitTime(int time) {
     log.debug("setting closeWaitTime to " + time);
     closeWaitTime = time;
+    return this;
+  }
+
+  public TestSmtpServer setSsl(boolean ssl) {
+    this.ssl = ssl;
     return this;
   }
 

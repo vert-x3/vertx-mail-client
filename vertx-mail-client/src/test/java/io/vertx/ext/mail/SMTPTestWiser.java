@@ -16,8 +16,6 @@
 
 package io.vertx.ext.mail;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 import java.security.Security;
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +29,8 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
+import static org.hamcrest.core.StringContains.containsString;
+
 /**
  * Start/stop a dummy test server for each test
  * <p>
@@ -42,7 +42,7 @@ public class SMTPTestWiser extends SMTPTestBase {
 
   protected Wiser wiser;
 
-  protected void startSMTP() {
+  protected void startSMTP(String factory) {
     wiser = new Wiser();
 
     wiser.setPort(1587);
@@ -73,10 +73,17 @@ public class SMTPTestWiser extends SMTPTestBase {
       }
     });
 
-    Security.setProperty("ssl.SocketFactory.provider", KeyStoreSSLSocketFactory.class.getName());
+    Security.setProperty("ssl.SocketFactory.provider", factory);
     wiser.getServer().setEnableTLS(true);
 
     wiser.start();
+  }
+
+  /*
+   * use default certificate
+   */
+  protected void startSMTP() {
+    startSMTP(KeyStoreSSLSocketFactory.class.getName());
   }
 
   protected void stopSMTP() {

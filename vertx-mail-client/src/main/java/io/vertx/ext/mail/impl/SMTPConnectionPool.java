@@ -54,13 +54,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     this.vertx = vertx;
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
-    NetClientOptions netClientOptions;
+    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
+    if(config.isSsl() && !config.isTrustAll()) {
+      // we can use HTTPS verification, which matches the requirements for SMTPS 
+      netClientOptions.setHostnameVerificationAlgorithm("HTTPS");
+    }
     if (config.getKeyStore() != null) {
       // assume that password could be null if the keystore doesn't use one
-      netClientOptions = new NetClientOptions().setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
+      netClientOptions.setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
           .setPassword(config.getKeyStorePassword()));
-    } else {
-      netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
     }
     netClient = vertx.createNetClient(netClientOptions);
   }

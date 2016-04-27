@@ -15,8 +15,8 @@
  */
 
 /**
- * delegate class to instantiate a SSLSocketFactory using our test keystore
- *
+ * delegate class to instantiate a SSLSocketFactory using our test keystore. this one uses a cert
+ * with only "localhost" as alt subject name, while the default uses "localhost", "127.0.0.1" and "[::1]"
  */
 package io.vertx.ext.mail;
 
@@ -34,9 +34,9 @@ import java.security.KeyStore;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
+public class KeyStoreSSLSocketFactory2 extends SSLSocketFactory {
 
-  private static final String KEY_STORE_FILE = "src/test/resources/certs/server.jks";
+  private static final String KEY_STORE_FILE = "src/test/resources/certs/server2.jks";
   private static final String KEY_STORE_PASSWORD = "password";
 
   private final SSLSocketFactory delegate;
@@ -45,7 +45,7 @@ public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
    * @throws GeneralSecurityException
    * @throws IOException
    */
-  public KeyStoreSSLSocketFactory() throws GeneralSecurityException, IOException {
+  public KeyStoreSSLSocketFactory2() throws GeneralSecurityException, IOException {
     final KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance("SunX509");
     final KeyStore keyStore = KeyStore.getInstance("JKS");
     keyStore.load(new FileInputStream(KEY_STORE_FILE), null);
