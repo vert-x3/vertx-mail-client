@@ -17,9 +17,7 @@
 package io.vertx.ext.mail;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.security.cert.CertificateException;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -34,12 +32,16 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 @RunWith(VertxUnitRunner.class)
 public class MailSslTest extends SMTPTestDummy {
 
+  private static final String SERVER_JKS = "certs/server.jks";
+  private static final String SERVER2_JKS = "certs/server2.jks";
+  private static final String CLIENT_JKS = "certs/client.jks";
+
   @Test
   public void mailTestSSLCorrectCert(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
     testSuccess(mailClient);
   }
@@ -47,9 +49,9 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLValidCertWrongHost(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server2.jks");
+    startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("127.0.0.1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
     testException(mailClient);
   }
@@ -57,9 +59,9 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLValidCertIpv6(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("::1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
     testSuccess(mailClient);
   }
@@ -67,9 +69,9 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLValidCertIpv6_2(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[::1]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
     testSuccess(mailClient);
   }
@@ -77,9 +79,9 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLValidCertIpv6_3(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[0000:0000:0000:0000:0000:0000:0000:0001]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
     testSuccess(mailClient);
   }
@@ -87,7 +89,7 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLTrustAll(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
         .setSsl(true).setTrustAll(true);
     MailClient mailClient = MailClient.createNonShared(vertx, config);
@@ -97,7 +99,7 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLNoTrust(TestContext testContext) {
     this.testContext = testContext;
-    startServer("src/test/resources/certs/server.jks");
+    startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
         .setSsl(true);
     MailClient mailClient = MailClient.createNonShared(vertx, config);
