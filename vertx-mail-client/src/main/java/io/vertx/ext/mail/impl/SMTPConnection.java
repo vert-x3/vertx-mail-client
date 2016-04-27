@@ -27,8 +27,6 @@ import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.MailConfig;
 
-import java.net.InetSocketAddress;
-
 /**
  * SMTP connection to a server.
  * <p>
@@ -178,27 +176,7 @@ class SMTPConnection {
     broken = false;
     idle = false;
 
-    // We need to resolve the DNS name in an executeBlocking block to avoid blocking the event loop if the DNS server
-    // is very slow or under bad network conditions.
-    vertx.<String>executeBlocking(fut -> {
-      // This triggers the resolution of the address.
-      InetSocketAddress address = new InetSocketAddress(config.getHostname(), config.getPort());
-      if (address.isUnresolved()) {
-        fut.fail("Cannot resolve " + config.getHostname());
-      } else {
-        fut.complete(address.getAddress().getHostAddress());
-      }
-    }, ip -> {
-      if (ip.failed()) {
-        errorHandler.handle(ip.cause());
-        return;
-      }
-      connect(config, initialReplyHandler, ip.result());
-    });
-  }
-
-  private void connect(MailConfig config, Handler<String> initialReplyHandler, String host) {
-    client.connect(config.getPort(), host, asyncResult -> {
+    client.connect(config.getPort(), config.getHostname(), asyncResult -> {
       if (asyncResult.succeeded()) {
         context = Vertx.currentContext();
         ns = asyncResult.result();
