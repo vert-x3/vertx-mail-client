@@ -570,11 +570,13 @@ public class MailEncoderTest {
     attachment.setContentType("image/jpg");
     attachment.setName("image1.jpg");
     attachment.setDisposition("inline");
-    attachment.setHeaders(new CaseInsensitiveHeaders().add("Content-ID", "image1@localhost"));
+    attachment.setContentId("image1@localhost");
     list.add(attachment);
     email.setInlineAttachment(list);
 
-    System.out.println(new MailEncoder(email, HOSTNAME).encode());
+    String encoded = new MailEncoder(email, HOSTNAME).encode();
+    System.out.println(encoded);
+    assertThat(encoded, containsString("Content-ID: image1@localhost"));
   }
 
 }
