@@ -88,15 +88,7 @@ public class MailClient {
    * @return this MailClient instance so the method can be used fluently
    */
   public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
-    delegate.sendMail(email, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    delegate.sendMail(email, resultHandler);
     return this;
   }
 

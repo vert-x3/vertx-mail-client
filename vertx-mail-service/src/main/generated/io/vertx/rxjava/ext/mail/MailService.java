@@ -56,15 +56,7 @@ public class MailService extends MailClient {
   }
 
   public MailService sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) { 
-    ((io.vertx.ext.mail.MailService) delegate).sendMail(email, new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
-      public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
-        if (ar.succeeded()) {
-          resultHandler.handle(io.vertx.core.Future.succeededFuture(ar.result()));
-        } else {
-          resultHandler.handle(io.vertx.core.Future.failedFuture(ar.cause()));
-        }
-      }
-    });
+    ((io.vertx.ext.mail.MailService) delegate).sendMail(email, resultHandler);
     return this;
   }
 
