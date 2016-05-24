@@ -166,7 +166,8 @@
  * * `description` String describing the attachment (this is put in the description header of the attachment), optional
  * * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
  * * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
- * * `headers` MultiMap of headers for the attachment in addition to the default ones, e.g. "Content-ID", optional
+ * * `contentId` String describing the Content-Id of the attachment (this is used to identify inline images), optional
+ * * `headers` MultiMap of headers for the attachment in addition to the default ones, optional
  *
  * === MailConfig options
  *

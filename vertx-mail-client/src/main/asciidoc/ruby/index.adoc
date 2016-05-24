@@ -133,13 +133,12 @@ inline and the Content-ID header as "<contentid@domain>"
 [source,ruby]
 ----
 require 'vertx/buffer'
-require 'vertx/multi_map'
 attachment = {
 }
 attachment['contentType'] = "image/jpeg"
 attachment['data'] = Vertx::Buffer.buffer("image data")
 attachment['disposition'] = "inline"
-attachment['headers'] = Vertx::MultiMap.case_insensitive_multi_map().add("Content-ID", "<image1@example.com>")
+attachment['contentId'] = "<image1@example.com>"
 
 message['inlineAttachment'] = attachment
 
@@ -198,7 +197,8 @@ The MailAttachment object has the following properties
 * `description` String describing the attachment (this is put in the description header of the attachment), optional
 * `disposition` String describing the disposition of the attachment (this is either "inline" or "attachment", default is attachment)
 * `name` String filename of the attachment (this is put into the disposition and in the Content-Type headers of the attachment), optional
-* `headers` MultiMap of headers for the attachment in addition to the default ones, e.g. "Content-ID", optional
+* `contentId` String describing the Content-Id of the attachment (this is used to identify inline images), optional
+* `headers` MultiMap of headers for the attachment in addition to the default ones, optional
 
 === MailConfig options
 

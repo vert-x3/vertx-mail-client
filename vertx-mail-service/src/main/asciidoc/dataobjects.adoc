@@ -8,6 +8,7 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[contentId]]`contentId`|`String`|-
 |[[contentType]]`contentType`|`String`|-
 |[[data]]`data`|`Buffer`|-
 |[[description]]`description`|`String`|-

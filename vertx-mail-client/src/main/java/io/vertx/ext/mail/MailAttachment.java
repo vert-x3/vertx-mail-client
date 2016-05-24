@@ -40,6 +40,7 @@ public class MailAttachment {
   private String contentType;
   private String disposition;
   private String description;
+  private String contentId;
   private MultiMap headers;
 
   /**
@@ -62,6 +63,7 @@ public class MailAttachment {
     this.disposition = other.disposition;
     this.description = other.description;
     this.description = other.description;
+    this.contentId = other.contentId;
     this.headers = other.headers == null ? null : new CaseInsensitiveHeaders().addAll(other.headers);
   }
 
@@ -77,6 +79,7 @@ public class MailAttachment {
     this.contentType = json.getString("contentType");
     this.disposition = json.getString("disposition");
     this.description = json.getString("description");
+    this.contentId = json.getString("contentId");
     JsonObject headers = json.getJsonObject("headers");
     if (headers != null) {
       this.headers = Utils.jsonToMultiMap(headers);
@@ -187,6 +190,26 @@ public class MailAttachment {
   }
 
   /**
+   * get the Content-ID field
+   *
+   * @return the content id
+   */
+  public String getContentId() {
+    return contentId;
+  }
+
+  /**
+   * set the Content-ID field to be used in the attachment
+   *
+   * @param contentId the content id
+   * @return this to be able to use it fluently
+   */
+  public MailAttachment setContentId(final String contentId) {
+    this.contentId = contentId;
+    return this;
+  }
+
+  /**
    * get the headers to be added for this attachment
    *
    * @return the headers
@@ -220,6 +243,7 @@ public class MailAttachment {
     Utils.putIfNotNull(json, "contentType", contentType);
     Utils.putIfNotNull(json, "disposition", disposition);
     Utils.putIfNotNull(json, "description", description);
+    Utils.putIfNotNull(json, "contentId", contentId);
     if (headers != null) {
       json.put("headers", Utils.multiMapToJson(headers));
     }
@@ -227,7 +251,7 @@ public class MailAttachment {
   }
 
   private List<Object> getList() {
-    return Arrays.asList(data, name, disposition, description, headers);
+    return Arrays.asList(data, name, disposition, description, contentId, headers);
   }
 
   @Override

@@ -12,6 +12,10 @@
 [frame="topbot"]
 |===
 ^|Name | Type ^| Description
+|[[contentId]]`contentId`|`String`|
++++
+set the Content-ID field to be used in the attachment
++++
 |[[contentType]]`contentType`|`String`|
 +++
 set the Content-Type

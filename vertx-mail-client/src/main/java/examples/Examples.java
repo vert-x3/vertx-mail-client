@@ -16,7 +16,6 @@
 
 package examples;
 
-import io.vertx.core.MultiMap;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.docgen.Source;
@@ -76,7 +75,7 @@ public class Examples {
     attachment.setContentType("image/jpeg");
     attachment.setData(Buffer.buffer("image data"));
     attachment.setDisposition("inline");
-    attachment.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Content-ID", "<image1@example.com>"));
+    attachment.setContentId("<image1@example.com>");
 
     message.setInlineAttachment(attachment);
   }

@@ -16,12 +16,14 @@
 
 package io.vertx.ext.mail;
 
+import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MailAttachmentTest {
@@ -35,12 +37,14 @@ public class MailAttachmentTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailAttachment().toJson().encode());
-    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\"}",
+    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"id1@domain.net\",\"headers\":{}}",
       new MailAttachment()
         .setData(Buffer.buffer("data"))
         .setContentType("text/plain")
         .setDescription("description")
         .setDisposition("inline")
+        .setContentId("id1@domain.net")
+        .setHeaders(MultiMap.caseInsensitiveMultiMap())
         .toJson().encode());
 
     JsonObject json = new MailAttachment()
@@ -66,6 +70,14 @@ public class MailAttachmentTest {
     assertFalse("Buffer not copied", message.getData()==copy.getData());
   }
 
+  // TODO: this test is too complicated since CaseInsensitiveHeaders does not have equals currently
+  @Test
+  public void testConstructorFromClassHeaders() {
+    MailAttachment message = new MailAttachment();
+    message.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Header", "Value"));
+    assertEquals("Value", new MailAttachment(message).getHeaders().get("Header"));
+  }
+
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
     final MailAttachment attachment = new MailAttachment((JsonObject) null);
@@ -85,7 +97,7 @@ public class MailAttachmentTest {
 
   @Test
   public void testConstructorFromJson() {
-    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\"}";
+    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\",\"headers\":{\"Header\":[\"Value\"]}}";
     JsonObject json = new JsonObject(jsonString);
 
     MailAttachment message = new MailAttachment(json);
@@ -98,6 +110,8 @@ public class MailAttachmentTest {
     MailAttachment mailAttachment = new MailAttachment();
     assertEquals(mailAttachment, mailAttachment);
     assertEquals(mailAttachment, new MailAttachment());
+    assertFalse(mailAttachment.equals(null));
+    assertFalse(mailAttachment.equals(new Object()));
   }
 
   @Test
@@ -139,6 +153,20 @@ public class MailAttachmentTest {
     MailAttachment mailMessage = new MailAttachment();
     mailMessage.setDisposition("inline");
     assertEquals("inline", mailMessage.getDisposition());
+  }
+
+  @Test
+  public void testContentId() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setContentId("id@example.org");
+    assertEquals("id@example.org", mailMessage.getContentId());
+  }
+
+  @Test
+  public void testHeaders() {
+    MailAttachment mailMessage = new MailAttachment();
+    mailMessage.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Header", "Value"));
+    assertEquals("Value", mailMessage.getHeaders().get("Header"));
   }
 
 }
