@@ -37,13 +37,13 @@ public class MailAttachmentTest {
   @Test
   public void testToJson() {
     assertEquals("{}", new MailAttachment().toJson().encode());
-    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"id1@domain.net\",\"headers\":{}}",
+    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"randomstring\",\"headers\":{}}",
       new MailAttachment()
         .setData(Buffer.buffer("data"))
         .setContentType("text/plain")
         .setDescription("description")
         .setDisposition("inline")
-        .setContentId("id1@domain.net")
+        .setContentId("randomstring")
         .setHeaders(MultiMap.caseInsensitiveMultiMap())
         .toJson().encode());
 
@@ -97,7 +97,7 @@ public class MailAttachmentTest {
 
   @Test
   public void testConstructorFromJson() {
-    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\",\"headers\":{\"Header\":[\"Value\"]}}";
+    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\",\"headers\":{\"Content-ID\":[\"<image1@example.org\"],\"Header\":[\"Value\"]}}";
     JsonObject json = new JsonObject(jsonString);
 
     MailAttachment message = new MailAttachment(json);

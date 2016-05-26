@@ -113,7 +113,10 @@
  * When using inline attachments (usually images), it is possible to reference the images within a html message
  * to display html with the images included in the mail. 
  * Images can be referenced as <img src="cid:contentid@domain"> in the html text, the corresponding image has Disposition:
- * inline and the Content-ID header as "<contentid@domain>" 
+ * inline and the Content-ID header as "<contentid@domain>". Please note that RFC 2392 requires Content-ID values to be structured
+ * like a Message-ID with angle brackets and a local and domain part using URL compatible encoding. None of this is not enforced
+ * and most mail clients supports IDs without angle brackets or without domain part, the best practice is to use the strict format.
+ * A valid example for a Content-ID value is "<filename%201.jpg@example.org>"
  *
  * [source,$lang]
  * ----
@@ -177,18 +180,18 @@
  * * `port` the port of the smtp server to connect to (default is 25)
  * * `startTLS` StartTLSOptions either DISABLED, OPTIONAL or REQUIRED, default is OPTIONAL
  * * `login` LoginOption either DISABLED, NONE or REQUIRED, default is NONE
- * * `username` String of the username to be used for login
- * * `password` String of the password to be used for login
- * * `ssl` boolean whether to use ssl on connect to the mail server (default is false), set this to use a port 465 ssl connection
- * * `ehloHostname` String to used in EHLO and for creating the message-id, if not set, the own hostname will be used, which may not be a good choice if it doesn't contain a FQDN or is localhost
- * * `authMethods` String space separated list of allowed auth methods, this can be used to disallow some auth methods or define one required auth method
+ * * `username` String of the username to be used for login (required only when LoginOption is REQUIRED)
+ * * `password` String of the password to be used for login (required only when LoginOption is REQUIRED)
+ * * `ssl` boolean whether to use ssl on connect to the mail server (default is false), set this to use a port 465 ssl connection (default is false)
+ * * `ehloHostname` String to used in EHLO and for creating the message-id, if not set, the own hostname will be used, which may not be a good choice if it doesn't contain a FQDN or is localhost (optional)
+ * * `authMethods` String space separated list of allowed auth methods, this can be used to disallow some auth methods or define one required auth method (optional)
  * * `keepAlive` boolean if connection pooling is enabled (default is true)
  * * `maxPoolSize` int max number of open connections kept in the pool or to be opened at one time (regardless if pooling is enabled or not), default is 10
  * * `trustAll` boolean whether to accept all certs from the server (default is false)
- * * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated
- * * `keyStorePassword` String password used to decrypt the key store
- * * `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted
- * * `disableEsmtp` boolean if true, ESMTP-related commands will not be used (set if your smtp server doesn't even give a proper error response code for the EHLO command)
+ * * `keyStore` String the key store filename, this can be used to trust a server cert that is custom generated (optional)
+ * * `keyStorePassword` String password used to decrypt the key store (optional)
+ * * `allowRcptErrors` boolean if true, sending continues if a recipient address is not accepted and the mail will be sent if at least one address is accepted (default false)
+ * * `disableEsmtp` boolean if true, ESMTP-related commands will not be used (set if your smtp server doesn't even give a proper error response code for the EHLO command) (default false)
  *
  * === MailResult object
  * The MailResult object has the following members
