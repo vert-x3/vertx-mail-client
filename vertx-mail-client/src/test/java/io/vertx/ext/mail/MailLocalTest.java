@@ -64,8 +64,6 @@ public class MailLocalTest extends SMTPTestWiser {
   }
 
   @Test
-  @Ignore
-  // currently not working due to https://github.com/netty/netty/issues/5182
   public void mailTestTLSCase(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = configLogin().setHostname("LOCALHOST").setStarttls(StartTLSOptions.REQUIRED)
