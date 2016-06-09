@@ -32,6 +32,10 @@ set the description field to be used in the attachment
 +++
 set the disposition field to be used in the attachment
 +++
+|[[headers]]`headers`|`String`|
++++
+Add an header to this attachment.
++++
 |[[name]]`name`|`String`|
 +++
 set the name
@@ -180,6 +184,10 @@ set whether our own headers should be the only headers added to the message
 |[[from]]`from`|`String`|
 +++
 set from address of this mail
++++
+|[[headers]]`headers`|`String`|
++++
+Add a message header.
 +++
 |[[html]]`html`|`String`|
 +++

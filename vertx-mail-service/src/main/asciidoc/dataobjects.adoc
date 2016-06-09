@@ -13,6 +13,7 @@
 |[[data]]`data`|`Buffer`|-
 |[[description]]`description`|`String`|-
 |[[disposition]]`disposition`|`String`|-
+|[[headers]]`headers`|`String`|-
 |[[name]]`name`|`String`|-
 |===
 
@@ -56,6 +57,7 @@
 |[[cc]]`cc`|`Array of String`|-
 |[[fixedHeaders]]`fixedHeaders`|`Boolean`|-
 |[[from]]`from`|`String`|-
+|[[headers]]`headers`|`String`|-
 |[[html]]`html`|`String`|-
 |[[inlineAttachment]]`inlineAttachment`|`Array of link:dataobjects.html#MailAttachment[MailAttachment]`|-
 |[[subject]]`subject`|`String`|-

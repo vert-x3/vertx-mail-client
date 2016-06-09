@@ -17,6 +17,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
@@ -210,20 +211,39 @@ public class MailAttachment {
   }
 
   /**
-   * get the headers to be added for this attachment
+   * Add an header to this attachment.
+   *
+   * @param key  the header key
+   * @param value  the header value
+   * @return  a reference to this, so the API can be used fluently
+   */
+  public MailAttachment addHeader(String key, String value) {
+    if (headers == null) {
+      headers = new CaseInsensitiveHeaders();
+    }
+    Objects.requireNonNull(key, "no null key accepted");
+    Objects.requireNonNull(value, "no null value accepted");
+    headers.add(key, value);
+    return this;
+  }
+
+  /**
+   * Get the headers to be added for this attachment.
    *
    * @return the headers
    */
+  @GenIgnore
   public MultiMap getHeaders() {
     return headers;
   }
 
   /**
-   * set the headers to be added for this attachment
+   * Set the headers to be added for this attachment.
    *
    * @param headers the headers to be added
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailAttachment setHeaders(final MultiMap headers) {
     this.headers = headers;
     return this;

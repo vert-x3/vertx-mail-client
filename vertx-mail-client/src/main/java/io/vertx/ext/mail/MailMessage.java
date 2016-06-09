@@ -412,20 +412,39 @@ public class MailMessage {
   }
 
   /**
-   * get the headers to be set before filling our headers
+   * Add a message header.
+   *
+   * @param key  the header key
+   * @param value  the header value
+   * @return  a reference to this, so the API can be used fluently
+   */
+  public MailMessage addHeader(String key, String value) {
+    if (headers == null) {
+      headers = new CaseInsensitiveHeaders();
+    }
+    Objects.requireNonNull(key, "no null key accepted");
+    Objects.requireNonNull(value, "no null value accepted");
+    headers.add(key, value);
+    return this;
+  }
+
+  /**
+   * Get the headers.
    *
    * @return the headers
    */
+  @GenIgnore
   public MultiMap getHeaders() {
     return headers;
   }
 
   /**
-   * set the headers to be set before filling our headers
+   * Set the headers.
    *
    * @param headers the headers to set
    * @return this to be able to use it fluently
    */
+  @GenIgnore
   public MailMessage setHeaders(MultiMap headers) {
     this.headers = headers;
     return this;
