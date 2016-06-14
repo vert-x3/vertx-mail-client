@@ -34,19 +34,19 @@ public class MailClient {
     return delegate;
   }
   public static MailClient createNonShared(Vertx vertx, Map<String, Object> config) {
-    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createNonShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
+    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createNonShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(io.vertx.lang.groovy.InternalHelper.toJsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   public static MailClient createShared(Vertx vertx, Map<String, Object> config, String poolName) {
-    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null, poolName), io.vertx.groovy.ext.mail.MailClient.class);
+    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(io.vertx.lang.groovy.InternalHelper.toJsonObject(config)) : null, poolName), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   public static MailClient createShared(Vertx vertx, Map<String, Object> config) {
-    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(new io.vertx.core.json.JsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
+    def ret = InternalHelper.safeCreate(io.vertx.ext.mail.MailClient.createShared(vertx != null ? (io.vertx.core.Vertx)vertx.getDelegate() : null, config != null ? new io.vertx.ext.mail.MailConfig(io.vertx.lang.groovy.InternalHelper.toJsonObject(config)) : null), io.vertx.groovy.ext.mail.MailClient.class);
     return ret;
   }
   public MailClient sendMail(Map<String, Object> arg0 = [:], Handler<AsyncResult<Map<String, Object>>> arg1) {
-    delegate.sendMail(arg0 != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(arg0)) : null, arg1 != null ? new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+    delegate.sendMail(arg0 != null ? new io.vertx.ext.mail.MailMessage(io.vertx.lang.groovy.InternalHelper.toJsonObject(arg0)) : null, arg1 != null ? new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
         if (ar.succeeded()) {
           arg1.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));

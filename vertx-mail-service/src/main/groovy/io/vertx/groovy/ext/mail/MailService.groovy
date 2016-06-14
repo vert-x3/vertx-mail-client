@@ -47,7 +47,7 @@ public class MailService extends MailClient {
     return ret;
   }
   public MailService sendMail(Map<String, Object> email = [:], Handler<AsyncResult<Map<String, Object>>> resultHandler) {
-    ((io.vertx.ext.mail.MailService) delegate).sendMail(email != null ? new io.vertx.ext.mail.MailMessage(new io.vertx.core.json.JsonObject(email)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
+    ((io.vertx.ext.mail.MailService) delegate).sendMail(email != null ? new io.vertx.ext.mail.MailMessage(io.vertx.lang.groovy.InternalHelper.toJsonObject(email)) : null, resultHandler != null ? new Handler<AsyncResult<io.vertx.ext.mail.MailResult>>() {
       public void handle(AsyncResult<io.vertx.ext.mail.MailResult> ar) {
         if (ar.succeeded()) {
           resultHandler.handle(io.vertx.core.Future.succeededFuture((Map<String, Object>)InternalHelper.wrapObject(ar.result()?.toJson())));
