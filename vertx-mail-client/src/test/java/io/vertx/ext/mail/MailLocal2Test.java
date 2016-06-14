@@ -24,11 +24,11 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 /**
  * this test uses a different server keystore than MailLocalTest, so we need a new test class
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class MailLocalTest2 extends SMTPTestWiser {
+public class MailLocal2Test extends SMTPTestWiser {
 
   @Test
   public void mailTestTLSValidCertWrongHost(TestContext testContext) {
@@ -39,6 +39,7 @@ public class MailLocalTest2 extends SMTPTestWiser {
     testException(mailClient);
   }
 
+  @Override
   protected void startSMTP() {
     super.startSMTP(KeyStoreSSLSocketFactory2.class.getName());
   }

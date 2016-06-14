@@ -29,9 +29,9 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class MailClientImplTest2 extends SMTPTestWiser {
+public class MailClientImpl2Test extends SMTPTestWiser {
 
-  private static final Logger log = LoggerFactory.getLogger(MailClientImplTest2.class);
+  private static final Logger log = LoggerFactory.getLogger(MailClientImpl2Test.class);
 
   /**
    * test if we can shut down the connection pool while a send operation is still running the active connection will be

@@ -26,6 +26,7 @@ import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.StartTLSOptions;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -55,8 +56,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
-    if(config.isSsl() && !config.isTrustAll()) {
-      // we can use HTTPS verification, which matches the requirements for SMTPS 
+    if ((config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED) && !config.isTrustAll()) {
+      // we can use HTTPS verification, which matches the requirements for SMTPS
       netClientOptions.setHostnameVerificationAlgorithm("HTTPS");
     }
     if (config.getKeyStore() != null) {
