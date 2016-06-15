@@ -22,7 +22,6 @@ import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 
-import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
@@ -30,6 +29,9 @@ import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
 import static org.hamcrest.core.StringContains.containsString;
+
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 
 /**
  * Start/stop a dummy test server for each test
@@ -39,6 +41,8 @@ import static org.hamcrest.core.StringContains.containsString;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 public class SMTPTestWiser extends SMTPTestBase {
+
+  private static final Logger log = LoggerFactory.getLogger(SMTPTestWiser.class);
 
   protected Wiser wiser;
 
@@ -61,7 +65,7 @@ public class SMTPTestWiser extends SMTPTestBase {
 
           @Override
           public String auth(final String clientInput) throws RejectException {
-            LoggerFactory.getLogger(this.getClass()).info(clientInput);
+            log.info(clientInput);
             return null;
           }
 
