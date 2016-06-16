@@ -24,11 +24,14 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 
 /**
  * this test uses a different server keystore than MailLocalTest, so we need a new test class
- * 
+ *
+ * currently this test is run as integration-test (i.e. in a new jvm) since SSLSocketFactory.getDefault() isn't changed
+ * after it is used the first time and the test will fail if MailLocalTest is run before.
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class MailLocalTest2 extends SMTPTestWiser {
+public class MailLocal2Test extends SMTPTestWiser {
 
   @Test
   public void mailTestTLSValidCertWrongHost(TestContext testContext) {
@@ -39,6 +42,7 @@ public class MailLocalTest2 extends SMTPTestWiser {
     testException(mailClient);
   }
 
+  @Override
   protected void startSMTP() {
     super.startSMTP(KeyStoreSSLSocketFactory2.class.getName());
   }
