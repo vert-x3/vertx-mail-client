@@ -24,7 +24,6 @@ import io.vertx.core.Handler
 import io.vertx.ext.mail.MailMessage
 import io.vertx.ext.mail.MailResult
 /**
- * @author <a href="http://tfox.org">Tim Fox</a>
 */
 @CompileStatic
 public class MailService extends MailClient {

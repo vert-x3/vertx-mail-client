@@ -25,7 +25,6 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 
 /**
- * @author <a href="http://tfox.org">Tim Fox</a>
  *
  * <p/>
  * NOTE: This class has been automatically generated from the {@link io.vertx.ext.mail.MailService original} non RX-ified interface using Vert.x codegen.

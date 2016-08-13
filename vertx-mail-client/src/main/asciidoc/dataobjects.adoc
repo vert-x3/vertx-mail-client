@@ -225,11 +225,11 @@ set list of to addresses
 ^|Name | Type ^| Description
 |[[messageID]]`messageID`|`String`|
 +++
-@param messageID the messageID to set
+
 +++
 |[[recipients]]`recipients`|`Array of String`|
 +++
-@param recipients the recipients to set
+
 +++
 |===
 

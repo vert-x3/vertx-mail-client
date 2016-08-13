@@ -3,7 +3,6 @@ require 'vertx-mail/mail_client'
 require 'vertx/util/utils.rb'
 # Generated from io.vertx.ext.mail.MailService
 module VertxMail
-  #  @author <a href="http://tfox.org">Tim Fox</a>
   class MailService < ::VertxMail::MailClient
     # @private
     # @param j_del [::VertxMail::MailService] the java delegate
