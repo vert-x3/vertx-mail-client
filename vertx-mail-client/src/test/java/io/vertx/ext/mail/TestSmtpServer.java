@@ -48,6 +48,7 @@ public class TestSmtpServer {
    * set up server with a default reply that works for EHLO and no login with one recipient
    */
   public TestSmtpServer(Vertx vertx, boolean ssl, String keystore) {
+    log.debug("starting TestSmtpServer");
     setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n"
@@ -62,20 +63,23 @@ public class TestSmtpServer {
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "QUIT",
         "221 2.0.0 Bye");
-    setSsl(ssl);
+    this.ssl = ssl;
     this.keystore = keystore;
     startServer(vertx);
   }
 
   private void startServer(Vertx vertx) {
     NetServerOptions nsOptions = new NetServerOptions();
-    nsOptions.setPort(ssl ? 1465 : 1587);
+    int port = ssl ? 1465 : 1587;
+    log.debug("listening on port " + port);
+    nsOptions.setPort(port);
+    if (keystore == null) {
+      keystore = "src/test/resources/certs/server2.jks";
+    }
+    JksOptions jksOptions = new JksOptions().setPath(keystore).setPassword("password");
+    nsOptions.setKeyStoreOptions(jksOptions);
     if (ssl) {
-      if (keystore == null) {
-        keystore = "src/test/resources/certs/server.jks";
-      }
-      JksOptions jksOptions = new JksOptions().setPath(keystore).setPassword("password");
-      nsOptions.setSsl(true).setKeyStoreOptions(jksOptions);
+      nsOptions.setSsl(true);
     }
     netServer = vertx.createNetServer(nsOptions);
 
@@ -110,8 +114,8 @@ public class TestSmtpServer {
               String thisLine = dialogue[currentLine];
               boolean isRegexp = thisLine.startsWith("^");
               if (!isRegexp && !inputLine.contains(thisLine) || isRegexp && !inputLine.matches(thisLine)) {
-                socket.write("500 didn't expect that command\r\n");
-                log.info("sending 500 didn't expect that command");
+                socket.write("500 didn't expect that command (\"" + thisLine + "\"/\"" + inputLine + "\")\r\n");
+                log.info("sending 500 didn't expect that command (\"" + thisLine + "\"/\"" + inputLine + "\")");
                 // stop here
                 lines.set(dialogue.length);
               }
@@ -122,7 +126,13 @@ public class TestSmtpServer {
           if (inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
             skipUntilDot.set(1);
           }
-          if (lines.get() < dialogue.length) {
+          if (inputLine.toUpperCase(Locale.ENGLISH).equals("STARTTLS")) {
+            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+            socket.upgradeToSsl(v -> {
+              log.debug("tls upgrade finished");
+            });
+          }
+          else if (lines.get() < dialogue.length) {
             log.debug("S:" + dialogue[lines.get()]);
             socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
           }
@@ -161,11 +171,6 @@ public class TestSmtpServer {
   public TestSmtpServer setCloseWaitTime(int time) {
     log.debug("setting closeWaitTime to " + time);
     closeWaitTime = time;
-    return this;
-  }
-
-  public TestSmtpServer setSsl(boolean ssl) {
-    this.ssl = ssl;
     return this;
   }
 

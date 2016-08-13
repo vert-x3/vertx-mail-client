@@ -18,9 +18,11 @@ package io.vertx.ext.mail;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import io.netty.util.NetUtil;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
@@ -39,7 +41,7 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLCorrectCert(TestContext testContext) {
     this.testContext = testContext;
-    startServer(SERVER_JKS);
+    startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
         .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
@@ -58,6 +60,9 @@ public class MailSslTest extends SMTPTestDummy {
 
   @Test
   public void mailTestSSLValidCertIpv6(TestContext testContext) {
+    // don't run ipv6 tests when ipv4 is preferred, this should enable running the tests
+    // on CI where ipv6 is not configured
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("::1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
@@ -68,6 +73,7 @@ public class MailSslTest extends SMTPTestDummy {
 
   @Test
   public void mailTestSSLValidCertIpv6_2(TestContext testContext) {
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[::1]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
@@ -78,6 +84,7 @@ public class MailSslTest extends SMTPTestDummy {
 
   @Test
   public void mailTestSSLValidCertIpv6_3(TestContext testContext) {
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[0000:0000:0000:0000:0000:0000:0000:0001]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
@@ -89,7 +96,7 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLTrustAll(TestContext testContext) {
     this.testContext = testContext;
-    startServer(SERVER_JKS);
+    startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
         .setSsl(true).setTrustAll(true);
     MailClient mailClient = MailClient.createNonShared(vertx, config);
@@ -99,7 +106,7 @@ public class MailSslTest extends SMTPTestDummy {
   @Test
   public void mailTestSSLNoTrust(TestContext testContext) {
     this.testContext = testContext;
-    startServer(SERVER_JKS);
+    startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
         .setSsl(true);
     MailClient mailClient = MailClient.createNonShared(vertx, config);

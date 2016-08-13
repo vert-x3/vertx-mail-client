@@ -33,7 +33,10 @@ public class SMTPTestDummy extends SMTPTestBase {
   }
 
   protected void stopSMTP() {
-    smtpServer.stop();
+    if (smtpServer!=null) {
+      smtpServer.stop();
+      smtpServer=null;
+    }
   }
 
 }
