@@ -36,7 +36,7 @@ import java.security.KeyStore;
  */
 public class KeyStoreSSLSocketFactory extends SSLSocketFactory {
 
-  private static final String KEY_STORE_FILE = "src/test/resources/certs/server.jks";
+  private static final String KEY_STORE_FILE = "src/test/resources/certs/server2.jks";
   private static final String KEY_STORE_PASSWORD = "password";
 
   private final SSLSocketFactory delegate;

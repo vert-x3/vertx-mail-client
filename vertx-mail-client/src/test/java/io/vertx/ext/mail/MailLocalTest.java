@@ -71,4 +71,13 @@ public class MailLocalTest extends SMTPTestWiser {
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
+  @Test
+  public void mailTestTLSValidCertWrongHost(TestContext testContext) {
+    this.testContext = testContext;
+    final MailConfig config = configLogin().setHostname("127.0.0.1").setStarttls(StartTLSOptions.REQUIRED)
+        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    testException(mailClient);
+  }
+
 }
