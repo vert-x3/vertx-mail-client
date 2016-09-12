@@ -44,6 +44,7 @@ import io.vertx.ext.mail.MailResult;
   Generated Proxy code - DO NOT EDIT
   @author Roger the Robot
 */
+@SuppressWarnings({"unchecked", "rawtypes"})
 public class MailServiceVertxEBProxy implements MailService {
 
   private Vertx _vertx;
