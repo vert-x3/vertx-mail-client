@@ -38,7 +38,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 public class ConnectionErrorPoolTest extends SMTPTestDummy {
 
   @Test
-  public void mailTest(TestContext testContext) {
+  public void poolCountRisesConnRefusedTest(TestContext testContext) {
     Async async = testContext.async();
 
     MailClient mailClient = MailClient.createNonShared(vertx, new MailConfig("localhost", 20025).setMaxPoolSize(1));
