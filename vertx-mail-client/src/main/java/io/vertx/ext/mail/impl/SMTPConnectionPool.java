@@ -103,7 +103,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     checkReuseConnection(conn);
   }
 
-  // Called if the connection is actually closed, OR the connection attempt
+  // Called if the connection is actually closed OR the connection attempt
   // failed - in the latter case conn will be null
   public synchronized void connectionClosed(SMTPConnection conn) {
     log.debug("connection closed, removing from pool");
@@ -220,6 +220,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void createNewConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     connCount++;
+    log.debug("Connection count is " + connCount);
     createConnection(result -> {
       if (result.succeeded()) {
         allConnections.add(result.result());

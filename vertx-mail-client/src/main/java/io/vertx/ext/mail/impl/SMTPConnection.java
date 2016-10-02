@@ -230,6 +230,8 @@ class SMTPConnection {
         ns.handler(mlp);
       } else {
         log.error("exception on connect", asyncResult.cause());
+        // notify the pool that the connection attempt didn't work so that the connection count is correct
+        listener.connectionClosed(null);
         handleError(asyncResult.cause());
       }
     });
