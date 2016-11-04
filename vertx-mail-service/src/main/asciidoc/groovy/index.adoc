@@ -35,7 +35,7 @@ default is "vertx.mail".
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailService
+import io.vertx.ext.mail.MailService
 def mailService = MailService.createEventBusProxy(vertx, "vertx.mail")
 
 ----
@@ -47,7 +47,7 @@ A more complete example for sending a mail via the event bus is this:
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailService
+import io.vertx.ext.mail.MailService
 def mailService = MailService.createEventBusProxy(vertx, "vertx.mail")
 
 def email = [

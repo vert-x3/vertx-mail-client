@@ -45,7 +45,7 @@ if it is shared, the same connection pool will be used for all clients using the
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailClient
+import io.vertx.ext.mail.MailClient
 def config = [:]
 def mailClient = MailClient.createShared(vertx, config, "exampleclient")
 
@@ -61,7 +61,7 @@ The unshared client can be created the same way leaving out the identifier.
 
 [source,groovy]
 ----
-import io.vertx.groovy.ext.mail.MailClient
+import io.vertx.ext.mail.MailClient
 def config = [:]
 def mailClient = MailClient.createNonShared(vertx, config)
 
@@ -71,7 +71,7 @@ A more elaborate example using a mailserver that requires login via TLS
 [source,groovy]
 ----
 import io.vertx.ext.mail.StartTLSOptions
-import io.vertx.groovy.ext.mail.MailClient
+import io.vertx.ext.mail.MailClient
 def config = [:]
 config.hostname = "mail.example.com"
 config.port = 587
@@ -114,7 +114,7 @@ this supports base64 attachments.
 
 [source,groovy]
 ----
-import io.vertx.groovy.core.buffer.Buffer
+import io.vertx.core.buffer.Buffer
 def attachment = [:]
 attachment.contentType = "text/plain"
 attachment.data = Buffer.buffer("attachment file")
@@ -133,7 +133,7 @@ A valid example for a Content-ID value is "<filename%201.jpg@example.org>"
 
 [source,groovy]
 ----
-import io.vertx.groovy.core.buffer.Buffer
+import io.vertx.core.buffer.Buffer
 def attachment = [:]
 attachment.contentType = "image/jpeg"
 attachment.data = Buffer.buffer("image data")
