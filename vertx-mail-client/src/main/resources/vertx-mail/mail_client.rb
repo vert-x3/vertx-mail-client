@@ -16,6 +16,22 @@ module VertxMail
     def j_del
       @j_del
     end
+    @@j_api_type = Object.new
+    def @@j_api_type.accept?(obj)
+      obj.class == MailClient
+    end
+    def @@j_api_type.wrap(obj)
+      MailClient.new(obj)
+    end
+    def @@j_api_type.unwrap(obj)
+      obj.j_del
+    end
+    def self.j_api_type
+      @@j_api_type
+    end
+    def self.j_class
+      Java::IoVertxExtMail::MailClient.java_class
+    end
     #  create a non shared instance of the mail client
     # @param [::Vertx::Vertx] vertx the Vertx instance the operation will be run in
     # @param [Hash] config MailConfig configuration to be used for sending mails
@@ -24,7 +40,7 @@ module VertxMail
       if vertx.class.method_defined?(:j_del) && config.class == Hash && !block_given?
         return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createNonShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config))),::VertxMail::MailClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create_non_shared(vertx,config)"
+      raise ArgumentError, "Invalid arguments when calling create_non_shared(#{vertx},#{config})"
     end
     #  Create a Mail client which shares its data source with any other Mongo clients created with the same
     #  pool name
@@ -38,7 +54,7 @@ module VertxMail
       elsif vertx.class.method_defined?(:j_del) && config.class == Hash && poolName.class == String && !block_given?
         return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailClient.java_method(:createShared, [Java::IoVertxCore::Vertx.java_class,Java::IoVertxExtMail::MailConfig.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,Java::IoVertxExtMail::MailConfig.new(::Vertx::Util::Utils.to_json_object(config)),poolName),::VertxMail::MailClient)
       end
-      raise ArgumentError, "Invalid arguments when calling create_shared(vertx,config,poolName)"
+      raise ArgumentError, "Invalid arguments when calling create_shared(#{vertx},#{config},#{poolName})"
     end
     #  send a single mail via MailClient
     # @param [Hash] email MailMessage object containing the mail text, from/to, attachments etc
@@ -49,7 +65,7 @@ module VertxMail
         @j_del.java_method(:sendMail, [Java::IoVertxExtMail::MailMessage.java_class,Java::IoVertxCore::Handler.java_class]).call(Java::IoVertxExtMail::MailMessage.new(::Vertx::Util::Utils.to_json_object(email)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling send_mail(email)"
+      raise ArgumentError, "Invalid arguments when calling send_mail(#{email})"
     end
     #  close the MailClient
     # @return [void]

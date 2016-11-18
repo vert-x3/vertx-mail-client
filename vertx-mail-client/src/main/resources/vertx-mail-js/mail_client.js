@@ -78,6 +78,25 @@ var MailClient = function(j_val) {
   this._jdel = j_mailClient;
 };
 
+MailClient._jclass = utils.getJavaClass("io.vertx.ext.mail.MailClient");
+MailClient._jtype = {
+  accept: function(obj) {
+    return MailClient._jclass.isInstance(obj._jdel);
+  },
+  wrap: function(jdel) {
+    var obj = Object.create(MailClient.prototype, {});
+    MailClient.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+MailClient._create = function(jdel) {
+  var obj = Object.create(MailClient.prototype, {});
+  MailClient.apply(obj, arguments);
+  return obj;
+}
 /**
  create a non shared instance of the mail client
 
@@ -89,7 +108,7 @@ var MailClient = function(j_val) {
 MailClient.createNonShared = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(JMailClient["createNonShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null), MailClient);
+    return utils.convReturnVertxGen(MailClient, JMailClient["createNonShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
@@ -106,11 +125,10 @@ MailClient.createNonShared = function(vertx, config) {
 MailClient.createShared = function() {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null), MailClient);
+    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null));
   }else if (__args.length === 3 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string') {
-    return utils.convReturnVertxGen(JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig,java.lang.String)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null, __args[2]), MailClient);
+    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig,java.lang.String)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null, __args[2]));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
-// We export the Constructor function
 module.exports = MailClient;

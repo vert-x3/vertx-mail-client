@@ -74,6 +74,25 @@ var MailService = function(j_val) {
   this._jdel = j_mailService;
 };
 
+MailService._jclass = utils.getJavaClass("io.vertx.ext.mail.MailService");
+MailService._jtype = {
+  accept: function(obj) {
+    return MailService._jclass.isInstance(obj._jdel);
+  },
+  wrap: function(jdel) {
+    var obj = Object.create(MailService.prototype, {});
+    MailService.apply(obj, arguments);
+    return obj;
+  },
+  unwrap: function(obj) {
+    return obj._jdel;
+  }
+};
+MailService._create = function(jdel) {
+  var obj = Object.create(MailService.prototype, {});
+  MailService.apply(obj, arguments);
+  return obj;
+}
 /**
  create a proxy of  MailService that delegates to the mail service running somewhere else via the event bus
 
@@ -85,9 +104,8 @@ var MailService = function(j_val) {
 MailService.createEventBusProxy = function(vertx, address) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && typeof __args[1] === 'string') {
-    return utils.convReturnVertxGen(JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address), MailService);
+    return utils.convReturnVertxGen(MailService, JMailService["createEventBusProxy(io.vertx.core.Vertx,java.lang.String)"](vertx._jdel, address));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
-// We export the Constructor function
 module.exports = MailService;

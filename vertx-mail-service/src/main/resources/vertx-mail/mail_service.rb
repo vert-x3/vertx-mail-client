@@ -15,6 +15,22 @@ module VertxMail
     def j_del
       @j_del
     end
+    @@j_api_type = Object.new
+    def @@j_api_type.accept?(obj)
+      obj.class == MailService
+    end
+    def @@j_api_type.wrap(obj)
+      MailService.new(obj)
+    end
+    def @@j_api_type.unwrap(obj)
+      obj.j_del
+    end
+    def self.j_api_type
+      @@j_api_type
+    end
+    def self.j_class
+      Java::IoVertxExtMail::MailService.java_class
+    end
     #  create a proxy of  MailService that delegates to the mail service running somewhere else via the event bus
     # @param [::Vertx::Vertx] vertx the Vertx instance the proxy will be run in
     # @param [String] address the eb address of the mail service running somewhere, default is "vertx.mail"
@@ -23,7 +39,7 @@ module VertxMail
       if vertx.class.method_defined?(:j_del) && address.class == String && !block_given?
         return ::Vertx::Util::Utils.safe_create(Java::IoVertxExtMail::MailService.java_method(:createEventBusProxy, [Java::IoVertxCore::Vertx.java_class,Java::java.lang.String.java_class]).call(vertx.j_del,address),::VertxMail::MailService)
       end
-      raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(vertx,address)"
+      raise ArgumentError, "Invalid arguments when calling create_event_bus_proxy(#{vertx},#{address})"
     end
     # @param [Hash] email 
     # @yield 
@@ -33,7 +49,7 @@ module VertxMail
         @j_del.java_method(:sendMail, [Java::IoVertxExtMail::MailMessage.java_class,Java::IoVertxCore::Handler.java_class]).call(Java::IoVertxExtMail::MailMessage.new(::Vertx::Util::Utils.to_json_object(email)),(Proc.new { |ar| yield(ar.failed ? ar.cause : nil, ar.succeeded ? ar.result != nil ? JSON.parse(ar.result.toJson.encode) : nil : nil) }))
         return self
       end
-      raise ArgumentError, "Invalid arguments when calling send_mail(email)"
+      raise ArgumentError, "Invalid arguments when calling send_mail(#{email})"
     end
     # @return [void]
     def close
