@@ -5,7 +5,7 @@ import io.vertx.ext.mail.LoginOption
 import io.vertx.ext.mail.StartTLSOptions
 
 fun MailConfig(
-    allowRcptErrors: Boolean? = null,
+  allowRcptErrors: Boolean? = null,
   authMethods: String? = null,
   disableEsmtp: Boolean? = null,
   hostname: String? = null,
@@ -23,68 +23,52 @@ fun MailConfig(
   username: String? = null): MailConfig = io.vertx.ext.mail.MailConfig().apply {
 
   if (allowRcptErrors != null) {
-    this.isAllowRcptErrors = allowRcptErrors
+    this.setAllowRcptErrors(allowRcptErrors)
   }
-
   if (authMethods != null) {
-    this.authMethods = authMethods
+    this.setAuthMethods(authMethods)
   }
-
   if (disableEsmtp != null) {
-    this.isDisableEsmtp = disableEsmtp
+    this.setDisableEsmtp(disableEsmtp)
   }
-
   if (hostname != null) {
-    this.hostname = hostname
+    this.setHostname(hostname)
   }
-
   if (keepAlive != null) {
-    this.isKeepAlive = keepAlive
+    this.setKeepAlive(keepAlive)
   }
-
   if (keyStore != null) {
-    this.keyStore = keyStore
+    this.setKeyStore(keyStore)
   }
-
   if (keyStorePassword != null) {
-    this.keyStorePassword = keyStorePassword
+    this.setKeyStorePassword(keyStorePassword)
   }
-
   if (login != null) {
-    this.login = login
+    this.setLogin(login)
   }
-
   if (maxPoolSize != null) {
-    this.maxPoolSize = maxPoolSize
+    this.setMaxPoolSize(maxPoolSize)
   }
-
   if (ownHostname != null) {
-    this.ownHostname = ownHostname
+    this.setOwnHostname(ownHostname)
   }
-
   if (password != null) {
-    this.password = password
+    this.setPassword(password)
   }
-
   if (port != null) {
-    this.port = port
+    this.setPort(port)
   }
-
   if (ssl != null) {
-    this.isSsl = ssl
+    this.setSsl(ssl)
   }
-
   if (starttls != null) {
-    this.starttls = starttls
+    this.setStarttls(starttls)
   }
-
   if (trustAll != null) {
-    this.isTrustAll = trustAll
+    this.setTrustAll(trustAll)
   }
-
   if (username != null) {
-    this.username = username
+    this.setUsername(username)
   }
-
 }
 

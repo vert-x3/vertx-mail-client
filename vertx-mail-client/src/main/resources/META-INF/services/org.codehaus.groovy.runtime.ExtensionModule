@@ -1,4 +1,4 @@
-moduleName = vertx-mail-module
+moduleName = io.vertx.ext.mail.MailClient-module
 moduleVersion = 1.0
-extensionClasses = io.vertx.groovy.ext.mail.GroovyExtension
-staticExtensionClasses = io.vertx.groovy.ext.mail.GroovyStaticExtension
+extensionClasses = io.vertx.groovy.ext.mail.MailClient_GroovyExtension
+staticExtensionClasses = io.vertx.groovy.ext.mail.MailClient_GroovyStaticExtension

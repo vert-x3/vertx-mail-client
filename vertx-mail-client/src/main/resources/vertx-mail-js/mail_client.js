@@ -20,10 +20,10 @@ var Vertx = require('vertx-js/vertx');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
-var JMailClient = io.vertx.ext.mail.MailClient;
-var MailConfig = io.vertx.ext.mail.MailConfig;
-var MailMessage = io.vertx.ext.mail.MailMessage;
-var MailResult = io.vertx.ext.mail.MailResult;
+var JMailClient = Java.type('io.vertx.ext.mail.MailClient');
+var MailConfig = Java.type('io.vertx.ext.mail.MailConfig');
+var MailMessage = Java.type('io.vertx.ext.mail.MailMessage');
+var MailResult = Java.type('io.vertx.ext.mail.MailResult');
 
 /**
  SMTP mail client for Vert.x
@@ -48,7 +48,7 @@ var MailClient = function(j_val) {
   this.sendMail = function(email, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && (typeof __args[0] === 'object' && __args[0] != null) && typeof __args[1] === 'function') {
-      j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
+      j_mailClient["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(Java.asJSONCompatible(email))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
@@ -108,7 +108,7 @@ MailClient._create = function(jdel) {
 MailClient.createNonShared = function(vertx, config) {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(MailClient, JMailClient["createNonShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(JSON.stringify(config))) : null));
+    return utils.convReturnVertxGen(MailClient, JMailClient["createNonShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](vertx._jdel, config != null ? new MailConfig(new JsonObject(Java.asJSONCompatible(config))) : null));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 
@@ -125,9 +125,9 @@ MailClient.createNonShared = function(vertx, config) {
 MailClient.createShared = function() {
   var __args = arguments;
   if (__args.length === 2 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null)) {
-    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null));
+    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(Java.asJSONCompatible(__args[1]))) : null));
   }else if (__args.length === 3 && typeof __args[0] === 'object' && __args[0]._jdel && (typeof __args[1] === 'object' && __args[1] != null) && typeof __args[2] === 'string') {
-    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig,java.lang.String)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(JSON.stringify(__args[1]))) : null, __args[2]));
+    return utils.convReturnVertxGen(MailClient, JMailClient["createShared(io.vertx.core.Vertx,io.vertx.ext.mail.MailConfig,java.lang.String)"](__args[0]._jdel, __args[1] != null ? new MailConfig(new JsonObject(Java.asJSONCompatible(__args[1]))) : null, __args[2]));
   } else throw new TypeError('function invoked with invalid arguments');
 };
 

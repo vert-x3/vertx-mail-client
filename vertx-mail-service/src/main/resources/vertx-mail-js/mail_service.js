@@ -21,9 +21,9 @@ var MailClient = require('vertx-mail-js/mail_client');
 
 var io = Packages.io;
 var JsonObject = io.vertx.core.json.JsonObject;
-var JMailService = io.vertx.ext.mail.MailService;
-var MailMessage = io.vertx.ext.mail.MailMessage;
-var MailResult = io.vertx.ext.mail.MailResult;
+var JMailService = Java.type('io.vertx.ext.mail.MailService');
+var MailMessage = Java.type('io.vertx.ext.mail.MailMessage');
+var MailResult = Java.type('io.vertx.ext.mail.MailResult');
 
 /**
 
@@ -45,7 +45,7 @@ var MailService = function(j_val) {
   this.sendMail = function(email, resultHandler) {
     var __args = arguments;
     if (__args.length === 2 && (typeof __args[0] === 'object' && __args[0] != null) && typeof __args[1] === 'function') {
-      j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(JSON.stringify(email))) : null, function(ar) {
+      j_mailService["sendMail(io.vertx.ext.mail.MailMessage,io.vertx.core.Handler)"](email != null ? new MailMessage(new JsonObject(Java.asJSONCompatible(email))) : null, function(ar) {
       if (ar.succeeded()) {
         resultHandler(utils.convReturnDataObject(ar.result()), null);
       } else {
