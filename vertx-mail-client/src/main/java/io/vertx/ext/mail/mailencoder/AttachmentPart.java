@@ -31,8 +31,8 @@ class AttachmentPart extends EncodedPart {
       contentType = "application/octet-stream";
     }
     if (name != null) {
-      int index = contentType.length()+22;
-      contentType += "; name=\"" + Utils.encodeHeader(name, index)+ "\"";
+      int index = contentType.length() + 22;
+      contentType += "; name=\"" + Utils.encodeHeader(name, index) + "\"";
     }
     headers.set("Content-Type", contentType);
     headers.set("Content-Transfer-Encoding", "base64");
@@ -47,8 +47,8 @@ class AttachmentPart extends EncodedPart {
       disposition = "attachment";
     }
     if (name != null) {
-      int index = disposition.length()+33;
-      disposition += "; filename=\"" + Utils.encodeHeader(name, index) +"\"";
+      int index = disposition.length() + 33;
+      disposition += "; filename=\"" + Utils.encodeHeader(name, index) + "\"";
     }
     headers.set("Content-Disposition", disposition);
     if (attachment.getContentId() != null) {
