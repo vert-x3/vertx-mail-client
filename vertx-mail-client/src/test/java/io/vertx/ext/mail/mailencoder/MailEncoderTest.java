@@ -398,16 +398,16 @@ public class MailEncoderTest {
       .setName("file.txt");
     message.setAttachment(attachment);
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("Content-Type: application/x-something; name=file.txt"));
+    assertThat(mime, containsString("Content-Type: application/x-something; name=\"file.txt\""));
     assertThat(mime, containsString("Content-Description: description"));
-    assertThat(mime, containsString("Content-Disposition: attachment; filename=file.txt"));
+    assertThat(mime, containsString("Content-Disposition: attachment; filename=\"file.txt\""));
 
     BodyPart part = ((MimeMultipart) TestUtils.getMessage(mime).getContent()).getBodyPart(0);
     assertEquals("***", TestUtils.inputStreamToString(part.getInputStream()));
     assertEquals("attachment", part.getDisposition());
     assertEquals("file.txt", part.getFileName());
     assertEquals("description", part.getDescription());
-    assertEquals("application/x-something; name=file.txt", part.getContentType());
+    assertEquals("application/x-something; name=\"file.txt\"", part.getContentType());
   }
 
   @Test
@@ -577,6 +577,23 @@ public class MailEncoderTest {
     String encoded = new MailEncoder(email, HOSTNAME).encode();
     System.out.println(encoded);
     assertThat(encoded, containsString("Content-ID: image1@localhost"));
+  }
+
+  /*
+   * https://github.com/vert-x3/vertx-mail-client/issues/82
+   * attachment filename must be encoded
+   */
+  @Test
+  public void testAttachmentUtf8() {
+    MailMessage message = new MailMessage();
+    MailAttachment attachment = new MailAttachment();
+    attachment.setData(Buffer.buffer("test"));
+    attachment.setName("你好.txt");
+    message.setAttachment(attachment);
+    final MailEncoder encoder = new MailEncoder(message, HOSTNAME);
+    String mime = encoder.encode();
+    System.out.println(mime);
+    assertThat(mime, not(containsString("你好")));
   }
 
 }
