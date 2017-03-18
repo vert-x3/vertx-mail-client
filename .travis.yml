@@ -1,4 +1,4 @@
 language: java
 jdk:
   - oraclejdk8
-script: mvn test -Djava.net.preferIPv4Stack=true
+script: mvn test -Dtest.disableIpV6=true

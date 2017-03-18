@@ -62,7 +62,7 @@ public class MailSslTest extends SMTPTestDummy {
   public void mailTestSSLValidCertIpv6(TestContext testContext) {
     // don't run ipv6 tests when ipv4 is preferred, this should enable running the tests
     // on CI where ipv6 is not configured
-    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred() || "true".equals(System.getProperty("test.disableIpV6")));
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("::1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
@@ -73,7 +73,7 @@ public class MailSslTest extends SMTPTestDummy {
 
   @Test
   public void mailTestSSLValidCertIpv6_2(TestContext testContext) {
-    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred() || "true".equals(System.getProperty("test.disableIpV6")));
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[::1]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
@@ -84,7 +84,7 @@ public class MailSslTest extends SMTPTestDummy {
 
   @Test
   public void mailTestSSLValidCertIpv6_3(TestContext testContext) {
-    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred());
+    Assume.assumeFalse("no ipv6 support", NetUtil.isIpV4StackPreferred() || "true".equals(System.getProperty("test.disableIpV6")));
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[0000:0000:0000:0000:0000:0000:0000:0001]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
