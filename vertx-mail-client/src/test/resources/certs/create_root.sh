@@ -3,6 +3,7 @@
 # password is always "password", there are a few commands that didn't accept a pw on the commandline
 
 # root ca certificate
+cp openssl.cnf.head openssl.cnf
 openssl genrsa -out rootCA.key 2048
 openssl req -x509 -new -nodes -key rootCA.key -sha256 -days 1024 -out rootCA.pem -config openssl.cnf
 keytool -importcert -storepass password -keystore client.jks -file rootCA.pem -alias rootca
