@@ -26,7 +26,7 @@
   <parent>
     <groupId>io.vertx</groupId>
     <artifactId>vertx-ext-parent</artifactId>
-    <version>26</version>
+    <version>27</version>
   </parent>
 
   <artifactId>vertx-mail</artifactId>
@@ -143,13 +143,13 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.25</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.21</version>
+      <version>1.7.25</version>
       <scope>test</scope>
     </dependency>
     <dependency>
