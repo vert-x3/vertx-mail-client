@@ -18,7 +18,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 <dependency>
   <groupId>io.vertx</groupId>
   <artifactId>vertx-mail-client</artifactId>
-  <version>3.5.0</version>
+  <version>3.5.1</version>
 </dependency>
 ----
 
@@ -26,7 +26,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mail-client:3.5.0'
+compile 'io.vertx:vertx-mail-client:3.5.1'
 ----
 
 == Creating a client
