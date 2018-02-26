@@ -1,9 +1,7 @@
 = Vert.x Mail client (SMTP client implementation)
 
 Vert.x client for sending SMTP emails via a local mail server
-(e.g.
-
-postfix) or by external mail server (e.g. googlemail or aol).
+(e.g. postfix) or by external mail server (e.g. googlemail or aol).
 
 The client supports a few additional auth methods like DIGEST-MD5 and has full
 support for TLS and SSL and is completely asynchronous. The client supports
@@ -16,9 +14,9 @@ To use this project, add the following dependency to the _dependencies_ section 
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>io.vertx</groupId>
-  <artifactId>vertx-mail-client</artifactId>
-  <version>3.5.1</version>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
 </dependency>
 ----
 
@@ -26,7 +24,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile 'io.vertx:vertx-mail-client:3.5.1'
+compile '${maven.groupId}:${maven.artifactId}:${maven.version}'
 ----
 
 == Creating a client
@@ -43,13 +41,9 @@ connecting each time to the server, negotiating TLS and login (this function can
 turned off by setting keepAlive = false). A client can either be shared or non-shared,
 if it is shared, the same connection pool will be used for all clients using the same identifier.
 
-[source,js]
+[source,$lang]
 ----
-var MailClient = require("vertx-mail-js/mail_client");
-var config = {
-};
-var mailClient = MailClient.createShared(vertx, config, "exampleclient");
-
+{@link examples.Examples#createSharedClient}
 ----
 The first call to MailClient.createShared will actually create the pool with the specified config.
 Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
@@ -60,28 +54,15 @@ same identifier).
 
 The unshared client can be created the same way leaving out the identifier.
 
-[source,js]
+[source,$lang]
 ----
-var MailClient = require("vertx-mail-js/mail_client");
-var config = {
-};
-var mailClient = MailClient.createNonShared(vertx, config);
-
+{@link examples.Examples#createNonSharedClient}
 ----
 
 A more elaborate example using a mailserver that requires login via TLS
-[source,js]
+[source,$lang]
 ----
-var MailClient = require("vertx-mail-js/mail_client");
-var config = {
-};
-config.hostname = "mail.example.com";
-config.port = 587;
-config.starttls = "REQUIRED";
-config.username = "user";
-config.password = "password";
-var mailClient = MailClient.createNonShared(vertx, config);
-
+{@link examples.Examples#createClient2}
 ----
 
 == Sending mails
@@ -100,69 +81,39 @@ can either be a single address or a list of addresses.
 The MIME encoder supports us-ascii (7bit) headers/messages and utf8 (usually
 quoted-printable) headers/messages
 
-[source,js]
+[source,$lang]
 ----
-var message = {
-};
-message.from = "user@example.com (Example User)";
-message.to = "recipient@example.org";
-message.cc = "Another User <another@example.net>";
-message.text = "this is the plain message text";
-message.html = "this is html text <a href=\"http://vertx.io\">vertx.io</a>";
-
+{@link examples.Examples#mailMessage}
 ----
 
 Attachments can be created by the MailAttachment object using data stored in a Buffer,
 this supports base64 attachments.
 
-[source,js]
+[source,$lang]
 ----
-var Buffer = require("vertx-js/buffer");
-var attachment = {
-};
-attachment.contentType = "text/plain";
-attachment.data = Buffer.buffer("attachment file");
-
-message.attachment = attachment;
-
+{@link examples.Examples#attachment}
 ----
 
 When using inline attachments (usually images), it is possible to reference the images within a html message
-to display html with the images included in the mail. 
+to display html with the images included in the mail.
 Images can be referenced as <img src="cid:contentid@domain"> in the html text, the corresponding image has Disposition:
 inline and the Content-ID header as "<contentid@domain>". Please note that RFC 2392 requires Content-ID values to be structured
 like a Message-ID with angle brackets and a local and domain part using URL compatible encoding. None of this is not enforced
 and most mail clients supports IDs without angle brackets or without domain part, the best practice is to use the strict format.
 A valid example for a Content-ID value is "<filename%201.jpg@example.org>"
 
-[source,js]
+[source,$lang]
 ----
-var Buffer = require("vertx-js/buffer");
-var attachment = {
-};
-attachment.contentType = "image/jpeg";
-attachment.data = Buffer.buffer("image data");
-attachment.disposition = "inline";
-attachment.contentId = "<image1@example.com>";
-
-message.inlineAttachment = attachment;
-
+{@link examples.Examples#inlineAttachment}
 ----
 When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
 the send operation is finished or it failed.
 
 A mail is sent as follows:
 
-[source,js]
+[source,$lang]
 ----
-mailClient.sendMail(message, function (result, result_err) {
-  if (result_err == null) {
-    console.log(result);
-  } else {
-    result_err.printStackTrace();
-  }
-});
-
+{@link examples.Examples#sendMail}
 ----
 
 == Mail-client data objects

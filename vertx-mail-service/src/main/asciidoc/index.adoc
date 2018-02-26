@@ -15,9 +15,9 @@ To use this project, add the following dependency to the _dependencies_ section 
 [source,xml,subs="+attributes"]
 ----
 <dependency>
-  <groupId>io.vertx</groupId>
-  <artifactId>vertx-mail-service</artifactId>
-  <version>3.5.1</version>
+  <groupId>${maven.groupId}</groupId>
+  <artifactId>${maven.artifactId}</artifactId>
+  <version>${maven.version}</version>
 </dependency>
 ----
 
@@ -25,7 +25,7 @@ To use this project, add the following dependency to the _dependencies_ section 
 
 [source,groovy,subs="+attributes"]
 ----
-compile io.vertx:vertx-mail-service:3.5.1
+compile ${maven.groupId}:${maven.artifactId}:${maven.version}
 ----
 
 === Service client
@@ -33,11 +33,9 @@ compile io.vertx:vertx-mail-service:3.5.1
 The service client only needs the name of the service address as parameter, the
 default is "vertx.mail".
 
-[source,ruby]
+[source,$lang]
 ----
-require 'vertx-mail/mail_service'
-mailService = VertxMail::MailService.create_event_bus_proxy(vertx, "vertx.mail")
-
+{@link examples.Examples#createService}
 ----
 
 The behaviour of MailClient and MailService is the same, if you like you can use the
@@ -45,27 +43,9 @@ MailClient interface to store the MailService instance.
 
 A more complete example for sending a mail via the event bus is this:
 
-[source,ruby]
+[source,$lang]
 ----
-require 'vertx-mail/mail_service'
-mailService = VertxMail::MailService.create_event_bus_proxy(vertx, "vertx.mail")
-
-email = {
-  'from' => "user@example.com",
-  'bounceAddress' => "bounce@example.com",
-  'to' => "user@example.com"
-}
-
-mailService.send_mail(email) { |result_err,result|
-  puts "mail finished"
-  if (result_err == nil)
-    puts result
-  else
-    puts "got exception"
-    result_err.print_stack_trace()
-  end
-}
-
+{@link examples.Examples#exampleService}
 ----
 
 == Service listener
