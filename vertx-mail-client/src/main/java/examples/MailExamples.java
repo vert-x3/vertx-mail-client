@@ -26,12 +26,12 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.StartTLSOptions;
 
 /**
- * code chunks for the adoc documentation 
+ * code chunks for the adoc documentation
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @Source
-public class Examples {
+public class MailExamples {
 
   public void createSharedClient(Vertx vertx) {
     MailConfig config = new MailConfig();

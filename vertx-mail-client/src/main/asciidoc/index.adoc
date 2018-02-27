@@ -43,7 +43,7 @@ if it is shared, the same connection pool will be used for all clients using the
 
 [source,$lang]
 ----
-{@link examples.Examples#createSharedClient}
+{@link examples.MailExamples#createSharedClient}
 ----
 The first call to MailClient.createShared will actually create the pool with the specified config.
 Subsequent calls will return a new client instance that uses the same pool, so the configuration won't be used.
@@ -56,13 +56,13 @@ The unshared client can be created the same way leaving out the identifier.
 
 [source,$lang]
 ----
-{@link examples.Examples#createNonSharedClient}
+{@link examples.MailExamples#createNonSharedClient}
 ----
 
 A more elaborate example using a mailserver that requires login via TLS
 [source,$lang]
 ----
-{@link examples.Examples#createClient2}
+{@link examples.MailExamples#createClient2}
 ----
 
 == Sending mails
@@ -83,7 +83,7 @@ quoted-printable) headers/messages
 
 [source,$lang]
 ----
-{@link examples.Examples#mailMessage}
+{@link examples.MailExamples#mailMessage}
 ----
 
 Attachments can be created by the MailAttachment object using data stored in a Buffer,
@@ -91,7 +91,7 @@ this supports base64 attachments.
 
 [source,$lang]
 ----
-{@link examples.Examples#attachment}
+{@link examples.MailExamples#attachment}
 ----
 
 When using inline attachments (usually images), it is possible to reference the images within a html message
@@ -104,7 +104,7 @@ A valid example for a Content-ID value is "<filename%201.jpg@example.org>"
 
 [source,$lang]
 ----
-{@link examples.Examples#inlineAttachment}
+{@link examples.MailExamples#inlineAttachment}
 ----
 When sending the mail, you can provide a AsyncResult<MailResult> handler that will be called when
 the send operation is finished or it failed.
@@ -113,7 +113,7 @@ A mail is sent as follows:
 
 [source,$lang]
 ----
-{@link examples.Examples#sendMail}
+{@link examples.MailExamples#sendMail}
 ----
 
 == Mail-client data objects
