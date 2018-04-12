@@ -4,10 +4,10 @@ image:https://vertx.ci.cloudbees.com/buildStatus/icon?job=vert.x3-mail-client["B
 
 A simple asynchronous SMTP client for Vert.x
 
-Please see the documentation for more information.
+Please see the main documentation on the web-site for a full description:
 
-* http://vertx.io/docs/vertx-mail-client/java/[Java documentation]
-* http://vertx.io/docs/vertx-mail-client/js/[JavaScript documentation]
-* http://vertx.io/docs/vertx-mail-client/kotlin/[Kotlin documentation]
-* http://vertx.io/docs/vertx-mail-client/groovy/[Groovy documentation]
-* http://vertx.io/docs/vertx-mail-client/ruby/[Ruby documentation]
+* https://vertx.io/docs/vertx-mail-client/java/[Java documentation]
+* https://vertx.io/docs/vertx-mail-client/js/[JavaScript documentation]
+* https://vertx.io/docs/vertx-mail-client/kotlin/[Kotlin documentation]
+* https://vertx.io/docs/vertx-mail-client/groovy/[Groovy documentation]
+* https://vertx.io/docs/vertx-mail-client/ruby/[Ruby documentation]
