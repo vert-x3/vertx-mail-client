@@ -33,6 +33,8 @@ public final class AuthOperationFactory {
 
   private AuthOperation create(String name) {
     switch (name) {
+      case "XOAUTH2":
+        return new AuthXOAUTH2();
       case "CRAM-MD5":
         return new AuthCram("CRAM-MD5");
       case "CRAM-SHA1":
