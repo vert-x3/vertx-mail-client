@@ -35,7 +35,7 @@ public class AuthOperationFactoryTest {
   /**
    * Test method for
    * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(java.lang.String, java.lang.String, java.util.Set)}
-   * make sure that the default auth method works and is PLAIN 
+   * make sure that the default auth method works and is PLAIN
    * @throws Exception
    */
   @Test
@@ -52,4 +52,10 @@ public class AuthOperationFactoryTest {
     assertNull(new AuthOperationFactory(null).createAuth("user", "pw", allowedAuth));
   }
 
+  @Test
+  public final void testCreateXOAUTH2Auth() throws Exception {
+    Set<String> allowedAuth = new HashSet<String>();
+    allowedAuth.add("XOAUTH2");
+    assertEquals(AuthXOAUTH2.class, AuthOperationFactory.createAuth("user", "token", allowedAuth).getClass());
+  }
 }
