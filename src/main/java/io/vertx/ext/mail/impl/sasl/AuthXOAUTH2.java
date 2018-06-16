@@ -19,10 +19,17 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
+import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+
 /**
- * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto:plopes@redhat.com">Paulo Lopes</a>
  */
 class AuthXOAUTH2 extends AuthBaseClass {
+
+  private static final Logger LOG = LoggerFactory.getLogger(AuthXOAUTH2.class);
+
 
   private static final String AUTH_NAME = "XOAUTH2";
   private boolean first;
@@ -57,7 +64,31 @@ class AuthXOAUTH2 extends AuthBaseClass {
       first = false;
       return "user=" + username + "\1auth=Bearer " + password + "\1\1";
     } else {
-      return null;
+      // quick escape
+      if (data == null) {
+        return null;
+      }
+
+      try {
+        // expect a JSON message on error
+        JsonObject response = new JsonObject(data);
+        // the response must contain 3 values
+        if (
+          response.containsKey("status") &&
+          response.containsKey("schemes") &&
+          response.containsKey("scope")) {
+
+          LOG.debug("XOAUTH2 Error Response: " + data);
+          // if there is a next step we're receiving an error
+          // protocol expects a empty response
+          return "";
+        } else {
+          // this is something totally different (return null)
+          return null;
+        }
+      } catch (RuntimeException e) {
+        return null;
+      }
     }
   }
 }
