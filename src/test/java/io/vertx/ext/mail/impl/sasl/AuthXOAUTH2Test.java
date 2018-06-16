@@ -41,4 +41,11 @@ public class AuthXOAUTH2Test {
     assertEquals(null, auth.nextStep("235 2.7.0 Accepted"));
   }
 
+  @Test
+  public void testNextStepError() {
+    final AuthXOAUTH2 auth = new AuthXOAUTH2("xxx", "yyy");
+    assertEquals("user=xxx\1auth=Bearer yyy\1\1", auth.nextStep(null));
+    assertEquals("", auth.nextStep("{\"status\":\"401\",\"schemes\":\"bearer\",\"scope\":\"https://mail.google.com/\"}"));
+  }
+
 }
