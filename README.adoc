@@ -11,3 +11,4 @@ Please see the main documentation on the web-site for a full description:
 * https://vertx.io/docs/vertx-mail-client/kotlin/[Kotlin documentation]
 * https://vertx.io/docs/vertx-mail-client/groovy/[Groovy documentation]
 * https://vertx.io/docs/vertx-mail-client/ruby/[Ruby documentation]
+
