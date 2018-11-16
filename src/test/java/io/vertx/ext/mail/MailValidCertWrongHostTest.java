@@ -19,7 +19,6 @@ package io.vertx.ext.mail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.netty.handler.codec.DecoderException;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
@@ -41,7 +40,7 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
     final MailConfig config = defaultConfig().setHostname("127.0.0.1").setPort(1587).setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
     MailClient mailClient = MailClient.createNonShared(vertx, config);
-    testException(mailClient, DecoderException.class);
+    testException(mailClient);
   }
 
   @Test
