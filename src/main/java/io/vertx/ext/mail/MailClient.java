@@ -52,7 +52,7 @@ public interface MailClient {
   }
 
   /**
-   * Create a Mail client which shares its data source with any other Mongo clients created with the same
+   * Create a Mail client which shares its connection pool with any other Mail clients created with the same
    * pool name
    *
    * @param vertx  the Vert.x instance
