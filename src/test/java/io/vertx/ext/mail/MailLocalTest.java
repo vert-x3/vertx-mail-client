@@ -19,7 +19,6 @@ package io.vertx.ext.mail;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import io.netty.handler.codec.DecoderException;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 
@@ -50,7 +49,7 @@ public class MailLocalTest extends SMTPTestWiser {
   public void mailTestTLSNoTrust(TestContext testContext) {
     this.testContext=testContext;
     MailClient mailClient = MailClient.createNonShared(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
-    testException(mailClient, DecoderException.class);
+    testException(mailClient);
   }
 
   @Test
