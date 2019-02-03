@@ -130,11 +130,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private synchronized void getConnection0(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection idleConn = null;
-    for (SMTPConnection conn : allConnections) {
-      if (!conn.isBroken() && conn.isIdle()) {
-        idleConn = conn;
-        break;
+    try {
+      for (SMTPConnection conn : allConnections) {
+        if (conn != null && !conn.isBroken() && conn.isIdle()) {
+          idleConn = conn;
+          break;
+        }
       }
+    } catch (Exception e) {
+      log.warn("error get all connections "+e.getMessage());
     }
     if (idleConn == null && connCount >= maxSockets) {
       // Wait in queue
