@@ -30,8 +30,8 @@ import org.subethamail.wiser.WiserMessage;
 
 import static org.hamcrest.core.StringContains.containsString;
 
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 /**
  * Start/stop a dummy test server for each test
