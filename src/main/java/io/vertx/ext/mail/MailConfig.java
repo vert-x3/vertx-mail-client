@@ -18,10 +18,9 @@ package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.NetClientOptions;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * represents the configuration of a mail service with mail server hostname,
@@ -39,6 +38,7 @@ public class MailConfig {
   private static final int DEFAULT_MAX_POOL_SIZE = 10;
   private static final boolean DEFAULT_SSL = false;
   private static final boolean DEFAULT_TRUST_ALL = false;
+  private static final Set<String> DEFAULT_SECURE_TRANSPORT_PROTOCOLS = new LinkedHashSet<>(NetClientOptions.DEFAULT_ENABLED_SECURE_TRANSPORT_PROTOCOLS);
   private static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
   private static final boolean DEFAULT_KEEP_ALIVE = true;
   private static final boolean DEFAULT_DISABLE_ESMTP = false;
@@ -52,6 +52,7 @@ public class MailConfig {
   private String password;
   private boolean ssl = DEFAULT_SSL;
   private boolean trustAll = DEFAULT_TRUST_ALL;
+  private Set<String> enabledSecureTransportProtocols = DEFAULT_SECURE_TRANSPORT_PROTOCOLS;
   private String keyStore;
   private String keyStorePassword;
   private String ownHostname;
@@ -308,6 +309,25 @@ public class MailConfig {
    */
   public MailConfig setSsl(boolean ssl) {
     this.ssl = ssl;
+    return this;
+  }
+
+  /**
+   * Returns the enabled SSL/TLS protocols
+   * @return the enabled protocols
+   */
+  public Set<String> getEnabledSecureTransportProtocols() {
+    return new LinkedHashSet<>(enabledSecureTransportProtocols);
+  }
+
+  /**
+   * Sets the list of enabled SSL/TLS protocols.
+   *
+   * @param enabledSecureTransportProtocols  the SSL/TLS protocols to enable
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
+    this.enabledSecureTransportProtocols = enabledSecureTransportProtocols;
     return this;
   }
 
