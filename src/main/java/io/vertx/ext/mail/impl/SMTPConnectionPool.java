@@ -25,6 +25,7 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
 
@@ -43,7 +44,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private final Set<SMTPConnection> allConnections = new HashSet<>();
   private final NetClient netClient;
   private final MailConfig config;
-  private final Vertx vertx;
+  private final PRNG prng;
   private String hostname;
   private boolean closed = false;
   private int connCount;
@@ -52,9 +53,9 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.config = config;
-    this.vertx = vertx;
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
+    prng = new PRNG(vertx);
     NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
     if ((config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED) && !config.isTrustAll()) {
       // we can use HTTPS verification, which matches the requirements for SMTPS
@@ -156,17 +157,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         log.debug("found idle connection, checking");
         final SMTPConnection conn = idleConn;
         conn.useConnection();
-        conn.getContext().runOnContext(v -> {
-          new SMTPReset(conn, result -> {
-            if (result.succeeded()) {
-              handler.handle(Future.succeededFuture(conn));
-            } else {
-              conn.setBroken();
-              log.debug("using idle connection failed, create a new connection");
-              createNewConnection(handler);
-            }
-          }).start();
-        });
+        conn.getContext().runOnContext(v -> new SMTPReset(conn, result -> {
+          if (result.succeeded()) {
+            handler.handle(Future.succeededFuture(conn));
+          } else {
+            conn.setBroken();
+            log.debug("using idle connection failed, create a new connection");
+            createNewConnection(handler);
+          }
+        }).start());
       }
     }
   }
@@ -230,8 +229,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   }
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
-    SMTPConnection conn = new SMTPConnection(vertx, netClient, this);
-    new SMTPStarter(conn, config, hostname, result -> {
+    SMTPConnection conn = new SMTPConnection(netClient, this);
+    new SMTPStarter(conn, config, hostname, prng, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));
       } else {

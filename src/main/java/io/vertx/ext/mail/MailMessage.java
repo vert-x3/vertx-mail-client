@@ -67,6 +67,7 @@ public class MailMessage {
     this.subject = other.subject;
     this.text = other.text;
     this.html = other.html;
+    this.fixedHeaders = other.fixedHeaders;
     if (other.attachment != null) {
       this.attachment = copyAttachments(other.attachment);
     }
@@ -79,11 +80,10 @@ public class MailMessage {
   }
 
   /**
-   * @param other
    * @return
    */
   private List<MailAttachment> copyAttachments(List<MailAttachment> attachment) {
-    List<MailAttachment> newList = new ArrayList<MailAttachment>(attachment.size());
+    List<MailAttachment> newList = new ArrayList<>(attachment.size());
     for (MailAttachment a : attachment) {
       newList.add(new MailAttachment(a));
     }
@@ -117,7 +117,6 @@ public class MailMessage {
   }
 
   /**
-   * @param json
    * @return
    * @throws IllegalArgumentException
    */
@@ -522,7 +521,7 @@ public class MailMessage {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof MailMessage)) {
+    if (!(o instanceof MailMessage)) {
       return false;
     }
     final MailMessage message = (MailMessage) o;

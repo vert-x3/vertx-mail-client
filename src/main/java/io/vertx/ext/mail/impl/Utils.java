@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public final class Utils {
+final class Utils {
 
   /**
    * utility class only
@@ -41,11 +41,7 @@ public final class Utils {
    * @return Set of supported auth methods
    */
   public static Set<String> parseCapaAuth(final String auths) {
-    Set<String> authSet = new HashSet<String>();
-    for (String a : splitByChar(auths, ' ')) {
-      authSet.add(a);
-    }
-    return authSet;
+    return new HashSet<>(splitByChar(auths, ' '));
   }
 
   /**

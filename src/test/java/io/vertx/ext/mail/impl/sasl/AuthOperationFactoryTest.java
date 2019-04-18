@@ -42,14 +42,14 @@ public class AuthOperationFactoryTest {
   public final void testCreateAuth() throws Exception {
     Set<String> allowedAuth = new HashSet<String>();
     allowedAuth.add("PLAIN");
-    assertEquals(AuthPlain.class, AuthOperationFactory.createAuth("user", "pw", allowedAuth).getClass());
+    assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth("user", "pw", allowedAuth).getClass());
   }
 
   @Test
   public final void testAuthNotFound() throws Exception {
     Set<String> allowedAuth = new HashSet<String>();
     allowedAuth.add("ASDF");
-    assertNull(AuthOperationFactory.createAuth("user", "pw", allowedAuth));
+    assertNull(new AuthOperationFactory(null).createAuth("user", "pw", allowedAuth));
   }
 
 }

@@ -38,8 +38,6 @@ class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
 
-  private final Vertx vertx;
-
   private NetSocket ns;
   private boolean socketClosed;
   private boolean socketShutDown;
@@ -53,7 +51,7 @@ class SMTPConnection {
   private final ConnectionLifeCycleListener listener;
   private Context context;
 
-  SMTPConnection(Vertx vertx, NetClient client, ConnectionLifeCycleListener listener) {
+  SMTPConnection(NetClient client, ConnectionLifeCycleListener listener) {
     broken = true;
     idle = false;
     doShutdown = false;
@@ -61,7 +59,6 @@ class SMTPConnection {
     socketShutDown = false;
     this.client = client;
     this.listener = listener;
-    this.vertx = vertx;
   }
 
   /**
@@ -275,7 +272,7 @@ class SMTPConnection {
    * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
    * connection on exception as well
    */
-  void quitCloseConnection() {
+  private void quitCloseConnection() {
     if (!socketShutDown) {
       context.runOnContext(v1 -> {
         log.debug("shutting down connection");

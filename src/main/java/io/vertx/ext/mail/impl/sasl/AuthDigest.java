@@ -14,15 +14,13 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
-import java.io.UnsupportedEncodingException;
+import io.vertx.ext.auth.PRNG;
+
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,24 +29,26 @@ import java.util.Map;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-abstract class AuthDigest extends AuthBaseClass {
+class AuthDigest extends AuthBaseClass {
+
+  private static final Map<String, String> NAME_MD_MAP = new HashMap<String, String>() {{
+    put("DIGEST-MD5", "MD5");
+  }};
 
   private int counter;
-  final MessageDigest digest;
+  private final MessageDigest digest;
+  private final PRNG random;
 
   private String serverResponse;
 
-  /**
-   * @param username
-   * @param password
-   */
-  protected AuthDigest(String username, String password, String hash) {
-    super(username, password);
+  protected AuthDigest(String name, PRNG random) {
+    super(name);
     counter = 0;
+    this.random = random;
     try {
-      digest = MessageDigest.getInstance(hash);
+      digest = MessageDigest.getInstance(NAME_MD_MAP.get(name));
     } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("hash " + hash + " not found", e);
+      throw new IllegalStateException("hash " + NAME_MD_MAP.get(name) + " not found", e);
     }
   }
 
@@ -63,8 +63,7 @@ abstract class AuthDigest extends AuthBaseClass {
       case 0:
         return "";
       case 1:
-        String reply = calcStep1(data);
-        return reply;
+        return calcStep1(data);
       case 2:
         if (data.equals("rspauth=" + serverResponse)) {
           return "";
@@ -86,7 +85,7 @@ abstract class AuthDigest extends AuthBaseClass {
     String nonce = digestChallenge.get("nonce");
     String realm = digestChallenge.get("realm");
 
-    Map<String, String> digestResponse = new HashMap<String, String>();
+    Map<String, String> digestResponse = new HashMap<>();
 
     String user;
     if (username.contains("@")) {
@@ -136,16 +135,11 @@ abstract class AuthDigest extends AuthBaseClass {
       b(cnonce));
     byte[] A2 = concatBytes(b(operation), colon, b(digestUri));
 
-    String responseValue = hexKd(hexHash(A1), nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + hexHash(A2));
-    return responseValue;
+    return hexKd(hexHash(A1), nonce + ":" + nc + ":" + cnonce + ":" + qop + ":" + hexHash(A2));
   }
 
   private byte[] b(String str) {
-    try {
-      return str.getBytes("UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      return null;
-    }
+    return str.getBytes(StandardCharsets.UTF_8);
   }
 
   private byte[] concatBytes(byte[]... bytes) {
@@ -165,7 +159,7 @@ abstract class AuthDigest extends AuthBaseClass {
   }
 
   /**
-   * @param string
+   * @param data
    * @return
    */
   private byte[] hash(byte[] data) {
@@ -181,7 +175,7 @@ abstract class AuthDigest extends AuthBaseClass {
   }
 
   /**
-   * @param a1
+   * @param data
    * @return
    */
   private String hexHash(byte[] data) {
@@ -202,7 +196,7 @@ abstract class AuthDigest extends AuthBaseClass {
       } else {
         sb.append(',');
       }
-      sb.append(entry.getKey() + "=" + entry.getValue());
+      sb.append(entry.getKey()).append("=").append(entry.getValue());
     }
     return sb.toString();
   }
@@ -222,7 +216,7 @@ abstract class AuthDigest extends AuthBaseClass {
    * @return
    */
   static Map<String, String> parseToMap(String data) {
-    List<String> fields = new ArrayList<String>();
+    List<String> fields = new ArrayList<>();
 
     boolean inQuote = false;
     int startIndex = 0;
@@ -247,7 +241,7 @@ abstract class AuthDigest extends AuthBaseClass {
     }
     fields.add(data.substring(startIndex));
 
-    Map<String, String> map = new HashMap<String, String>();
+    Map<String, String> map = new HashMap<>();
     for (String f : fields) {
       int equalsIndex = f.indexOf('=');
       if (equalsIndex >= 0) {
@@ -290,7 +284,6 @@ abstract class AuthDigest extends AuthBaseClass {
    * @return a nonce string
    */
   protected String getCnonce() {
-    SecureRandom random = new SecureRandom();
     byte[] randomBytes = new byte[16];
     random.nextBytes(randomBytes);
     return CryptUtils.base64(randomBytes);

@@ -112,7 +112,6 @@ public class MailEncoder {
   }
 
   /**
-   * @param html
    * @return
    */
   private EncodedPart htmlPart() {

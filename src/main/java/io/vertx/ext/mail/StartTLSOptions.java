@@ -34,5 +34,5 @@ package io.vertx.ext.mail;
 public enum StartTLSOptions {
   DISABLED,
   OPTIONAL,
-  REQUIRED;
+  REQUIRED
 }

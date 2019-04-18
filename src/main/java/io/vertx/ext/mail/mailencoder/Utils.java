@@ -16,7 +16,7 @@
 
 package io.vertx.ext.mail.mailencoder;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Base64;
 import java.util.Date;
@@ -30,38 +30,34 @@ class Utils {
   }
 
   static String encodeQP(String text) {
-    try {
-      byte[] utf8 = text.getBytes("UTF-8");
-      StringBuilder sb = new StringBuilder();
+    byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
+    StringBuilder sb = new StringBuilder();
 
-      int column = 0;
-      for (int i = 0; i < utf8.length; i++) {
-        char ch = (char) utf8[i];
-        if (ch == '\n') {
-          sb.append(ch);
-          column = 0;
+    int column = 0;
+    for (int i = 0; i < utf8.length; i++) {
+      char ch = (char) utf8[i];
+      if (ch == '\n') {
+        sb.append(ch);
+        column = 0;
+      } else {
+        boolean nextIsEOL = i == utf8.length - 1 || utf8[i + 1] == '\n';
+        String encChar;
+        if (mustEncode(ch) || nextIsEOL && ch == ' ') {
+          encChar = encodeChar(ch);
         } else {
-          boolean nextIsEOL = i == utf8.length - 1 || utf8[i + 1] == '\n';
-          String encChar;
-          if (mustEncode(ch) || nextIsEOL && ch == ' ') {
-            encChar = encodeChar(ch);
-          } else {
-            encChar = String.valueOf(ch);
-          }
-          int newColumn = column + encChar.length();
-          if (newColumn <= 75 || nextIsEOL && newColumn == 76) {
-            sb.append(encChar);
-            column = newColumn;
-          } else {
-            sb.append("=\n").append(encChar);
-            column = encChar.length();
-          }
+          encChar = String.valueOf(ch);
+        }
+        int newColumn = column + encChar.length();
+        if (newColumn <= 75 || nextIsEOL && newColumn == 76) {
+          sb.append(encChar);
+          column = newColumn;
+        } else {
+          sb.append("=\n").append(encChar);
+          column = encChar.length();
         }
       }
-      return sb.toString();
-    } catch (UnsupportedEncodingException e) {
-      return "";
     }
+    return sb.toString();
   }
 
   private static String encodeChar(char ch) {
@@ -94,7 +90,7 @@ class Utils {
     return false;
   }
 
-  private static AtomicInteger count = new AtomicInteger(0);
+  private static final AtomicInteger count = new AtomicInteger(0);
 
   static String generateBoundary() {
     return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + count.getAndIncrement();
@@ -111,39 +107,35 @@ class Utils {
    */
   static String encodeHeader(String subject, int index) {
     if (mustEncode(subject)) {
-      try {
-        byte[] utf8 = subject.getBytes("UTF-8");
-        StringBuilder sb = new StringBuilder();
-        sb.append("=?UTF-8?Q?");
-        int column = 10 + index;
-        for (int i = 0; i < utf8.length; i++) {
-          char ch = (char) utf8[i];
-          if (ch == '\n') {
-            column = 1;
+      byte[] utf8 = subject.getBytes(StandardCharsets.UTF_8);
+      StringBuilder sb = new StringBuilder();
+      sb.append("=?UTF-8?Q?");
+      int column = 10 + index;
+      for (byte b : utf8) {
+        char ch = (char) b;
+        if (ch == '\n') {
+          column = 1;
+        } else {
+          String encChar;
+          if (mustEncode(ch) || ch == '_' || ch == '?') {
+            encChar = encodeChar(ch);
+          } else if (ch == ' ') {
+            encChar = "_";
           } else {
-            String encChar;
-            if (mustEncode(ch) || ch == '_' || ch == '?') {
-              encChar = encodeChar(ch);
-            } else if (ch == ' ') {
-              encChar = "_";
-            } else {
-              encChar = String.valueOf(ch);
-            }
-            int newColumn = column + encChar.length();
-            if (newColumn <= 74) {
-              sb.append(encChar);
-              column = newColumn;
-            } else {
-              sb.append("?=\n =?UTF-8?Q?").append(encChar);
-              column = 11 + encChar.length();
-            }
+            encChar = String.valueOf(ch);
+          }
+          int newColumn = column + encChar.length();
+          if (newColumn <= 74) {
+            sb.append(encChar);
+            column = newColumn;
+          } else {
+            sb.append("?=\n =?UTF-8?Q?").append(encChar);
+            column = 11 + encChar.length();
           }
         }
-        sb.append("?=");
-        return sb.toString();
-      } catch (UnsupportedEncodingException e) {
-        return "";
       }
+      sb.append("?=");
+      return sb.toString();
     } else {
       return subject;
     }
