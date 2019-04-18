@@ -14,12 +14,8 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- * a few utility methods that are used in MailAttachment and MailMessage
- */
 package io.vertx.ext.mail;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 

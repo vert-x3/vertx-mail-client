@@ -14,30 +14,32 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-abstract class AuthCram extends AuthBaseClass {
+class AuthCram extends AuthBaseClass {
 
-  protected boolean firstStep;
-  protected boolean finished;
+  private boolean firstStep;
+  private boolean finished;
   private final String hmac;
 
-  /**
-   * @param username
-   * @param password
-   */
-  protected AuthCram(String username, String password, String hmac) {
-    super(username, password);
+  private static final Map<String, String> NAME_MAC_MAP = new HashMap<String, String>() {{
+    put("CRAM-SHA256", "HmacSHA256");
+    put("CRAM-SHA1", "HmacSHA1");
+    put("CRAM-MD5", "HmacMD5");
+  }};
+
+
+  protected AuthCram(String name) {
+    super(name);
     firstStep = true;
     finished = false;
-    this.hmac = hmac;
-
+    this.hmac = NAME_MAC_MAP.get(name);
   }
 
   /*

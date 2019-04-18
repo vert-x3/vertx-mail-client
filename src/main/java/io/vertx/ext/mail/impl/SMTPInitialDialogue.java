@@ -33,14 +33,14 @@ class SMTPInitialDialogue {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPInitialDialogue.class);
 
-  private SMTPConnection connection;
+  private final SMTPConnection connection;
 
-  private Handler<Throwable> errorHandler;
-  private Handler<Void> finishedHandler;
+  private final Handler<Throwable> errorHandler;
+  private final Handler<Void> finishedHandler;
 
-  private MailConfig config;
+  private final MailConfig config;
 
-  private String hostname;
+  private final String hostname;
 
   public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
                              Handler<Throwable> errorHandler) {

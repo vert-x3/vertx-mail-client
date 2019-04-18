@@ -14,15 +14,12 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
@@ -37,18 +34,18 @@ public class CryptUtils {
 
   protected static String hmacHex(String keyString, String message, String hmac) {
     try {
-      SecretKey key = new SecretKeySpec(keyString.getBytes("UTF-8"), hmac);
+      SecretKey key = new SecretKeySpec(keyString.getBytes(StandardCharsets.UTF_8), hmac);
       Mac mac = Mac.getInstance(key.getAlgorithm());
       mac.init(key);
-      return encodeHex(mac.doFinal(message.getBytes("UTF-8")));
-    } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
+      return encodeHex(mac.doFinal(message.getBytes(StandardCharsets.UTF_8)));
+    } catch (NoSuchAlgorithmException | InvalidKeyException e) {
       // doesn't happen, auth will fail in that case
       return "";
     }
   }
 
   /**
-   * @param outBytes
+   * @param bytes
    * @return
    */
   protected static String encodeHex(byte[] bytes) {
@@ -64,15 +61,10 @@ public class CryptUtils {
   }
 
   public static String base64(String string) {
-    try {
-      // this call does not create multi-line base64 data
-      // (if someone uses a password longer than 57 chars or
-      // one of the other SASL replies is longer than 76 chars)
-      return Base64.getEncoder().encodeToString(string.getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      // doesn't happen
-      return "";
-    }
+    // this call does not create multi-line base64 data
+    // (if someone uses a password longer than 57 chars or
+    // one of the other SASL replies is longer than 76 chars)
+    return Base64.getEncoder().encodeToString(string.getBytes(StandardCharsets.UTF_8));
   }
 
   public static String base64(byte[] data) {
@@ -80,12 +72,7 @@ public class CryptUtils {
   }
 
   public static String decodeb64(String string) {
-    try {
-      return new String(Base64.getDecoder().decode(string), "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      // doesn't happen
-      return "";
-    }
+    return new String(Base64.getDecoder().decode(string), StandardCharsets.UTF_8);
   }
 
 }

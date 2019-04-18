@@ -14,9 +14,6 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
@@ -24,19 +21,27 @@ package io.vertx.ext.mail.impl.sasl;
  */
 abstract class AuthBaseClass implements AuthOperation {
 
-  protected final String username;
-  protected final String password;
+  private final String name;
 
-  /**
-   *
-   */
-  protected AuthBaseClass(String username, String password) {
-    this.username = username;
-    this.password = password;
+  String username;
+  String password;
+
+  AuthBaseClass(String name) {
+    this.name = name;
   }
 
-  public abstract String getName();
+  @Override
+  public AuthOperation init(String username, String password) {
+    this.username = username;
+    this.password = password;
+    return this;
+  }
 
+  @Override
   public abstract String nextStep(String data);
 
+  @Override
+  public String getName() {
+    return name;
+  }
 }

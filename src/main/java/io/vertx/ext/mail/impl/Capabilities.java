@@ -112,7 +112,7 @@ class Capabilities {
    */
   private List<String> parseEhlo(String message) {
     // parse ehlo and other multiline replies
-    List<String> result = new ArrayList<String>();
+    List<String> result = new ArrayList<>();
 
     String resultCode = message.substring(0, 3);
 

@@ -53,7 +53,7 @@ public class MailExamples {
     MailClient mailClient = MailClient.createNonShared(vertx, config);
   }
 
-  public void mailMessage(Vertx vertx) {
+  public void mailMessage() {
     MailMessage message = new MailMessage();
     message.setFrom("user@example.com (Example User)");
     message.setTo("recipient@example.org");
@@ -62,7 +62,7 @@ public class MailExamples {
     message.setHtml("this is html text <a href=\"http://vertx.io\">vertx.io</a>");
   }
 
-  public void attachment(Vertx vertx, MailMessage message) {
+  public void attachment(MailMessage message) {
     MailAttachment attachment = new MailAttachment();
     attachment.setContentType("text/plain");
     attachment.setData(Buffer.buffer("attachment file"));
@@ -70,7 +70,7 @@ public class MailExamples {
     message.setAttachment(attachment);
   }
 
-  public void inlineAttachment(Vertx vertx, MailMessage message) {
+  public void inlineAttachment(MailMessage message) {
     MailAttachment attachment = new MailAttachment();
     attachment.setContentType("image/jpeg");
     attachment.setData(Buffer.buffer("image data"));
@@ -80,7 +80,7 @@ public class MailExamples {
     message.setInlineAttachment(attachment);
   }
 
-  public void sendMail(Vertx vertx, MailMessage message, MailClient mailClient) {
+  public void sendMail(MailMessage message, MailClient mailClient) {
     mailClient.sendMail(message, result -> {
       if (result.succeeded()) {
         System.out.println(result.result());

@@ -195,7 +195,7 @@ public class MailClientImpl implements MailClient {
     final Runnable closeRunner;
     int refCount = 1;
 
-    public MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
+    MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
       this.closeRunner = closeRunner;
       this.pool= new SMTPConnectionPool(vertx, config);
     }

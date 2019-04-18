@@ -16,6 +16,8 @@
 
 package io.vertx.ext.mail.impl.sasl;
 
+import io.vertx.core.Vertx;
+import io.vertx.ext.auth.PRNG;
 import org.junit.Test;
 
 import java.util.*;
@@ -25,9 +27,11 @@ import static org.junit.Assert.assertNotNull;
 
 public class AuthDigestMD5Test {
 
+  private static final PRNG prng = new PRNG(Vertx.vertx());
+
   @Test
   public void testAuthDigestMD5() {
-    final AuthDigestMD5 auth = new AuthDigestMD5("xxx", "yyy");
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng).init("xxx", "yyy");
 
     assertNotNull(auth);
     assertEquals("DIGEST-MD5", auth.getName());
@@ -35,7 +39,7 @@ public class AuthDigestMD5Test {
 
   @Test
   public void testGetName() {
-    assertEquals("DIGEST-MD5", new AuthDigestMD5("xxx", "yyy").getName());
+    assertEquals("DIGEST-MD5", new AuthDigest("DIGEST-MD5", prng).init("xxx", "yyy").getName());
   }
 
   /*
@@ -43,7 +47,7 @@ public class AuthDigestMD5Test {
    */
   @Test
   public void testNextStep() {
-    final AuthDigest auth = new AuthDigestMD5("chris@elwood.innosoft.com", "secret") {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
       @Override
       public String getCnonce() {
         return "OA6MHXh6VqTrRk";
@@ -53,7 +57,8 @@ public class AuthDigestMD5Test {
       public String getDigestUri() {
         return "imap/elwood.innosoft.com";
       }
-    };
+    }.init("chris@elwood.innosoft.com", "secret");
+
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
       .nextStep("realm=\"elwood.innosoft.com\",nonce=\"OA6MG9tEQGm2hh\",qop=\"auth\",algorithm=md5-sess,charset=utf-8");
@@ -66,12 +71,13 @@ public class AuthDigestMD5Test {
 
   @Test
   public void testSmtpServer() {
-    AuthDigest auth = new AuthDigestMD5("user@example.com", "password") {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
       @Override
       public String getCnonce() {
         return "asdf1234";
       }
-    };
+    }.init("user@example.com", "password");
+
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
       .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");
@@ -88,12 +94,13 @@ public class AuthDigestMD5Test {
    */
   @Test
   public void testServerAuthFailed() {
-    AuthDigest auth = new AuthDigestMD5("user@example.com", "password") {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
       @Override
       public String getCnonce() {
         return "asdf1234";
       }
-    };
+    }.init("user@example.com", "password");
+
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
       .nextStep("nonce=\"ZlGsMYH7FAd+ABU/iap0MjLBWn/CUxypfDsC9zyfn74=\",realm=\"server.example.com\",qop=\"auth\",charset=utf-8,algorithm=md5-sess");

@@ -116,7 +116,7 @@ class SMTPSendMail {
   }
 
   private void rcptToCmd() {
-    List<String> recipientAddrs = new ArrayList<String>();
+    List<String> recipientAddrs = new ArrayList<>();
     if (email.getTo() != null) {
       recipientAddrs.addAll(email.getTo());
     }
@@ -211,9 +211,7 @@ class SMTPSendMail {
       final int nextIndexFinal = nextIndex;
       final boolean mayLog = nextIndex < 1000;
       if (connection.writeQueueFull()) {
-        connection.writeLineWithDrainHandler(line, mayLog, v -> {
-          sendLineByLine(nextIndexFinal, length);
-        });
+        connection.writeLineWithDrainHandler(line, mayLog, v -> sendLineByLine(nextIndexFinal, length));
         // call to our handler will finish the whole message, we just return here
         return;
       } else {

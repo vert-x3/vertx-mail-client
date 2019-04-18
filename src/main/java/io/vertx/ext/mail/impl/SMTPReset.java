@@ -30,8 +30,8 @@ import io.vertx.core.Future;
  */
 class SMTPReset {
 
-  SMTPConnection connection;
-  Handler<AsyncResult<Void>> handler;
+  private final SMTPConnection connection;
+  private final Handler<AsyncResult<Void>> handler;
 
   private static final Logger log = LoggerFactory.getLogger(SMTPReset.class);
 

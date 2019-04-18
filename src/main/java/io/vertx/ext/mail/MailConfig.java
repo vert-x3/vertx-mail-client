@@ -32,16 +32,16 @@ import java.util.Locale;
 @DataObject
 public class MailConfig {
 
-  public static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
-  public static final StartTLSOptions DEFAULT_TLS = StartTLSOptions.OPTIONAL;
-  public static final int DEFAULT_PORT = 25;
-  public static final String DEFAULT_HOST = "localhost";
-  public static final int DEFAULT_MAX_POOL_SIZE = 10;
-  public static final boolean DEFAULT_SSL = false;
-  public static final boolean DEFAULT_TRUST_ALL = false;
-  public static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
-  public static final boolean DEFAULT_KEEP_ALIVE = true;
-  public static final boolean DEFAULT_DISABLE_ESMTP = false;
+  private static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
+  private static final StartTLSOptions DEFAULT_TLS = StartTLSOptions.OPTIONAL;
+  private static final int DEFAULT_PORT = 25;
+  private static final String DEFAULT_HOST = "localhost";
+  private static final int DEFAULT_MAX_POOL_SIZE = 10;
+  private static final boolean DEFAULT_SSL = false;
+  private static final boolean DEFAULT_TRUST_ALL = false;
+  private static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
+  private static final boolean DEFAULT_KEEP_ALIVE = true;
+  private static final boolean DEFAULT_DISABLE_ESMTP = false;
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -124,6 +124,7 @@ public class MailConfig {
     maxPoolSize = other.maxPoolSize;
     keepAlive = other.keepAlive;
     allowRcptErrors = other.allowRcptErrors;
+    disableEsmtp = other.disableEsmtp;
   }
 
   /**
@@ -604,7 +605,7 @@ public class MailConfig {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof MailConfig)) {
+    if (!(o instanceof MailConfig)) {
       return false;
     }
     final MailConfig config = (MailConfig) o;
