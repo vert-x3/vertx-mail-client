@@ -23,8 +23,8 @@ class AuthPlain extends AuthBaseClass {
 
   private boolean first;
 
-  public AuthPlain() {
-    super("PLAIN");
+  public AuthPlain(String username, String password) {
+    super("PLAIN", username, password);
     first = true;
   }
 

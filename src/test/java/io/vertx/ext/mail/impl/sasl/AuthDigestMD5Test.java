@@ -31,7 +31,7 @@ public class AuthDigestMD5Test {
 
   @Test
   public void testAuthDigestMD5() {
-    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng).init("xxx", "yyy");
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng, "xxx", "yyy");
 
     assertNotNull(auth);
     assertEquals("DIGEST-MD5", auth.getName());
@@ -39,7 +39,7 @@ public class AuthDigestMD5Test {
 
   @Test
   public void testGetName() {
-    assertEquals("DIGEST-MD5", new AuthDigest("DIGEST-MD5", prng).init("xxx", "yyy").getName());
+    assertEquals("DIGEST-MD5", new AuthDigest("DIGEST-MD5", prng, "xxx", "yyy").getName());
   }
 
   /*
@@ -47,7 +47,7 @@ public class AuthDigestMD5Test {
    */
   @Test
   public void testNextStep() {
-    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng, "chris@elwood.innosoft.com", "secret") {
       @Override
       public String getCnonce() {
         return "OA6MHXh6VqTrRk";
@@ -57,7 +57,7 @@ public class AuthDigestMD5Test {
       public String getDigestUri() {
         return "imap/elwood.innosoft.com";
       }
-    }.init("chris@elwood.innosoft.com", "secret");
+    };
 
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
@@ -71,12 +71,12 @@ public class AuthDigestMD5Test {
 
   @Test
   public void testSmtpServer() {
-    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng, "user@example.com", "password") {
       @Override
       public String getCnonce() {
         return "asdf1234";
       }
-    }.init("user@example.com", "password");
+    };
 
     assertEquals("", auth.nextStep(null));
     final String step1 = auth
@@ -94,12 +94,12 @@ public class AuthDigestMD5Test {
    */
   @Test
   public void testServerAuthFailed() {
-    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng) {
+    final AuthOperation auth = new AuthDigest("DIGEST-MD5", prng, "user@example.com", "password") {
       @Override
       public String getCnonce() {
         return "asdf1234";
       }
-    }.init("user@example.com", "password");
+    };
 
     assertEquals("", auth.nextStep(null));
     final String step1 = auth

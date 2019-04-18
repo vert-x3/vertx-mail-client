@@ -24,7 +24,7 @@ import static org.junit.Assert.assertNotNull;
 public class AuthXOAUTH2Test {
   @Test
   public void testAuth() {
-    AuthXOAUTH2 result = new AuthXOAUTH2("xxx", "yyy");
+    AuthOperation result = new AuthXOAUTH2("xxx", "yyy");
     assertNotNull(result);
     assertEquals("XOAUTH2", result.getName());
   }
@@ -36,14 +36,14 @@ public class AuthXOAUTH2Test {
 
   @Test
   public void testNextStep() {
-    final AuthXOAUTH2 auth = new AuthXOAUTH2("xxx", "yyy");
+    final AuthOperation auth = new AuthXOAUTH2("xxx", "yyy");
     assertEquals("user=xxx\1auth=Bearer yyy\1\1", auth.nextStep(null));
     assertEquals(null, auth.nextStep("235 2.7.0 Accepted"));
   }
 
   @Test
   public void testNextStepError() {
-    final AuthXOAUTH2 auth = new AuthXOAUTH2("xxx", "yyy");
+    final AuthOperation auth = new AuthXOAUTH2("xxx", "yyy");
     assertEquals("user=xxx\1auth=Bearer yyy\1\1", auth.nextStep(null));
     assertEquals("", auth.nextStep("{\"status\":\"401\",\"schemes\":\"bearer\",\"scope\":\"https://mail.google.com/\"}"));
   }

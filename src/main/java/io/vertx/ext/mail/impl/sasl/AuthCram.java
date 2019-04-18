@@ -35,8 +35,8 @@ class AuthCram extends AuthBaseClass {
   }};
 
 
-  protected AuthCram(String name) {
-    super(name);
+  protected AuthCram(String name, String username, String password) {
+    super(name, username, password);
     firstStep = true;
     finished = false;
     this.hmac = NAME_MAC_MAP.get(name);

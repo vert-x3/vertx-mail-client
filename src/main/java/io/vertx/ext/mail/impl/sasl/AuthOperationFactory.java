@@ -25,39 +25,42 @@ import java.util.Set;
  */
 public final class AuthOperationFactory {
 
+  // algorithms are sorted by preference
+  private static final String[] ALGORITHMS = {
+    "XOAUTH2",
+    "DIGEST-MD5",
+    "CRAM-SHA256",
+    "CRAM-SHA1",
+    "CRAM-MD5",
+    "PLAIN",
+    "LOGIN"
+  };
+
   private final PRNG prng;
 
   public AuthOperationFactory(PRNG prng) {
     this.prng = prng;
   }
 
-  private AuthOperation create(String name) {
-    switch (name) {
-      case "XOAUTH2":
-        return new AuthXOAUTH2();
-      case "CRAM-MD5":
-        return new AuthCram("CRAM-MD5");
-      case "CRAM-SHA1":
-        return new AuthCram("CRAM-SHA1");
-      case "CRAM-SHA256":
-        return new AuthCram("CRAM-SHA256");
-      case "DIGEST-MD5":
-        return new AuthDigest("DIGEST-MD5", prng);
-      case "PLAIN":
-        return new AuthPlain();
-      case "LOGIN":
-        return new AuthLogin();
-      default:
-        return null;
-    }
-  }
-
   public AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
-    for (String allowedMethod: allowedMethods) {
-      AuthOperation authOperation = create(allowedMethod);
-      if (authOperation != null) {
-        authOperation.init(username, password);
-        return authOperation;
+    for (String algorithm : ALGORITHMS) {
+      if (allowedMethods.contains(algorithm)) {
+        switch (algorithm) {
+          case "XOAUTH2":
+            return new AuthXOAUTH2(username, password);
+          case "CRAM-MD5":
+            return new AuthCram("CRAM-MD5",username, password);
+          case "CRAM-SHA1":
+            return new AuthCram("CRAM-SHA1", username, password);
+          case "CRAM-SHA256":
+            return new AuthCram("CRAM-SHA256", username, password);
+          case "DIGEST-MD5":
+            return new AuthDigest("DIGEST-MD5", prng, username, password);
+          case "PLAIN":
+            return new AuthPlain(username, password);
+          case "LOGIN":
+            return new AuthLogin(username, password);
+        }
       }
     }
     return null;

@@ -25,7 +25,7 @@ public class AuthCramMD5Test {
 
   @Test
   public void testAuthCramMD5() {
-    final AuthOperation auth = new AuthCram("CRAM-MD5").init("xxx", "yyy");
+    final AuthOperation auth = new AuthCram("CRAM-MD5", "xxx", "yyy");
 
     assertNotNull(auth);
     assertEquals("CRAM-MD5", auth.getName());
@@ -33,12 +33,12 @@ public class AuthCramMD5Test {
 
   @Test
   public void testGetName() {
-    assertEquals("CRAM-MD5", new AuthCram("CRAM-MD5").init("xxx", "yyy").getName());
+    assertEquals("CRAM-MD5", new AuthCram("CRAM-MD5", "xxx", "yyy").getName());
   }
 
   @Test
   public void testNextStep() {
-    final AuthOperation auth = new AuthCram("CRAM-MD5").init("xxx", "yyy");
+    final AuthOperation auth = new AuthCram("CRAM-MD5", "xxx", "yyy");
     assertEquals("", auth.nextStep(null));
     assertEquals("xxx d23f0dea640c99059a0517ad16e7abfb", auth.nextStep("<12345@example.com>"));
     assertEquals(null, auth.nextStep("250 ok"));
@@ -49,7 +49,7 @@ public class AuthCramMD5Test {
    */
   @Test
   public void testNextStep2() {
-    final AuthOperation auth = new AuthCram("CRAM-MD5").init("user", "key");
+    final AuthOperation auth = new AuthCram("CRAM-MD5", "user", "key");
     assertEquals("", auth.nextStep(null));
     assertEquals("user 80070713463e7749b90c2dc24911e275", auth.nextStep("The quick brown fox jumps over the lazy dog"));
     assertEquals(null, auth.nextStep("250 ok"));

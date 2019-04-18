@@ -14,14 +14,11 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.impl.logging.Logger;
+import io.vertx.core.impl.logging.LoggerFactory;
 
 /**
  * @author <a href="mailto:plopes@redhat.com">Paulo Lopes</a>
@@ -31,26 +28,11 @@ class AuthXOAUTH2 extends AuthBaseClass {
   private static final Logger LOG = LoggerFactory.getLogger(AuthXOAUTH2.class);
 
 
-  private static final String AUTH_NAME = "XOAUTH2";
   private boolean first;
 
-  /**
-   * @param username
-   * @param accessToken
-   */
-  public AuthXOAUTH2(String username, String accessToken) {
-    super(username, accessToken);
+  public AuthXOAUTH2(String username, String token) {
+    super("XOAUTH2", username, token);
     first = true;
-  }
-
-  /*
-   * (non-Javadoc)
-   *
-   * @see io.vertx.ext.mail.impl.AuthBaseClass#getName()
-   */
-  @Override
-  public String getName() {
-    return AUTH_NAME;
   }
 
   /*
