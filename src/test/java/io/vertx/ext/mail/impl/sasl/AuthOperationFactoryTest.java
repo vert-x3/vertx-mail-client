@@ -56,6 +56,6 @@ public class AuthOperationFactoryTest {
   public final void testCreateXOAUTH2Auth() throws Exception {
     Set<String> allowedAuth = new HashSet<String>();
     allowedAuth.add("XOAUTH2");
-    assertEquals(AuthXOAUTH2.class, AuthOperationFactory.createAuth("user", "token", allowedAuth).getClass());
+    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth("user", "token", allowedAuth).getClass());
   }
 }
