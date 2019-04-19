@@ -41,8 +41,8 @@ class AuthDigest extends AuthBaseClass {
 
   private String serverResponse;
 
-  protected AuthDigest(String name, PRNG random) {
-    super(name);
+  protected AuthDigest(String name, PRNG random, String username, String password) {
+    super(name, username, password);
     counter = 0;
     this.random = random;
     try {

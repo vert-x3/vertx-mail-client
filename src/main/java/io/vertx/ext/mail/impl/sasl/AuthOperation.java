@@ -21,8 +21,6 @@ package io.vertx.ext.mail.impl.sasl;
  */
 public interface AuthOperation {
 
-  AuthOperation init(String username, String password);
-
   String nextStep(String line);
 
   String getName();

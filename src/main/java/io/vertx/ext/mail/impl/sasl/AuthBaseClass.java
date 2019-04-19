@@ -23,18 +23,13 @@ abstract class AuthBaseClass implements AuthOperation {
 
   private final String name;
 
-  String username;
-  String password;
+  final String username;
+  final String password;
 
-  AuthBaseClass(String name) {
+  AuthBaseClass(String name, String username, String password) {
     this.name = name;
-  }
-
-  @Override
-  public AuthOperation init(String username, String password) {
     this.username = username;
     this.password = password;
-    return this;
   }
 
   @Override

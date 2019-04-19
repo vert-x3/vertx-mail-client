@@ -21,26 +21,31 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-public class AuthLoginTest {
+public class AuthXOAUTH2Test {
   @Test
-  public void testAuthLogin() {
-    final AuthOperation result = new AuthLogin("xxx", "yyy");
+  public void testAuth() {
+    AuthOperation result = new AuthXOAUTH2("xxx", "yyy");
     assertNotNull(result);
-    assertEquals("LOGIN", result.getName());
+    assertEquals("XOAUTH2", result.getName());
   }
 
   @Test
   public void testGetName() {
-    assertEquals("LOGIN", new AuthLogin("xxx", "yyy").getName());
+    assertEquals("XOAUTH2", new AuthXOAUTH2("xxx", "yyy").getName());
   }
 
   @Test
   public void testNextStep() {
-    final AuthOperation auth = new AuthLogin("xxx", "yyy");
-    assertEquals("", auth.nextStep(null));
-    assertEquals("xxx", auth.nextStep("Username"));
-    assertEquals("yyy", auth.nextStep("Password"));
-    assertEquals(null, auth.nextStep("250 auth ok"));
+    final AuthOperation auth = new AuthXOAUTH2("xxx", "yyy");
+    assertEquals("user=xxx\1auth=Bearer yyy\1\1", auth.nextStep(null));
+    assertEquals(null, auth.nextStep("235 2.7.0 Accepted"));
+  }
+
+  @Test
+  public void testNextStepError() {
+    final AuthOperation auth = new AuthXOAUTH2("xxx", "yyy");
+    assertEquals("user=xxx\1auth=Bearer yyy\1\1", auth.nextStep(null));
+    assertEquals("", auth.nextStep("{\"status\":\"401\",\"schemes\":\"bearer\",\"scope\":\"https://mail.google.com/\"}"));
   }
 
 }

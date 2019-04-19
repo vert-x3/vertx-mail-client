@@ -25,8 +25,8 @@ class AuthLogin extends AuthBaseClass {
   private boolean secondStep;
   private boolean finished;
 
-  public AuthLogin() {
-    super("LOGIN");
+  public AuthLogin(String username, String password) {
+    super("LOGIN", username, password);
     firstStep = true;
     secondStep = true;
     finished = false;

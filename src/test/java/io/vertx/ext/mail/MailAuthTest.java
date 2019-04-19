@@ -249,4 +249,63 @@ public class MailAuthTest extends SMTPTestDummy {
     testException(MailClient.createNonShared(vertx, configLogin().setAuthMethods("DIGEST-MD5 CRAM-MD5")));
   }
 
+  @Test
+  public void authXOAUTH2SuccessTest(TestContext testContext) {
+    this.testContext=testContext;
+
+    smtpServer.setDialogue(
+      "220 mx.google.com ESMTP 12sm2095603fks.9",
+      "EHLO",
+      "250-mx.google.com at your service, [172.31.135.47]\n" +
+      "250-SIZE 35651584\n" +
+      "250-8BITMIME\n" +
+      "250-AUTH LOGIN PLAIN XOAUTH XOAUTH2\n" +
+      "250-ENHANCEDSTATUSCODES\n" +
+      "250 PIPELINING",
+      "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
+      "235 2.7.0 Accepted",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCD",
+      "QUIT",
+      "221 2.0.0 Bye");
+
+    testSuccess(mailClientLogin());
+  }
+
+  @Test
+  public void authXOAUTH2FailTest(TestContext testContext) {
+    this.testContext=testContext;
+
+    smtpServer.setDialogue(
+      "220 mx.google.com ESMTP 12sm2095603fks.9",
+
+      "EHLO",
+
+      "250-mx.google.com at your service, [172.31.135.47]\n" +
+      "250-SIZE 35651584\n" +
+      "250-8BITMIME\n" +
+      "250-AUTH LOGIN PLAIN XOAUTH XOAUTH2\n" +
+      "250-ENHANCEDSTATUSCODES\n" +
+      "250 PIPELINING",
+
+      "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
+
+      "334 eyJzdGF0dXMiOiI0MDEiLCJzY2hlbWVzIjoiYmVhcmVyIG1hYyIsInNjb3BlIjoiaHR0cHM6Ly9tYWlsLmdvb2dsZS5jb20vIn0K",
+
+      "",
+
+      "535-5.7.1 Username and Password not accepted. Learn more at\n" +
+      "535 5.7.1 http://support.google.com/mail/bin/answer.py?answer=14257 hx9sm5317360pbc.68",
+
+      "QUIT",
+
+      "221 2.0.0 Bye");
+
+    testException(mailClientLogin());
+  }
 }
