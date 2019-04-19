@@ -24,19 +24,19 @@ import static org.junit.Assert.assertNotNull;
 public class AuthLoginTest {
   @Test
   public void testAuthLogin() {
-    AuthLogin result = new AuthLogin("xxx", "yyy");
+    final AuthOperation result = new AuthLogin().init("xxx", "yyy");
     assertNotNull(result);
     assertEquals("LOGIN", result.getName());
   }
 
   @Test
   public void testGetName() {
-    assertEquals("LOGIN", new AuthLogin("xxx", "yyy").getName());
+    assertEquals("LOGIN", new AuthLogin().init("xxx", "yyy").getName());
   }
 
   @Test
   public void testNextStep() {
-    final AuthLogin auth = new AuthLogin("xxx", "yyy");
+    final AuthOperation auth = new AuthLogin().init("xxx", "yyy");
     assertEquals("", auth.nextStep(null));
     assertEquals("xxx", auth.nextStep("Username"));
     assertEquals("yyy", auth.nextStep("Password"));

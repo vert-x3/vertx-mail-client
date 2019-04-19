@@ -14,9 +14,6 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
@@ -24,33 +21,15 @@ package io.vertx.ext.mail.impl.sasl;
  */
 class AuthLogin extends AuthBaseClass {
 
-  /**
-   *
-   */
-  static final String AUTH_NAME = "LOGIN";
   private boolean firstStep;
   private boolean secondStep;
   private boolean finished;
 
-  /**
-   * @param username
-   * @param password
-   */
-  public AuthLogin(String username, String password) {
-    super(username, password);
+  public AuthLogin() {
+    super("LOGIN");
     firstStep = true;
     secondStep = true;
     finished = false;
-  }
-
-  /*
-   * (non-Javadoc)
-   * 
-   * @see io.vertx.ext.mail.impl.AuthBaseClass#getName()
-   */
-  @Override
-  public String getName() {
-    return AUTH_NAME;
   }
 
   /*

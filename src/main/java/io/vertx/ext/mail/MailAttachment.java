@@ -279,7 +279,7 @@ public class MailAttachment {
     if (this == o) {
       return true;
     }
-    if (o == null || !(o instanceof MailAttachment)) {
+    if (!(o instanceof MailAttachment)) {
       return false;
     }
     final MailAttachment attachment = (MailAttachment) o;

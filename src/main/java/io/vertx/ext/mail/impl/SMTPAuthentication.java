@@ -20,13 +20,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import io.vertx.ext.mail.impl.sasl.CryptUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Set;
 
 /**
@@ -36,19 +36,22 @@ import java.util.Set;
  */
 class SMTPAuthentication {
 
-  SMTPConnection connection;
-  MailConfig config;
-  Handler<Void> finishedHandler;
-  Handler<Throwable> errorHandler;
+  private final SMTPConnection connection;
+  private final MailConfig config;
+  private final Handler<Void> finishedHandler;
+  private final Handler<Throwable> errorHandler;
 
   private static final Logger log = LoggerFactory.getLogger(SMTPAuthentication.class);
 
-  public SMTPAuthentication(SMTPConnection connection, MailConfig config, Handler<Void> finishedHandler,
+  private final AuthOperationFactory authOperationFactory;
+
+  public SMTPAuthentication(SMTPConnection connection, MailConfig config, PRNG prng, Handler<Void> finishedHandler,
                             Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
+    this.authOperationFactory = new AuthOperationFactory(prng);
   }
 
   public void start() {
@@ -86,16 +89,15 @@ class SMTPAuthentication {
     return allowed;
   }
 
-  public void authCmd() {
+  private void authCmd() {
     // if we have defined a choice of methods, only use these
     // this works for example to avoid plain text pw methods with
     // "CRAM-SHA1 CRAM-MD5"
     AuthOperation authOperation;
     try {
-      authOperation = AuthOperationFactory.createAuth(config.getUsername(), config.getPassword(),
+      authOperation = authOperationFactory.createAuth(config.getUsername(), config.getPassword(),
           intersectAllowedMethods());
-    } catch (IllegalArgumentException | IllegalAccessException | InstantiationException | InvocationTargetException
-        | NoSuchMethodException | SecurityException ex) {
+    } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
       handleError(ex);
       return;

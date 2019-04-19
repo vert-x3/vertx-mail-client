@@ -14,9 +14,6 @@
  *  You may elect to redistribute this code under either of these licenses.
  */
 
-/**
- *
- */
 package io.vertx.ext.mail.impl.sasl;
 
 /**
@@ -24,8 +21,9 @@ package io.vertx.ext.mail.impl.sasl;
  */
 public interface AuthOperation {
 
-  String getName();
+  AuthOperation init(String username, String password);
 
   String nextStep(String line);
 
+  String getName();
 }

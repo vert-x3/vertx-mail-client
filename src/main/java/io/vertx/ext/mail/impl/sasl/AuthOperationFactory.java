@@ -16,50 +16,48 @@
 
 package io.vertx.ext.mail.impl.sasl;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import io.vertx.ext.auth.PRNG;
+
 import java.util.Set;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public class AuthOperationFactory {
+public final class AuthOperationFactory {
 
-  private AuthOperationFactory() {
-    // Avoid direct instantiation.
+  private final PRNG prng;
+
+  public AuthOperationFactory(PRNG prng) {
+    this.prng = prng;
   }
 
-  private static final Class<?>[] authList = new Class<?>[] {
-      AuthDigestMD5.class,
-      AuthCramSHA256.class,
-      AuthCramSHA1.class,
-      AuthCramMD5.class,
-      AuthPlain.class,
-      AuthLogin.class
-  };
-
-  public static AuthOperation createAuth(String username, String password, Set<String> allowedMethods)
-      throws IllegalArgumentException, IllegalAccessException, InstantiationException, InvocationTargetException,
-      NoSuchMethodException, SecurityException {
-    Class<?> classToUse = null;
-    for (Class<?> authClass : authList) {
-      Field[] fields = authClass.getDeclaredFields();
-      for (Field f : fields) {
-        f.setAccessible(true);
-        String fieldName = f.getName();
-        if ("AUTH_NAME".equals(fieldName)) {
-          String authName = (String) f.get(null);
-          if (allowedMethods.contains(authName)) {
-            classToUse = authClass;
-            break;
-          }
-        }
-      }
+  private AuthOperation create(String name) {
+    switch (name) {
+      case "CRAM-MD5":
+        return new AuthCram("CRAM-MD5");
+      case "CRAM-SHA1":
+        return new AuthCram("CRAM-SHA1");
+      case "CRAM-SHA256":
+        return new AuthCram("CRAM-SHA256");
+      case "DIGEST-MD5":
+        return new AuthDigest("DIGEST-MD5", prng);
+      case "PLAIN":
+        return new AuthPlain();
+      case "LOGIN":
+        return new AuthLogin();
+      default:
+        return null;
     }
-    if (classToUse != null) {
-      return (AuthOperation) classToUse.getConstructor(String.class, String.class).newInstance(username, password);
+  }
+
+  public AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
+    for (String allowedMethod: allowedMethods) {
+      AuthOperation authOperation = create(allowedMethod);
+      if (authOperation != null) {
+        authOperation.init(username, password);
+        return authOperation;
+      }
     }
     return null;
   }
-
 }
