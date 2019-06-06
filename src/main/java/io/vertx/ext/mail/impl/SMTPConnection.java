@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -238,7 +239,7 @@ class SMTPConnection {
     return ns.isSsl();
   }
 
-  void upgradeToSsl(Handler<Void> handler) {
+  void upgradeToSsl(Handler<AsyncResult<Void>> handler) {
     ns.upgradeToSsl(handler);
   }
 

@@ -112,12 +112,16 @@ class SMTPInitialDialogue {
   private void startTLSCmd() {
     connection.write("STARTTLS", message -> {
       log.debug("STARTTLS result: " + message);
-      connection.upgradeToSsl(v -> {
-        log.debug("tls started");
-        // capabilities may have changed, e.g.
-        // if a service only announces PLAIN/LOGIN
-        // on secure channel (e.g. googlemail)
-        ehloCmd();
+      connection.upgradeToSsl(ar -> {
+        if (ar.succeeded()) {
+          log.debug("tls started");
+          // capabilities may have changed, e.g.
+          // if a service only announces PLAIN/LOGIN
+          // on secure channel (e.g. googlemail)
+          ehloCmd();
+        } else {
+
+        }
       });
     });
   }
