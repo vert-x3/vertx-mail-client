@@ -59,16 +59,16 @@ public class MailEncoderTest {
     List<MailAttachment> attachments = new ArrayList<MailAttachment>();
 
     attachments
-      .add(new MailAttachment()
+      .add(MailAttachment.create()
         .setData(Buffer.buffer("****************************************************************************************"))
         .setName("file.txt"));
 
-    attachments.add(new MailAttachment().setData(Buffer.buffer("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")));
+    attachments.add(MailAttachment.create().setData(Buffer.buffer("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")));
 
-    attachments.add(new MailAttachment()
+    attachments.add(MailAttachment.create()
       .setData(Buffer.buffer("испытание", "UTF-8")));
 
-    attachments.add(new MailAttachment().setData(TestUtils.asBuffer(new int[]{0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBF,
+    attachments.add(MailAttachment.create().setData(TestUtils.asBuffer(new int[]{0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBF,
       0xD1, 0x8B, 0xD1, 0x82, 0xD0, 0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD0, 0xB5})));
 
     message.setAttachment(attachments);
@@ -390,7 +390,7 @@ public class MailEncoderTest {
   @Test
   public void testAttachment() throws Exception {
     MailMessage message = new MailMessage();
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setContentType("application/x-something")
       .setData(Buffer.buffer("***"))
       .setDescription("description")
@@ -527,7 +527,7 @@ public class MailEncoderTest {
   @Test
   public void testAdditionalHeadersAttachment() {
     MailMessage message = new MailMessage();
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("XXX"))
       .setHeaders(new CaseInsensitiveHeaders().add("X-Header", "value"));
     message.setAttachment(attachment);
@@ -539,7 +539,7 @@ public class MailEncoderTest {
   public void testInlineAttachment() {
     MailMessage message = new MailMessage();
     message.setHtml("this is a html message");
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("XXX"))
       .setDisposition("inline");
     message.setInlineAttachment(attachment);
@@ -565,7 +565,7 @@ public class MailEncoderTest {
         .setHtml("<img src=\"cid:image1@localhost\">");
 
     List<MailAttachment> list=new ArrayList<MailAttachment>();
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("******"));
     attachment.setContentType("image/jpg");
     attachment.setName("image1.jpg");
@@ -586,7 +586,7 @@ public class MailEncoderTest {
   @Test
   public void testAttachmentUtf8() {
     MailMessage message = new MailMessage();
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("test"));
     attachment.setName("你好.txt");
     message.setAttachment(attachment);

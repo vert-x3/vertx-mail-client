@@ -54,14 +54,14 @@ public class MailDummyTest extends SMTPTestDummy {
 
     List<MailAttachment> list = new ArrayList<MailAttachment>();
 
-    list.add(new MailAttachment()
+    list.add(MailAttachment.create()
       .setData(Buffer.buffer(image.getBytes()))
       .setName("logo-white-big.png")
       .setContentType("image/png")
       .setDisposition("inline")
       .setDescription("logo of vert.x web page"));
 
-    list.add(new MailAttachment()
+    list.add(MailAttachment.create()
       .setData(Buffer.buffer("this is a text attachment"))
       .setName("file.txt")
       .setContentType("text/plain")
@@ -79,7 +79,7 @@ public class MailDummyTest extends SMTPTestDummy {
     MailMessage email = new MailMessage()
       .setFrom("user@example.com")
       .setTo("user@example.com")
-      .setAttachment(new MailAttachment()
+      .setAttachment(MailAttachment.create()
         .setData(TestUtils.asBuffer(0xff, 0xff, 0xff, 0xff, 0xff, 0xff)));
 
     testSuccess(email);

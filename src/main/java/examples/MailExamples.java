@@ -63,7 +63,7 @@ public class MailExamples {
   }
 
   public void attachment(MailMessage message) {
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setContentType("text/plain");
     attachment.setData(Buffer.buffer("attachment file"));
 
@@ -71,7 +71,7 @@ public class MailExamples {
   }
 
   public void inlineAttachment(MailMessage message) {
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setContentType("image/jpeg");
     attachment.setData(Buffer.buffer("image data"));
     attachment.setDisposition("inline");

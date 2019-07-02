@@ -23,22 +23,21 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class MailAttachmentTest {
 
   @Test
   public void testConstructor() {
-    final MailAttachment attachment = new MailAttachment();
+    final MailAttachment attachment = MailAttachment.create();
     assertNotNull(attachment);
   }
 
   @Test
   public void testToJson() {
-    assertEquals("{}", new MailAttachment().toJson().encode());
+    assertEquals("{}", MailAttachment.create().toJson().encode());
     assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"randomstring\",\"headers\":{}}",
-      new MailAttachment()
+      MailAttachment.create()
         .setData(Buffer.buffer("data"))
         .setContentType("text/plain")
         .setDescription("description")
@@ -47,25 +46,25 @@ public class MailAttachmentTest {
         .setHeaders(MultiMap.caseInsensitiveMultiMap())
         .toJson().encode());
 
-    JsonObject json = new MailAttachment()
+    JsonObject json = MailAttachment.create()
       .setData(Buffer.buffer("hello\"\0\u0001\t\r\n\u00ffx\u00a0\u00a1<>")).toJson();
     assertEquals("{\"data\":\"aGVsbG8iAAEJDQrDv3jCoMKhPD4=\"}", json.encode());
   }
 
   @Test
   public void testConstructorFromClass() {
-    MailAttachment message = new MailAttachment();
-    assertEquals(message, new MailAttachment(message));
+    MailAttachment message = MailAttachment.create();
+    assertEquals(message, MailAttachment.create(message));
   }
 
   @Test
   public void testConstructorFromClassDoesCopy() {
-    MailAttachment message = new MailAttachment();
+    MailAttachment message = MailAttachment.create();
 
     Buffer data = Buffer.buffer("asdf");
     message.setData(data);
 
-    final MailAttachment copy = new MailAttachment(message);
+    final MailAttachment copy = MailAttachment.create(message);
     assertEquals(message.getData(), copy.getData());
     assertFalse("Buffer not copied", message.getData()==copy.getData());
   }
@@ -73,26 +72,26 @@ public class MailAttachmentTest {
   // TODO: this test is too complicated since CaseInsensitiveHeaders does not have equals currently
   @Test
   public void testConstructorFromClassHeaders() {
-    MailAttachment message = new MailAttachment();
+    MailAttachment message = MailAttachment.create();
     message.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Header", "Value"));
-    assertEquals("Value", new MailAttachment(message).getHeaders().get("Header"));
+    assertEquals("Value", MailAttachment.create(message).getHeaders().get("Header"));
   }
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromJsonNull() {
-    final MailAttachment attachment = new MailAttachment((JsonObject) null);
+    final MailAttachment attachment = MailAttachment.create((JsonObject) null);
     assertNotNull(attachment);
   }
 
   @Test(expected = NullPointerException.class)
   public void testConstructorFromMailAttachmentNull() {
-    final MailAttachment attachment = new MailAttachment((MailAttachment) null);
+    final MailAttachment attachment = MailAttachment.create((MailAttachment) null);
     assertNotNull(attachment);
   }
 
   @Test
   public void testConstructorFromJsonEmpty() {
-    assertEquals(new MailAttachment(), new MailAttachment(new JsonObject()));
+    assertEquals(MailAttachment.create(), MailAttachment.create(new JsonObject()));
   }
 
   @Test
@@ -100,71 +99,71 @@ public class MailAttachmentTest {
     final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\",\"headers\":{\"Content-ID\":[\"<image1@example.org\"],\"Header\":[\"Value\"]}}";
     JsonObject json = new JsonObject(jsonString);
 
-    MailAttachment message = new MailAttachment(json);
+    MailAttachment message = MailAttachment.create(json);
 
     assertEquals(jsonString, message.toJson().encode());
   }
 
   @Test
   public void testEquals() {
-    MailAttachment mailAttachment = new MailAttachment();
+    MailAttachment mailAttachment = MailAttachment.create();
     assertEquals(mailAttachment, mailAttachment);
-    assertEquals(mailAttachment, new MailAttachment());
+    assertEquals(mailAttachment, MailAttachment.create());
     assertFalse(mailAttachment.equals(null));
     assertFalse(mailAttachment.equals(new Object()));
   }
 
   @Test
   public void testHashcode() {
-    MailAttachment mailAttachment = new MailAttachment();
-    assertEquals(mailAttachment.hashCode(), new MailAttachment().hashCode());
+    MailAttachment mailAttachment = MailAttachment.create();
+    assertEquals(mailAttachment.hashCode(), MailAttachment.create().hashCode());
   }
 
   @Test
   public void testName() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setName("file.jpg");
     assertEquals("file.jpg", mailMessage.getName());
   }
 
   @Test
   public void testData() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setData(Buffer.buffer("xxxx"));
     assertEquals("xxxx", mailMessage.getData().toString());
   }
 
   @Test
   public void testContentType() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setContentType("text/plain");
     assertEquals("text/plain", mailMessage.getContentType());
   }
 
   @Test
   public void testDescription() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setDescription("attachment");
     assertEquals("attachment", mailMessage.getDescription());
   }
 
   @Test
   public void testDispostion() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setDisposition("inline");
     assertEquals("inline", mailMessage.getDisposition());
   }
 
   @Test
   public void testContentId() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setContentId("id@example.org");
     assertEquals("id@example.org", mailMessage.getContentId());
   }
 
   @Test
   public void testHeaders() {
-    MailAttachment mailMessage = new MailAttachment();
+    MailAttachment mailMessage = MailAttachment.create();
     mailMessage.setHeaders(MultiMap.caseInsensitiveMultiMap().add("Header", "Value"));
     assertEquals("Value", mailMessage.getHeaders().get("Header"));
   }

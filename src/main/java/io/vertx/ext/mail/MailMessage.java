@@ -22,6 +22,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.mail.impl.Utils;
 
 import java.util.*;
 
@@ -85,7 +86,7 @@ public class MailMessage {
   private List<MailAttachment> copyAttachments(List<MailAttachment> attachment) {
     List<MailAttachment> newList = new ArrayList<>(attachment.size());
     for (MailAttachment a : attachment) {
-      newList.add(new MailAttachment(a));
+      newList.add(MailAttachment.create(a));
     }
     return newList;
   }
@@ -123,11 +124,11 @@ public class MailMessage {
   private List<MailAttachment> copyJsonAttachment(Object object) throws IllegalArgumentException {
     List<MailAttachment> list;
     if (object instanceof JsonObject) {
-      list = Collections.singletonList(new MailAttachment((JsonObject) object));
+      list = Collections.singletonList(MailAttachment.create((JsonObject) object));
     } else if (object instanceof JsonArray) {
       list = new ArrayList<>();
       for (Object attach : (JsonArray) object) {
-        list.add(new MailAttachment((JsonObject) attach));
+        list.add(MailAttachment.create((JsonObject) attach));
       }
     } else {
       throw new IllegalArgumentException("invalid attachment type");
