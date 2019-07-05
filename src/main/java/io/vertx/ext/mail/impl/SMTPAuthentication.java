@@ -18,8 +18,8 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
