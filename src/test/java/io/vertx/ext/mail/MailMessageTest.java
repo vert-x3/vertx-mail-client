@@ -49,7 +49,7 @@ public class MailMessageTest {
 
   @Test
   public void testAttachment() {
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("asdfasdf"));
     attachment.setName("file.txt");
     MailMessage message = new MailMessage("a", "b", "c", "d");
@@ -62,8 +62,8 @@ public class MailMessageTest {
   @Test
   public void testAttachment2() {
     List<MailAttachment> list = new ArrayList<MailAttachment>();
-    list.add(new MailAttachment().setData(Buffer.buffer("asdfasdf")).setName("file.txt"));
-    list.add(new MailAttachment().setData(Buffer.buffer("xxxxx")).setName("file2.txt"));
+    list.add(MailAttachment.create().setData(Buffer.buffer("asdfasdf")).setName("file.txt"));
+    list.add(MailAttachment.create().setData(Buffer.buffer("xxxxx")).setName("file2.txt"));
     MailMessage message = new MailMessage();
     message.setAttachment(list);
     assertEquals(
@@ -160,7 +160,7 @@ public class MailMessageTest {
   public void testConstructorFromMailMessgeCopy() {
     MailMessage message = new MailMessage();
 
-    MailAttachment attachment = new MailAttachment();
+    MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("message"));
     message.setAttachment(attachment);
     MailMessage message2 = new MailMessage(message);
