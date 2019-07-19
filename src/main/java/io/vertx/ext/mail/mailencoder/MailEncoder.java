@@ -16,8 +16,10 @@
 
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.Context;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
@@ -87,6 +89,10 @@ public class MailEncoder {
    * @return the encoded message
    */
   public String encode() {
+    return encodeMail().asString();
+  }
+
+  public EncodedPart encodeMail() {
     EncodedPart completeMessage;
     EncodedPart mainPart;
 
@@ -105,7 +111,7 @@ public class MailEncoder {
     }
 
     List<MailAttachment> attachments = message.getAttachment();
-    if (attachments != null) {
+    if (attachments != null && attachments.size() > 0) {
       List<EncodedPart> parts = new ArrayList<>();
       if (mainPart != null) {
         parts.add(mainPart);
@@ -125,7 +131,7 @@ public class MailEncoder {
     }
     completeMessage.headers = createHeaders(completeMessage.headers);
 
-    return completeMessage.asString();
+    return completeMessage;
   }
 
   /**

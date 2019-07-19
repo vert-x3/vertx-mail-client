@@ -17,13 +17,46 @@
 package io.vertx.ext.mail.mailencoder;
 
 import io.vertx.core.MultiMap;
+import io.vertx.core.buffer.Buffer;
+import io.vertx.core.streams.ReadStream;
 
-abstract class EncodedPart {
+import java.util.List;
+
+public abstract class EncodedPart {
   MultiMap headers;
   String part;
 
-  public String asString() {
-    return headers.toString() + "\n"
-        + part;
+  String asString() {
+    StringBuilder sb = new StringBuilder(headers().toString());
+    if (body() != null) {
+      sb.append("\n");
+      sb.append(body());
+    }
+    return sb.toString();
   }
+
+  public MultiMap headers() {
+    return headers;
+  }
+
+  public String body() {
+    return part;
+  }
+
+  public int size() {
+    return asString().length();
+  }
+
+  public ReadStream<Buffer> bodyStream() {
+    return null;
+  }
+
+  public List<EncodedPart> parts() {
+    return null;
+  }
+
+  public String boundary() {
+    return null;
+  }
+
 }
