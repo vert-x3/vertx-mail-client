@@ -235,7 +235,7 @@ class SMTPSendMail {
    */
   private void createMailMessage() {
     if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email, hostname);
+      MailEncoder encoder = new MailEncoder(email, hostname, this.config.getUserAgent());
       mailMessage = encoder.encode();
       mailResult.setMessageID(encoder.getMessageID());
     }

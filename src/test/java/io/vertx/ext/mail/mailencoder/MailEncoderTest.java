@@ -596,4 +596,14 @@ public class MailEncoderTest {
     assertThat(mime, not(containsString("你好")));
   }
 
+  @Test
+  public void testMultipPartPrefix() {
+    MailMessage message = new MailMessage();
+    MailAttachment attachment = MailAttachment.create();
+    attachment.setData(Buffer.buffer("test attachment")).setName("hello.txt");
+    message.setAttachment(attachment);
+    final MailEncoder encoder = new MailEncoder(message, HOSTNAME, "My_Email_Client");
+    assertThat(encoder.encode(), containsString("--=--My_Email_Client"));
+  }
+
 }

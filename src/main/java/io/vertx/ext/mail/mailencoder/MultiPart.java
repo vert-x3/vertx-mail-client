@@ -22,9 +22,9 @@ import java.util.List;
 
 class MultiPart extends EncodedPart {
 
-  public MultiPart(List<EncodedPart> parts, String mode) {
+  public MultiPart(List<EncodedPart> parts, String mode, String userAgent) {
 
-    String boundary = Utils.generateBoundary();
+    String boundary = Utils.generateBoundary(userAgent);
 
     headers = new CaseInsensitiveHeaders();
     headers.set("Content-Type", "multipart/" + mode + "; boundary=\"" + boundary + "\"");

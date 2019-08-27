@@ -19,6 +19,7 @@ package io.vertx.ext.mail.mailencoder;
 import io.vertx.core.MultiMap;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.ext.mail.MailAttachment;
+import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ public class MailEncoder {
 
   private final MailMessage message;
   private final String hostname;
+  private final String userAgent;
 
   private String messageID;
 
@@ -60,8 +62,23 @@ public class MailEncoder {
    * @param hostname the hostname to be used in message-id or null to get hostname from OS network config
    */
   public MailEncoder(MailMessage message, String hostname) {
+    this(message, hostname, null);
+  }
+
+  /**
+   * create a MailEncoder for the message
+   * <p>
+   * The class will probably get a few setters for optional features of the SMTP protocol later e.g. 8BIT or SMTPUTF
+   * (this is not yet supported)
+   *
+   * @param message the message to encode later
+   * @param hostname the hostname to be used in message-id or null to get hostname from OS network config
+   * @param userAgent the Mail User Agent name used to generate the boundary and Message-ID
+   */
+  public MailEncoder(MailMessage message, String hostname, String userAgent) {
     this.message = message;
     this.hostname = hostname;
+    this.userAgent = userAgent == null ? MailConfig.DEFAULT_USER_AGENT : userAgent;
   }
 
   /**
@@ -77,7 +94,7 @@ public class MailEncoder {
     String html = message.getHtml();
 
     if (text != null && html != null) {
-      mainPart = new MultiPart(Arrays.asList(new TextPart(text, "plain"), htmlPart()), "alternative");
+      mainPart = new MultiPart(Arrays.asList(new TextPart(text, "plain"), htmlPart()), "alternative", this.userAgent);
     } else if (text != null) {
       mainPart = new TextPart(text, "plain");
     } else if (html != null) {
@@ -96,7 +113,7 @@ public class MailEncoder {
       for (MailAttachment a : attachments) {
         parts.add(new AttachmentPart(a));
       }
-      completeMessage = new MultiPart(parts, "mixed");
+      completeMessage = new MultiPart(parts, "mixed", this.userAgent);
     } else {
       completeMessage = mainPart;
     }
@@ -122,7 +139,7 @@ public class MailEncoder {
       for (MailAttachment a : message.getInlineAttachment()) {
         parts.add(new AttachmentPart(a));
       }
-      mainPart = new MultiPart(parts, "related");
+      mainPart = new MultiPart(parts, "related", this.userAgent);
     } else {
       mainPart = new TextPart(message.getHtml(), "html");
     }
@@ -140,7 +157,7 @@ public class MailEncoder {
 
     if (!message.isFixedHeaders()) {
       headers.set("MIME-Version", "1.0");
-      headers.set("Message-ID", Utils.generateMessageID(hostname));
+      headers.set("Message-ID", Utils.generateMessageID(hostname, userAgent));
       headers.set("Date", Utils.generateDate());
 
       if (message.getSubject() != null) {
