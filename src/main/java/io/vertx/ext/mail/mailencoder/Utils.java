@@ -92,12 +92,25 @@ class Utils {
 
   private static final AtomicInteger count = new AtomicInteger(0);
 
-  static String generateBoundary() {
-    return "=--vertx_mail_" + Thread.currentThread().hashCode() + "_" + System.currentTimeMillis() + "_" + count.getAndIncrement();
+  private static String nomaliseUserAgent(String userAgent) {
+    return userAgent.replace(" ", "_");
   }
 
-  static String generateMessageID(String hostname) {
-    return "<msg." + System.currentTimeMillis() + ".vertxmail." + count.getAndIncrement() + "@" + hostname + ">";
+  static String generateBoundary(String userAgent) {
+    return "=--" +
+      nomaliseUserAgent(userAgent) + "_" +
+      Thread.currentThread().hashCode() + "_" +
+      System.currentTimeMillis() + "_" +
+      count.getAndIncrement();
+  }
+
+  static String generateMessageID(String hostname, String userAgent) {
+    return "<msg." +
+      System.currentTimeMillis() + "." +
+      nomaliseUserAgent(userAgent) + "." +
+      count.getAndIncrement() +
+      "@" + hostname +
+      ">";
   }
 
   /*

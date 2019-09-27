@@ -22,6 +22,7 @@ import io.vertx.core.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Pattern;
 
 /**
  * represents the configuration of a mail service with mail server hostname,
@@ -42,6 +43,10 @@ public class MailConfig {
   private static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
   private static final boolean DEFAULT_KEEP_ALIVE = true;
   private static final boolean DEFAULT_DISABLE_ESMTP = false;
+  public static final String DEFAULT_USER_AGENT = "vertxmail";
+
+  // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
+  private static Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -59,6 +64,7 @@ public class MailConfig {
   private boolean keepAlive = DEFAULT_KEEP_ALIVE;
   private boolean allowRcptErrors = DEFAULT_ALLOW_RCPT_ERRORS;
   private boolean disableEsmtp = DEFAULT_DISABLE_ESMTP;
+  private String userAgent = DEFAULT_USER_AGENT;
 
   /**
    * construct a config object with default options
@@ -125,6 +131,7 @@ public class MailConfig {
     keepAlive = other.keepAlive;
     allowRcptErrors = other.allowRcptErrors;
     disableEsmtp = other.disableEsmtp;
+    userAgent = other.userAgent;
   }
 
   /**
@@ -161,6 +168,7 @@ public class MailConfig {
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
     keepAlive = config.getBoolean("keepAlive", DEFAULT_KEEP_ALIVE);
     allowRcptErrors = config.getBoolean("allowRcptErrors", DEFAULT_ALLOW_RCPT_ERRORS);
+    userAgent = config.getString("userAgent", DEFAULT_USER_AGENT);
   }
 
   /**
@@ -536,6 +544,41 @@ public class MailConfig {
   }
 
   /**
+   * Gets the Mail User Agent(MUA) name that will be used to generate boundary and message id.
+   *
+   * @return the Mail User Agent(MUA) name used to generate boundary and message id
+   */
+  public String getUserAgent() {
+    return userAgent;
+  }
+
+  /**
+   * Sets the Mail User Agent(MUA) name.
+   *
+   *<p>
+   * It is used to generate the boundary in case of MultiPart email and the Message-ID.
+   *
+   * If <code>null</code> is set, DEFAULT_USER_AGENT is used.
+   *</p>
+   *
+   * @param userAgent the Mail User Agent(MUA) name used to generate boundary and message id
+   *                  length of userAgent must be smaller than 40 so that the generated boundary
+   *                  has no longer 70 characters.
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setUserAgent(String userAgent) {
+    this.userAgent = userAgent;
+    if (this.userAgent == null) this.userAgent = DEFAULT_USER_AGENT;
+    if (this.userAgent.length() > 40) {
+      throw new IllegalArgumentException("Length of Mail User Agent should be less than 40");
+    }
+    if (!A_TEXT_PATTERN.matcher(this.userAgent).matches()) {
+      throw new IllegalArgumentException("Not a valid User Agent name");
+    }
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -586,13 +629,16 @@ public class MailConfig {
     if (disableEsmtp) {
       json.put("disableEsmtp", true);
     }
+    if (userAgent != null) {
+      json.put("userAgent", userAgent);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp, userAgent);
   }
 
   /*
