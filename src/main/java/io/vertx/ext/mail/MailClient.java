@@ -18,9 +18,7 @@ package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.ext.mail.impl.MailClientImpl;
 
 import java.util.UUID;
@@ -84,6 +82,16 @@ public interface MailClient {
    */
   @Fluent
   MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler);
+
+  /**
+   * Same as {@link #sendMail(MailMessage, Handler)} but returning a Future.
+   * {@inheritDoc}
+   */
+  default Future<MailResult> sendMail(MailMessage email) {
+    final Promise<MailResult> promise = Promise.promise();
+    sendMail(email, promise);
+    return promise.future();
+  }
 
   /**
    * close the MailClient
