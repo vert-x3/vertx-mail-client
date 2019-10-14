@@ -21,6 +21,7 @@ import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
 
 import io.vertx.ext.mail.impl.MailAttachmentImpl;
 
@@ -73,6 +74,41 @@ public interface MailAttachment {
    */
   @Fluent
   MailAttachment setData(Buffer data);
+
+  /**
+   * Gets the data stream.
+   *
+   * @return the data stream
+   */
+  ReadStream<Buffer> getStream();
+
+  /**
+   * Sets the data stream.
+   *
+   * @param stream data stream to be used at attachment
+   * @return this to be able to use it fluently
+   */
+  @Fluent
+  MailAttachment setStream(ReadStream<Buffer> stream);
+
+  /**
+   * Gets the size of the attachment.
+   *
+   * @return the size of the attachment
+   */
+  int getSize();
+
+  /**
+   * Sets the size of the attachment.
+   *<p>
+   * It is needed when using ReadStream for the MailAttachement.
+   *</p>
+   *
+   * @param size the size of the attachment
+   * @return this to be able to use it fluently
+   */
+  @Fluent
+  MailAttachment setSize(int size);
 
   /**
    * get the name

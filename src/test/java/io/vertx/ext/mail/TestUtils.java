@@ -19,10 +19,7 @@
  */
 package io.vertx.ext.mail;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -67,6 +64,17 @@ public class TestUtils {
       string.append((char) ch);
     }
     return string.toString();
+  }
+
+  // this method can be deprecated after JDK9+ which has InputStream.readAllBytes()
+  public static byte[] inputStreamToBytes(final InputStream inputStream) throws IOException {
+    ByteArrayOutputStream bufferedArray = new ByteArrayOutputStream();
+    int nRead;
+    byte[] buffer = new byte[512];
+    while ((nRead = inputStream.read(buffer, 0, buffer.length)) != -1) {
+      bufferedArray.write(buffer, 0, nRead);
+    }
+    return bufferedArray.toByteArray();
   }
 
 }

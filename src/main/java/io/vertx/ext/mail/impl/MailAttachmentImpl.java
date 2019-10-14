@@ -20,6 +20,7 @@ import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mail.MailAttachment;
 
 import java.util.Arrays;
@@ -33,6 +34,8 @@ import java.util.Objects;
  */
 public class MailAttachmentImpl implements MailAttachment {
 
+  private ReadStream<Buffer> stream;
+  private int size = -1;
   private Buffer data;
   private String name;
   private String contentType;
@@ -63,6 +66,8 @@ public class MailAttachmentImpl implements MailAttachment {
     this.description = other.description;
     this.contentId = other.contentId;
     this.headers = other.headers == null ? null : new CaseInsensitiveHeaders().addAll(other.headers);
+    this.size = other.size;
+    this.stream = other.stream;
   }
 
   /**
@@ -82,6 +87,32 @@ public class MailAttachmentImpl implements MailAttachment {
     if (headers != null) {
       this.headers = Utils.jsonToMultiMap(headers);
     }
+    this.size = json.getInteger("size", -1);
+  }
+
+  @Override
+  public ReadStream<Buffer> getStream() {
+    return this.stream;
+  }
+
+  @Override
+  public MailAttachment setStream(ReadStream<Buffer> stream) {
+    this.stream = stream;
+    return this;
+  }
+
+  @Override
+  public int getSize() {
+    return this.size;
+  }
+
+  @Override
+  public MailAttachment setSize(int size) {
+    if (size < 0) {
+      throw new IllegalArgumentException("Size of the Attachment cannot be smaller than 0");
+    }
+    this.size = size;
+    return this;
   }
 
   @Override
@@ -186,11 +217,14 @@ public class MailAttachmentImpl implements MailAttachment {
     if (headers != null) {
       json.put("headers", Utils.multiMapToJson(headers));
     }
+    if (this.size >= 0) {
+      json.put("size", this.size);
+    }
     return json;
   }
 
   private List<Object> getList() {
-    return Arrays.asList(data, name, disposition, description, contentId, headers);
+    return Arrays.asList(data, name, disposition, description, contentId, headers, size);
   }
 
   @Override

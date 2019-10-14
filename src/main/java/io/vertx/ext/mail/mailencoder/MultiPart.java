@@ -22,26 +22,57 @@ import java.util.List;
 
 class MultiPart extends EncodedPart {
 
-  public MultiPart(List<EncodedPart> parts, String mode, String userAgent) {
+  private final List<EncodedPart> parts;
+  private final String boundary;
 
-    String boundary = Utils.generateBoundary(userAgent);
+  public MultiPart(List<EncodedPart> parts, String mode, String userAgent) {
+    this.parts = parts;
+    this.boundary = Utils.generateBoundary(userAgent);
 
     headers = new CaseInsensitiveHeaders();
     headers.set("Content-Type", "multipart/" + mode + "; boundary=\"" + boundary + "\"");
 
-    StringBuilder sb = new StringBuilder();
+  }
 
-    for (EncodedPart part : parts) {
-      sb.append("--");
-      sb.append(boundary);
-      sb.append('\n');
-      sb.append(part.asString());
-      sb.append("\n\n");
+  @Override
+  String asString() {
+    return partAsString(this);
+  }
+
+  private String partAsString(EncodedPart part) {
+    StringBuilder sb = new StringBuilder(part.headers().toString());
+    sb.append("\n");
+    if (part.parts() != null) {
+      for(EncodedPart thePart: part.parts()) {
+        sb.append("--");
+        sb.append(part.boundary());
+        sb.append("\n");
+        sb.append(partAsString(thePart));
+        sb.append("\n\n");
+      }
+    } else {
+      sb.append(part.body());
     }
-    sb.append("--");
-    sb.append(boundary);
-    sb.append("--");
-    part = sb.toString();
+    return sb.toString();
+  }
+
+  @Override
+  public int size() {
+    int size = 0;
+    for (EncodedPart part: parts) {
+      size += part.size();
+    }
+    return size;
+  }
+
+  @Override
+  public List<EncodedPart> parts() {
+    return this.parts;
+  }
+
+  @Override
+  public String boundary() {
+    return this.boundary;
   }
 
 }

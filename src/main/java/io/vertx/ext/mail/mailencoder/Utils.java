@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class Utils {
+public class Utils {
 
   private Utils() {
   }
@@ -239,7 +239,7 @@ class Utils {
    * base64 with lf line terminators, the crlf will be added in the write operation
    * in DATA
    */
-  static String base64(byte[] bytes) {
+  public static String base64(byte[] bytes) {
     return Base64.getMimeEncoder(76, lf).encodeToString(bytes);
   }
 
