@@ -16,11 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.codegen.annotations.Nullable;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
@@ -31,13 +27,10 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
 import io.vertx.ext.mail.mailencoder.EncodedPart;
-import io.vertx.ext.mail.mailencoder.MailEncoder;
-import io.vertx.ext.mail.mailencoder.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 class SMTPSendMail {
@@ -52,15 +45,15 @@ class SMTPSendMail {
   private final EncodedPart encodedPart;
   private final AtomicLong written = new AtomicLong();
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, String hostname, Handler<AsyncResult<MailResult>> resultHandler) {
+  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config,
+               EncodedPart encodedPart, String messageId, Handler<AsyncResult<MailResult>> resultHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
     this.resultHandler = resultHandler;
     this.mailResult = new MailResult();
-    final MailEncoder encoder = new MailEncoder(email, hostname);
-    this.encodedPart = encoder.encodeMail();
-    this.mailResult.setMessageID(encoder.getMessageID());
+    this.encodedPart = encodedPart;
+    this.mailResult.setMessageID(messageId);
   }
 
   void start() {
@@ -223,7 +216,7 @@ class SMTPSendMail {
 
   private void sendMaildata(Promise<Void> promise) {
     final EncodedPart part = this.encodedPart;
-    sendMailHeaders(part.headers().entries(), 0).setHandler(v -> {
+    sendMailHeaders(part.headers().entries()).setHandler(v -> {
       if (v.succeeded()) {
         if (isMultiPart(part)) {
           sendMultiPart(part, 0, promise);
@@ -243,7 +236,7 @@ class SMTPSendMail {
 
       Promise<Void> boundaryStartPromise = Promise.promise();
       boundaryStartPromise.future()
-        .compose(v -> sendMailHeaders(thePart.headers().entries(), 0)).setHandler(v -> {
+        .compose(v -> sendMailHeaders(thePart.headers().entries())).setHandler(v -> {
         if (v.succeeded()) {
           Promise<Void> nextPromise = Promise.promise();
           nextPromise.future().setHandler(vv -> {
@@ -277,9 +270,9 @@ class SMTPSendMail {
     return part.parts() != null && part.parts().size() > 0;
   }
 
-  private Future<Void> sendMailHeaders(List<Map.Entry<String, String>> headers, int i) {
+  private Future<Void> sendMailHeaders(List<Map.Entry<String, String>> headers) {
     Promise<Void> promise = Promise.promise();
-    sendMailHeaders(headers, i, promise);
+    sendMailHeaders(headers, 0, promise);
     return promise.future();
   }
 
@@ -324,93 +317,13 @@ class SMTPSendMail {
     if (part.body() != null) {
       // send body string line by line
       sendBodyLineByLine(part.body().split("\n"), 0, promise);
-    } else if (part.bodyStream() != null) {
-      // send attachment ReadStream as Base64 encoding
-      BodyReadStream bodyReadStream = new BodyReadStream(part.bodyStream());
-      bodyReadStream.pipe().endOnComplete(false).to(connection.getSocket(), promise);
     } else {
-      promise.fail(new IllegalStateException("No mail body and stream found"));
-    }
-  }
-
-  private Handler<Void> handlerInContext(Handler<Void> handler) {
-    return vv -> connection.getContext().runOnContext(handler);
-  }
-
-  // what we need: strings line by line with CRLF as line terminator
-  private class BodyReadStream implements ReadStream<Buffer> {
-
-    private final ReadStream<Buffer> stream;
-
-    // 57 / 3 * 4 = 76, plus CRLF is 78, which is the email line length limit.
-    // see: https://tools.ietf.org/html/rfc5322#section-2.1.1
-    private final int size = 57;
-    private Buffer streamBuffer;
-    private Handler<Buffer> handler;
-
-    private BodyReadStream(ReadStream<Buffer> stream) {
-      Objects.requireNonNull(stream, "ReadStream cannot be null");
-      this.stream = stream;
-      this.streamBuffer = Buffer.buffer();
-    }
-
-    @Override
-    public BodyReadStream exceptionHandler(Handler<Throwable> handler) {
-      if (handler != null) {
-        stream.exceptionHandler(handler);
+      ReadStream<Buffer> attachBodyStream = part.bodyStream(connection.getContext());
+      if (attachBodyStream != null) {
+        attachBodyStream.pipe().endOnComplete(false).to(connection.getSocket(), promise);
+      } else {
+        promise.fail(new IllegalStateException("No mail body and stream found"));
       }
-      return this;
-    }
-
-    @Override
-    public BodyReadStream handler(@Nullable Handler<Buffer> handler) {
-      if (handler == null) {
-        return this;
-      }
-      this.handler = handler;
-      stream.handler(b -> connection.getContext().runOnContext(v -> {
-        Buffer buffer = streamBuffer.appendBuffer(b);
-        Buffer bufferToSent = Buffer.buffer();
-        int start = 0;
-        while(start + size < buffer.length()) {
-          final String theLine = Utils.base64(buffer.getBytes(start, start + size));
-          bufferToSent.appendBuffer(Buffer.buffer(theLine + "\r\n"));
-          start += size;
-        }
-        streamBuffer = buffer.getBuffer(start, buffer.length());
-        handler.handle(bufferToSent);
-      }));
-      return this;
-    }
-
-    @Override
-    public BodyReadStream pause() {
-      stream.pause();
-      return this;
-    }
-
-    @Override
-    public BodyReadStream resume() {
-      stream.resume();
-      return this;
-    }
-
-    @Override
-    public BodyReadStream fetch(long amount) {
-      stream.fetch(amount);
-      return this;
-    }
-
-    @Override
-    public BodyReadStream endHandler(@Nullable Handler<Void> endHandler) {
-      stream.endHandler(handlerInContext(v -> {
-        if (streamBuffer.length() > 0 && this.handler != null) {
-          String theLine = Utils.base64(streamBuffer.getBytes());
-          this.handler.handle(Buffer.buffer(theLine + "\r\n"));
-        }
-        endHandler.handle(null);
-      }));
-      return this;
     }
   }
 

@@ -29,7 +29,7 @@ public class Utils {
   private Utils() {
   }
 
-  static String encodeQP(String text) {
+  public static String encodeQP(String text) {
     byte[] utf8 = text.getBytes(StandardCharsets.UTF_8);
     StringBuilder sb = new StringBuilder();
 

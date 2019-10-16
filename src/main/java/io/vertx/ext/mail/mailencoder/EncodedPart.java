@@ -16,12 +16,18 @@
 
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.Context;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.streams.ReadStream;
 
 import java.util.List;
 
+/**
+ * This is implementation detail class. It is not intended to be used outside of this mail client.
+ *
+ * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
+ */
 public abstract class EncodedPart {
   MultiMap headers;
   String part;
@@ -47,7 +53,11 @@ public abstract class EncodedPart {
     return asString().length();
   }
 
-  public ReadStream<Buffer> bodyStream() {
+  public ReadStream<Buffer> bodyStream(Context context) {
+    return null;
+  }
+
+  public ReadStream<Buffer> dkimBodyStream(Context context) {
     return null;
   }
 

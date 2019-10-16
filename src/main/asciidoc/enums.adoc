@@ -1,0 +1,36 @@
+= Enums
+
+[[DKIMSignAlgorithm]]
+== DKIMSignAlgorithm
+
+++++
+
+ Signing Algorithm specified by DKIM spec.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[RSA_SHA1]]`RSA_SHA1`|-
+|[[RSA_SHA256]]`RSA_SHA256`|-
+|===
+
+[[MessageCanonic]]
+== MessageCanonic
+
+++++
+
+ Message canonicalization for DKIM.
+++++
+'''
+
+[cols=">25%,75%"]
+[frame="topbot"]
+|===
+^|Name | Description
+|[[SIMPLE]]`SIMPLE`|-
+|[[RELAXED]]`RELAXED`|-
+|===
+

@@ -112,6 +112,19 @@
       <version>1.2.17</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.apache.james.jdkim</groupId>
+      <artifactId>apache-jdkim-library</artifactId>
+      <version>0.2</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.james.jdkim</groupId>
+      <artifactId>apache-jdkim-library</artifactId>
+      <version>0.2</version>
+      <classifier>tests</classifier>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>

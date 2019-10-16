@@ -19,11 +19,7 @@ package examples;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.docgen.Source;
-import io.vertx.ext.mail.MailAttachment;
-import io.vertx.ext.mail.MailClient;
-import io.vertx.ext.mail.MailConfig;
-import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.StartTLSOptions;
+import io.vertx.ext.mail.*;
 
 /**
  * code chunks for the adoc documentation
@@ -78,6 +74,16 @@ public class MailExamples {
     attachment.setContentId("<image1@example.com>");
 
     message.setInlineAttachment(attachment);
+  }
+
+  public void createDKIMMailClient(Vertx vertx) {
+    DKIMSignOptions dkimSignOptions = new DKIMSignOptions();
+    dkimSignOptions.setPrivateKey("PKCS8 Private Key Base64 String");
+    dkimSignOptions.setAuid("identifier@example.com");
+    dkimSignOptions.setSelector("selector");
+    dkimSignOptions.setSdid("example.com");
+    MailConfig config = new MailConfig().setDKIMSignOption(dkimSignOptions).setEnableDKIM(true);
+    MailClient mailClient = MailClient.createShared(vertx, config);
   }
 
   public void sendMail(MailMessage message, MailClient mailClient) {

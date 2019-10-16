@@ -25,6 +25,14 @@ import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
+import io.vertx.ext.mail.impl.dkim.DKIMSigner;
+import io.vertx.ext.mail.mailencoder.EncodedPart;
+import io.vertx.ext.mail.mailencoder.MailEncoder;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * MailClient implementation for sending mails inside the local JVM
@@ -47,11 +55,20 @@ public class MailClientImpl implements MailClient {
 
   private volatile boolean closed = false;
 
+  // DKIMSigners may be initialized in the constructor to reuse on each send.
+  // the constructor may throw IllegalStateException because of wrong DKIM configuration.
+  private final List<DKIMSigner> dkimSigners;
+
   public MailClientImpl(Vertx vertx, MailConfig config, String poolName) {
     this.vertx = vertx;
     this.config = config;
     this.holder = lookupHolder(poolName, config);
     this.connectionPool = holder.pool();
+    if (config != null && config.isEnableDKIM() && config.getDKIMSignOptions() != null) {
+      dkimSigners = config.getDKIMSignOptions().stream().map(ops -> new DKIMSigner(ops, vertx)).collect(Collectors.toList());
+    } else {
+      dkimSigners = Collections.emptyList();
+    }
   }
 
   @Override
@@ -109,16 +126,48 @@ public class MailClientImpl implements MailClient {
     });
   }
 
+  private Future<Void> dkimFuture(Context context, EncodedPart encodedPart) {
+    List<Future> dkimFutures = new ArrayList<>();
+    // run dkim sign, and add email header after that.
+    dkimSigners.forEach(dkim -> dkimFutures.add(dkim.signEmail(context, encodedPart)));
+    return CompositeFuture.all(dkimFutures).map(f -> {
+      List<String> dkimHeaders = dkimFutures.stream().map(fr -> fr.result().toString()).collect(Collectors.toList());
+      encodedPart.headers().add(DKIMSigner.DKIM_SIGNATURE_HEADER, dkimHeaders);
+      return null;
+    });
+  }
+
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
       Context context) {
-    new SMTPSendMail(conn, email, config, hostname, result -> {
+    final Handler<AsyncResult<MailResult>> sentResultHandler = result -> {
       if (result.succeeded()) {
         conn.returnToPool();
       } else {
         conn.setBroken();
       }
       returnResult(result, resultHandler, context);
-    }).start();
+    };
+    try {
+      final MailEncoder encoder = new MailEncoder(email, hostname);
+      final EncodedPart encodedPart = encoder.encodeMail();
+      final String messageId = encoder.getMessageID();
+
+      final SMTPSendMail sendMail = new SMTPSendMail(conn, email, config, encodedPart, messageId, sentResultHandler);
+      if (dkimSigners.isEmpty()) {
+        sendMail.start();
+      } else {
+        // generate the DKIM header before start
+        dkimFuture(context, encodedPart).setHandler(dkim -> context.runOnContext(h -> {
+          if (dkim.succeeded()) {
+            sendMail.start();
+          } else {
+            sentResultHandler.handle(Future.failedFuture(dkim.cause()));
+          }
+        }));
+      }
+    } catch (Exception e) {
+      handleError(e, sentResultHandler, context);
+    }
   }
 
   // do some validation before we open the connection
