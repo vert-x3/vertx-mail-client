@@ -17,16 +17,13 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.net.NetClientOptions;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * represents the configuration of a mail service with mail server hostname,
@@ -48,6 +45,8 @@ public class MailConfig {
   private static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
   private static final boolean DEFAULT_KEEP_ALIVE = true;
   private static final boolean DEFAULT_DISABLE_ESMTP = false;
+  private static final boolean DEFAULT_ENABLE_DKIM = false;
+
   public static final String DEFAULT_USER_AGENT = "vertxmail";
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
@@ -71,6 +70,8 @@ public class MailConfig {
   private boolean allowRcptErrors = DEFAULT_ALLOW_RCPT_ERRORS;
   private boolean disableEsmtp = DEFAULT_DISABLE_ESMTP;
   private String userAgent = DEFAULT_USER_AGENT;
+  private boolean enableDKIM = DEFAULT_ENABLE_DKIM;
+  private List<DKIMSignOptions> dkimSignOptions;
 
   /**
    * construct a config object with default options
@@ -138,6 +139,10 @@ public class MailConfig {
     allowRcptErrors = other.allowRcptErrors;
     disableEsmtp = other.disableEsmtp;
     userAgent = other.userAgent;
+    enableDKIM = other.enableDKIM;
+    if (other.dkimSignOptions != null && !other.dkimSignOptions.isEmpty()) {
+      dkimSignOptions = other.dkimSignOptions.stream().map(DKIMSignOptions::new).collect(Collectors.toList());
+    }
   }
 
   /**
@@ -175,6 +180,12 @@ public class MailConfig {
     keepAlive = config.getBoolean("keepAlive", DEFAULT_KEEP_ALIVE);
     allowRcptErrors = config.getBoolean("allowRcptErrors", DEFAULT_ALLOW_RCPT_ERRORS);
     userAgent = config.getString("userAgent", DEFAULT_USER_AGENT);
+    enableDKIM = config.getBoolean("enableDKIM", DEFAULT_ENABLE_DKIM);
+    JsonArray dkimOps = config.getJsonArray("dkimSignOptions");
+    if (dkimOps != null) {
+      dkimSignOptions = new ArrayList<>();
+      dkimOps.stream().map(dkim -> new DKIMSignOptions((JsonObject)dkim)).forEach(dkimSignOptions::add);
+    }
   }
 
   /**
@@ -604,6 +615,88 @@ public class MailConfig {
   }
 
   /**
+   * Is DKIM enabled, defaults to false.
+   *
+   * @return enableDKIM
+   */
+  public boolean isEnableDKIM() {
+    return enableDKIM;
+  }
+
+  /**
+   * Sets true to enable DKIM Signatures, sets false to disable it.
+   *
+   * <p>
+   *     This is used most for temporary disable DKIM without removing DKIM opations from current config.
+   * </p>
+   *
+   * @param enableDKIM if DKIM Singature should be enabled
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setEnableDKIM(boolean enableDKIM) {
+    this.enableDKIM = enableDKIM;
+    return this;
+  }
+
+  /**
+   * Gets the DKIM options.
+   *
+   * @return dkimSignOptions
+   */
+  public List<DKIMSignOptions> getDKIMSignOptions() {
+    return dkimSignOptions;
+  }
+
+  /**
+   * Adds a DKIMSignOptions.
+   *
+   * @param dkimSignOptions the DKIMSignOptions
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig addDKIMSignOption(DKIMSignOptions dkimSignOptions) {
+    Objects.requireNonNull(dkimSignOptions);
+    if (this.dkimSignOptions == null) {
+      this.dkimSignOptions = new ArrayList<>();
+    }
+    if (!this.dkimSignOptions.contains(dkimSignOptions)) {
+      this.dkimSignOptions.add(dkimSignOptions);
+    }
+    return this;
+  }
+
+  /**
+   * Sets DKIMSignOptions.
+   *
+   * @param dkimSignOptions the DKIM options
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setDKIMSignOptions(List<DKIMSignOptions> dkimSignOptions) {
+    this.dkimSignOptions = dkimSignOptions;
+    return this;
+  }
+
+  /**
+   * Sets one DKIMSignOptions for convenient.
+   *
+   * @param dkimSignOptions the DKIM options
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setDKIMSignOption(DKIMSignOptions dkimSignOptions) {
+    Objects.requireNonNull(dkimSignOptions);
+    this.dkimSignOptions = Collections.singletonList(dkimSignOptions);
+    return this;
+  }
+
+  /**
+   * Gets the DKIM options.
+   *
+   * @return dkimSignOptions of the first one or null if nothing specified yet.
+   */
+  public DKIMSignOptions getDKIMSignOption() {
+    return dkimSignOptions == null || dkimSignOptions.isEmpty() ? null : dkimSignOptions.get(0);
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -657,13 +750,22 @@ public class MailConfig {
     if (userAgent != null) {
       json.put("userAgent", userAgent);
     }
+    if (enableDKIM) {
+      json.put("enableDKIM", true);
+    }
+    if (dkimSignOptions != null) {
+      JsonArray array = new JsonArray();
+      dkimSignOptions.forEach(array::add);
+      json.put("dkimSignOptions", array);
+    }
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp, userAgent);
+        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp,
+        userAgent, enableDKIM, dkimSignOptions);
   }
 
   /*
