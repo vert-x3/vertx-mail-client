@@ -16,12 +16,26 @@
 
 package io.vertx.ext.mail.mailencoder;
 
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mail.MailAttachment;
 
 class AttachmentPart extends EncodedPart {
+  private static final Logger log = LoggerFactory.getLogger(AttachmentPart.class);
+
+  private final MailAttachment attachment;
 
   public AttachmentPart(MailAttachment attachment) {
+    this.attachment = attachment;
+    if (this.attachment.getData() == null && this.attachment.getStream() == null) {
+      throw new IllegalArgumentException("Either data or stream of the attachment cannot be null");
+    }
+    if (this.attachment.getStream() != null && this.attachment.getSize() < 0) {
+      log.warn("Size of the attachment should be specified when using stream");
+    }
     headers = new CaseInsensitiveHeaders();
     String name = attachment.getName();
     String contentType;
@@ -58,7 +72,22 @@ class AttachmentPart extends EncodedPart {
       headers.addAll(attachment.getHeaders());
     }
 
-    part = Utils.base64(attachment.getData().getBytes());
+    if (attachment.getData() != null) {
+      part = Utils.base64(attachment.getData().getBytes());
+    }
+  }
+
+  @Override
+  public ReadStream<Buffer> bodyStream() {
+    return this.attachment.getStream();
+  }
+
+  @Override
+  public int size() {
+    if (attachment.getData() == null) {
+      return attachment.getSize() < 0 ? 0 : (attachment.getSize() / 3) * 4;
+    }
+    return super.size();
   }
 
 }

@@ -70,6 +70,10 @@ public class MailEncoder {
    * @return the encoded message
    */
   public String encode() {
+    return encodeMail().asString();
+  }
+
+  public EncodedPart encodeMail() {
     EncodedPart completeMessage;
     EncodedPart mainPart;
 
@@ -88,7 +92,7 @@ public class MailEncoder {
     }
 
     List<MailAttachment> attachments = message.getAttachment();
-    if (attachments != null) {
+    if (attachments != null && attachments.size() > 0) {
       List<EncodedPart> parts = new ArrayList<>();
       if (mainPart != null) {
         parts.add(mainPart);
@@ -108,7 +112,7 @@ public class MailEncoder {
     }
     completeMessage.headers = createHeaders(completeMessage.headers);
 
-    return completeMessage.asString();
+    return completeMessage;
   }
 
   /**

@@ -16,20 +16,29 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.MailResult;
 import io.vertx.ext.mail.mailencoder.EmailAddress;
+import io.vertx.ext.mail.mailencoder.EncodedPart;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
+import io.vertx.ext.mail.mailencoder.Utils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.atomic.AtomicLong;
 
 class SMTPSendMail {
 
@@ -40,17 +49,19 @@ class SMTPSendMail {
   private final MailConfig config;
   private final Handler<AsyncResult<MailResult>> resultHandler;
   private final MailResult mailResult;
-  private final String hostname;
 
-  private String mailMessage;
+  private final EncodedPart encodedPart;
+  private final AtomicLong written = new AtomicLong();
 
   SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config, String hostname, Handler<AsyncResult<MailResult>> resultHandler) {
     this.connection = connection;
     this.email = email;
     this.config = config;
     this.resultHandler = resultHandler;
-    mailResult = new MailResult();
-    this.hostname = hostname;
+    this.mailResult = new MailResult();
+    final MailEncoder encoder = new MailEncoder(email, hostname);
+    this.encodedPart = encoder.encodeMail();
+    this.mailResult.setMessageID(encoder.getMessageID());
   }
 
   void start() {
@@ -71,14 +82,9 @@ class SMTPSendMail {
    */
   private boolean checkSize() {
     final int size = connection.getCapa().getSize();
-    if (size > 0) {
-      createMailMessage();
-      if (mailMessage.length() > size) {
-        handleError("message exceeds allowed size limit");
-        return false;
-      } else {
-        return true;
-      }
+    if (size > 0 && encodedPart.size() > size) {
+      handleError("message exceeds allowed size limit");
+      return false;
     } else {
       return true;
     }
@@ -96,12 +102,16 @@ class SMTPSendMail {
       EmailAddress from = new EmailAddress(fromAddr);
       String sizeParameter;
       if (connection.getCapa().getSize() > 0) {
-        sizeParameter = " SIZE=" + mailMessage.length();
+        sizeParameter = " SIZE=" + encodedPart.size();
       } else {
         sizeParameter = "";
       }
-      connection.write("MAIL FROM:<" + from.getEmail() + ">" + sizeParameter, message -> {
-        log.debug("MAIL FROM result: " + message);
+      final String line = "MAIL FROM:<" + from.getEmail() + ">" + sizeParameter;
+      connection.write(line, message -> {
+        if (log.isDebugEnabled()) {
+          written.getAndAdd(line.length());
+          log.debug("MAIL FROM result: " + message);
+        }
         if (StatusCode.isStatusOk(message)) {
           rcptToCmd();
         } else {
@@ -132,7 +142,11 @@ class SMTPSendMail {
   private void rcptToCmd(List<String> recipientAddrs, int i) {
     try {
       EmailAddress toAddr = new EmailAddress(recipientAddrs.get(i));
-      connection.write("RCPT TO:<" + toAddr.getEmail() + ">", message -> {
+      final String line = "RCPT TO:<" + toAddr.getEmail() + ">";
+      connection.write(line, message -> {
+        if (log.isDebugEnabled()) {
+          written.getAndAdd(line.length());
+        }
         if (StatusCode.isStatusOk(message)) {
           log.debug("RCPT TO result: " + message);
           mailResult.getRecipients().add(toAddr.getEmail());
@@ -176,9 +190,14 @@ class SMTPSendMail {
 
   private void dataCmd() {
     connection.write("DATA", message -> {
-      log.debug("DATA result: " + message);
+      if (log.isDebugEnabled()) {
+        written.getAndAdd(4);
+        log.debug("DATA result: " + message);
+      }
       if (StatusCode.isStatusOk(message)) {
-        sendMaildata();
+        Promise<Void> promise = Promise.promise();
+        promise.future().setHandler(endDotLineHandler());
+        sendMaildata(promise);
       } else {
         log.warn("DATA command not accepted: " + message);
         handleError("DATA command not accepted: " + message);
@@ -186,59 +205,219 @@ class SMTPSendMail {
     });
   }
 
-  private void sendMaildata() {
-    // create the message here if it hasn't been created
-    // for the size check above
-    createMailMessage();
-
-    sendLineByLine(0, mailMessage.length());
+  private Handler<AsyncResult<Void>> endDotLineHandler() {
+    return r -> {
+      if (r.succeeded()) {
+        connection.getContext().runOnContext(v -> connection.write(".", msg -> {
+          if (StatusCode.isStatusOk(msg)) {
+            resultHandler.handle(Future.succeededFuture(mailResult));
+          } else {
+            log.warn("sending data failed: " + msg);
+            handleError("sending data failed: " + msg);
+          }
+        }));
+      } else {
+        handleError(r.cause());
+      }
+    };
   }
 
-  private void sendLineByLine(int index, int length) {
-    while (index < length) {
-      int nextIndex = mailMessage.indexOf('\n', index);
-      String line;
-      if (nextIndex == -1) {
-        line = mailMessage.substring(index);
-        nextIndex = length;
-      } else {
-        line = mailMessage.substring(index, nextIndex);
-        nextIndex++;
-      }
+  private void sendMaildata(Promise<Void> promise) {
+    final EncodedPart part = this.encodedPart;
+    if (isMultiPart(part)) {
+      Promise<Void> mailHeaderPromise = Promise.promise();
+      mailHeaderPromise.future().setHandler(v -> {
+        if (v.succeeded()) {
+          sendMultiPart(part, 0, promise);
+        } else {
+          promise.fail(v.cause());
+        }
+      });
+      sendMailHeaders(part.headers().entries(), 0, mailHeaderPromise);
+    } else {
+      sendRegularPart(part, promise);
+    }
+  }
+
+  private void sendMultiPart(EncodedPart multiPart, final int i, Promise<Void> promise) {
+    try {
+      final String boundaryStart = "--" + multiPart.boundary();
+      final EncodedPart thePart = multiPart.parts().get(i);
+
+      Promise<Void> boundaryStartPromise = Promise.promise();
+      boundaryStartPromise.future().setHandler(v -> {
+        if (v.succeeded()) {
+          Promise<Void> nextPromise = Promise.promise();
+          nextPromise.future().setHandler(vv -> {
+            if (vv.succeeded()) {
+              if (i == multiPart.parts().size() - 1) {
+                String boundaryEnd = boundaryStart + "--";
+                connection.writeLineWithDrainPromise(boundaryEnd, written.getAndAdd(boundaryEnd.length()) < 1000, promise);
+              } else {
+                sendMultiPart(multiPart, i + 1, promise);
+              }
+            } else {
+              promise.fail(vv.cause());
+            }
+          });
+          if (isMultiPart(thePart)) {
+            sendMultiPart(thePart, 0, nextPromise);
+          } else {
+            sendRegularPart(thePart, nextPromise);
+          }
+        } else {
+          promise.fail(v.cause());
+        }
+      });
+      connection.writeLineWithDrainPromise(boundaryStart, written.getAndAdd(boundaryStart.length()) < 1000, boundaryStartPromise);
+    } catch (Exception e) {
+      promise.fail(e);
+    }
+  }
+
+  private boolean isMultiPart(EncodedPart part) {
+    return part.parts() != null && part.parts().size() > 0;
+  }
+
+  private void sendMailHeaders(List<Map.Entry<String, String>> headers, int i, Promise<Void> promise) {
+    if (i < headers.size()) {
+      String entryString = headers.get(i).toString();
+      Promise<Void> next = Promise.promise();
+      next.future().setHandler(v -> {
+        if (v.succeeded()) {
+          sendMailHeaders(headers, i + 1, promise);
+        } else {
+          promise.fail(v.cause());
+        }
+      });
+      connection.writeLineWithDrainPromise(entryString, written.getAndAdd(entryString.length()) < 1000, next);
+    } else {
+      connection.writeLineWithDrainPromise("", written.get() < 1000, promise);
+    }
+  }
+
+  private void sendBodyLineByLine(String[] lines, int i, Promise<Void> promise) {
+    if (i < lines.length) {
+      String line = lines[i];
       if (line.startsWith(".")) {
         line = "." + line;
       }
-      final int nextIndexFinal = nextIndex;
-      final boolean mayLog = nextIndex < 1000;
-      if (connection.writeQueueFull()) {
-        connection.writeLineWithDrainHandler(line, mayLog, v -> sendLineByLine(nextIndexFinal, length));
-        // call to our handler will finish the whole message, we just return here
-        return;
-      } else {
-        connection.writeLine(line, mayLog);
-        index = nextIndex;
-      }
+      Promise<Void> writeLinePromise = Promise.promise();
+      connection.writeLineWithDrainPromise(line, written.getAndAdd(line.length()) < 1000, writeLinePromise);
+      writeLinePromise.future().setHandler(v -> {
+        if (v.succeeded()) {
+          sendBodyLineByLine(lines, i + 1, promise);
+        } else {
+          promise.fail(v.cause());
+        }
+      });
+    } else {
+      promise.complete();
     }
-    connection.write(".", message -> {
-      log.debug("maildata result: " + message);
-      if (StatusCode.isStatusOk(message)) {
-        resultHandler.handle(Future.succeededFuture(mailResult));
-      } else {
-        log.warn("sending data failed: " + message);
-        handleError("sending data failed: " + message);
-      }
-    });
   }
 
-  /**
-   * create message if it hasn't been already
-   */
-  private void createMailMessage() {
-    if (mailMessage == null) {
-      MailEncoder encoder = new MailEncoder(email, hostname);
-      mailMessage = encoder.encode();
-      mailResult.setMessageID(encoder.getMessageID());
+  private void sendRegularPart(EncodedPart part, Promise<Void> promise) {
+    Promise<Void> bodyPromise = Promise.promise();
+    bodyPromise.future().setHandler(v -> {
+      if (v.succeeded()) {
+        if (part.body() != null) {
+          // send body string line by line
+          sendBodyLineByLine(part.body().split("\n"), 0, promise);
+        } else if (part.bodyStream() != null) {
+          // send attachment ReadStream as Base64 encoding
+          BodyReadStream bodyReadStream = new BodyReadStream(part.bodyStream());
+          bodyReadStream.pipe().endOnComplete(false).to(connection.getSocket(), promise);
+        } else {
+          promise.fail(new IllegalStateException("No mail body and stream found"));
+        }
+      } else {
+        promise.fail(v.cause());
+      }
+    });
+    sendMailHeaders(part.headers().entries(), 0, bodyPromise);
+  }
+
+  private Handler<Void> handlerInContext(Handler<Void> handler) {
+    return vv -> connection.getContext().runOnContext(handler);
+  }
+
+  // what we need: strings line by line with CRLF as line terminator
+  private class BodyReadStream implements ReadStream<Buffer> {
+
+    private final ReadStream<Buffer> stream;
+
+    // 57 / 3 * 4 = 76, plus CRLF is 78, which is the email line length limit.
+    // see: https://tools.ietf.org/html/rfc5322#section-2.1.1
+    private final int size = 57;
+
+    private Buffer streamBuffer;
+    private Handler<Buffer> handler;
+
+    private BodyReadStream(ReadStream<Buffer> stream) {
+      Objects.requireNonNull(stream, "ReadStream cannot be null");
+      this.stream = stream;
+      this.streamBuffer = Buffer.buffer();
     }
+
+    @Override
+    public BodyReadStream exceptionHandler(Handler<Throwable> handler) {
+      if (handler != null) {
+        stream.exceptionHandler(handler);
+      }
+      return this;
+    }
+
+    @Override
+    public BodyReadStream handler(@Nullable Handler<Buffer> handler) {
+      if (handler == null) {
+        return this;
+      }
+      this.handler = handler;
+      stream.handler(b -> connection.getContext().runOnContext(v -> {
+        Buffer buffer = streamBuffer.appendBuffer(b);
+        Buffer bufferToSent = Buffer.buffer();
+        int start = 0;
+        while(start + size < buffer.length()) {
+          final String theLine = Utils.base64(buffer.getBytes(start, start + size));
+          bufferToSent.appendBuffer(Buffer.buffer(theLine + "\r\n"));
+          start += size;
+        }
+        streamBuffer = buffer.getBuffer(start, buffer.length());
+        handler.handle(bufferToSent);
+      }));
+      return this;
+    }
+
+    @Override
+    public BodyReadStream pause() {
+      stream.pause();
+      return this;
+    }
+
+    @Override
+    public BodyReadStream resume() {
+      stream.resume();
+      return this;
+    }
+
+    @Override
+    public BodyReadStream fetch(long amount) {
+      stream.fetch(amount);
+      return this;
+    }
+
+    @Override
+    public BodyReadStream endHandler(@Nullable Handler<Void> endHandler) {
+      stream.endHandler(handlerInContext(v -> {
+        if (streamBuffer.length() > 0 && this.handler != null) {
+          String theLine = Utils.base64(streamBuffer.getBytes());
+          this.handler.handle(Buffer.buffer(theLine + "\r\n"));
+        }
+        endHandler.handle(null);
+      }));
+      return this;
+    }
+
   }
 
 }

@@ -33,6 +33,12 @@ Add an header to this attachment.
 |[[name]]`@name`|`String`|+++
 set the name
 +++
+|[[size]]`@size`|`Number (int)`|+++
+Sets the size of the attachment.
+<p>
+     It is needed when using ReadStream for the MailAttachement.
+</p>
++++
 |===
 
 [[MailConfig]]

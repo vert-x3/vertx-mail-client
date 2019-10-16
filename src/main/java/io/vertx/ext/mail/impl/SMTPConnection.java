@@ -18,6 +18,7 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Context;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NoStackTraceThrowable;
@@ -139,7 +140,7 @@ class SMTPConnection {
   }
 
   // write single line not expecting a reply, using drain handler
-  void writeLineWithDrainHandler(String str, boolean mayLog, Handler<Void> handler) {
+  void writeLineWithDrainPromise(String str, boolean mayLog, Promise<Void> promise) {
     if (mayLog) {
       log.debug(str);
     }
@@ -147,17 +148,11 @@ class SMTPConnection {
       ns.drainHandler(v -> {
         // avoid getting confused by being called twice
         ns.drainHandler(null);
-        ns.write(str + "\r\n");
-        handler.handle(null);
+        ns.write(str + "\r\n", promise);
       });
     } else {
-      ns.write(str + "\r\n");
-      handler.handle(null);
+      ns.write(str + "\r\n", promise);
     }
-  }
-
-  boolean writeQueueFull() {
-    return ns.writeQueueFull();
   }
 
   private void handleError(String message) {
@@ -372,4 +367,14 @@ class SMTPConnection {
   Context getContext() {
     return context;
   }
+
+  /**
+   * Gets the underline NetSocket to the email server.
+   *
+   * @return the underline NetSocket
+   */
+  NetSocket getSocket() {
+    return ns;
+  }
+
 }
