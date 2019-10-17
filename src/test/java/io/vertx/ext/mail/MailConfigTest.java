@@ -19,6 +19,10 @@ package io.vertx.ext.mail;
 import io.vertx.core.json.JsonObject;
 import org.junit.Test;
 
+import java.util.Arrays;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import static org.junit.Assert.*;
 
 public class MailConfigTest {
@@ -184,6 +188,14 @@ public class MailConfigTest {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setSsl(true);
     assertTrue(mailConfig.isSsl());
+  }
+
+  @Test
+  public void testEnabledSecureTransportProtocols() {
+    Set<String> enabledProtocols = new LinkedHashSet<>(Arrays.asList("TLSv1"));
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setEnabledSecureTransportProtocols(enabledProtocols);
+    assertEquals(enabledProtocols, mailConfig.getEnabledSecureTransportProtocols());
   }
 
   @Test

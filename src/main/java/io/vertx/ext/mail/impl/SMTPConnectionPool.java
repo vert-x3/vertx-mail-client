@@ -56,7 +56,10 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
     prng = new PRNG(vertx);
-    NetClientOptions netClientOptions = new NetClientOptions().setSsl(config.isSsl()).setTrustAll(config.isTrustAll());
+    NetClientOptions netClientOptions = new NetClientOptions()
+      .setSsl(config.isSsl())
+      .setTrustAll(config.isTrustAll())
+      .setEnabledSecureTransportProtocols(config.getEnabledSecureTransportProtocols());
     if ((config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED) && !config.isTrustAll()) {
       // we can use HTTPS verification, which matches the requirements for SMTPS
       netClientOptions.setHostnameVerificationAlgorithm("HTTPS");
