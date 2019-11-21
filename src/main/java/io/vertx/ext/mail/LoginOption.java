@@ -16,6 +16,8 @@
 
 package io.vertx.ext.mail;
 
+import io.vertx.codegen.annotations.VertxGen;
+
 /**
  * possible options for a login into a SMTP server
  * <br>
@@ -31,6 +33,7 @@ package io.vertx.ext.mail;
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
+@VertxGen
 public enum LoginOption {
   DISABLED,
   NONE,
