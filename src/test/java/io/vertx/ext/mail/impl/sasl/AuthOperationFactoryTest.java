@@ -19,13 +19,14 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
+import io.vertx.ext.mail.MailConfig;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -34,28 +35,34 @@ public class AuthOperationFactoryTest {
 
   /**
    * Test method for
-   * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(java.lang.String, java.lang.String, java.util.Set)}
+   * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(java.lang.String, java.lang.String, java.lang.String)}
    * make sure that the default auth method works and is PLAIN
-   * @throws Exception
    */
   @Test
-  public final void testCreateAuth() throws Exception {
-    Set<String> allowedAuth = new HashSet<String>();
-    allowedAuth.add("PLAIN");
-    assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth("user", "pw", allowedAuth).getClass());
+  public final void testCreateAuth() {
+    assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth("user", "pw", "PLAIN").getClass());
+  }
+
+  @Test(expected = IllegalArgumentException.class)
+  public final void testAuthNotFound() {
+    assertNull(new AuthOperationFactory(null).createAuth("user", "pw", "ASDF"));
   }
 
   @Test
-  public final void testAuthNotFound() throws Exception {
-    Set<String> allowedAuth = new HashSet<String>();
-    allowedAuth.add("ASDF");
-    assertNull(new AuthOperationFactory(null).createAuth("user", "pw", allowedAuth));
+  public final void testCreateXOAUTH2Auth() {
+    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth("user", "token", "XOAUTH2").getClass());
   }
 
   @Test
-  public final void testCreateXOAUTH2Auth() throws Exception {
-    Set<String> allowedAuth = new HashSet<String>();
-    allowedAuth.add("XOAUTH2");
-    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth("user", "token", allowedAuth).getClass());
+  public void testSupportedAuths() {
+    //TODO intersection between supported and specified
+    AuthOperationFactory authOperationFactory = new AuthOperationFactory(null);
+    MailConfig mailConfig = new MailConfig();
+    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("XOAUTH2", "DIGEST-MD5", "CRAM-SHA256", "CRAM-SHA1", "CRAM-MD5", "LOGIN", "PLAIN"));
+
+    mailConfig.setAuthMethods("PLAIN LOGIN");
+    // pay attention on the order
+    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("LOGIN", "PLAIN"));
   }
+
 }
