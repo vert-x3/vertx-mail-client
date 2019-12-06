@@ -28,6 +28,7 @@ import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
+import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -45,6 +46,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
   private final NetClient netClient;
   private final MailConfig config;
   private final PRNG prng;
+  private final AuthOperationFactory authOperationFactory;
   private String hostname;
   private boolean closed = false;
   private int connCount;
@@ -55,7 +57,8 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     this.config = config;
     maxSockets = config.getMaxPoolSize();
     keepAlive = config.isKeepAlive();
-    prng = new PRNG(vertx);
+    this.prng = new PRNG(vertx);
+    this.authOperationFactory = new AuthOperationFactory(prng);
     NetClientOptions netClientOptions = new NetClientOptions()
       .setSsl(config.isSsl())
       .setTrustAll(config.isTrustAll())
@@ -70,6 +73,10 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
           .setPassword(config.getKeyStorePassword()));
     }
     netClient = vertx.createNetClient(netClientOptions);
+  }
+
+  AuthOperationFactory getAuthOperationFactory() {
+    return authOperationFactory;
   }
 
   void getConnection(String hostname, Handler<AsyncResult<SMTPConnection>> resultHandler) {
@@ -93,6 +100,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
       closed = true;
       closeFinishedHandler = finishedHandler;
       closeAllConnections();
+      this.prng.close();
     }
   }
 
@@ -233,7 +241,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
 
   private void createConnection(Handler<AsyncResult<SMTPConnection>> handler) {
     SMTPConnection conn = new SMTPConnection(netClient, this);
-    new SMTPStarter(conn, config, hostname, prng, result -> {
+    new SMTPStarter(conn, config, hostname, this.authOperationFactory, result -> {
       if (result.succeeded()) {
         handler.handle(Future.succeededFuture(conn));
       } else {

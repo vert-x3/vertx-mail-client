@@ -20,14 +20,13 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import io.vertx.ext.mail.impl.sasl.CryptUtils;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Handle the authentication flow
@@ -45,20 +44,21 @@ class SMTPAuthentication {
 
   private final AuthOperationFactory authOperationFactory;
 
-  public SMTPAuthentication(SMTPConnection connection, MailConfig config, PRNG prng, Handler<Void> finishedHandler,
+  SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, Handler<Void> finishedHandler,
                             Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
-    this.authOperationFactory = new AuthOperationFactory(prng);
+    this.authOperationFactory = authOperationFactory;
   }
 
   public void start() {
-    final boolean foundAllowedMethods = !intersectAllowedMethods().isEmpty();
+    List<String> auths = intersectAllowedMethods();
+    final boolean foundAllowedMethods = !auths.isEmpty();
     if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
       && foundAllowedMethods) {
-      authCmd();
+      authCmd(auths);
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
         if (!foundAllowedMethods) {
@@ -75,43 +75,50 @@ class SMTPAuthentication {
   /**
    * find the auth methods we can use
    *
-   * @return
+   * @return intersection between supported and allowed auth methods
    */
-  private Set<String> intersectAllowedMethods() {
-    final String authMethods = config.getAuthMethods();
-    Set<String> allowed;
-    if (authMethods == null || authMethods.isEmpty()) {
-      allowed = connection.getCapa().getCapaAuth();
-    } else {
-      allowed = Utils.parseCapaAuth(authMethods);
-      allowed.retainAll(connection.getCapa().getCapaAuth());
-    }
-    return allowed;
+  private List<String> intersectAllowedMethods() {
+    List<String> supported = this.authOperationFactory.supportedAuths(config);
+    supported.retainAll(connection.getCapa().getCapaAuth());
+    return supported;
   }
 
-  private void authCmd() {
+  private void authCmd(List<String> auths) {
     // if we have defined a choice of methods, only use these
     // this works for example to avoid plain text pw methods with
     // "CRAM-SHA1 CRAM-MD5"
-    AuthOperation authOperation;
+    String defaultAuth = this.authOperationFactory.getAuthMethod();
+    if (defaultAuth != null) {
+      if (log.isDebugEnabled()) {
+        log.debug("Using default auth method: " + defaultAuth);
+      }
+      authMethod(defaultAuth, error -> authChain(auths, 0));
+    } else {
+      authChain(auths, 0);
+    }
+  }
+
+  private void authChain(List<String> auths, int i) {
+    if (i < auths.size()) {
+      authMethod(auths.get(i), error -> authChain(auths, i + 1));
+    } else {
+      handleError("Failed to authenticate");
+    }
+  }
+
+  private void authMethod(String auth, Handler<Void> onError) {
+    AuthOperation authMethod;
     try {
-      authOperation = authOperationFactory.createAuth(config.getUsername(), config.getPassword(),
-          intersectAllowedMethods());
+      authMethod = authOperationFactory.createAuth(config.getUsername(), config.getPassword(), auth);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
       handleError(ex);
       return;
     }
-
-    if (authOperation != null) {
-      authCmdStep(authOperation, null);
-    } else {
-      log.warn("cannot find supported auth method");
-      handleError("cannot find supported auth method");
-    }
+    authCmdStep(authMethod, null, onError);
   }
 
-  private void authCmdStep(AuthOperation authMethod, String message) {
+  private void authCmdStep(AuthOperation authMethod, String message, Handler<Void> onError) {
     String nextLine;
     int blank;
     if (message == null) {
@@ -131,12 +138,14 @@ class SMTPAuthentication {
       log.debug("AUTH command result: " + message2);
       if (StatusCode.isStatusOk(message2)) {
         if (StatusCode.isStatusContinue(message2)) {
-          authCmdStep(authMethod, message2);
+          authCmdStep(authMethod, message2, onError);
         } else {
+          authOperationFactory.setAuthMethod(authMethod.getName());
           finished();
         }
       } else {
-        handleError("AUTH " + authMethod.getName() + " failed " + message2);
+        log.warn("AUTH " + authMethod.getName() + " failed " + message2);
+        onError.handle(null);
       }
     });
   }

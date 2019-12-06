@@ -60,7 +60,7 @@ class AuthXOAUTH2 extends AuthBaseClass {
           response.containsKey("schemes") &&
           response.containsKey("scope")) {
 
-          LOG.debug("XOAUTH2 Error Response: " + data);
+          LOG.warn("XOAUTH2 Error Response: " + data);
           // if there is a next step we're receiving an error
           // protocol expects a empty response
           return "";

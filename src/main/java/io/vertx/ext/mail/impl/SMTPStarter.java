@@ -21,8 +21,8 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 
 /**
  * this encapsulates open connection, initial dialogue and authentication
@@ -36,14 +36,14 @@ class SMTPStarter {
   private final SMTPConnection connection;
   private final String hostname;
   private final MailConfig config;
-  private final PRNG prng;
+  private final AuthOperationFactory authOperationFactory;
   private final Handler<AsyncResult<Void>> handler;
 
-  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, PRNG prng, Handler<AsyncResult<Void>> handler) {
+  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory, Handler<AsyncResult<Void>> handler) {
     this.connection = connection;
     this.hostname = hostname;
     this.config = config;
-    this.prng = prng;
+    this.authOperationFactory = authOperationFactory;
     this.handler = handler;
   }
 
@@ -59,7 +59,7 @@ class SMTPStarter {
 
   private void doAuthentication() {
     log.debug("SMTPAuthentication");
-    new SMTPAuthentication(connection, config, prng, v -> handler.handle(Future.succeededFuture(null)), this::handleError).start();
+    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture(null)), this::handleError).start();
   }
 
   private void handleError(Throwable throwable) {

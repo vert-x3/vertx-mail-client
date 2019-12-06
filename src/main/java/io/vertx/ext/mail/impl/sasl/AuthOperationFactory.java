@@ -17,8 +17,12 @@
 package io.vertx.ext.mail.impl.sasl;
 
 import io.vertx.ext.auth.PRNG;
+import io.vertx.ext.mail.MailConfig;
+import io.vertx.ext.mail.impl.Utils;
 
-import java.util.Set;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -32,37 +36,54 @@ public final class AuthOperationFactory {
     "CRAM-SHA256",
     "CRAM-SHA1",
     "CRAM-MD5",
-    "PLAIN",
-    "LOGIN"
+    "LOGIN",
+    "PLAIN"
   };
 
   private final PRNG prng;
+
+  private String authMethod;
 
   public AuthOperationFactory(PRNG prng) {
     this.prng = prng;
   }
 
-  public AuthOperation createAuth(String username, String password, Set<String> allowedMethods) {
-    for (String algorithm : ALGORITHMS) {
-      if (allowedMethods.contains(algorithm)) {
-        switch (algorithm) {
-          case "XOAUTH2":
-            return new AuthXOAUTH2(username, password);
-          case "CRAM-MD5":
-            return new AuthCram("CRAM-MD5",username, password);
-          case "CRAM-SHA1":
-            return new AuthCram("CRAM-SHA1", username, password);
-          case "CRAM-SHA256":
-            return new AuthCram("CRAM-SHA256", username, password);
-          case "DIGEST-MD5":
-            return new AuthDigest("DIGEST-MD5", prng, username, password);
-          case "PLAIN":
-            return new AuthPlain(username, password);
-          case "LOGIN":
-            return new AuthLogin(username, password);
-        }
-      }
+  public List<String> supportedAuths(MailConfig config) {
+    List<String> supported = Stream.of(ALGORITHMS).collect(Collectors.toList());
+    final String authMethods = config.getAuthMethods();
+    if (authMethods != null && !authMethods.trim().isEmpty()) {
+      supported.retainAll(Utils.parseCapaAuth(authMethods));
     }
-    return null;
+    return supported;
   }
+
+  public synchronized String getAuthMethod() {
+    return authMethod;
+  }
+
+  public synchronized AuthOperationFactory setAuthMethod(String authMethod) {
+    this.authMethod = authMethod;
+    return this;
+  }
+
+  public AuthOperation createAuth(String username, String password, String authMethod) {
+    switch (authMethod) {
+      case "XOAUTH2":
+        return new AuthXOAUTH2(username, password);
+      case "CRAM-MD5":
+        return new AuthCram("CRAM-MD5",username, password);
+      case "CRAM-SHA1":
+        return new AuthCram("CRAM-SHA1", username, password);
+      case "CRAM-SHA256":
+        return new AuthCram("CRAM-SHA256", username, password);
+      case "DIGEST-MD5":
+        return new AuthDigest("DIGEST-MD5", prng, username, password);
+      case "LOGIN":
+        return new AuthLogin(username, password);
+      case "PLAIN":
+        return new AuthPlain(username, password);
+    }
+    throw new IllegalArgumentException("Unsupported Authentication Method: " + authMethod);
+  }
+
 }
