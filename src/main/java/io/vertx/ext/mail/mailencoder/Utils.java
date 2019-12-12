@@ -174,9 +174,16 @@ public class Utils {
         sb.append(',');
         index++;
       }
-      EmailAddress adr = new EmailAddress(addr);
-      String email = adr.getEmail();
-      String name = adr.getName();
+      final String email, name;
+      // check postmaster against RCPT TO
+      if (EmailAddress.POSTMASTER.equalsIgnoreCase(addr)) {
+        email = addr;
+        name = "";
+      } else {
+        EmailAddress adr = new EmailAddress(addr);
+        email = adr.getEmail();
+        name = adr.getName();
+      }
       if (index + email.length() >= 76) {
         sb.append("\n ");
         index = 1;

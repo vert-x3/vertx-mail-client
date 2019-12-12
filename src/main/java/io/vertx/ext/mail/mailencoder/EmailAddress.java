@@ -36,6 +36,8 @@ public class EmailAddress {
   private static final Pattern PATTERN_EMAIL_ANGLE = Pattern.compile("([^<]*[^< ])? *\\<([^>]*)\\>");
   private static final Pattern PATTERN_EMAIL_INVALID = Pattern.compile("([^\\s,<>]+@[^\\s,<>]+)|");
 
+  public static final String POSTMASTER = "postmaster";
+
   private String email;
   private String name;
 
