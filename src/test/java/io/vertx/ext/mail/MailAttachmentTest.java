@@ -36,7 +36,7 @@ public class MailAttachmentTest {
   @Test
   public void testToJson() {
     assertEquals("{}", MailAttachment.create().toJson().encode());
-    assertEquals("{\"data\":\"ZGF0YQ==\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"randomstring\",\"headers\":{}}",
+    assertEquals("{\"data\":\"ZGF0YQ\",\"contentType\":\"text/plain\",\"disposition\":\"inline\",\"description\":\"description\",\"contentId\":\"randomstring\",\"headers\":{}}",
       MailAttachment.create()
         .setData(Buffer.buffer("data"))
         .setContentType("text/plain")
@@ -48,7 +48,7 @@ public class MailAttachmentTest {
 
     JsonObject json = MailAttachment.create()
       .setData(Buffer.buffer("hello\"\0\u0001\t\r\n\u00ffx\u00a0\u00a1<>")).toJson();
-    assertEquals("{\"data\":\"aGVsbG8iAAEJDQrDv3jCoMKhPD4=\"}", json.encode());
+    assertEquals("{\"data\":\"aGVsbG8iAAEJDQrDv3jCoMKhPD4\"}", json.encode());
   }
 
   @Test
@@ -96,7 +96,7 @@ public class MailAttachmentTest {
 
   @Test
   public void testConstructorFromJson() {
-    final String jsonString = "{\"data\":\"YXNkZmc=\",\"name\":\"filename.jpg\",\"headers\":{\"Content-ID\":[\"<image1@example.org\"],\"Header\":[\"Value\"]}}";
+    final String jsonString = "{\"data\":\"YXNkZmc\",\"name\":\"filename.jpg\",\"headers\":{\"Content-ID\":[\"<image1@example.org\"],\"Header\":[\"Value\"]}}";
     JsonObject json = new JsonObject(jsonString);
 
     MailAttachment message = MailAttachment.create(json);

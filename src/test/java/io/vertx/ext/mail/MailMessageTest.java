@@ -55,7 +55,7 @@ public class MailMessageTest {
     MailMessage message = new MailMessage("a", "b", "c", "d");
     message.setAttachment(attachment);
     assertEquals(
-      "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"}]}",
+      "{\"from\":\"a\",\"to\":[\"b\"],\"subject\":\"c\",\"text\":\"d\",\"attachment\":[{\"data\":\"YXNkZmFzZGY\",\"name\":\"file.txt\"}]}",
       message.toJson().encode());
   }
 
@@ -67,7 +67,7 @@ public class MailMessageTest {
     MailMessage message = new MailMessage();
     message.setAttachment(list);
     assertEquals(
-      "{\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg=\",\"name\":\"file2.txt\"}]}",
+      "{\"attachment\":[{\"data\":\"YXNkZmFzZGY\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg\",\"name\":\"file2.txt\"}]}",
       message.toJson().encode());
   }
 
@@ -122,10 +122,10 @@ public class MailMessageTest {
 
   @Test
   public void testConstructorFromJsonAttachment() {
-    final String jsonString = "{\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg=\",\"name\":\"file2.txt\"}]}";
+    final String jsonString = "{\"attachment\":[{\"data\":\"YXNkZmFzZGY\",\"name\":\"file.txt\"},{\"data\":\"eHh4eHg\",\"name\":\"file2.txt\"}]}";
     assertEquals(jsonString, new MailMessage(new JsonObject(jsonString)).toJson().encode());
-    final String jsonString2 = "{\"attachment\":{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"}}";
-    final String jsonString3 = "{\"attachment\":[{\"data\":\"YXNkZmFzZGY=\",\"name\":\"file.txt\"}]}";
+    final String jsonString2 = "{\"attachment\":{\"data\":\"YXNkZmFzZGY\",\"name\":\"file.txt\"}}";
+    final String jsonString3 = "{\"attachment\":[{\"data\":\"YXNkZmFzZGY\",\"name\":\"file.txt\"}]}";
     assertEquals(jsonString3, new MailMessage(new JsonObject(jsonString2)).toJson().encode());
   }
 
@@ -169,8 +169,8 @@ public class MailMessageTest {
 
     message2.getAttachment().get(0).setData(Buffer.buffer("message2"));
 
-    assertEquals("{\"attachment\":[{\"data\":\"bWVzc2FnZQ==\"}]}", message.toJson().encode());
-    assertEquals("{\"attachment\":[{\"data\":\"bWVzc2FnZTI=\"}]}", message2.toJson().encode());
+    assertEquals("{\"attachment\":[{\"data\":\"bWVzc2FnZQ\"}]}", message.toJson().encode());
+    assertEquals("{\"attachment\":[{\"data\":\"bWVzc2FnZTI\"}]}", message2.toJson().encode());
   }
 
   @Test
