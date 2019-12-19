@@ -197,11 +197,11 @@ public abstract class SMTPTestBase extends VertxTestBase {
         testContext.fail("this test should throw an Exception");
       } else {
         final Throwable cause = result.cause();
-        log.warn("got exception", cause);
         if(exceptionClass == null || exceptionClass.equals(cause.getClass())) {
           async.complete();
         } else {
-          testContext.fail("didn't get expected exception "+exceptionClass+" but "+cause.getClass());
+          log.warn("got exception", cause);
+          testContext.fail("didn't get expected exception " + exceptionClass + " but " + cause.getClass());
         }
       }
     });
