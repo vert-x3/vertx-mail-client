@@ -35,7 +35,7 @@ class SMTPReset {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPReset.class);
 
-  public SMTPReset(SMTPConnection connection, Handler<AsyncResult<Void>> finishedHandler) {
+  SMTPReset(SMTPConnection connection, Handler<AsyncResult<Void>> finishedHandler) {
     this.connection = connection;
     this.handler = finishedHandler;
   }
@@ -44,8 +44,6 @@ class SMTPReset {
     connection.setErrorHandler(th -> {
       log.info("exception on RSET " + th);
       connection.resetErrorHandler();
-      connection.setBroken();
-      connection.shutdown();
       handleError("exception on RSET " + th);
     });
     connection.write("RSET", message -> {
@@ -64,7 +62,7 @@ class SMTPReset {
    *
    */
   private void finished() {
-    handler.handle(Future.succeededFuture(null));
+    handler.handle(Future.succeededFuture());
   }
 
   private void handleError(String message) {

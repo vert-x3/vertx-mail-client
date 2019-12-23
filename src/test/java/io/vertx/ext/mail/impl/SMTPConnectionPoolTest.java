@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Handler;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -48,7 +49,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
 
   /**
    * Test method for
-   * {@link io.vertx.ext.mail.impl.SMTPConnectionPool#getConnection("hostname", io.vertx.core.Handler, io.vertx.core.Handler)} .
+   * {@link io.vertx.ext.mail.impl.SMTPConnectionPool#getConnection(String, Handler)} .
    */
   @Test
   public final void testgetConnection(TestContext testContext) {
@@ -272,6 +273,7 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
   public final void testWaitingForConnection(TestContext testContext) {
     final MailConfig config = configNoSSL().setMaxPoolSize(1);
     Async async = testContext.async();
+    Async async2 = testContext.async();
     AtomicBoolean haveGotConnection = new AtomicBoolean(false);
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
     testContext.assertEquals(0, pool.connCount());
@@ -297,8 +299,12 @@ public class SMTPConnectionPoolTest extends SMTPTestWiser {
         testContext.assertFalse(haveGotConnection.get(), "got a connection on the 2nd try already");
         log.debug("didn't get a connection 2nd time yet");
         result.result().returnToPool();
-        testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
-        log.debug("got a connection 2nd time");
+        vertx.setTimer(1000, v -> {
+          testContext.assertTrue(haveGotConnection.get(), "didn't get a connection on the 2nd try");
+          log.debug("got a connection 2nd time");
+          async2.complete();
+        });
+
       } else {
         log.info(result.cause());
         testContext.fail(result.cause());

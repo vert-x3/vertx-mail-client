@@ -42,7 +42,7 @@ class SMTPInitialDialogue {
 
   private final String hostname;
 
-  public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
+  SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
                              Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
@@ -120,7 +120,7 @@ class SMTPInitialDialogue {
           // on secure channel (e.g. googlemail)
           ehloCmd();
         } else {
-
+          errorHandler.handle(ar.cause());
         }
       });
     });

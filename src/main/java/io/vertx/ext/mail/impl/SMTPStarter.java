@@ -49,7 +49,7 @@ class SMTPStarter {
 
   void start() {
     log.debug("connection.openConnection");
-    connection.openConnection(config, this::serverGreeting, this::handleError);
+    connection.openConnection(this::serverGreeting, this::handleError);
   }
 
   private void serverGreeting(String message) {
@@ -59,7 +59,7 @@ class SMTPStarter {
 
   private void doAuthentication() {
     log.debug("SMTPAuthentication");
-    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture(null)), this::handleError).start();
+    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture()), this::handleError).start();
   }
 
   private void handleError(Throwable throwable) {

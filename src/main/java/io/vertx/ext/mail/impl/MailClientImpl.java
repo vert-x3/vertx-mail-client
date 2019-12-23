@@ -17,6 +17,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
@@ -32,6 +33,7 @@ import io.vertx.ext.mail.mailencoder.MailEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -48,10 +50,11 @@ public class MailClientImpl implements MailClient {
   private final Vertx vertx;
   private final MailConfig config;
   private final SMTPConnectionPool connectionPool;
+  private final Context resourceContext;
   private final MailHolder holder;
   // hostname will cache getOwnhostname/getHostname result, we have to resolve only once
   // this cannot be done in the constructor since it is async, so its not final
-  private String hostname = null;
+  private volatile String hostname = null;
 
   private volatile boolean closed = false;
 
@@ -60,11 +63,18 @@ public class MailClientImpl implements MailClient {
   private final List<DKIMSigner> dkimSigners;
 
   public MailClientImpl(Vertx vertx, MailConfig config, String poolName) {
+    Objects.requireNonNull(vertx, "Vertx cannot be null");
+    Objects.requireNonNull(config, "MailConfig cannot be null");
+    Objects.requireNonNull(poolName, "poolName cannot be null");
     this.vertx = vertx;
+    this.resourceContext = vertx.getOrCreateContext();
     this.config = config;
+    if (config.getOwnHostname() != null) {
+      this.hostname = config.getOwnHostname();
+    }
     this.holder = lookupHolder(poolName, config);
     this.connectionPool = holder.pool();
-    if (config != null && config.isEnableDKIM() && config.getDKIMSignOptions() != null) {
+    if (config.isEnableDKIM() && config.getDKIMSignOptions() != null) {
       dkimSigners = config.getDKIMSignOptions().stream().map(ops -> new DKIMSigner(ops, vertx)).collect(Collectors.toList());
     } else {
       dkimSigners = Collections.emptyList();
@@ -82,54 +92,56 @@ public class MailClientImpl implements MailClient {
 
   @Override
   public MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
-    Context context = vertx.getOrCreateContext();
     if (!closed) {
-      if (validateHeaders(message, resultHandler, context)) {
+      if (validateHeaders(message, resultHandler)) {
         if (hostname == null) {
           vertx.<String>executeBlocking(
-              fut -> {
-                String hname;
-                if (config.getOwnHostname() != null) {
-                  hname = config.getOwnHostname();
-                } else {
-                  hname = Utils.getHostname();
-                }
-                fut.complete(hname);
-              },
-              res -> {
-                if (res.succeeded()) {
-                  hostname = res.result();
-                  getConnection(message, resultHandler, context);
-                } else {
-                  handleError(res.cause(), resultHandler, context);
-                }
-              });
+            fut -> {
+              try {
+                fut.complete(Utils.getHostname());
+              } catch (Exception e) {
+                fut.fail(e);
+              }
+            },
+            res -> {
+              if (res.succeeded()) {
+                hostname = res.result();
+                getConnection(message, resultHandler);
+              } else {
+                handleError(res.cause(), resultHandler);
+              }
+            });
         } else {
-          getConnection(message, resultHandler, context);
+          getConnection(message, resultHandler);
         }
       }
     } else {
-      handleError("mail client has been closed", resultHandler, context);
+      handleError("mail client has been closed", resultHandler);
     }
     return this;
   }
 
-  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    connectionPool.getConnection(hostname, result -> {
+  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
+    ContextInternal ctx = (ContextInternal)vertx.getOrCreateContext();
+    Handler<AsyncResult<MailResult>> ctxResultHandler = resultHandler == null ? null : h -> ctx.dispatch(h, resultHandler);
+    this.resourceContext.runOnContext(a -> this.connectionPool.getConnection(this.hostname, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
-        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
-        sendMessage(message, connection, resultHandler, context);
+        // when the connection is retrieved from the pool, it cannot be retrieved by other clients,
+        // and it is ready for mail transactions
+        connection.setContext(this.resourceContext);
+        connection.setErrorHandler(th -> handleError(th, ctxResultHandler));
+        sendMessage(message, connection, ctxResultHandler);
       } else {
-        handleError(result.cause(), resultHandler, context);
+        handleError(result.cause(), ctxResultHandler);
       }
-    });
+    }));
   }
 
-  private Future<Void> dkimFuture(Context context, EncodedPart encodedPart) {
+  private Future<Void> dkimFuture(EncodedPart encodedPart) {
     List<Future> dkimFutures = new ArrayList<>();
     // run dkim sign, and add email header after that.
-    dkimSigners.forEach(dkim -> dkimFutures.add(dkim.signEmail(context, encodedPart)));
+    dkimSigners.forEach(dkim -> dkimFutures.add(dkim.signEmail(this.resourceContext, encodedPart)));
     return CompositeFuture.all(dkimFutures).map(f -> {
       List<String> dkimHeaders = dkimFutures.stream().map(fr -> fr.result().toString()).collect(Collectors.toList());
       encodedPart.headers().add(DKIMSigner.DKIM_SIGNATURE_HEADER, dkimHeaders);
@@ -137,18 +149,18 @@ public class MailClientImpl implements MailClient {
     });
   }
 
-  private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
-      Context context) {
+  private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler) {
+    log.debug("sendMessage()");
     final Handler<AsyncResult<MailResult>> sentResultHandler = result -> {
       if (result.succeeded()) {
         conn.returnToPool();
       } else {
         conn.setBroken();
       }
-      returnResult(result, resultHandler, context);
+      returnResult(result, resultHandler);
     };
     try {
-      final MailEncoder encoder = new MailEncoder(email, hostname);
+      final MailEncoder encoder = new MailEncoder(email, this.hostname);
       final EncodedPart encodedPart = encoder.encodeMail();
       final String messageId = encoder.getMessageID();
 
@@ -157,59 +169,57 @@ public class MailClientImpl implements MailClient {
         sendMail.start();
       } else {
         // generate the DKIM header before start
-        dkimFuture(context, encodedPart).setHandler(dkim -> context.runOnContext(h -> {
+        dkimFuture(encodedPart).setHandler(dkim -> {
           if (dkim.succeeded()) {
             sendMail.start();
           } else {
             sentResultHandler.handle(Future.failedFuture(dkim.cause()));
           }
-        }));
+        });
       }
     } catch (Exception e) {
-      handleError(e, sentResultHandler, context);
+      handleError(e, sentResultHandler);
     }
   }
 
   // do some validation before we open the connection
   // return true on successful validation so we can stop processing above
-  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
-      handleError("sender address is not present", resultHandler, context);
+      handleError("sender address is not present", resultHandler);
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
         && (email.getCc() == null || email.getCc().size() == 0)
         && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
-      handleError("no recipient addresses are present", resultHandler, context);
+      handleError("no recipient addresses are present", resultHandler);
       return false;
     } else {
       return true;
     }
   }
 
-  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler) {
     log.debug("handleError:" + message);
-    returnResult(Future.failedFuture(message), resultHandler, context);
+    returnResult(Future.failedFuture(message), resultHandler);
   }
 
-  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler) {
     log.debug("handleError", t);
-    returnResult(Future.failedFuture(t), resultHandler, context);
+    returnResult(Future.failedFuture(t), resultHandler);
   }
 
-  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    // Note - results must always be executed on the right context, asynchronously, not directly!
-    context.runOnContext(v -> {
-      if (resultHandler != null) {
-        resultHandler.handle(result);
+  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler) {
+    // Note - results must always be executed on the right resourceContext, asynchronously, not directly!
+    if (resultHandler != null) {
+      resultHandler.handle(result);
+    } else {
+      if (result.succeeded()) {
+        log.debug("dropping sendMail result");
       } else {
-        if (result.succeeded()) {
-          log.debug("dropping sendMail result");
-        } else {
-          log.info("dropping sendMail failure", result.cause());
-        }
+        log.info("dropping sendMail failure", result.cause());
       }
-    });
+    }
   }
 
   SMTPConnectionPool getConnectionPool() {
@@ -230,23 +240,23 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private void removeFromMap(LocalMap<String, MailHolder> map, String dataSourceName) {
+  private void removeFromMap(LocalMap<String, MailHolder> map, String poolName) {
     synchronized (vertx) {
-      map.remove(dataSourceName);
+      map.remove(poolName);
       if (map.isEmpty()) {
         map.close();
       }
     }
   }
 
-  private static class MailHolder implements Shareable {
+  private class MailHolder implements Shareable {
     final SMTPConnectionPool pool;
     final Runnable closeRunner;
     int refCount = 1;
 
     MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
       this.closeRunner = closeRunner;
-      this.pool= new SMTPConnectionPool(vertx, config);
+      this.pool= new SMTPConnectionPool(vertx, resourceContext, config);
     }
 
     SMTPConnectionPool pool() {
