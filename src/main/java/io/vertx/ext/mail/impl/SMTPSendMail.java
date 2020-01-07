@@ -133,15 +133,21 @@ class SMTPSendMail {
 
   private void rcptToCmd(List<String> recipientAddrs, int i) {
     try {
-      EmailAddress toAddr = new EmailAddress(recipientAddrs.get(i));
-      final String line = "RCPT TO:<" + toAddr.getEmail() + ">";
+      final String recipientAddr = recipientAddrs.get(i);
+      final String email;
+      if (EmailAddress.POSTMASTER.equalsIgnoreCase(recipientAddr)) {
+        email = recipientAddr;
+      } else {
+        email = new EmailAddress(recipientAddr).getEmail();
+      }
+      final String line = "RCPT TO:<" + email + ">";
       connection.write(line, message -> {
         if (log.isDebugEnabled()) {
           written.getAndAdd(line.length());
         }
         if (StatusCode.isStatusOk(message)) {
           log.debug("RCPT TO result: " + message);
-          mailResult.getRecipients().add(toAddr.getEmail());
+          mailResult.getRecipients().add(email);
           nextRcpt(recipientAddrs, i);
         } else {
           if (config.isAllowRcptErrors()) {
