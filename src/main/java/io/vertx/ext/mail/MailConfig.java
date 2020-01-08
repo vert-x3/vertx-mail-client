@@ -392,19 +392,6 @@ public class MailConfig extends NetClientOptions {
     return this;
   }
 
-  @Override
-  public String getHostnameVerificationAlgorithm() {
-    // If not explicitly set then see if we should provide a default based on SMTP settings
-    String verification = super.getHostnameVerificationAlgorithm();
-    if ((verification == null || verification.isEmpty()) && !isTrustAll() &&
-        (isSsl() || starttls != StartTLSOptions.DISABLED)) {
-      // we can use HTTPS verification, which matches the requirements for SMTPS
-      verification = "HTTPS";
-    }
-    return verification;
-  }
-
-
   /**
    * get the hostname of the mailserver
    *
