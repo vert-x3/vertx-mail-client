@@ -98,6 +98,19 @@ set if ESMTP should be tried as first command (EHLO)
  in that way, the property has to be set to false.
  <p>
 +++
+|[[dkimSignOption]]`@dkimSignOption`|`link:dataobjects.html#DKIMSignOptions[DKIMSignOptions]`|+++
+Sets one DKIMSignOptions for convenient.
++++
+|[[dkimSignOptions]]`@dkimSignOptions`|`Array of link:dataobjects.html#DKIMSignOptions[DKIMSignOptions]`|+++
+Sets DKIMSignOptions.
++++
+|[[enableDKIM]]`@enableDKIM`|`Boolean`|+++
+Sets true to enable DKIM Signatures, sets false to disable it.
+
+ <p>
+     This is used most for temporary disable DKIM without removing DKIM opations from current config.
+ </p>
++++
 |[[enabledCipherSuites]]`@enabledCipherSuites`|`Array of String`|-
 |[[enabledSecureTransportProtocols]]`@enabledSecureTransportProtocols`|`Array of String`|-
 |[[hostname]]`@hostname`|`String`|+++

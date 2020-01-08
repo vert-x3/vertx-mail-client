@@ -57,6 +57,15 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     keepAlive = config.isKeepAlive();
     this.prng = new PRNG(vertx);
     this.authOperationFactory = new AuthOperationFactory(prng);
+
+    // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
+    String verification = config.getHostnameVerificationAlgorithm();
+    if ((verification == null || verification.isEmpty()) && !config.isTrustAll() &&
+        (config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED)) {
+      // we can use HTTPS verification, which matches the requirements for SMTPS
+      config.setHostnameVerificationAlgorithm("HTTPS");
+    }
+
     netClient = vertx.createNetClient(config);
   }
 

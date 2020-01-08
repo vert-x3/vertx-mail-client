@@ -17,12 +17,23 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.JdkSSLEngineOptions;
 import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.OpenSSLEngineOptions;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.PfxOptions;
+import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.SSLEngineOptions;
+import io.vertx.core.net.TrustOptions;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -179,6 +190,206 @@ public class MailConfig extends NetClientOptions {
       dkimSignOptions = new ArrayList<>();
       dkimOps.stream().map(dkim -> new DKIMSignOptions((JsonObject)dkim)).forEach(dkimSignOptions::add);
     }
+  }
+
+  public MailConfig setSendBufferSize(int sendBufferSize) {
+    super.setSendBufferSize(sendBufferSize);
+    return this;
+  }
+
+  public MailConfig setReceiveBufferSize(int receiveBufferSize) {
+    super.setReceiveBufferSize(receiveBufferSize);
+    return this;
+  }
+
+  public MailConfig setReuseAddress(boolean reuseAddress) {
+    super.setReuseAddress(reuseAddress);
+    return this;
+  }
+
+  public MailConfig setReusePort(boolean reusePort) {
+    super.setReusePort(reusePort);
+    return this;
+  }
+
+  public MailConfig setTrafficClass(int trafficClass) {
+    super.setTrafficClass(trafficClass);
+    return this;
+  }
+
+  public MailConfig setTcpNoDelay(boolean tcpNoDelay) {
+    super.setTcpNoDelay(tcpNoDelay);
+    return this;
+  }
+
+  public MailConfig setTcpKeepAlive(boolean tcpKeepAlive) {
+    super.setTcpKeepAlive(tcpKeepAlive);
+    return this;
+  }
+
+  public MailConfig setSoLinger(int soLinger) {
+    super.setSoLinger(soLinger);
+    return this;
+  }
+
+  public MailConfig setIdleTimeout(int idleTimeout) {
+    super.setIdleTimeout(idleTimeout);
+    return this;
+  }
+
+  public MailConfig setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
+    super.setIdleTimeoutUnit(idleTimeoutUnit);
+    return this;
+  }
+
+  public MailConfig setKeyCertOptions(KeyCertOptions options) {
+    super.setKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setKeyStoreOptions(JksOptions options) {
+    super.setKeyStoreOptions(options);
+    return this;
+  }
+
+  public MailConfig setPfxKeyCertOptions(PfxOptions options) {
+    super.setPfxKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setPemKeyCertOptions(PemKeyCertOptions options) {
+    super.setPemKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setTrustOptions(TrustOptions options) {
+    super.setTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig setTrustStoreOptions(JksOptions options) {
+    super.setTrustStoreOptions(options);
+    return this;
+  }
+
+  public MailConfig setPemTrustOptions(PemTrustOptions options) {
+    super.setPemTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig setPfxTrustOptions(PfxOptions options) {
+    super.setPfxTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig addEnabledCipherSuite(String suite) {
+    super.addEnabledCipherSuite(suite);
+    return this;
+  }
+
+  public MailConfig addEnabledSecureTransportProtocol(String protocol) {
+    super.addEnabledSecureTransportProtocol(protocol);
+    return this;
+  }
+
+  public MailConfig removeEnabledSecureTransportProtocol(String protocol) {
+    super.removeEnabledSecureTransportProtocol(protocol);
+    return this;
+  }
+
+  public MailConfig setUseAlpn(boolean useAlpn) {
+    super.setUseAlpn(useAlpn);
+    return this;
+  }
+
+  public MailConfig setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
+    super.setSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
+    super.setJdkSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig setTcpFastOpen(boolean tcpFastOpen) {
+    super.setTcpFastOpen(tcpFastOpen);
+    return this;
+  }
+
+  public MailConfig setTcpCork(boolean tcpCork) {
+    super.setTcpCork(tcpCork);
+    return this;
+  }
+
+  public MailConfig setTcpQuickAck(boolean tcpQuickAck) {
+    super.setTcpQuickAck(tcpQuickAck);
+    return this;
+  }
+
+  public MailConfig setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
+    super.setOpenSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig addCrlPath(String crlPath) throws NullPointerException {
+    super.addCrlPath(crlPath);
+    return this;
+  }
+
+  public MailConfig addCrlValue(Buffer crlValue) throws NullPointerException {
+    super.addCrlValue(crlValue);
+    return this;
+  }
+
+  public MailConfig setConnectTimeout(int connectTimeout) {
+    super.setConnectTimeout(connectTimeout);
+    return this;
+  }
+
+  public MailConfig setMetricsName(String metricsName) {
+    super.setMetricsName(metricsName);
+    return this;
+  }
+
+  public MailConfig setReconnectAttempts(int attempts) {
+    super.setReconnectAttempts(attempts);
+    return this;
+  }
+
+  public MailConfig setReconnectInterval(long interval) {
+    super.setReconnectInterval(interval);
+    return this;
+  }
+
+  public MailConfig setHostnameVerificationAlgorithm(String hostnameVerificationAlgorithm) {
+    super.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+    return this;
+  }
+
+  public MailConfig setLogActivity(boolean logEnabled) {
+    super.setLogActivity(logEnabled);
+    return this;
+  }
+
+  public MailConfig setProxyOptions(ProxyOptions proxyOptions) {
+    super.setProxyOptions(proxyOptions);
+    return this;
+  }
+
+  public MailConfig setLocalAddress(String localAddress) {
+    super.setLocalAddress(localAddress);
+    return this;
+  }
+
+  public MailConfig setSslHandshakeTimeout(long sslHandshakeTimeout) {
+    super.setSslHandshakeTimeout(sslHandshakeTimeout);
+    return this;
+  }
+
+  public MailConfig setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
+    super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+    return this;
   }
 
   @Override
