@@ -17,6 +17,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.json.JsonObject;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -30,8 +31,9 @@ public class MailConfigTest {
   @Test
   public void toJsonTest() {
     MailConfig mailConfig = new MailConfig();
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}", mailConfig
-      .toJson().toString());
+    assertTrue(
+      mailConfig.toJson().toString()
+        .contains("\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\""));
   }
 
   @Test
@@ -48,28 +50,27 @@ public class MailConfigTest {
   @Test
   public void toJsonTest2() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setUsername("username").setPassword("password").setSsl(true);
-    assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"ssl\":true,\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}",
-      mailConfig.toJson().toString());
+    mailConfig.setUsername("username").setPassword("password");
+    assertTrue(
+      mailConfig.toJson().toString()
+        .contains("\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"username\":\"username\",\"password\":\"password\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\""));
   }
 
   @Test
   public void toJsonTest3() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname(null).setPort(0).setStarttls(null).setLogin(null);
-    assertEquals("{\"port\":0,\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}", mailConfig.toJson().toString());
+    assertTrue(mailConfig.toJson().toString().contains("\"port\":0,\"maxPoolSize\":10"));
   }
 
   @Test
   public void toJsonTest4() {
     MailConfig mailConfig = new MailConfig();
-    mailConfig.setTrustAll(true);
     mailConfig.setAuthMethods("PLAIN");
     mailConfig.setOwnHostname("example.com");
-    assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"trustAll\":true,\"authMethods\":\"PLAIN\",\"ownHostname\":\"example.com\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}",
-      mailConfig.toJson().toString());
+    assertTrue(
+      mailConfig.toJson().toString()
+        .contains("\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"authMethods\":\"PLAIN\",\"ownHostname\":\"example.com\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\""));
   }
 
   @Test
@@ -78,19 +79,9 @@ public class MailConfigTest {
     mailConfig.setKeepAlive(false);
     mailConfig.setAllowRcptErrors(true);
     mailConfig.setDisableEsmtp(true);
-    assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"keepAlive\":false,\"allowRcptErrors\":true,\"disableEsmtp\":true,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}",
-      mailConfig.toJson().toString());
-  }
-
-  @Test
-  public void toJsonTest6() {
-    MailConfig mailConfig = new MailConfig();
-    mailConfig.setKeyStore("keyStore");
-    mailConfig.setKeyStorePassword("keyStorePassword");
-    assertEquals(
-      "{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"keyStore\":\"keyStore\",\"keyStorePassword\":\"keyStorePassword\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}",
-      mailConfig.toJson().toString());
+    assertTrue(
+      mailConfig.toJson().toString()
+        .contains("\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"keepAlive\":false,\"allowRcptErrors\":true,\"disableEsmtp\":true,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\""));
   }
 
   @Test
@@ -107,16 +98,18 @@ public class MailConfigTest {
   public void newJsonEmptyTest() {
     JsonObject json = new JsonObject("{}");
     MailConfig mailConfig = new MailConfig(json);
-    assertEquals("{\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\"," +
-        "\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}", mailConfig.toJson().encode());
+    assertTrue(
+      mailConfig.toJson().toString()
+        .contains("\"hostname\":\"localhost\",\"port\":25,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\""));
   }
 
   @Test
   public void testConstructorFromMailConfig() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setHostname("asdfasdf").setPort(1234);
-    assertEquals("{\"hostname\":\"asdfasdf\",\"port\":1234,\"starttls\":\"OPTIONAL\",\"login\":\"NONE\",\"maxPoolSize\":10,\"userAgent\":\"" + MailConfig.DEFAULT_USER_AGENT + "\"}",
-      new MailConfig(mailConfig).toJson().encode());
+    MailConfig fromConfig = new MailConfig(mailConfig);
+    assertEquals(fromConfig.getHostname(), "asdfasdf");
+    assertEquals(fromConfig.getPort(), 1234);
   }
 
   @Test
@@ -290,9 +283,11 @@ public class MailConfigTest {
   public void testEquals() {
     MailConfig mailConfig = new MailConfig();
     assertEquals(mailConfig, mailConfig);
-    assertEquals(mailConfig, new MailConfig());
+// Not true for NetClientOptions, so can't be true for sub-class
+//    assertEquals(mailConfig, new MailConfig());
   }
 
+  @Ignore("Not true for NetClientOptions, so can't be true for sub-class")
   @Test
   public void testHashcode() {
     MailConfig mailConfig = new MailConfig();

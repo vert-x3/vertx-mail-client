@@ -20,11 +20,9 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.core.net.JksOptions;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
-import io.vertx.core.net.NetClientOptions;
 import io.vertx.ext.auth.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
@@ -59,20 +57,16 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     keepAlive = config.isKeepAlive();
     this.prng = new PRNG(vertx);
     this.authOperationFactory = new AuthOperationFactory(prng);
-    NetClientOptions netClientOptions = new NetClientOptions()
-      .setSsl(config.isSsl())
-      .setTrustAll(config.isTrustAll())
-      .setEnabledSecureTransportProtocols(config.getEnabledSecureTransportProtocols());
-    if ((config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED) && !config.isTrustAll()) {
+
+    // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
+    String verification = config.getHostnameVerificationAlgorithm();
+    if ((verification == null || verification.isEmpty()) && !config.isTrustAll() &&
+        (config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED)) {
       // we can use HTTPS verification, which matches the requirements for SMTPS
-      netClientOptions.setHostnameVerificationAlgorithm("HTTPS");
+      config.setHostnameVerificationAlgorithm("HTTPS");
     }
-    if (config.getKeyStore() != null) {
-      // assume that password could be null if the keystore doesn't use one
-      netClientOptions.setTrustStoreOptions(new JksOptions().setPath(config.getKeyStore())
-          .setPassword(config.getKeyStorePassword()));
-    }
-    netClient = vertx.createNetClient(netClientOptions);
+
+    netClient = vertx.createNetClient(config);
   }
 
   AuthOperationFactory getAuthOperationFactory() {

@@ -17,11 +17,23 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.JdkSSLEngineOptions;
+import io.vertx.core.net.JksOptions;
+import io.vertx.core.net.KeyCertOptions;
 import io.vertx.core.net.NetClientOptions;
+import io.vertx.core.net.OpenSSLEngineOptions;
+import io.vertx.core.net.PemKeyCertOptions;
+import io.vertx.core.net.PemTrustOptions;
+import io.vertx.core.net.PfxOptions;
+import io.vertx.core.net.ProxyOptions;
+import io.vertx.core.net.SSLEngineOptions;
+import io.vertx.core.net.TrustOptions;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -32,25 +44,18 @@ import java.util.stream.Collectors;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @DataObject
-public class MailConfig {
+public class MailConfig extends NetClientOptions {
 
-  private static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
-  private static final StartTLSOptions DEFAULT_TLS = StartTLSOptions.OPTIONAL;
-  private static final int DEFAULT_PORT = 25;
-  private static final String DEFAULT_HOST = "localhost";
-  private static final int DEFAULT_MAX_POOL_SIZE = 10;
-  private static final boolean DEFAULT_SSL = false;
-  private static final boolean DEFAULT_TRUST_ALL = false;
-  private static final Set<String> DEFAULT_SECURE_TRANSPORT_PROTOCOLS = Collections.unmodifiableSet(new LinkedHashSet<>(NetClientOptions.DEFAULT_ENABLED_SECURE_TRANSPORT_PROTOCOLS));
-  private static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
-  private static final boolean DEFAULT_KEEP_ALIVE = true;
-  private static final boolean DEFAULT_DISABLE_ESMTP = false;
+  public static final LoginOption DEFAULT_LOGIN = LoginOption.NONE;
+  public static final StartTLSOptions DEFAULT_TLS = StartTLSOptions.OPTIONAL;
+  public static final int DEFAULT_PORT = 25;
+  public static final String DEFAULT_HOST = "localhost";
+  public static final int DEFAULT_MAX_POOL_SIZE = 10;
+  public static final boolean DEFAULT_ALLOW_RCPT_ERRORS = false;
+  public static final boolean DEFAULT_KEEP_ALIVE = true;
+  public static final boolean DEFAULT_DISABLE_ESMTP = false;
   private static final boolean DEFAULT_ENABLE_DKIM = false;
-
   public static final String DEFAULT_USER_AGENT = "vertxmail";
-
-  // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
-  private static Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -59,11 +64,6 @@ public class MailConfig {
   private String authMethods;
   private String username;
   private String password;
-  private boolean ssl = DEFAULT_SSL;
-  private boolean trustAll = DEFAULT_TRUST_ALL;
-  private Set<String> enabledSecureTransportProtocols = DEFAULT_SECURE_TRANSPORT_PROTOCOLS;
-  private String keyStore;
-  private String keyStorePassword;
   private String ownHostname;
   private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
   private boolean keepAlive = DEFAULT_KEEP_ALIVE;
@@ -72,6 +72,9 @@ public class MailConfig {
   private String userAgent = DEFAULT_USER_AGENT;
   private boolean enableDKIM = DEFAULT_ENABLE_DKIM;
   private List<DKIMSignOptions> dkimSignOptions;
+
+  // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
+  private static Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
 
   /**
    * construct a config object with default options
@@ -122,16 +125,13 @@ public class MailConfig {
    * @param other the object to be copied
    */
   public MailConfig(MailConfig other) {
+    super(other);
     hostname = other.hostname;
     port = other.port;
     starttls = other.starttls;
     login = other.login;
     username = other.username;
     password = other.password;
-    ssl = other.ssl;
-    trustAll = other.trustAll;
-    keyStore = other.keyStore;
-    keyStorePassword = other.keyStorePassword;
     authMethods = other.authMethods;
     ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
@@ -151,6 +151,7 @@ public class MailConfig {
    * @param config the config to copy
    */
   public MailConfig(JsonObject config) {
+    super(config);
     hostname = config.getString("hostname", DEFAULT_HOST);
     port = config.getInteger("port", DEFAULT_PORT);
 
@@ -170,10 +171,13 @@ public class MailConfig {
 
     username = config.getString("username");
     password = config.getString("password");
-    ssl = config.getBoolean("ssl", DEFAULT_SSL);
-    trustAll = config.getBoolean("trustAll", DEFAULT_TRUST_ALL);
-    keyStore = config.getString("keyStore");
-    keyStorePassword = config.getString("keyStorePassword");
+    // Handle these for compatiblity
+    if (config.containsKey("keyStore")) {
+      setKeyStore(config.getString("keyStore"));
+    }
+    if (config.containsKey("keyStorePassword")) {
+      setKeyStorePassword(config.getString("keyStorePassword"));
+    }
     authMethods = config.getString("authMethods");
     ownHostname = config.getString("ownHostname");
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
@@ -186,6 +190,206 @@ public class MailConfig {
       dkimSignOptions = new ArrayList<>();
       dkimOps.stream().map(dkim -> new DKIMSignOptions((JsonObject)dkim)).forEach(dkimSignOptions::add);
     }
+  }
+
+  public MailConfig setSendBufferSize(int sendBufferSize) {
+    super.setSendBufferSize(sendBufferSize);
+    return this;
+  }
+
+  public MailConfig setReceiveBufferSize(int receiveBufferSize) {
+    super.setReceiveBufferSize(receiveBufferSize);
+    return this;
+  }
+
+  public MailConfig setReuseAddress(boolean reuseAddress) {
+    super.setReuseAddress(reuseAddress);
+    return this;
+  }
+
+  public MailConfig setReusePort(boolean reusePort) {
+    super.setReusePort(reusePort);
+    return this;
+  }
+
+  public MailConfig setTrafficClass(int trafficClass) {
+    super.setTrafficClass(trafficClass);
+    return this;
+  }
+
+  public MailConfig setTcpNoDelay(boolean tcpNoDelay) {
+    super.setTcpNoDelay(tcpNoDelay);
+    return this;
+  }
+
+  public MailConfig setTcpKeepAlive(boolean tcpKeepAlive) {
+    super.setTcpKeepAlive(tcpKeepAlive);
+    return this;
+  }
+
+  public MailConfig setSoLinger(int soLinger) {
+    super.setSoLinger(soLinger);
+    return this;
+  }
+
+  public MailConfig setIdleTimeout(int idleTimeout) {
+    super.setIdleTimeout(idleTimeout);
+    return this;
+  }
+
+  public MailConfig setIdleTimeoutUnit(TimeUnit idleTimeoutUnit) {
+    super.setIdleTimeoutUnit(idleTimeoutUnit);
+    return this;
+  }
+
+  public MailConfig setKeyCertOptions(KeyCertOptions options) {
+    super.setKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setKeyStoreOptions(JksOptions options) {
+    super.setKeyStoreOptions(options);
+    return this;
+  }
+
+  public MailConfig setPfxKeyCertOptions(PfxOptions options) {
+    super.setPfxKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setPemKeyCertOptions(PemKeyCertOptions options) {
+    super.setPemKeyCertOptions(options);
+    return this;
+  }
+
+  public MailConfig setTrustOptions(TrustOptions options) {
+    super.setTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig setTrustStoreOptions(JksOptions options) {
+    super.setTrustStoreOptions(options);
+    return this;
+  }
+
+  public MailConfig setPemTrustOptions(PemTrustOptions options) {
+    super.setPemTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig setPfxTrustOptions(PfxOptions options) {
+    super.setPfxTrustOptions(options);
+    return this;
+  }
+
+  public MailConfig addEnabledCipherSuite(String suite) {
+    super.addEnabledCipherSuite(suite);
+    return this;
+  }
+
+  public MailConfig addEnabledSecureTransportProtocol(String protocol) {
+    super.addEnabledSecureTransportProtocol(protocol);
+    return this;
+  }
+
+  public MailConfig removeEnabledSecureTransportProtocol(String protocol) {
+    super.removeEnabledSecureTransportProtocol(protocol);
+    return this;
+  }
+
+  public MailConfig setUseAlpn(boolean useAlpn) {
+    super.setUseAlpn(useAlpn);
+    return this;
+  }
+
+  public MailConfig setSslEngineOptions(SSLEngineOptions sslEngineOptions) {
+    super.setSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig setJdkSslEngineOptions(JdkSSLEngineOptions sslEngineOptions) {
+    super.setJdkSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig setTcpFastOpen(boolean tcpFastOpen) {
+    super.setTcpFastOpen(tcpFastOpen);
+    return this;
+  }
+
+  public MailConfig setTcpCork(boolean tcpCork) {
+    super.setTcpCork(tcpCork);
+    return this;
+  }
+
+  public MailConfig setTcpQuickAck(boolean tcpQuickAck) {
+    super.setTcpQuickAck(tcpQuickAck);
+    return this;
+  }
+
+  public MailConfig setOpenSslEngineOptions(OpenSSLEngineOptions sslEngineOptions) {
+    super.setOpenSslEngineOptions(sslEngineOptions);
+    return this;
+  }
+
+  public MailConfig addCrlPath(String crlPath) throws NullPointerException {
+    super.addCrlPath(crlPath);
+    return this;
+  }
+
+  public MailConfig addCrlValue(Buffer crlValue) throws NullPointerException {
+    super.addCrlValue(crlValue);
+    return this;
+  }
+
+  public MailConfig setConnectTimeout(int connectTimeout) {
+    super.setConnectTimeout(connectTimeout);
+    return this;
+  }
+
+  public MailConfig setMetricsName(String metricsName) {
+    super.setMetricsName(metricsName);
+    return this;
+  }
+
+  public MailConfig setReconnectAttempts(int attempts) {
+    super.setReconnectAttempts(attempts);
+    return this;
+  }
+
+  public MailConfig setReconnectInterval(long interval) {
+    super.setReconnectInterval(interval);
+    return this;
+  }
+
+  public MailConfig setHostnameVerificationAlgorithm(String hostnameVerificationAlgorithm) {
+    super.setHostnameVerificationAlgorithm(hostnameVerificationAlgorithm);
+    return this;
+  }
+
+  public MailConfig setLogActivity(boolean logEnabled) {
+    super.setLogActivity(logEnabled);
+    return this;
+  }
+
+  public MailConfig setProxyOptions(ProxyOptions proxyOptions) {
+    super.setProxyOptions(proxyOptions);
+    return this;
+  }
+
+  public MailConfig setLocalAddress(String localAddress) {
+    super.setLocalAddress(localAddress);
+    return this;
+  }
+
+  public MailConfig setSslHandshakeTimeout(long sslHandshakeTimeout) {
+    super.setSslHandshakeTimeout(sslHandshakeTimeout);
+    return this;
+  }
+
+  public MailConfig setSslHandshakeTimeoutUnit(TimeUnit sslHandshakeTimeoutUnit) {
+    super.setSslHandshakeTimeoutUnit(sslHandshakeTimeoutUnit);
+    return this;
   }
 
   /**
@@ -316,63 +520,24 @@ public class MailConfig {
     return this;
   }
 
-  /**
-   * get whether ssl is used on connect
-   *
-   * @return ssl option
-   */
-  public boolean isSsl() {
-    return ssl;
-  }
-
-  /**
-   * Set the sslOnConnect mode for the connection.
-   *
-   * @param ssl true is ssl is used
-   * @return a reference to this, so the API can be used fluently
-   */
-  public MailConfig setSsl(boolean ssl) {
-    this.ssl = ssl;
+  // Maintain compatibility of return type
+  @Override
+  public MailConfig setSsl(boolean isSsl) {
+    super.setSsl(isSsl);
     return this;
   }
 
-  /**
-   * Returns the enabled SSL/TLS protocols
-   * @return the enabled protocols
-   */
-  public Set<String> getEnabledSecureTransportProtocols() {
-    return new LinkedHashSet<>(enabledSecureTransportProtocols);
-  }
-
-  /**
-   * Sets the list of enabled SSL/TLS protocols.
-   *
-   * @param enabledSecureTransportProtocols  the SSL/TLS protocols to enable
-   * @return a reference to this, so the API can be used fluently
-   */
+  // Maintain compatibility of return type
+  @Override
   public MailConfig setEnabledSecureTransportProtocols(Set<String> enabledSecureTransportProtocols) {
-    this.enabledSecureTransportProtocols = enabledSecureTransportProtocols;
+    super.setEnabledSecureTransportProtocols(enabledSecureTransportProtocols);
     return this;
   }
 
-  /**
-   * get whether to trust all certificates on ssl connect
-   *
-   * @return trustAll option
-   */
-  public boolean isTrustAll() {
-    return trustAll;
-  }
-
-  /**
-   * set whether to trust all certificates on ssl connect the option is also
-   * applied to STARTTLS operation
-   *
-   * @param trustAll trust all certificates
-   * @return a reference to this, so the API can be used fluently
-   */
+  // Maintain compatibility of return type
+  @Override
   public MailConfig setTrustAll(boolean trustAll) {
-    this.trustAll = trustAll;
+    super.setTrustAll(trustAll);
     return this;
   }
 
@@ -380,8 +545,15 @@ public class MailConfig {
    * get the key store filename to be used when opening SMTP connections
    *
    * @return the keyStore
+   * @deprecated 4.0.0
    */
   public String getKeyStore() {
+    // Get the trust store options and if there are any get the path
+    String keyStore = null;
+    JksOptions options = getTrustStoreOptions();
+    if (options != null) {
+      keyStore = options.getPath();
+    }
     return keyStore;
   }
 
@@ -393,9 +565,15 @@ public class MailConfig {
    *
    * @param keyStore the key store filename to be set
    * @return a reference to this, so the API can be used fluently
+   * @deprecated 4.0.0
    */
   public MailConfig setKeyStore(String keyStore) {
-    this.keyStore = keyStore;
+    JksOptions options = getTrustStoreOptions();
+    if (options == null) {
+      options = new JksOptions();
+      this.setTrustOptions(options);
+    }
+    options.setPath(keyStore);
     return this;
   }
 
@@ -403,8 +581,15 @@ public class MailConfig {
    * get the key store password to be used when opening SMTP connections
    *
    * @return the keyStorePassword
+   * @deprecated 4.0.0
    */
   public String getKeyStorePassword() {
+    // Get the trust store options and if there are any get the password
+    String keyStorePassword = null;
+    JksOptions options = getTrustStoreOptions();
+    if (options != null) {
+      keyStorePassword = options.getPassword();
+    }
     return keyStorePassword;
   }
 
@@ -413,9 +598,15 @@ public class MailConfig {
    *
    * @param keyStorePassword the key store passwords to be set
    * @return a reference to this, so the API can be used fluently
+   * @deprecated 4.0.0
    */
   public MailConfig setKeyStorePassword(String keyStorePassword) {
-    this.keyStorePassword = keyStorePassword;
+    JksOptions options = getTrustStoreOptions();
+    if (options == null) {
+      options = new JksOptions();
+      this.setTrustOptions(options);
+    }
+    options.setPassword(keyStorePassword);
     return this;
   }
 
@@ -702,7 +893,7 @@ public class MailConfig {
    * @return json object of the config
    */
   public JsonObject toJson() {
-    JsonObject json = new JsonObject();
+    JsonObject json = super.toJson();
     if (hostname != null) {
       json.put("hostname", hostname);
     }
@@ -718,18 +909,6 @@ public class MailConfig {
     }
     if (password != null) {
       json.put("password", password);
-    }
-    if (ssl) {
-      json.put("ssl", true);
-    }
-    if (trustAll) {
-      json.put("trustAll", true);
-    }
-    if (keyStore != null) {
-      json.put("keyStore", keyStore);
-    }
-    if (keyStorePassword != null) {
-      json.put("keyStorePassword", keyStorePassword);
     }
     if (authMethods != null) {
       json.put("authMethods", authMethods);
@@ -763,36 +942,37 @@ public class MailConfig {
   }
 
   private List<Object> getList() {
-    return Arrays.asList(hostname, port, starttls, login, username, password, ssl, trustAll, keyStore,
-        keyStorePassword, authMethods, ownHostname, maxPoolSize, keepAlive, allowRcptErrors, disableEsmtp,
-        userAgent, enableDKIM, dkimSignOptions);
+    return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
+      keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions);
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#equals(java.lang.Object)
    */
   @Override
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof MailConfig)) {
+    } else if (!(o instanceof NetClientOptions)) {
       return false;
+    } else if (!super.equals(o)) {
+      return false;
+    } else {
+      final MailConfig that = (MailConfig) o;
+      return getList().equals(that.getList());
     }
-    final MailConfig config = (MailConfig) o;
-
-    return getList().equals(config.getList());
   }
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see java.lang.Object#hashCode()
    */
   @Override
   public int hashCode() {
-    return getList().hashCode();
+    int result = super.hashCode();
+    return 31 * result + getList().hashCode();
   }
 }
