@@ -30,7 +30,7 @@ import org.junit.runner.RunWith;
 /**
  * check behaviour of failing recipient addresses, either fails the complete mail (default) or sends the mail to the
  * accepted recipients
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
@@ -54,7 +54,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
 
     MailConfig config = configNoSSL()
         .setAllowRcptErrors(true);
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
 
     Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
@@ -83,7 +83,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
         "MAIL FROM:",
         "250 2.1.0 Ok",
         "RCPT TO:",
-        "501 5.1.3 Bad recipient address syntax", 
+        "501 5.1.3 Bad recipient address syntax",
         "RCPT TO:",
         "501 5.1.3 Bad recipient address syntax");
 
@@ -92,7 +92,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
 
     MailConfig config = configNoSSL()
         .setAllowRcptErrors(true);
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
 
     testException(mailClient, mail);
   }
@@ -108,7 +108,7 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
         "RCPT TO:",
         "250 2.1.5 Ok",
         "RCPT TO:",
-        "501 5.1.3 Bad recipient address syntax", 
+        "501 5.1.3 Bad recipient address syntax",
         "DATA",
         "354 End data with <CR><LF>.<CR><LF>",
         "250 2.0.0 Ok: queued as ABCDDEF0123456789",
