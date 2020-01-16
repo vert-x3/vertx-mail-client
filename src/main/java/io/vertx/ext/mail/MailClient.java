@@ -39,14 +39,6 @@ public interface MailClient {
   String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
-   * @deprecated use {@link #create(Vertx, MailConfig)} instead
-   */
-  @Deprecated
-  static MailClient createNonShared(Vertx vertx, MailConfig config) {
-    return create(vertx, config);
-  }
-
-  /**
    * Create a non shared instance of the mail client.
    *
    * @param vertx  the Vertx instance the operation will be run in
