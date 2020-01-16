@@ -74,7 +74,7 @@ public class HeloTest extends SMTPTestDummy {
 
     MailConfig mailConfig = defaultConfig();
     mailConfig.setDisableEsmtp(true);
-    testSuccess(MailClient.createNonShared(vertx, mailConfig), exampleMessage());
+    testSuccess(MailClient.create(vertx, mailConfig), exampleMessage());
   }
 
   /*
@@ -144,7 +144,7 @@ public class HeloTest extends SMTPTestDummy {
   @Test
   public void connectionRefusedTest(TestContext testContext) {
     this.testContext=testContext;
-    testException(MailClient.createNonShared(vertx, new MailConfig("localhost", 1588)));
+    testException(MailClient.create(vertx, new MailConfig("localhost", 1588)));
   }
 
   @Test

@@ -41,7 +41,7 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
   public void poolCountRisesConnRefusedTest(TestContext testContext) {
     Async async = testContext.async();
 
-    MailClient mailClient = MailClient.createNonShared(vertx, new MailConfig("localhost", 20025).setMaxPoolSize(1));
+    MailClient mailClient = MailClient.create(vertx, new MailConfig("localhost", 20025).setMaxPoolSize(1));
 
     mailClient.sendMail(exampleMessage(), result -> {
       testContext.assertTrue(result.failed());
@@ -53,7 +53,7 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
   }
 
   /**
-   * when counting down the closed connection, make sure that we don't decrease the count twice for one connection  
+   * when counting down the closed connection, make sure that we don't decrease the count twice for one connection
    */
   @Test
   public void countLessThan0Test(TestContext testContext) {
@@ -62,7 +62,7 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
     smtpServer.setDialogue("500 connection rejected");
 
     // since we want to spy on connCount, we have to use MailClientImpl directly
-    MailClientImpl mailClient = (MailClientImpl) MailClient.createNonShared(vertx, defaultConfig().setMaxPoolSize(1));
+    MailClientImpl mailClient = (MailClientImpl) MailClient.create(vertx, defaultConfig().setMaxPoolSize(1));
     SMTPConnectionPool pool = mailClient.getConnectionPool();
 
     testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());

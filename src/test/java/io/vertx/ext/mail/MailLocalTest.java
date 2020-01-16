@@ -25,7 +25,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 /**
  * this test uses a local SMTP server (wiser from subethasmtp) since this server supports SSL/TLS, the tests relating to
  * that are here
- * 
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
@@ -40,7 +40,7 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTestTLSTrustAll(TestContext testContext) {
     this.testContext=testContext;
-    MailClient mailClient = MailClient.createNonShared(vertx,
+    MailClient mailClient = MailClient.create(vertx,
       configLogin().setStarttls(StartTLSOptions.REQUIRED).setTrustAll(true));
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
@@ -48,7 +48,7 @@ public class MailLocalTest extends SMTPTestWiser {
   @Test
   public void mailTestTLSNoTrust(TestContext testContext) {
     this.testContext=testContext;
-    MailClient mailClient = MailClient.createNonShared(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
+    MailClient mailClient = MailClient.create(vertx, configLogin().setStarttls(StartTLSOptions.REQUIRED));
     testException(mailClient);
   }
 
@@ -57,7 +57,7 @@ public class MailLocalTest extends SMTPTestWiser {
     this.testContext = testContext;
     final MailConfig config = configLogin().setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
@@ -66,7 +66,7 @@ public class MailLocalTest extends SMTPTestWiser {
     this.testContext = testContext;
     final MailConfig config = configLogin().setHostname("LOCALHOST").setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
 
@@ -75,7 +75,7 @@ public class MailLocalTest extends SMTPTestWiser {
     this.testContext = testContext;
     final MailConfig config = configLogin().setHostname("127.0.0.1").setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
     testException(mailClient);
   }
 

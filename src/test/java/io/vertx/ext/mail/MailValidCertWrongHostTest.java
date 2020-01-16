@@ -39,7 +39,7 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
     this.testContext = testContext;
     final MailConfig config = defaultConfig().setHostname("127.0.0.1").setPort(1587).setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
     testException(mailClient);
   }
 
@@ -48,7 +48,7 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
     this.testContext = testContext;
     final MailConfig config = defaultConfig().setHostname("127.0.0.1").setPort(1587).setStarttls(StartTLSOptions.REQUIRED)
         .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password").setTrustAll(true);
-    MailClient mailClient = MailClient.createNonShared(vertx, config);
+    MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }
 

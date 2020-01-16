@@ -82,7 +82,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     .setAuid(IDENTITY).setSdid("example.com").setSelector("lgao").setSignAlgo(DKIMSignAlgorithm.RSA_SHA256);
 
   private MailClient dkimMailClient(DKIMSignOptions dkimOps) {
-    return MailClient.createNonShared(vertx, configLogin().setEnableDKIM(true).addDKIMSignOption(dkimOps));
+    return MailClient.create(vertx, configLogin().setEnableDKIM(true).addDKIMSignOption(dkimOps));
   }
 
   @Test

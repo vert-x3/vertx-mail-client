@@ -33,11 +33,11 @@ public class RefCountTest extends VertxTestBase {
   public void testNonShared() {
     LocalMap<String, Object> map = getLocalMap();
     MailConfig config = new MailConfig();
-    MailClient client1 = MailClient.createNonShared(vertx, config);
+    MailClient client1 = MailClient.create(vertx, config);
     assertEquals(1, map.size());
-    MailClient client2 = MailClient.createNonShared(vertx, config);
+    MailClient client2 = MailClient.create(vertx, config);
     assertEquals(2, map.size());
-    MailClient client3 = MailClient.createNonShared(vertx, config);
+    MailClient client3 = MailClient.create(vertx, config);
     assertEquals(3, map.size());
     client1.close();
     assertEquals(2, map.size());
