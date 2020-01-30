@@ -16,7 +16,7 @@
 
 package io.vertx.ext.mail.mailencoder;
 
-import io.vertx.core.http.CaseInsensitiveHeaders;
+import io.vertx.core.MultiMap;
 
 import java.util.List;
 
@@ -29,7 +29,7 @@ class MultiPart extends EncodedPart {
     this.parts = parts;
     this.boundary = Utils.generateBoundary(userAgent);
 
-    headers = new CaseInsensitiveHeaders();
+    headers = MultiMap.caseInsensitiveMultiMap();
     headers.set("Content-Type", "multipart/" + mode + "; boundary=\"" + boundary + "\"");
 
   }

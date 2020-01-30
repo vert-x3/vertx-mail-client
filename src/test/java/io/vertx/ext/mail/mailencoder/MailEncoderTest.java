@@ -22,7 +22,6 @@ import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
@@ -422,7 +421,7 @@ public class MailEncoderTest {
   @Test
   public void testHeaders() {
     MailMessage message = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.set("X-Header", "value");
     message.setHeaders(headers);
     String mime = new MailEncoder(message, HOSTNAME).encode();
@@ -432,7 +431,7 @@ public class MailEncoderTest {
   @Test
   public void testHeadersExist() {
     MailMessage message = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.set("mime-version", "2.1");
     message.setHeaders(headers);
     String mime = new MailEncoder(message, HOSTNAME).encode().toLowerCase(Locale.ENGLISH);
@@ -443,7 +442,7 @@ public class MailEncoderTest {
   @Test
   public void testFixedHeaders() {
     MailMessage message = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.set("X-Header", "value");
     message.setHeaders(headers);
     message.setFixedHeaders(true);
@@ -455,7 +454,7 @@ public class MailEncoderTest {
   @Test
   public void testFixedHeadersExist() {
     MailMessage message = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.set("Content-Type", "type");
     message.setHeaders(headers);
     message.setFixedHeaders(true);
@@ -467,7 +466,7 @@ public class MailEncoderTest {
   @Test
   public void testFixedHeadersMessage() {
     MailMessage message = new MailMessage();
-    message.setHeaders(new CaseInsensitiveHeaders());
+    message.setHeaders(MultiMap.caseInsensitiveMultiMap());
     message.setFixedHeaders(true);
     message.setText("message text");
     String mime = new MailEncoder(message, HOSTNAME).encode();
@@ -477,7 +476,7 @@ public class MailEncoderTest {
   @Test
   public void testFixedHeadersMultiple() {
     MailMessage message = new MailMessage();
-    final MultiMap headers = new CaseInsensitiveHeaders();
+    final MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.add("Header", "value1");
     headers.add("Header", "value2");
     headers.add("Header2", "value3");
@@ -529,7 +528,7 @@ public class MailEncoderTest {
     MailMessage message = new MailMessage();
     MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("XXX"))
-      .setHeaders(new CaseInsensitiveHeaders().add("X-Header", "value"));
+      .setHeaders(MultiMap.caseInsensitiveMultiMap().add("X-Header", "value"));
     message.setAttachment(attachment);
     String mime = new MailEncoder(message, HOSTNAME).encode();
     assertThat(mime, containsString("X-Header: value"));

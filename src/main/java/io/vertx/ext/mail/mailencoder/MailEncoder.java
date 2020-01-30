@@ -16,10 +16,7 @@
 
 package io.vertx.ext.mail.mailencoder;
 
-import io.vertx.core.Context;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.CaseInsensitiveHeaders;
-import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.mail.MailAttachment;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
@@ -159,7 +156,7 @@ public class MailEncoder {
    * @return MultiMap of final headers
    */
   private MultiMap createHeaders(MultiMap additionalHeaders) {
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();;
 
     if (!message.isFixedHeaders()) {
       headers.set("MIME-Version", "1.0");

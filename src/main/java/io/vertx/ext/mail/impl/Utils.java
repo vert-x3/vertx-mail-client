@@ -17,7 +17,6 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -103,7 +102,7 @@ public final class Utils {
   }
 
   public static MultiMap jsonToMultiMap(final JsonObject jsonHeaders) {
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();;
     for (String key : jsonHeaders.getMap().keySet()) {
       headers.add(key, getKeyAsStringOrList(jsonHeaders, key));
     }

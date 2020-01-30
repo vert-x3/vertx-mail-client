@@ -21,7 +21,6 @@ import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.file.AsyncFile;
 import io.vertx.core.file.OpenOptions;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
@@ -50,7 +49,7 @@ class AttachmentPart extends EncodedPart {
     if (this.attachment.getStream() != null && this.attachment.getSize() < 0) {
       log.warn("Size of the attachment should be specified when using stream");
     }
-    headers = new CaseInsensitiveHeaders();
+    headers = MultiMap.caseInsensitiveMultiMap();;
     String name = attachment.getName();
     String contentType;
     if (attachment.getContentType() != null) {

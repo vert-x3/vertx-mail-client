@@ -19,7 +19,6 @@ package io.vertx.ext.mail;
 import io.vertx.codegen.annotations.DataObject;
 import io.vertx.codegen.annotations.GenIgnore;
 import io.vertx.core.MultiMap;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mail.impl.Utils;
@@ -76,7 +75,7 @@ public class MailMessage {
       this.inlineAttachment = copyAttachments(other.inlineAttachment);
     }
     if (other.headers != null) {
-      headers = new CaseInsensitiveHeaders().addAll(other.headers);
+      headers = MultiMap.caseInsensitiveMultiMap().addAll(other.headers);
     }
   }
 
@@ -420,7 +419,7 @@ public class MailMessage {
    */
   public MailMessage addHeader(String key, String value) {
     if (headers == null) {
-      headers = new CaseInsensitiveHeaders();
+      headers = MultiMap.caseInsensitiveMultiMap();;
     }
     Objects.requireNonNull(key, "no null key accepted");
     Objects.requireNonNull(value, "no null value accepted");

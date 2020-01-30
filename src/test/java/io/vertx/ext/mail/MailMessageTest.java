@@ -18,7 +18,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.http.CaseInsensitiveHeaders;
 import io.vertx.core.json.JsonObject;
 
 import org.junit.Test;
@@ -91,7 +90,7 @@ public class MailMessageTest {
   @Test
   public void testConstructorFromClassHeaders() {
     MailMessage message = new MailMessage();
-    message.setHeaders(new CaseInsensitiveHeaders());
+    message.setHeaders(MultiMap.caseInsensitiveMultiMap());
     MailMessage message2 = new MailMessage(message);
     // cannot use equals since CaseInsensitiveHeaders doesn't implement that
     assertEquals(message.toJson().encode(), message2.toJson().encode());
@@ -253,7 +252,7 @@ public class MailMessageTest {
   @Test
   public void testHeadersEmpty() {
     MailMessage mailMessage = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     mailMessage.setHeaders(headers);
     assertEquals(0, mailMessage.getHeaders().size());
     assertEquals("{\"headers\":{}}", mailMessage.toJson().encode());
@@ -262,7 +261,7 @@ public class MailMessageTest {
   @Test
   public void testHeadersValue() {
     MailMessage mailMessage = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.add("Header", "value");
     mailMessage.setHeaders(headers);
     assertEquals("{\"headers\":{\"Header\":[\"value\"]}}", mailMessage.toJson().encode());
@@ -271,7 +270,7 @@ public class MailMessageTest {
   @Test
   public void testHeadersMultipleKeys() {
     MailMessage mailMessage = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.add("Header", "value");
     headers.add("Header2", "value2");
     mailMessage.setHeaders(headers);
@@ -281,7 +280,7 @@ public class MailMessageTest {
   @Test
   public void testHeadersMultipleValues() {
     MailMessage mailMessage = new MailMessage();
-    MultiMap headers = new CaseInsensitiveHeaders();
+    MultiMap headers = MultiMap.caseInsensitiveMultiMap();
     headers.add("Header", "value1");
     headers.add("Header", "value2");
     headers.add("Header2", "value3");
