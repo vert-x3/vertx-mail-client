@@ -284,7 +284,8 @@ class SMTPSendMail {
 
   private void sendMailHeaders(List<Map.Entry<String, String>> headers, int i, Promise<Void> promise) {
     if (i < headers.size()) {
-      String entryString = headers.get(i).toString();
+      Map.Entry<String, String> header = headers.get(i);
+      String entryString = header.getKey() + ": " + header.getValue() + "\n";
       Promise<Void> next = Promise.promise();
       next.future().setHandler(v -> {
         if (v.succeeded()) {

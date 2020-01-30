@@ -33,7 +33,10 @@ public abstract class EncodedPart {
   String part;
 
   String asString() {
-    StringBuilder sb = new StringBuilder(headers().toString());
+    StringBuilder sb = new StringBuilder();
+    headers().forEach(header -> {
+      sb.append(header.getKey()).append(": ").append(header.getValue()).append("\n");
+    });
     if (body() != null) {
       sb.append("\n");
       sb.append(body());

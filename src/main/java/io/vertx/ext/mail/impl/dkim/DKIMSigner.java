@@ -290,7 +290,7 @@ public class DKIMSigner {
     try {
       StringBuilder sb = new StringBuilder();
       sb.append(boundaryStart);
-      part.headers().entries().forEach(entry -> sb.append(entry.toString()).append("\r\n"));
+      part.headers().forEach(entry -> sb.append(entry.getKey()).append(": ").append(entry.getValue()).append("\r\n"));
       sb.append("\r\n");
       promise.complete(digest(md, sb.toString().getBytes(), written));
     } catch (Exception e) {
