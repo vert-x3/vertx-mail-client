@@ -74,13 +74,8 @@ public class MailAuthChainTest extends SMTPTestDummy {
     final MailClient mailClient = mailClientLogin();
     final MailMessage email = exampleMessage();
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
-    Async async = testContext.async();
-    PassOnce pass1 = new PassOnce(testContext::fail);
-    PassOnce pass2 = new PassOnce(testContext::fail);
     assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-    mailClient.sendMail(email, r1 -> {
-      pass1.passOnce();
-      assertTrue(r1.succeeded());
+    mailClient.sendMail(email, testContext.asyncAssertSuccess(r1 -> {
       assertEquals("LOGIN", clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       smtpServer.setDialogue(
         "220 smtp.gmail.com ESMTP o8sm3958210pjs.6 - gsmtp",
@@ -109,13 +104,10 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, r2 -> {
-        pass2.passOnce();
+      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> {
         mailClient.close();
-        assertTrue(r2.succeeded());
-        async.complete();
-      });
-    });
+      }));
+    }));
   }
 
   // all auth methods failed
@@ -151,16 +143,11 @@ public class MailAuthChainTest extends SMTPTestDummy {
     final MailMessage email = exampleMessage();
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
 
-    Async async = testContext.async();
-    PassOnce pass1 = new PassOnce(testContext::fail);
     assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-    mailClient.sendMail(email, r1 -> {
-      pass1.passOnce();
-      assertTrue(r1.failed());
+    mailClient.sendMail(email, testContext.asyncAssertSuccess(r1 -> {
       assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       mailClient.close();
-      async.complete();
-    });
+    }));
   }
 
 
@@ -211,13 +198,8 @@ public class MailAuthChainTest extends SMTPTestDummy {
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
     // default is LOGIN, but will fail
     clientImpl.getConnectionPool().getAuthOperationFactory().setAuthMethod("LOGIN");
-    Async async = testContext.async();
-    PassOnce pass1 = new PassOnce(testContext::fail);
-    PassOnce pass2 = new PassOnce(testContext::fail);
     assertEquals("LOGIN", clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-    mailClient.sendMail(email, r1 -> {
-      pass1.passOnce();
-      assertTrue(r1.succeeded());
+    mailClient.sendMail(email, testContext.asyncAssertSuccess(r1 -> {
       assertEquals("PLAIN", clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       smtpServer.setDialogue(
         "220 smtp.gmail.com ESMTP o8sm3958210pjs.6 - gsmtp",
@@ -242,13 +224,10 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, r2 -> {
-        pass2.passOnce();
+      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> {
         mailClient.close();
-        assertTrue(r2.succeeded());
-        async.complete();
-      });
-    });
+      }));
+    }));
   }
 
 }
