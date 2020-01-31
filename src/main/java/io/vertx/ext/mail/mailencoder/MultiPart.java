@@ -40,7 +40,10 @@ class MultiPart extends EncodedPart {
   }
 
   private String partAsString(EncodedPart part) {
-    StringBuilder sb = new StringBuilder(part.headers().toString());
+    StringBuilder sb = new StringBuilder();
+    part.headers().forEach(header -> {
+      sb.append(header.getKey()).append(": ").append(header.getValue()).append("\n");
+    });
     sb.append("\n");
     if (part.parts() != null) {
       for(EncodedPart thePart: part.parts()) {
