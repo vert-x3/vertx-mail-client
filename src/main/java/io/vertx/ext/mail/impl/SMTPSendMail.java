@@ -169,7 +169,7 @@ class SMTPSendMail {
     if (i + 1 < recipientAddrs.size()) {
       rcptToCmd(recipientAddrs, i + 1);
     } else {
-      if (mailResult.getRecipients().size() > 0) {
+      if (!mailResult.getRecipients().isEmpty()) {
         dataCmd();
       } else {
         log.warn("no recipient addresses were accepted, not sending mail");
@@ -285,7 +285,7 @@ class SMTPSendMail {
   private void sendMailHeaders(List<Map.Entry<String, String>> headers, int i, Promise<Void> promise) {
     if (i < headers.size()) {
       Map.Entry<String, String> header = headers.get(i);
-      String entryString = header.getKey() + ": " + header.getValue() + "\n";
+      String entryString = header.getKey() + ": " + header.getValue();
       Promise<Void> next = Promise.promise();
       next.future().setHandler(v -> {
         if (v.succeeded()) {
