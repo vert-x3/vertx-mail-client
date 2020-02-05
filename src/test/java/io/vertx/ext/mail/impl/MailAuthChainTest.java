@@ -18,12 +18,9 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailMessage;
-import io.vertx.ext.mail.PassOnce;
 import io.vertx.ext.mail.SMTPTestDummy;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -112,7 +109,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
   }
 
   // all auth methods failed
-  @Ignore
   @Test
   public void authChainFailedTest(TestContext testContext) {
     this.testContext = testContext;
@@ -146,7 +142,7 @@ public class MailAuthChainTest extends SMTPTestDummy {
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
 
     assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-    mailClient.sendMail(email, testContext.asyncAssertSuccess(r1 -> {
+    mailClient.sendMail(email, testContext.asyncAssertFailure(r1 -> {
       assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       mailClient.close();
     }));
