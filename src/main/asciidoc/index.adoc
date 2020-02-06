@@ -230,8 +230,8 @@ The DKIMSignOptions object has the following properties
 * `sdid` *required*, String, Singing Domain Identifier(SDID), normally it is the domain of the SMTP server.
 * `auid` optional, String, the Agent or User Identifier(AUID), default is `@` plus `sdid`
 * `selector` *required*, String, the selector used to query public key.
-* `headerCanonic` MessageCanonic algorithm used for headers, one of `simple`(default) and `relaxed`.
-* `bodyCanonic` MessageCanonic algorithm used for body hashing, one of `simple`(default) and `relaxed`.
+* `headerCanonAlgo` Canonicalization algorithm used for mail headers, one of `simple`(default) and `relaxed`.
+* `bodyCanonAlgo` Canonicalization algorithm used for mail body, one of `simple`(default) and `relaxed`.
 * `bodyLimit` optional, int, how long of the body used to calculate the body hash.
 * `signatureTimestamp` optional, boolean, if includes timestamp in the `DKIM-SIgnature` tags list. default is false
 * `expireTime` optional, long, expire time in seconds when the signature sign will be expired from now.
