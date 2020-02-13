@@ -30,7 +30,6 @@ import io.vertx.ext.mail.mailencoder.EncodedPart;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 class SMTPSendMail {
@@ -222,7 +221,7 @@ class SMTPSendMail {
 
   private void sendMaildata(Promise<Void> promise) {
     final EncodedPart part = this.encodedPart;
-    sendMailHeaders(part.headers().entries()).setHandler(v -> {
+    sendMailHeaders(part.headers()).setHandler(v -> {
       if (v.succeeded()) {
         if (isMultiPart(part)) {
           sendMultiPart(part, 0, promise);
@@ -242,7 +241,7 @@ class SMTPSendMail {
 
       Promise<Void> boundaryStartPromise = Promise.promise();
       boundaryStartPromise.future()
-        .compose(v -> sendMailHeaders(thePart.headers().entries())).setHandler(v -> {
+        .compose(v -> sendMailHeaders(thePart.headers())).setHandler(v -> {
         if (v.succeeded()) {
           Promise<Void> nextPromise = Promise.promise();
           nextPromise.future().setHandler(vv -> {
@@ -276,28 +275,13 @@ class SMTPSendMail {
     return part.parts() != null && part.parts().size() > 0;
   }
 
-  private Future<Void> sendMailHeaders(List<Map.Entry<String, String>> headers) {
+  private Future<Void> sendMailHeaders(MultiMap headers) {
     Promise<Void> promise = Promise.promise();
-    sendMailHeaders(headers, 0, promise);
+    StringBuilder sb = new StringBuilder();
+    headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
+    final String headerLines = sb.toString();
+    connection.writeLineWithDrainPromise(headerLines, written.getAndAdd(headerLines.length()) < 1000, promise);
     return promise.future();
-  }
-
-  private void sendMailHeaders(List<Map.Entry<String, String>> headers, int i, Promise<Void> promise) {
-    if (i < headers.size()) {
-      Map.Entry<String, String> header = headers.get(i);
-      String entryString = header.getKey() + ": " + header.getValue();
-      Promise<Void> next = Promise.promise();
-      next.future().setHandler(v -> {
-        if (v.succeeded()) {
-          sendMailHeaders(headers, i + 1, promise);
-        } else {
-          promise.fail(v.cause());
-        }
-      });
-      connection.writeLineWithDrainPromise(entryString, written.getAndAdd(entryString.length()) < 1000, next);
-    } else {
-      connection.writeLineWithDrainPromise("", written.get() < 1000, promise);
-    }
   }
 
   private void sendBodyLineByLine(String[] lines, int i, Promise<Void> promise) {
