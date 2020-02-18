@@ -19,7 +19,7 @@ package io.vertx.ext.mail.impl.dkim;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.mail.DKIMSignAlgorithm;
 import io.vertx.ext.mail.DKIMSignOptions;
-import io.vertx.ext.mail.MessageCanonic;
+import io.vertx.ext.mail.CanonicalizationAlgorithm;
 import org.junit.Test;
 
 import java.util.stream.Collectors;
@@ -64,15 +64,15 @@ public class DKIMSignerTest {
 
     assertTrue(dkimOps.getSignedHeaders().stream().anyMatch(h -> h.equalsIgnoreCase("from")));
     assertEquals(DKIMSignAlgorithm.RSA_SHA256, dkimOps.getSignAlgo());
-    assertEquals(MessageCanonic.SIMPLE, dkimOps.getHeaderCanonic());
-    assertEquals(MessageCanonic.SIMPLE, dkimOps.getBodyCanonic());
+    assertEquals(CanonicalizationAlgorithm.SIMPLE, dkimOps.getHeaderCanonAlgo());
+    assertEquals(CanonicalizationAlgorithm.SIMPLE, dkimOps.getBodyCanonAlgo());
     assertEquals(-1, dkimOps.getBodyLimit());
     assertEquals(-1, dkimOps.getExpireTime());
 
     JsonObject json = dkimOps.toJson();
     assertEquals(DKIMSignAlgorithm.RSA_SHA256, DKIMSignAlgorithm.valueOf(json.getString("signAlgo")));
-    assertEquals(MessageCanonic.SIMPLE.name(), json.getString("headerCanonic"));
-    assertEquals(MessageCanonic.SIMPLE.name(), json.getString("bodyCanonic"));
+    assertEquals(CanonicalizationAlgorithm.SIMPLE.name(), json.getString("headerCanonAlgo"));
+    assertEquals(CanonicalizationAlgorithm.SIMPLE.name(), json.getString("bodyCanonAlgo"));
   }
 
   @Test
@@ -82,20 +82,20 @@ public class DKIMSignerTest {
 
     dkimOps.setAuid("local-part@example.com");
     dkimOps.setSdid("example.com");
-    dkimOps.setBodyCanonic(MessageCanonic.RELAXED);
+    dkimOps.setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     dkimOps.setBodyLimit(5000);
     dkimOps.setCopiedHeaders(Stream.of("From", "To").collect(Collectors.toList()));
     dkimOps.setSelector("exampleUser");
-    dkimOps.setHeaderCanonic(MessageCanonic.SIMPLE);
+    dkimOps.setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     dkimOps.setPrivateKey(PRIVATE_KEY);
 
     assertEquals("local-part@example.com", dkimOps.getAuid());
     assertEquals("example.com", dkimOps.getSdid());
-    assertEquals(MessageCanonic.RELAXED, dkimOps.getBodyCanonic());
+    assertEquals(CanonicalizationAlgorithm.RELAXED, dkimOps.getBodyCanonAlgo());
     assertEquals(5000, dkimOps.getBodyLimit());
     assertArrayEquals(new String[]{"From", "To"}, dkimOps.getCopiedHeaders().toArray());
     assertEquals("exampleUser", dkimOps.getSelector());
-    assertEquals(MessageCanonic.SIMPLE, dkimOps.getHeaderCanonic());
+    assertEquals(CanonicalizationAlgorithm.SIMPLE, dkimOps.getHeaderCanonAlgo());
 
     DKIMSigner dkimSigner = new DKIMSigner(dkimOps, null);
     assertNotNull(dkimSigner);
@@ -169,7 +169,7 @@ public class DKIMSignerTest {
 
   @Test
   public void testSimpleHeader() {
-    DKIMSignOptions dkimOps = dkimOps().setHeaderCanonic(MessageCanonic.SIMPLE);
+    DKIMSignOptions dkimOps = dkimOps().setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
     // there will be possible to have \n in the header value, keep it as it is.
     String name = "from";
@@ -195,7 +195,7 @@ public class DKIMSignerTest {
 
   @Test
   public void testRelaxedHeader() {
-    DKIMSignOptions dkimOps = dkimOps().setHeaderCanonic(MessageCanonic.RELAXED);
+    DKIMSignOptions dkimOps = dkimOps().setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
     // there will be possible to have \n in the header value
     String name = "From";
@@ -226,7 +226,7 @@ public class DKIMSignerTest {
 
   @Test
   public void testRelaxedBodyLine() {
-    DKIMSignOptions dkimOps = dkimOps().setBodyCanonic(MessageCanonic.RELAXED);
+    DKIMSignOptions dkimOps = dkimOps().setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
     // there will be no \n in each line, so just test whitespaces
     String line = "Line with trailing HTAB\t";
@@ -253,7 +253,7 @@ public class DKIMSignerTest {
 
   @Test
   public void testSimpleBodyCannonic() {
-    DKIMSignOptions dkimOps = dkimOps().setBodyCanonic(MessageCanonic.SIMPLE);
+    DKIMSignOptions dkimOps = dkimOps().setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
 
     String body = "This is a Multiple Lines Text\n.Some lines start with one dot\n..Some" +
@@ -277,7 +277,7 @@ public class DKIMSignerTest {
 
   @Test
   public void testRelaxedBodyCannonic() {
-    DKIMSignOptions dkimOps = dkimOps().setBodyCanonic(MessageCanonic.RELAXED);
+    DKIMSignOptions dkimOps = dkimOps().setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
 
     String body = "simple line";

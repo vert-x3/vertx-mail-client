@@ -18,8 +18,8 @@
 |[[auid]]`@auid`|`String`|+++
 Sets the Agent or User Identifier(AUID)
 +++
-|[[bodyCanonic]]`@bodyCanonic`|`link:enums.html#MessageCanonic[MessageCanonic]`|+++
-Sets the message canonicalization for email body.
+|[[bodyCanonAlgo]]`@bodyCanonAlgo`|`link:enums.html#CanonicalizationAlgorithm[CanonicalizationAlgorithm]`|+++
+Sets the canonicalization algorithm for mail body.
 +++
 |[[bodyLimit]]`@bodyLimit`|`Number (int)`|+++
 Sets the body limit to sign.
@@ -32,8 +32,8 @@ Sets the expire time in seconds when the signature sign will be expired.
 
  Success call of this method indicates that the signature sign timestamp is enabled.
 +++
-|[[headerCanonic]]`@headerCanonic`|`link:enums.html#MessageCanonic[MessageCanonic]`|+++
-Sets the message canonicalization for email signedHeaders.
+|[[headerCanonAlgo]]`@headerCanonAlgo`|`link:enums.html#CanonicalizationAlgorithm[CanonicalizationAlgorithm]`|+++
+Sets the canonicalization algorithm for signed headers.
 +++
 |[[privateKey]]`@privateKey`|`String`|+++
 Sets the PKCS#8 format private key used to sign the email.

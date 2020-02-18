@@ -25,7 +25,7 @@ import io.vertx.core.streams.Pipe;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.core.streams.WriteStream;
 import io.vertx.ext.mail.DKIMSignOptions;
-import io.vertx.ext.mail.MessageCanonic;
+import io.vertx.ext.mail.CanonicalizationAlgorithm;
 import io.vertx.ext.mail.mailencoder.EncodedPart;
 import io.vertx.ext.mail.mailencoder.Utils;
 
@@ -135,10 +135,10 @@ public class DKIMSigner {
     sb.append("v=1; ");
     // sign algorithm
     sb.append("a=").append(this.dkimSignOptions.getSignAlgo().dkimAlgoName()).append("; ");
-    // optional message canonic
-    MessageCanonic bodyCanonic = this.dkimSignOptions.getBodyCanonic();
-    MessageCanonic headerCanonic = this.dkimSignOptions.getHeaderCanonic();
-    sb.append("c=").append(headerCanonic.canonic()).append("/").append(bodyCanonic.canonic()).append("; ");
+    // optional message algoName
+    CanonicalizationAlgorithm bodyCanonic = this.dkimSignOptions.getBodyCanonAlgo();
+    CanonicalizationAlgorithm headerCanonic = this.dkimSignOptions.getHeaderCanonAlgo();
+    sb.append("c=").append(headerCanonic.algoName()).append("/").append(bodyCanonic.algoName()).append("; ");
 
     // sdid
     String sdid = dkimQuotedPrintable(this.dkimSignOptions.getSdid());
@@ -454,11 +454,11 @@ public class DKIMSigner {
    * @return the canonicalization email header in format of 'Name':'Value'.
    */
   String canonicHeader(String emailHeaderName, String emailHeaderValue) {
-    if (this.dkimSignOptions.getHeaderCanonic() == MessageCanonic.SIMPLE) {
+    if (this.dkimSignOptions.getHeaderCanonAlgo() == CanonicalizationAlgorithm.SIMPLE) {
       return emailHeaderName + ": " + emailHeaderValue;
     }
     String headerName = emailHeaderName.trim().toLowerCase();
-    return headerName + ":" + canonicLine(emailHeaderValue, this.dkimSignOptions.getHeaderCanonic());
+    return headerName + ":" + canonicalLine(emailHeaderValue, this.dkimSignOptions.getHeaderCanonAlgo());
   }
 
   String dkimMailBody(String mailBody) {
@@ -472,8 +472,8 @@ public class DKIMSigner {
   }
 
   // this is shared by header and body for each line's canonicalization.
-  private String canonicLine(String line, MessageCanonic canonic) {
-    if (MessageCanonic.RELAXED == canonic) {
+  private String canonicalLine(String line, CanonicalizationAlgorithm canon) {
+    if (CanonicalizationAlgorithm.RELAXED == canon) {
       line = line.replaceAll("[\r\n\t ]+", " ");
       line = line.replaceAll("[\r\n\t ]+$", "");
     }
@@ -481,7 +481,7 @@ public class DKIMSigner {
   }
 
   String canonicBodyLine(String line) {
-    return canonicLine(line, this.dkimSignOptions.getBodyCanonic());
+    return canonicalLine(line, this.dkimSignOptions.getBodyCanonAlgo());
   }
 
 }

@@ -90,7 +90,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -102,7 +102,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -114,7 +114,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -128,7 +128,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).addHeader("Received", "by 2002:ab3:7755:0:0:0:0:0 with SMTP id z21csp2085702lti")
       .addHeader("Received", "by 2002:a05:620a:147c:: with SMTP id j28mr519391qkl.13.1575424987504");
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setSignedHeaders(signedHeaders)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, signedHeaders, testContext);
@@ -143,7 +143,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
       .addHeader("Received", "by 2002:a05:620a:147c:: with SMTP id j28mr519391qkl.13.1575424987504")
       .addHeader("Received", "by 2005:a15:725a:579c:: with SMTP id j28mR876591qkl.13.1575473987504");
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setSignedHeaders(signedHeaders)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, signedHeaders, testContext);
@@ -157,7 +157,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).addHeader("Received", "by 2002:ab3:7755:0:0:0:0:0 with SMTP id z21csp2085702lti")
       .addHeader("Received", "by 2002:a05:620a:147c:: with SMTP id j28mr519391qkl.13.1575424987504");
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setSignedHeaders(signedHeaders)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, signedHeaders, testContext);
@@ -172,7 +172,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
       .addHeader("Received", "by 2002:ab3:7755:0:0:0:0:0 with SMTP id z21csp2085702lti")
       .addHeader("Received", "by 2002:a05:620a:147c:: with SMTP id j28mr519391qkl.13.1575424987504");
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setSignedHeaders(signedHeaders)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, signedHeaders, testContext);
@@ -184,7 +184,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(100)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -196,7 +196,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(20)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -208,7 +208,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(Integer.MAX_VALUE)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -220,7 +220,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     this.testContext = testContext;
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -233,7 +233,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setExpireTime(2000)
       .setCopiedHeaders(Stream.of("From", "To").collect(Collectors.toList()))
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       testContext.assertEquals(TEXT_BODY + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(wiser.getMessages().get(0).getMimeMessage().getInputStream())));
       testDKIMSign(dkimOps, testContext);
@@ -246,7 +246,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY);
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setExpireTime(2000)
       .setCopiedHeaders(Stream.of("From", "Not-Existed-Header").collect(Collectors.toList()))
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testException(dkimMailClient(dkimOps), message, RuntimeException.class);
   }
 
@@ -259,7 +259,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -278,7 +278,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -297,7 +297,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -316,7 +316,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -340,7 +340,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
       .setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
 
       // 1. alternative multi part
@@ -379,7 +379,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
       .setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(500)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
 
       // 1. alternative multi part
@@ -420,7 +420,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
       .setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
 
       // 1. alternative multi part
@@ -456,7 +456,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -477,7 +477,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -498,7 +498,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -519,7 +519,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -540,7 +540,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(100)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.RELAXED);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -561,7 +561,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(50)
-      .setHeaderCanonic(MessageCanonic.RELAXED).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -643,7 +643,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -666,7 +666,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(50)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -689,7 +689,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -712,7 +712,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setText(TEXT_BODY).setAttachment(attachment);
 
     DKIMSignOptions dkimOps = new DKIMSignOptions(dkimOptionsBase).setBodyLimit(50)
-      .setHeaderCanonic(MessageCanonic.SIMPLE).setBodyCanonic(MessageCanonic.SIMPLE);
+      .setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE).setBodyCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     testSuccess(dkimMailClient(dkimOps), message, () -> {
       final MimeMultipart multiPart = (MimeMultipart)wiser.getMessages().get(0).getMimeMessage().getContent();
       testContext.assertEquals(2, multiPart.getCount());
@@ -739,7 +739,7 @@ public class MailWithDKIMSignTest extends SMTPTestWiser {
     });
     ctx.assertEquals("1", signTags.get("v"));
     ctx.assertEquals(DKIMSignAlgorithm.RSA_SHA256.dkimAlgoName(), signTags.get("a"));
-    ctx.assertEquals(dkimOps.getHeaderCanonic().canonic() + "/" + dkimOps.getBodyCanonic().canonic(), signTags.get("c"));
+    ctx.assertEquals(dkimOps.getHeaderCanonAlgo().algoName() + "/" + dkimOps.getBodyCanonAlgo().algoName(), signTags.get("c"));
     ctx.assertEquals("example.com", signTags.get("d"));
     ctx.assertEquals("lgao", signTags.get("s"));
     ctx.assertEquals(String.join(":", signHeaders), signTags.get("h"));

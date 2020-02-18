@@ -20,21 +20,21 @@ import io.vertx.codegen.annotations.VertxGen;
 
 /**
  *
- * Message canonicalization for DKIM.
+ * Canonicalization Algorithm for DKIM.
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
 @VertxGen
-public enum MessageCanonic {
+public enum CanonicalizationAlgorithm {
   SIMPLE, // simple
   RELAXED; // relaxed
 
   /**
-   * Gets the message canonicalization representation.
+   * Gets the canonicalization algorithm representation.
    *
-   * @return the message canonicalization representation
+   * @return the canonicalization algorithm representation
    */
-  public String canonic() {
+  public String algoName() {
     return this.name().toLowerCase();
   }
 

@@ -55,8 +55,8 @@ public class DKIMSignOptions {
   private String sdid;
   private String auid;
   private String selector;
-  private MessageCanonic headerCanonic = MessageCanonic.SIMPLE;
-  private MessageCanonic bodyCanonic = MessageCanonic.SIMPLE;
+  private CanonicalizationAlgorithm headerCanonAlgo = CanonicalizationAlgorithm.SIMPLE;
+  private CanonicalizationAlgorithm bodyCanonAlgo = CanonicalizationAlgorithm.SIMPLE;
   private int bodyLimit = -1;
   private boolean signatureTimestamp;
   private long expireTime = -1L;
@@ -81,8 +81,8 @@ public class DKIMSignOptions {
     sdid = other.sdid;
     auid = other.auid;
     selector = other.selector;
-    headerCanonic = other.headerCanonic;
-    bodyCanonic = other.bodyCanonic;
+    headerCanonAlgo = other.headerCanonAlgo;
+    bodyCanonAlgo = other.bodyCanonAlgo;
     bodyLimit = other.bodyLimit;
     signatureTimestamp = other.signatureTimestamp;
     expireTime = other.expireTime;
@@ -251,42 +251,42 @@ public class DKIMSignOptions {
   }
 
   /**
-   * Gets the signedHeaders message canonicalization.
+   * Gets the canonicalization algorithm for signed headers.
    *
-   * @return the message canonicalization for the email signedHeaders
+   * @return the canonicalization algorithm for signed headers
    */
-  public MessageCanonic getHeaderCanonic() {
-    return headerCanonic;
+  public CanonicalizationAlgorithm getHeaderCanonAlgo() {
+    return headerCanonAlgo;
   }
 
   /**
-   * Sets the message canonicalization for email signedHeaders.
+   * Sets the canonicalization algorithm for signed headers.
    *
-   * @param headerCanonic the message canonicalization for email signedHeaders
+   * @param headerCanonAlgo the canonicalization algorithm for signed headers
    * @return a reference to this, so the API can be used fluently
    */
-  public DKIMSignOptions setHeaderCanonic(MessageCanonic headerCanonic) {
-    this.headerCanonic = headerCanonic;
+  public DKIMSignOptions setHeaderCanonAlgo(CanonicalizationAlgorithm headerCanonAlgo) {
+    this.headerCanonAlgo = headerCanonAlgo;
     return this;
   }
 
   /**
-   * Gets the email body message canonicalization.
+   * Gets the canonicalization algorithm for mail body.
    *
-   * @return the message canonicalization for the email body
+   * @return the canonicalization algorithm for mail body
    */
-  public MessageCanonic getBodyCanonic() {
-    return bodyCanonic;
+  public CanonicalizationAlgorithm getBodyCanonAlgo() {
+    return bodyCanonAlgo;
   }
 
   /**
-   * Sets the message canonicalization for email body.
+   * Sets the canonicalization algorithm for mail body.
    *
-   * @param bodyCanonic the message canonicalization for email body
+   * @param bodyCanonAlgo the canonicalization algorithm for mail body
    * @return a reference to this, so the API can be used fluently
    */
-  public DKIMSignOptions setBodyCanonic(MessageCanonic bodyCanonic) {
-    this.bodyCanonic = bodyCanonic;
+  public DKIMSignOptions setBodyCanonAlgo(CanonicalizationAlgorithm bodyCanonAlgo) {
+    this.bodyCanonAlgo = bodyCanonAlgo;
     return this;
   }
 
@@ -415,7 +415,7 @@ public class DKIMSignOptions {
   }
 
   private List<Object> getList() {
-    return Arrays.asList(privateKey, privateKeyPath, signAlgo, signedHeaders, sdid, selector, headerCanonic, bodyCanonic
+    return Arrays.asList(privateKey, privateKeyPath, signAlgo, signedHeaders, sdid, selector, headerCanonAlgo, bodyCanonAlgo
     , auid, bodyLimit, signatureTimestamp, expireTime, copiedHeaders);
   }
 
