@@ -138,6 +138,7 @@
             <systemPropertyVariables>
               <buildDirectory>${project.build.directory}</buildDirectory>
               <vertxVersion>${project.version}</vertxVersion>
+              <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.Log4jLogDelegateFactory</vertx.logger-delegate-factory-class-name>
             </systemPropertyVariables>
             <!-- Needs to be small enough to run in a EC2 1.7GB small instance -->
             <!-- IMPORTANT: when modifying this line, don't forge to modify
