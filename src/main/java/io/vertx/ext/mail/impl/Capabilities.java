@@ -52,6 +52,11 @@ class Capabilities {
   private boolean capaStartTLS;
 
   /**
+   * if the server supports PIPELINING
+   */
+  private boolean capaPipelining;
+
+  /**
    * @return Set of Strings of capabilities
    */
   Set<String> getCapaAuth() {
@@ -63,6 +68,13 @@ class Capabilities {
    */
   int getSize() {
     return capaSize;
+  }
+
+  /**
+   * @return if the server supports PIPELINING
+   */
+  boolean isCapaPipelining() {
+    return capaPipelining;
   }
 
   /**
@@ -88,6 +100,9 @@ class Capabilities {
       if (c.equals("STARTTLS")) {
         capaStartTLS = true;
       }
+      if (c.equals("PIPELINING")) {
+        capaPipelining = true;
+      }
       if (c.startsWith("AUTH ")) {
         capaAuth = Utils.parseCapaAuth(c.substring(5));
       }
@@ -107,7 +122,7 @@ class Capabilities {
   /**
    * parse a multi-line EHLO reply string into a List of lines
    *
-   * @param message
+   * @param message the EHLO response message
    * @return List of lines
    */
   private List<String> parseEhlo(String message) {

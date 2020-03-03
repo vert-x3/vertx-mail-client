@@ -152,14 +152,14 @@ public class MailClientImpl implements MailClient {
       final EncodedPart encodedPart = encoder.encodeMail();
       final String messageId = encoder.getMessageID();
 
-      final SMTPSendMail sendMail = new SMTPSendMail(conn, email, config, encodedPart, messageId, sentResultHandler);
+      final SMTPSendMail sendMail = new SMTPSendMail(conn, email, config, encodedPart, messageId);
       if (dkimSigners.isEmpty()) {
-        sendMail.start();
+        sendMail.startMailTransaction(sentResultHandler);
       } else {
         // generate the DKIM header before start
         dkimFuture(context, encodedPart).onComplete(dkim -> context.runOnContext(h -> {
           if (dkim.succeeded()) {
-            sendMail.start();
+            sendMail.startMailTransaction(sentResultHandler);
           } else {
             sentResultHandler.handle(Future.failedFuture(dkim.cause()));
           }

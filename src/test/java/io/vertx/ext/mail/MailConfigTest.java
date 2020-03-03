@@ -321,4 +321,12 @@ public class MailConfigTest {
     }
   }
 
+  @Test
+  public void testPipelining() {
+    MailConfig mailConfig = new MailConfig();
+    assertTrue(mailConfig.isPipelining());
+    mailConfig.setPipelining(false);
+    assertFalse(mailConfig.isPipelining());
+  }
+
 }

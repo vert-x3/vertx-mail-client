@@ -59,15 +59,13 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
         "EHLO",
         "250-example.com\n"
             + "250-SIZE 1000000\n"
-            + "250-STARTTLS\n"
-            + "250 PIPELINING",
+            + "250 STARTTLS",
         "STARTTLS",
         "220 2.0.0 Ready to start TLS",
         "EHLO",
         "250-example.com\n"
             + "250-SIZE 1000000\n"
-            + "250-STARTTLS\n"
-            + "250 PIPELINING",
+            + "250 STARTTLS",
         "MAIL FROM:",
         "250 2.1.0 Ok",
         "RCPT TO:",

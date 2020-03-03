@@ -147,7 +147,6 @@ You can cache data from attachment's Stream to a temporary file by specifying a 
 `vertx.mail.attachment.cache.file` to `true` for large attachments. It will try to delete the temporary file
 after each send.
 
-
 == Mail-client data objects
 
 === MailMessage properties
@@ -213,6 +212,7 @@ The configuration has the following properties
 * `userAgent` String represents the Mail User Agent(MUA) name used to generate email boundaries for multipart emails and message-id, default is `vertxmail`.
 * `enableDKIM` boolean if true, the DKIM signing will be enabled if DKIM configurations are set as well, default is `false`.
 * `dkimSignOptions` List of `DKIMSignOptions` which are used to perform the DKIM sign.
+* `pipelining` enables pipelining if the SMTP server supports it. Default is `true`
 
 === MailResult object
 The MailResult object has the following members

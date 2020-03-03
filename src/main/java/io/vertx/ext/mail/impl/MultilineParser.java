@@ -25,7 +25,13 @@ import io.vertx.core.parsetools.RecordParser;
 import java.util.regex.Pattern;
 
 /**
+ * Handler to handle the possible multi-lines responses.
+ *
+ * Multi-lines responses for one command split with '\n'.
+ * Responses(one line response and multi-lines responses) split with '\r\n'.
+ *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
 class MultilineParser implements Handler<Buffer> {
   private static final Pattern STATUS_LINE_CONTINUE = Pattern.compile("^\\d{3}-.*");
@@ -33,6 +39,8 @@ class MultilineParser implements Handler<Buffer> {
   private boolean initialized = false;
   private Buffer result;
   private RecordParser rp;
+  private int expected = 1;
+  private int actual = 0;
 
   public MultilineParser(Handler<Buffer> output) {
     Handler<Buffer> mlp = new Handler<Buffer>() {
@@ -57,30 +65,48 @@ class MultilineParser implements Handler<Buffer> {
 
       private void appendOrHandle(final Buffer buffer) {
         if (result == null) {
-          result = buffer;
-        } else {
-          result.appendString("\n");
-          result.appendBuffer(buffer);
+          result = Buffer.buffer();
         }
+        result.appendBuffer(buffer);
         if (isFinalLine(buffer)) {
-          output.handle(result);
-          result = null;
+          actual ++;
+          if (actual < expected) {
+            result.appendString("\r\n");
+          } else if (actual == expected) {
+            try {
+              output.handle(result);
+            } finally {
+              result = null;
+              actual = 0;
+            }
+          }
+        } else {
+          // append \n for all non-last line, there are more buffers to handle
+          result.appendString("\n");
         }
       }
-
-      private boolean isFinalLine(final Buffer buffer) {
-        String line = buffer.toString();
-        return !STATUS_LINE_CONTINUE.matcher(line).matches();
-      }
-
     };
 
     rp = RecordParser.newDelimited("\n", mlp);
   }
 
+  boolean isFinalLine(final Buffer buffer) {
+    String line = buffer.toString();
+    if (line.contains("\n")) {
+      String[] lines = line.split("\n");
+      line = lines[lines.length - 1];
+    }
+    return !STATUS_LINE_CONTINUE.matcher(line).matches();
+  }
+
   @Override
   public void handle(final Buffer event) {
     rp.handle(event);
+  }
+
+  MultilineParser setExpected(int expected) {
+    this.expected = expected;
+    return this;
   }
 
 }

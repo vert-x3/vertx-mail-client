@@ -47,7 +47,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "250-8BITMIME\n" +
         "250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\n" +
         "250-ENHANCEDSTATUSCODES\n" +
-        "250-PIPELINING\n" +
         "250-CHUNKING\n" +
         "250 SMTPUTF8",
       "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
@@ -83,7 +82,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
           "250-8BITMIME\n" +
           "250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\n" +
           "250-ENHANCEDSTATUSCODES\n" +
-          "250-PIPELINING\n" +
           "250-CHUNKING\n" +
           "250 SMTPUTF8",
         "AUTH LOGIN",
@@ -120,7 +118,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "250-8BITMIME\n" +
         "250-AUTH LOGIN PLAIN XOAUTH2\n" +
         "250-ENHANCEDSTATUSCODES\n" +
-        "250-PIPELINING\n" +
         "250-CHUNKING\n" +
         "250 SMTPUTF8",
       "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
@@ -161,7 +158,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "250-8BITMIME\n" +
         "250-AUTH LOGIN PLAIN XOAUTH2\n" +
         "250-ENHANCEDSTATUSCODES\n" +
-        "250-PIPELINING\n" +
         "250-CHUNKING\n" +
         "250 SMTPUTF8",
       "AUTH LOGIN",
@@ -207,7 +203,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
           "250-8BITMIME\n" +
           "250-AUTH LOGIN PLAIN XOAUTH2 PLAIN-CLIENTTOKEN OAUTHBEARER XOAUTH\n" +
           "250-ENHANCEDSTATUSCODES\n" +
-          "250-PIPELINING\n" +
           "250-CHUNKING\n" +
           "250 SMTPUTF8",
         "AUTH PLAIN AHh4eAB5eXk=",

@@ -17,13 +17,14 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.MailConfig;
+
+import java.util.List;
 
 /**
  * SMTP connection to a server.
@@ -48,6 +49,7 @@ class SMTPConnection {
   private Capabilities capa = new Capabilities();
   private final ConnectionLifeCycleListener listener;
   private Context context;
+  private final MultilineParser nsHandler;
 
   SMTPConnection(NetClient client, ConnectionLifeCycleListener listener) {
     broken = true;
@@ -57,6 +59,16 @@ class SMTPConnection {
     socketShutDown = false;
     this.client = client;
     this.listener = listener;
+    this.nsHandler = new MultilineParser(buffer -> {
+      if (commandReplyHandler == null) {
+        log.debug("dropping reply arriving after we stopped processing the buffer.");
+      } else {
+        // make sure we only call the handler once
+        Handler<String> currentHandler = commandReplyHandler;
+        commandReplyHandler = null;
+        currentHandler.handle(buffer.toString());
+      }
+    });
   }
 
   /**
@@ -84,6 +96,18 @@ class SMTPConnection {
       ns.close();
       ns = null;
     }
+  }
+
+  void writeCommands(List<String> commands, Handler<String> resultHandler) {
+    String cmds = String.join("\r\n", commands);
+    this.nsHandler.setExpected(commands.size());
+    this.write(cmds, r -> {
+      try {
+        resultHandler.handle(r);
+      } finally {
+        this.nsHandler.setExpected(1);
+      }
+    });
   }
 
   /*
@@ -206,17 +230,7 @@ class SMTPConnection {
           }
         });
         commandReplyHandler = initialReplyHandler;
-        final Handler<Buffer> mlp = new MultilineParser(buffer -> {
-          if (commandReplyHandler == null) {
-            log.debug("dropping reply arriving after we stopped processing \"" + buffer.toString() + "\"");
-          } else {
-            // make sure we only call the handler once
-            Handler<String> currentHandler = commandReplyHandler;
-            commandReplyHandler = null;
-            currentHandler.handle(buffer.toString());
-          }
-        });
-        ns.handler(mlp);
+        ns.handler(this.nsHandler);
       } else {
         log.error("exception on connect", asyncResult.cause());
         // notify the pool that the connection attempt didn't work so that the connection count is correct
