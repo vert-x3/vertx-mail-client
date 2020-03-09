@@ -145,10 +145,10 @@ class SMTPConnection {
       ns.drainHandler(v -> {
         // avoid getting confused by being called twice
         ns.drainHandler(null);
-        ns.write(str + "\r\n").setHandler(promise);
+        ns.write(str + "\r\n").onComplete(promise);
       });
     } else {
-      ns.write(str + "\r\n").setHandler(promise);
+      ns.write(str + "\r\n").onComplete(promise);
     }
   }
 

@@ -193,7 +193,7 @@ class SMTPSendMail {
       }
       if (StatusCode.isStatusOk(message)) {
         Promise<Void> promise = Promise.promise();
-        promise.future().setHandler(endDotLineHandler());
+        promise.future().onComplete(endDotLineHandler());
         sendMaildata(promise);
       } else {
         log.warn("DATA command not accepted: " + message);
@@ -221,7 +221,7 @@ class SMTPSendMail {
 
   private void sendMaildata(Promise<Void> promise) {
     final EncodedPart part = this.encodedPart;
-    sendMailHeaders(part.headers()).setHandler(v -> {
+    sendMailHeaders(part.headers()).onComplete(v -> {
       if (v.succeeded()) {
         if (isMultiPart(part)) {
           sendMultiPart(part, 0, promise);
@@ -241,10 +241,10 @@ class SMTPSendMail {
 
       Promise<Void> boundaryStartPromise = Promise.promise();
       boundaryStartPromise.future()
-        .compose(v -> sendMailHeaders(thePart.headers())).setHandler(v -> {
+        .compose(v -> sendMailHeaders(thePart.headers())).onComplete(v -> {
         if (v.succeeded()) {
           Promise<Void> nextPromise = Promise.promise();
-          nextPromise.future().setHandler(vv -> {
+          nextPromise.future().onComplete(vv -> {
             if (vv.succeeded()) {
               if (i == multiPart.parts().size() - 1) {
                 String boundaryEnd = boundaryStart + "--";
@@ -292,7 +292,7 @@ class SMTPSendMail {
       }
       Promise<Void> writeLinePromise = Promise.promise();
       connection.writeLineWithDrainPromise(line, written.getAndAdd(line.length()) < 1000, writeLinePromise);
-      writeLinePromise.future().setHandler(v -> {
+      writeLinePromise.future().onComplete(v -> {
         if (v.succeeded()) {
           sendBodyLineByLine(lines, i + 1, promise);
         } else {

@@ -200,7 +200,7 @@ class AttachmentPart extends EncodedPart {
         streamBuffer = buffer.getBuffer(start, buffer.length());
         handleEventInContext(this.handler, bufferToSent);
         if (cacheInMemory || cacheInFile) {
-          cacheBuffer(b).setHandler(r -> {
+          cacheBuffer(b).onComplete(r -> {
             synchronized (BodyReadStream.this) {
               caching = false;
               if (r.failed()) {
@@ -224,7 +224,7 @@ class AttachmentPart extends EncodedPart {
       } else {
         if (cachedFile == null) {
           context.owner().fileSystem().open(cachedFilePath, new OpenOptions().setAppend(true))
-            .setHandler(c -> context.runOnContext(h -> {
+            .onComplete(c -> context.runOnContext(h -> {
               if (c.succeeded()) {
                 synchronized (BodyReadStream.this) {
                   cachedFile = c.result();
@@ -257,7 +257,7 @@ class AttachmentPart extends EncodedPart {
           if (AttachmentPart.this.cachedFilePath != null) {
             String tmpPath = AttachmentPart.this.cachedFilePath;
             AttachmentPart.this.cachedFilePath = null;
-            context.owner().fileSystem().delete(tmpPath).setHandler(deleteCacheFile -> {
+            context.owner().fileSystem().delete(tmpPath).onComplete(deleteCacheFile -> {
               if (deleteCacheFile.succeeded()) {
                 handleEventInContext(endHandler, null);
               } else {

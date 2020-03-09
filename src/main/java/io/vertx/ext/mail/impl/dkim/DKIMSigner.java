@@ -210,7 +210,7 @@ public class DKIMSigner {
   private void walkThroughAttachStream(MessageDigest md, ReadStream<Buffer> stream, AtomicInteger written, Promise<Void> promise) {
     final Pipe<Buffer> pipe = stream.pipe();
     Promise<Void> pipePromise = Promise.promise();
-    pipePromise.future().setHandler(pr -> {
+    pipePromise.future().onComplete(pr -> {
       pipe.close();
       if (pr.succeeded()) {
         promise.complete();
@@ -307,7 +307,7 @@ public class DKIMSigner {
       EncodedPart part = multiPart.parts().get(index);
 
       Promise<Void> nextPartPromise = Promise.promise();
-      nextPartPromise.future().setHandler(r -> {
+      nextPartPromise.future().onComplete(r -> {
         if (r.succeeded()) {
           walkThroughMultiPart(context, md, multiPart, index + 1, written, promise);
         } else {
@@ -315,7 +315,7 @@ public class DKIMSigner {
         }
       });
       // boundary and header, then body
-      walkBoundaryStartAndHeadersFuture(md, boundaryStart, part, written).setHandler(r -> {
+      walkBoundaryStartAndHeadersFuture(md, boundaryStart, part, written).onComplete(r -> {
         if (r.succeeded()) {
           if (r.result()) {
             if (part.parts() != null && part.parts().size() > 0) {
@@ -357,7 +357,7 @@ public class DKIMSigner {
       final MessageDigest md = MessageDigest.getInstance(dkimSignOptions.getSignAlgo().hashAlgorithm());
       if (encodedMessage.parts() != null && encodedMessage.parts().size() > 0) {
         Promise<Void> multiPartWalkThrough = Promise.promise();
-        multiPartWalkThrough.future().setHandler(r -> {
+        multiPartWalkThrough.future().onComplete(r -> {
           if (r.succeeded()) {
             try {
               // MD has been updated through reading the whole multipart message.

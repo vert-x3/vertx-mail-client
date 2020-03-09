@@ -157,7 +157,7 @@ public class MailClientImpl implements MailClient {
         sendMail.start();
       } else {
         // generate the DKIM header before start
-        dkimFuture(context, encodedPart).setHandler(dkim -> context.runOnContext(h -> {
+        dkimFuture(context, encodedPart).onComplete(dkim -> context.runOnContext(h -> {
           if (dkim.succeeded()) {
             sendMail.start();
           } else {
