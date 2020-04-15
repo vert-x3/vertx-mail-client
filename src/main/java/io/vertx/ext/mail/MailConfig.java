@@ -56,6 +56,7 @@ public class MailConfig extends NetClientOptions {
   public static final boolean DEFAULT_DISABLE_ESMTP = false;
   private static final boolean DEFAULT_ENABLE_DKIM = false;
   public static final String DEFAULT_USER_AGENT = "vertxmail";
+  public static final boolean DEFAULT_ENABLE_PIPELINING = true;
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -72,6 +73,7 @@ public class MailConfig extends NetClientOptions {
   private String userAgent = DEFAULT_USER_AGENT;
   private boolean enableDKIM = DEFAULT_ENABLE_DKIM;
   private List<DKIMSignOptions> dkimSignOptions;
+  private boolean pipelining = DEFAULT_ENABLE_PIPELINING;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
   private static Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
@@ -143,6 +145,7 @@ public class MailConfig extends NetClientOptions {
     if (other.dkimSignOptions != null && !other.dkimSignOptions.isEmpty()) {
       dkimSignOptions = other.dkimSignOptions.stream().map(DKIMSignOptions::new).collect(Collectors.toList());
     }
+    pipelining = other.pipelining;
   }
 
   /**
@@ -190,6 +193,7 @@ public class MailConfig extends NetClientOptions {
       dkimSignOptions = new ArrayList<>();
       dkimOps.stream().map(dkim -> new DKIMSignOptions((JsonObject)dkim)).forEach(dkimSignOptions::add);
     }
+    pipelining = config.getBoolean("pipelining", DEFAULT_ENABLE_PIPELINING);
   }
 
   public MailConfig setSendBufferSize(int sendBufferSize) {
@@ -888,6 +892,26 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
+   * Is the pipelining will be used if SMTP server supports it. Default to true.
+   *
+   * @return if enable pipelining capability if SMTP server supports it.
+   */
+  public boolean isPipelining() {
+    return pipelining;
+  }
+
+  /**
+   * Sets to enable/disable the pipelining capability if SMTP server supports it.
+   *
+   * @param pipelining enable pipelining or not
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setPipelining(boolean pipelining) {
+    this.pipelining = pipelining;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -937,13 +961,14 @@ public class MailConfig extends NetClientOptions {
       dkimSignOptions.forEach(array::add);
       json.put("dkimSignOptions", array);
     }
+    json.put("pipelining", pipelining);
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
-      keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions);
+      keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining);
   }
 
   /*

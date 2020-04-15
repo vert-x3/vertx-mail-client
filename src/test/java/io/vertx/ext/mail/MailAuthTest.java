@@ -260,8 +260,7 @@ public class MailAuthTest extends SMTPTestDummy {
       "250-SIZE 35651584\n" +
       "250-8BITMIME\n" +
       "250-AUTH LOGIN PLAIN XOAUTH XOAUTH2\n" +
-      "250-ENHANCEDSTATUSCODES\n" +
-      "250 PIPELINING",
+      "250 ENHANCEDSTATUSCODES",
       "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
       "235 2.7.0 Accepted",
       "MAIL FROM",
@@ -290,8 +289,7 @@ public class MailAuthTest extends SMTPTestDummy {
       "250-SIZE 35651584\n" +
       "250-8BITMIME\n" +
       "250-AUTH LOGIN PLAIN XOAUTH XOAUTH2\n" +
-      "250-ENHANCEDSTATUSCODES\n" +
-      "250 PIPELINING",
+      "250 ENHANCEDSTATUSCODES",
 
       "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
 

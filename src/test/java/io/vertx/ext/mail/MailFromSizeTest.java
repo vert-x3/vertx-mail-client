@@ -37,8 +37,7 @@ public class MailFromSizeTest extends SMTPTestDummy {
         "220 example.com ESMTP",
         "EHLO",
         "250-example.com\n" +
-            "250-SIZE 1000000\n" +
-            "250 PIPELINING",
+            "250 SIZE 1000000",
         "^MAIL FROM:<[^>]+@[^>]+> SIZE=[0-9]+$",
         "250 2.1.0 Ok",
         "RCPT TO:",

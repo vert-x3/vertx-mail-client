@@ -22,10 +22,12 @@ import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.JksOptions;
 import io.vertx.core.net.NetServer;
 import io.vertx.core.net.NetServerOptions;
+import io.vertx.core.net.NetSocket;
 import io.vertx.core.parsetools.RecordParser;
 
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -38,7 +40,7 @@ public class TestSmtpServer {
   private static final Logger log = LoggerFactory.getLogger(TestSmtpServer.class);
 
   private NetServer netServer;
-  private String[] dialogue;
+  private String[][] dialogue;
   private boolean closeImmediately = false;
   private int closeWaitTime = 10;
 
@@ -84,8 +86,7 @@ public class TestSmtpServer {
     netServer = vertx.createNetServer(nsOptions);
 
     netServer.connectHandler(socket -> {
-      socket.write(dialogue[0] + "\r\n");
-      log.debug("S:" + dialogue[0]);
+      writeResponses(socket, dialogue[0]);
       if (dialogue.length == 1) {
         if (closeImmediately) {
           log.debug("closeImmediately");
@@ -97,56 +98,70 @@ public class TestSmtpServer {
       } else {
         final AtomicInteger lines = new AtomicInteger(1);
         final AtomicInteger skipUntilDot = new AtomicInteger(0);
+        final AtomicBoolean holdFire = new AtomicBoolean(false);
+        final AtomicInteger inputLineIndex = new AtomicInteger(0);
         socket.handler(RecordParser.newDelimited("\r\n", buffer -> {
           final String inputLine = buffer.toString();
           log.debug("C:" + inputLine);
           if (skipUntilDot.get() == 1) {
             if (inputLine.equals(".")) {
               skipUntilDot.set(0);
-              if (lines.get() < dialogue.length) {
-                log.debug("S:" + dialogue[lines.get()]);
-                socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
+              if (!holdFire.get() && lines.get() < dialogue.length) {
+                writeResponses(socket, dialogue[lines.getAndIncrement()]);
               }
             }
           } else {
-            int currentLine = lines.getAndIncrement();
+            int currentLine = lines.get();
             if (currentLine < dialogue.length) {
-              String thisLine = dialogue[currentLine];
-              boolean isRegexp = thisLine.startsWith("^");
-              if (!isRegexp && !inputLine.contains(thisLine) || isRegexp && !inputLine.matches(thisLine)) {
-                socket.write("500 didn't expect that command (\"" + thisLine + "\"/\"" + inputLine + "\")\r\n");
-                log.info("sending 500 didn't expect that command (\"" + thisLine + "\"/\"" + inputLine + "\")");
+              boolean inputValid = false;
+              holdFire.compareAndSet(false, true);
+              if (inputLineIndex.get() < dialogue[currentLine].length) {
+                String thisLine = dialogue[currentLine][inputLineIndex.get()];
+                boolean isRegexp = thisLine.startsWith("^");
+                if (!isRegexp && inputLine.contains(thisLine) || isRegexp && inputLine.matches(thisLine)) {
+                  inputValid = true;
+                  if (inputLineIndex.get() == dialogue[currentLine].length - 1) {
+                    holdFire.compareAndSet(true, false);
+                    lines.getAndIncrement();
+                    inputLineIndex.set(0);
+                  } else {
+                    inputLineIndex.getAndIncrement();
+                  }
+                }
+              }
+              if (!inputValid) {
+                socket.write("500 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")\r\n");
+                log.info("sending 500 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")");
                 // stop here
                 lines.set(dialogue.length);
               }
             } else {
               log.info("out of lines, sending error reply");
               socket.write("500 out of lines\r\n");
+            }
+            if (inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
+              skipUntilDot.set(1);
+            }
+            if (!holdFire.get() && inputLine.toUpperCase(Locale.ENGLISH).equals("STARTTLS")) {
+              writeResponses(socket, dialogue[lines.getAndIncrement()]);
+              //TODO loop
+              socket.upgradeToSsl(v -> {
+                log.debug("tls upgrade finished");
+              });
+            } else if (!holdFire.get() && lines.get() < dialogue.length) {
+              writeResponses(socket, dialogue[lines.getAndIncrement()]);
+            }
           }
-          if (inputLine.toUpperCase(Locale.ENGLISH).equals("DATA")) {
-            skipUntilDot.set(1);
+          if (lines.get() == dialogue.length) {
+            if (closeImmediately) {
+              log.debug("closeImmediately");
+              socket.close();
+            } else {
+              log.debug("waiting " + closeWaitTime + " secs to close");
+              vertx.setTimer(closeWaitTime * 1000, v -> socket.close());
+            }
           }
-          if (inputLine.toUpperCase(Locale.ENGLISH).equals("STARTTLS")) {
-            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
-            socket.upgradeToSsl(v -> {
-              log.debug("tls upgrade finished");
-            });
-          }
-          else if (lines.get() < dialogue.length) {
-            log.debug("S:" + dialogue[lines.get()]);
-            socket.write(dialogue[lines.getAndIncrement()] + "\r\n");
-          }
-        }
-        if (lines.get() == dialogue.length) {
-          if (closeImmediately) {
-            log.debug("closeImmediately");
-            socket.close();
-          } else {
-            log.debug("waiting " + closeWaitTime + " secs to close");
-            vertx.setTimer(closeWaitTime * 1000, v -> socket.close());
-          }
-        }
-      } ));
+        }));
       }
     });
     CountDownLatch latch = new CountDownLatch(1);
@@ -158,7 +173,30 @@ public class TestSmtpServer {
     }
   }
 
+  private void writeResponses(NetSocket socket, String[] responses) {
+    for (String line: responses) {
+      log.debug("S:" + line);
+      socket.write(line + "\r\n");
+    }
+  }
+
   public TestSmtpServer setDialogue(String... dialogue) {
+    this.dialogue = new String[dialogue.length][1];
+    for (int i = 0; i < dialogue.length; i ++) {
+      this.dialogue[i] = new String[]{dialogue[i]};
+    }
+    return this;
+  }
+
+  /**
+   * Sets the dialogue array.
+   *
+   * This is useful in case of pipelining is supported to group commands and responses.
+   *
+   * @param dialogue the dialogues
+   * @return a reference to this, so the API can be used fluently
+   */
+  public TestSmtpServer setDialogueArray(String[][] dialogue) {
     this.dialogue = dialogue;
     return this;
   }

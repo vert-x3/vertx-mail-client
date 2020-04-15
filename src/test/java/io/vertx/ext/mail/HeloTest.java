@@ -111,8 +111,7 @@ public class HeloTest extends SMTPTestDummy {
     smtpServer.setDialogue("220 example.com ESMTP",
       "EHLO",
       "250-example.com\n" +
-        "250-SIZE 48000000\n" +
-        "250 PIPELINING",
+        "250 SIZE 48000000",
       "MAIL FROM",
       "250 2.1.0 Ok",
       "RCPT TO",
@@ -153,8 +152,7 @@ public class HeloTest extends SMTPTestDummy {
     smtpServer.setDialogue("220 example.com ESMTP multiline",
       "EHLO",
       "250-example.com\n" +
-        "250-SIZE 48000000\n" +
-        "250 PIPELINING",
+        "250 SIZE 48000000",
       "MAIL FROM",
       "250 2.1.0 Ok",
       "RCPT TO",
@@ -192,8 +190,7 @@ public class HeloTest extends SMTPTestDummy {
         "220 this is supposed to confuse spammers",
       "EHLO",
       "250-example.com\n" +
-        "250-SIZE 48000000\n" +
-        "250 PIPELINING",
+        "250 SIZE 48000000",
       "MAIL FROM",
       "250 2.1.0 Ok",
       "RCPT TO",
