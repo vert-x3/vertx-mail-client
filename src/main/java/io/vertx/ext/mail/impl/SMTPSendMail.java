@@ -33,6 +33,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+/**
+ * This is responsible to start an email transaction.
+ *
+ * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
+ */
 class SMTPSendMail {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
@@ -59,7 +64,7 @@ class SMTPSendMail {
    * Starts a mail transaction.
    */
   void startMailTransaction(final Handler<AsyncResult<MailResult>> resultHandler) {
-    sendMailEvenlope()
+    sendMailEnvelope()
       .flatMap(this::sendMailData)
       .onComplete(resultHandler);
   }
@@ -118,8 +123,8 @@ class SMTPSendMail {
     }).collect(Collectors.toList());
   }
 
-  private Future<Boolean> sendMailEvenlope() {
-    Promise<Boolean> evenlopePromise = Promise.promise();
+  private Future<Boolean> sendMailEnvelope() {
+    Promise<Boolean> envelopePromise = Promise.promise();
     try {
       if (checkSize()) {
         final String mailFromLine = "MAIL FROM:<" + mailFromAddress() + ">" + sizeParameter();
@@ -129,25 +134,29 @@ class SMTPSendMail {
           groupCommands.add(mailFromLine);
           groupCommands.addAll(allRecipients.stream().map(r -> "RCPT TO:<" + r + ">").collect(Collectors.toList()));
           groupCommands.add("DATA");
-          connection.writeCommands(groupCommands, evenlopeResultStr -> {
-            String[] evenlopeResult = linePattern.split(evenlopeResultStr);
-            if (groupCommands.size() != evenlopeResult.length) {
-              evenlopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
+          connection.writeCommands(groupCommands).onComplete(envelope -> {
+            if (envelope.failed()) {
+              envelopePromise.fail(envelope.cause());
+              return;
+            }
+            String[] envelopeResult = linePattern.split(envelope.result());
+            if (groupCommands.size() != envelopeResult.length) {
+              envelopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + envelopeResult.length + " responses.");
             } else {
               // result follows the same order in the commands list
-              for (int i = 0; i < evenlopeResult.length; i ++) {
-                String message = evenlopeResult[i];
+              for (int i = 0; i < envelopeResult.length; i ++) {
+                String message = envelopeResult[i];
                 if (i == 0) {
                   if (!StatusCode.isStatusOk(message)) {
-                    evenlopePromise.fail("sender address not accepted: " + message);
+                    envelopePromise.fail("sender address not accepted: " + message);
                     return;
                   }
-                } else if (i < evenlopeResult.length - 1) {
+                } else if (i < envelopeResult.length - 1) {
                   if (StatusCode.isStatusOk(message)) {
                     mailResult.getRecipients().add(allRecipients.get(i - 1));
                   } else {
                     if (!config.isAllowRcptErrors()) {
-                      evenlopePromise.fail("recipient address not accepted: " + message);
+                      envelopePromise.fail("recipient address not accepted: " + message);
                       return;
                     }
                   }
@@ -156,100 +165,89 @@ class SMTPSendMail {
                   if (StatusCode.isStatusOk(message)) {
                     if (mailResult.getRecipients().size() == 0) {
                       // send dot only
-                      evenlopePromise.complete(false);
+                      envelopePromise.complete(false);
                       return;
                     }
                   } else {
-                    evenlopePromise.fail("DATA command not accepted: " + message);
+                    envelopePromise.fail("DATA command not accepted: " + message);
                     return;
                   }
                 }
               }
-              evenlopePromise.complete(true);
+              envelopePromise.complete(true);
             }
           });
         } else {
           // sent line by line because PIPELINING is not supported
-          Future<Void> future = sendMailFrom(mailFromLine);
+          Future<String> future = sendMailFrom(mailFromLine);
           for (String email: allRecipients) {
             future = future.flatMap(v -> sendRcptTo(email));
           }
           return future.flatMap(v -> sendDataCmd());
         }
       } else {
-        evenlopePromise.fail("message exceeds allowed size limit");
+        envelopePromise.fail("message exceeds allowed size limit");
       }
     } catch (Exception e) {
-      evenlopePromise.fail(e);
+      envelopePromise.fail(e);
     }
-    return evenlopePromise.future();
+    return envelopePromise.future();
   }
 
-  private Future<Void> sendMailFrom(String mailFromLine) {
-    Promise<Void> promise = Promise.promise();
-    connection.write(mailFromLine, message -> {
+  private Future<String> sendMailFrom(String mailFromLine) {
+    return connection.writeWithReply(mailFromLine).flatMap(message -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
       if (StatusCode.isStatusOk(message)) {
-        promise.complete();
+        return Future.succeededFuture(message);
       } else {
-        promise.fail("sender address not accepted: " + message);
+        return Future.failedFuture("sender address not accepted: " + message);
       }
     });
-    return promise.future();
   }
 
-  private Future<Void> sendRcptTo(String email) {
-    Promise<Void> promise = Promise.promise();
-    try {
-      final String line =  "RCPT TO:<" + email + ">";
-      connection.write(line, message -> {
-        if (log.isDebugEnabled()) {
-          written.getAndAdd(line.length());
-        }
-        try {
-          if (StatusCode.isStatusOk(message)) {
-            mailResult.getRecipients().add(email);
-            promise.complete();
+  private Future<String> sendRcptTo(String email) {
+    final String line =  "RCPT TO:<" + email + ">";
+    return connection.writeWithReply(line).flatMap(message -> {
+      if (log.isDebugEnabled()) {
+        written.getAndAdd(line.length());
+      }
+      try {
+        if (StatusCode.isStatusOk(message)) {
+          mailResult.getRecipients().add(email);
+          return Future.succeededFuture(message);
+        } else {
+          if (config.isAllowRcptErrors()) {
+            return Future.succeededFuture(message);
           } else {
-            if (config.isAllowRcptErrors()) {
-              promise.complete();
-            } else {
-              promise.fail("recipient address not accepted: " + message);
-            }
+            return Future.failedFuture("recipient address not accepted: " + message);
           }
-        } catch (Exception e) {
-          promise.fail(e);
         }
-      });
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   private Future<Boolean> sendDataCmd() {
-    Promise<Boolean> promise = Promise.promise();
-    try {
-      if (mailResult.getRecipients().size() > 0) {
-        connection.write("DATA", message -> {
-          if (log.isDebugEnabled()) {
-            written.getAndAdd(4);
-          }
+    if (mailResult.getRecipients().size() > 0) {
+      return connection.writeWithReply("DATA").flatMap(message -> {
+        if (log.isDebugEnabled()) {
+          written.getAndAdd(4);
+        }
+        try {
           if (StatusCode.isStatusOk(message)) {
-            promise.complete(true);
+            return Future.succeededFuture(true);
           } else {
-            promise.fail("DATA command not accepted: " + message);
+            return Future.failedFuture("DATA command not accepted: " + message);
           }
-        });
-      } else {
-        promise.fail("no recipient addresses were accepted, not sending mail");
-      }
-    } catch (Exception e) {
-      promise.fail(e);
+        } catch (Exception e) {
+          return Future.failedFuture(e);
+        }
+      });
     }
-    return promise.future();
+    return Future.failedFuture("no recipient addresses were accepted, not sending mail");
   }
 
   private Future<MailResult> sendMailData(boolean includeData) {
@@ -275,19 +273,17 @@ class SMTPSendMail {
   }
 
   private Future<MailResult> sendEndDot() {
-    Promise<MailResult> promise = Promise.promise();
-    try {
-      connection.getContext().runOnContext(v -> connection.write(".", msg -> {
+    return connection.writeWithReply(".").flatMap(msg -> {
+      try {
         if (StatusCode.isStatusOk(msg)) {
-          promise.complete(mailResult);
+          return Future.succeededFuture(mailResult);
         } else {
-          promise.fail("sending data failed: " + msg);
+          return Future.failedFuture("sending data failed: " + msg);
         }
-      }));
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   private Future<Void> sendMailBody() {
@@ -312,7 +308,7 @@ class SMTPSendMail {
 
       Promise<Void> boundaryStartPromise = Promise.promise();
       boundaryStartPromise.future()
-        .compose(v -> sendMailHeaders(thePart.headers())).onComplete(v -> {
+        .flatMap(v -> sendMailHeaders(thePart.headers())).onComplete(v -> {
         if (v.succeeded()) {
           Promise<Void> nextPromise = Promise.promise();
           nextPromise.future().onComplete(vv -> {

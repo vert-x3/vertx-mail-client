@@ -16,10 +16,9 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -36,7 +35,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @RunWith(VertxUnitRunner.class)
 public class MultilineParserTest {
 
-  private static final Logger logger = LoggerFactory.getLogger(MultilineParserTest.class);
+  private Handler<Throwable> exceptionHandler(TestContext testContext) {
+    return t -> testContext.fail(t);
+  }
 
   /**
    * Tests one response with one line
@@ -47,22 +48,24 @@ public class MultilineParserTest {
     final String ehloBanner = "220 hello from smtp server";
     final String oneLineResp = "250 2.1.0 OK";
     final AtomicBoolean init = new AtomicBoolean(false);
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
-        testContext.assertEquals(oneLineResp, message);
+        testContext.assertTrue(StatusCode.isStatusOk(result));
+        testContext.assertEquals(oneLineResp, result);
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
+    multilineParser.offer(1, dataHandler);
     multilineParser.handle(Buffer.buffer(oneLineResp + "\r\n"));
   }
 
@@ -79,12 +82,14 @@ public class MultilineParserTest {
     final String capaMessage = "250-smtp.gmail.com at your service, [209.132.188.80]\n" +
       "250-AUTH LOGIN PLAIN\n" +
       "250 PIPELINING";
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
+        String message = result;
         testContext.assertTrue(StatusCode.isStatusOk(message));
         testContext.assertEquals(capaMessage, message);
         Capabilities capa = new Capabilities();
@@ -97,11 +102,12 @@ public class MultilineParserTest {
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
+    multilineParser.offer(1, dataHandler);
     multilineParser.handle(Buffer.buffer(capaMessage + "\r\n"));
   }
 
@@ -121,12 +127,14 @@ public class MultilineParserTest {
     final String expected = "250-smtp.gmail.com at your service, [209.132.188.80]\n" +
       "250-AUTH LOGIN PLAIN\n" +
       "250 PIPELINING";
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
+        String message = result;
         testContext.assertTrue(StatusCode.isStatusOk(message));
         testContext.assertEquals(expected, message);
         Capabilities capa = new Capabilities();
@@ -139,11 +147,12 @@ public class MultilineParserTest {
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
+    multilineParser.offer(1, dataHandler);
     multilineParser.handle(Buffer.buffer(capaMessage + "\r\n"));
   }
 
@@ -158,18 +167,16 @@ public class MultilineParserTest {
     final String multilines = "250 2.1.0 OK1\r\n" +
       "250 2.1.1 OK2\r\n" +
       "250 2.1.2 OK3";
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
-        testContext.assertEquals(multilines, message);
-        String[] lines = message.split("\r\n");
-        for (String l: lines) {
-          System.out.println("Line:" + l + ":-");
-        }
+        testContext.assertTrue(StatusCode.isStatusOk(result));
+        testContext.assertEquals(multilines, result);
+        String[] lines = result.split("\r\n");
         testContext.assertEquals(3, lines.length);
         testContext.assertEquals("250 2.1.0 OK1", lines[0]);
         testContext.assertEquals("250 2.1.1 OK2", lines[1]);
@@ -177,12 +184,12 @@ public class MultilineParserTest {
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
-    multilineParser.setExpected(3);
+    multilineParser.offer(3, dataHandler);
     multilineParser.handle(Buffer.buffer(multilines + "\r\n"));
   }
 
@@ -197,15 +204,16 @@ public class MultilineParserTest {
     final String multilinesWithLF = "250-2.1.0 OK1\n250 2.1.0.1 OK1.1\r\n" +
       "250 2.1.1 OK2\r\n" +
       "250 2.1.2 OK3";
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
-        testContext.assertEquals(multilinesWithLF, message);
-        String[] lines = message.split("\r\n");
+        testContext.assertTrue(StatusCode.isStatusOk(result));
+        testContext.assertEquals(multilinesWithLF, result);
+        String[] lines = result.split("\r\n");
         testContext.assertEquals(3, lines.length);
         testContext.assertEquals("250-2.1.0 OK1\n250 2.1.0.1 OK1.1", lines[0]);
         testContext.assertEquals("250 2.1.1 OK2", lines[1]);
@@ -213,12 +221,12 @@ public class MultilineParserTest {
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
-    multilineParser.setExpected(3);
+    multilineParser.offer(3, dataHandler);
     multilineParser.handle(Buffer.buffer(multilinesWithLF + "\r\n"));
   }
 
@@ -237,15 +245,16 @@ public class MultilineParserTest {
     final String expected = "250-2.1.0 OK1\n250 2.1.0.1 OK1.1\r\n" +
       "250 2.1.1 OK2\r\n" +
       "250 2.1.2 OK3";
-    Handler<Buffer> dataHandler = b -> {
+    Handler<AsyncResult<String>> dataHandler = b -> {
+      testContext.assertTrue(b.succeeded());
+      String result = b.result();
       if (!init.get()) {
-        testContext.assertEquals(ehloBanner, b.toString());
+        testContext.assertEquals(ehloBanner, result);
         async.countDown();
       } else {
-        String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
-        testContext.assertEquals(expected, message);
-        String[] lines = message.split("\r\n");
+        testContext.assertTrue(StatusCode.isStatusOk(result));
+        testContext.assertEquals(expected, result);
+        String[] lines = result.split("\r\n");
         testContext.assertEquals(3, lines.length);
         testContext.assertEquals("250-2.1.0 OK1\n250 2.1.0.1 OK1.1", lines[0]);
         testContext.assertEquals("250 2.1.1 OK2", lines[1]);
@@ -253,18 +262,18 @@ public class MultilineParserTest {
         async.countDown();
       }
     };
-    MultilineParser multilineParser = new MultilineParser(dataHandler);
-    multilineParser.setExpected(1);
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
+    multilineParser.offer(1, dataHandler);
     // simulate the ehlo banner on connection
     multilineParser.handle(Buffer.buffer(ehloBanner + "\r\n"));
     init.set(true);
-    multilineParser.setExpected(3);
+    multilineParser.offer(3, dataHandler);
     multilineParser.handle(Buffer.buffer(multilinesWithLF + "\r\n"));
   }
 
   @Test
   public void testLastLine(TestContext testContext) {
-    MultilineParser multilineParser = new MultilineParser(b -> logger.debug(b.toString()));
+    MultilineParser multilineParser = new MultilineParser(exceptionHandler(testContext));
     testContext.assertTrue(multilineParser.isFinalLine(Buffer.buffer("250 welcome OK")));
     testContext.assertFalse(multilineParser.isFinalLine(Buffer.buffer("250-welcome OK")));
 

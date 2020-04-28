@@ -19,6 +19,7 @@ package io.vertx.ext.mail.impl;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.SMTPTestDummy;
+import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.Test;
@@ -68,6 +69,7 @@ public class MailAuthChainTest extends SMTPTestDummy {
       "354 End data with <CR><LF>.<CR><LF>",
       "250 2.0.0 Ok: queued as ABCD"
     ).setCloseImmediately(true);
+    Async async = testContext.async();
     final MailClient mailClient = mailClientLogin();
     final MailMessage email = exampleMessage();
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
@@ -100,9 +102,10 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> {
-        mailClient.close();
-      }));
+      vertx.setTimer(100, l -> {
+        mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close()));
+        async.complete();
+      });
     }));
   }
 
@@ -145,7 +148,6 @@ public class MailAuthChainTest extends SMTPTestDummy {
     }));
   }
 
-
   // Default auth: LOGIN failed, then try one-by-one and falls back to PLAIN
   @Test
   public void authChainDefaultFailedTest(TestContext testContext) {
@@ -165,18 +167,18 @@ public class MailAuthChainTest extends SMTPTestDummy {
       "eHh4",
       "334 UGFzc3dvcmQ6",
       "eXl5",
-      "435 4.7.8 Error: authentication failed: authentication failure",
+      "435 4.7.8 Error: authentication failed: authentication failure (error - login 1)",
       "AUTH XOAUTH2 dXNlcj14eHgBYXV0aD1CZWFyZXIgeXl5AQE=",
       "334 eyJzdGF0dXMiOiI0MDAiLCJzY2hlbWVzIjoiQmVhcmVyIiwic2NvcGUiOiJodHRwczovL21haWwuZ29vZ2xlLmNvbS8ifQ==",
       "",
       "535-5.7.8 Username and Password not accepted. Learn more at\n" +
-        "535 5.7.8  https://support.google.com/mail/?p=BadCredentials o8sm3958210pjs.6 - gsmtp",
+        "535 5.7.8  https://support.google.com/mail/?p=BadCredentials o8sm3958210pjs.6 - gsmtp (error - xoauth2)",
       "AUTH LOGIN",
       "334 VXNlcm5hbWU6",
       "eHh4",
       "334 UGFzc3dvcmQ6",
       "eXl5",
-      "435 4.7.8 Error: authentication failed: authentication failure",
+      "435 4.7.8 Error: authentication failed: authentication failure (error - login 2)",
       "AUTH PLAIN AHh4eAB5eXk=",
       "250 2.1.0 Ok",
       "MAIL FROM",
@@ -187,13 +189,14 @@ public class MailAuthChainTest extends SMTPTestDummy {
       "354 End data with <CR><LF>.<CR><LF>",
       "250 2.0.0 Ok: queued as ABCD"
     ).setCloseImmediately(true);
+    Async async = testContext.async();
     final MailClient mailClient = mailClientLogin();
     final MailMessage email = exampleMessage();
     MailClientImpl clientImpl = (MailClientImpl)mailClient;
     // default is LOGIN, but will fail
     clientImpl.getConnectionPool().getAuthOperationFactory().setAuthMethod("LOGIN");
     assertEquals("LOGIN", clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-    mailClient.sendMail(email, testContext.asyncAssertSuccess(r1 -> {
+    mailClient.sendMail(email, testContext.asyncAssertSuccess(v -> {
       assertEquals("PLAIN", clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       smtpServer.setDialogue(
         "220 smtp.gmail.com ESMTP o8sm3958210pjs.6 - gsmtp",
@@ -217,9 +220,10 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> {
-        mailClient.close();
-      }));
+      vertx.setTimer(100, l -> {
+        mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close()));
+        async.complete();
+      });
     }));
   }
 

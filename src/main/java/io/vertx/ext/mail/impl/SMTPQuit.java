@@ -16,18 +16,19 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Handler;
+import io.vertx.core.Future;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 
 /**
  * handle connection quit
  * <p>
- * There is not much point in encapsulating this but its useful for the connection pool
+ * There is not much point in encapsulating this but its useful for the connection connManager
  * <p>
  * this operation does not throw any error, it just closes the connection in the end
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
 class SMTPQuit {
 
@@ -35,25 +36,20 @@ class SMTPQuit {
 
   private final SMTPConnection connection;
 
-  private final Handler<Void> resultHandler;
-
-  SMTPQuit(SMTPConnection connection, Handler<Void> resultHandler) {
+  SMTPQuit(SMTPConnection connection) {
     this.connection = connection;
-    this.resultHandler = resultHandler;
   }
 
-  void start() {
-    connection.setErrorHandler(th -> {
-      log.debug("QUIT failed, ignoring exception", th);
-      resultHandler.handle(null);
-    });
-    connection.write("QUIT", message -> {
-      log.debug("QUIT result: " + message);
-      if (!StatusCode.isStatusOk(message)) {
-        log.warn("quit failed: " + message);
+  Future<String> start() {
+    return connection.writeWithReply("QUIT").onComplete(qm -> {
+      // close the connection after getting response of QUIT command
+      connection.forceClose();
+      if (qm.succeeded()) {
+        String message = qm.result();
+        if (!StatusCode.isStatusOk(message)) {
+          log.warn("quit failed: " + message);
+        }
       }
-      resultHandler.handle(null);
     });
   }
-
 }

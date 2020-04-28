@@ -16,8 +16,8 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Handler;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -28,111 +28,95 @@ import io.vertx.ext.mail.StartTLSOptions;
  * and STARTTLS if necessary
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
 class SMTPInitialDialogue {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPInitialDialogue.class);
 
   private final SMTPConnection connection;
-
-  private final Handler<Throwable> errorHandler;
-  private final Handler<Void> finishedHandler;
-
   private final MailConfig config;
-
   private final String hostname;
 
-  public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
-                             Handler<Throwable> errorHandler) {
+  SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname) {
     this.connection = connection;
     this.config = config;
     this.hostname = hostname;
-    this.finishedHandler = finishedHandler;
-    this.errorHandler = errorHandler;
   }
 
-  public void start(final String message) {
-    log.debug("server greeting: " + message);
-    if (StatusCode.isStatusOk(message)) {
-      if (!config.isDisableEsmtp()) {
-        ehloCmd();
-      } else {
-        heloCmd();
-      }
-    } else {
-      handleError("got error response " + message);
-    }
-  }
-
-  private void ehloCmd() {
-    connection
-      .write(
-        "EHLO " + hostname,
-        message -> {
-          log.debug("EHLO result: " + message);
-          if (StatusCode.isStatusOk(message)) {
-            connection.parseCapabilities(message);
-            if (connection.getCapa().isStartTLS()
-              && !connection.isSsl()
-              && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
-              // do not start TLS if we are connected with SSL or are already in TLS
-              startTLSCmd();
-            } else {
-              finished();
-            }
-          } else {
-            // if EHLO fails, assume we have to do HELO
-            // if the command is not supported, the response is probably
-            // a 5xx error code and we should be able to continue, if not
-            // the options disableEsmtp has to be set
-            heloCmd();
-          }
-        });
-  }
-
-  private void heloCmd() {
-    connection.write("HELO " + hostname, message -> {
-      log.debug("HELO result: " + message);
+  Future<String> start(final String message) {
+    Promise<String> promise = Promise.promise();
+    try {
       if (StatusCode.isStatusOk(message)) {
-        finished();
+        if (!config.isDisableEsmtp()) {
+          return ehloCmd();
+        } else {
+          return heloCmd();
+        }
       } else {
-        handleError("HELO failed with " + message);
+        promise.fail("got error response " + message);
+      }
+    } catch (Exception e) {
+      promise.fail(e);
+    }
+    return promise.future();
+  }
+
+  private Future<String> ehloCmd() {
+    return connection.writeWithReply("EHLO " + hostname).flatMap(message -> {
+      try {
+        if (StatusCode.isStatusOk(message)) {
+          connection.parseCapabilities(message);
+          if (connection.getCapa().isStartTLS()
+            && !connection.isSsl()
+            && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
+            // do not start TLS if we are connected with SSL or are already in TLS
+            return startTLSCmd();
+          } else {
+            if (connection.isSsl() || config.getStarttls() != StartTLSOptions.REQUIRED) {
+              return Future.succeededFuture(message);
+            } else {
+              log.warn("STARTTLS required but not supported by server");
+              return Future.failedFuture("STARTTLS required but not supported by server");
+            }
+          }
+        } else {
+          // if EHLO fails, assume we have to do HELO
+          // if the command is not supported, the response is probably
+          // a 5xx error code and we should be able to continue, if not
+          // the options disableEsmtp has to be set
+          return heloCmd();
+        }
+      } catch (Exception e) {
+        return Future.failedFuture(e);
       }
     });
   }
 
-  private void handleError(String message) {
-    log.debug("handleError:" + message);
-    errorHandler.handle(new NoStackTraceThrowable(message));
+  private Future<String> heloCmd() {
+    return connection.writeWithReply("HELO " + hostname).flatMap(message -> {
+      try {
+        if (StatusCode.isStatusOk(message)) {
+          return Future.succeededFuture(message);
+        } else {
+          return Future.failedFuture("HELO failed with " + message);
+        }
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   /**
    * run STARTTLS command and redo EHLO
    */
-  private void startTLSCmd() {
-    connection.write("STARTTLS", message -> {
-      log.debug("STARTTLS result: " + message);
-      connection.upgradeToSsl(ar -> {
-        if (ar.succeeded()) {
-          log.debug("tls started");
-          // capabilities may have changed, e.g.
-          // if a service only announces PLAIN/LOGIN
-          // on secure channel (e.g. googlemail)
-          ehloCmd();
-        } else {
-
-        }
-      });
+  private Future<String> startTLSCmd() {
+    return connection.writeWithReply("STARTTLS")
+      .flatMap(message -> connection.upgradeToSsl())
+      .flatMap(ssl -> {
+      log.trace("tls started");
+      return ehloCmd();
     });
-  }
-
-  private void finished() {
-    if (connection.isSsl() || config.getStarttls() != StartTLSOptions.REQUIRED) {
-      finishedHandler.handle(null);
-    } else {
-      log.warn("STARTTLS required but not supported by server");
-      handleError("STARTTLS required but not supported by server");
-    }
   }
 
 }

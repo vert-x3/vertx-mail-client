@@ -19,6 +19,7 @@
  */
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -26,7 +27,6 @@ import io.vertx.ext.mail.SMTPTestDummy;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,63 +37,45 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
 
-  /**
-   * 
-   */
-  private static final String HOSTNAME = "my.hostname.com";
-
   private static final Logger log = LoggerFactory.getLogger(SMTPConnectionPoolDummySMTPTest.class);
 
   private final MailConfig config = configNoSSL();
 
   @Test
   public final void testGetConnectionAfterReturn(TestContext testContext) {
-
     smtpServer.setDialogue("220 example.com ESMTP",
         "EHLO",
         "250-example.com\n" +
           "250 SIZE 1000000",
-        "MAIL FROM:",
-        "250 2.1.0 Ok",
-        "RCPT TO:",
-        "250 2.1.5 Ok",
-        "DATA",
-        "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "RSET",
-        "500 command failed");
+        "250 2.1.5 Ok",
+        "QUIT",
+        "221 Bye");
 
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    ContextInternal ctx = (ContextInternal)vertx.getOrCreateContext();
+    SMTPConnectionPool pool = new SMTPConnectionPool(ctx, config);
     Async async = testContext.async();
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection(HOSTNAME, result -> {
-      if (result.succeeded()) {
-        log.debug("got 1st connection");
-        testContext.assertEquals(1, pool.connCount());
-        result.result().returnToPool();
-        testContext.assertEquals(1, pool.connCount());
+    pool.getConnection(ctx).onComplete(testContext.asyncAssertSuccess(conn -> {
+      log.debug("got 1st connection");
+      testContext.assertEquals(1, pool.connCount());
+      conn.returnToPool();
+      testContext.assertEquals(1, pool.connCount());
 
-        pool.getConnection(HOSTNAME, result2 -> {
-          if (result2.succeeded()) {
-            log.debug("got 2nd connection");
-            testContext.assertEquals(1, pool.connCount());
-            result2.result().returnToPool();
-            pool.close(v -> {
-              testContext.assertEquals(0, pool.connCount());
-              async.complete();
-            });
-          } else {
-            log.info(result2.cause());
-            testContext.fail(result2.cause());
-          }
+      pool.getConnection(ctx).onComplete(testContext.asyncAssertSuccess(conn2 -> {
+        log.debug("got 2nd connection");
+        testContext.assertEquals(conn, conn2);
+        testContext.assertEquals(1, pool.connCount());
+        conn2.returnToPool();
+        pool.close();
+        vertx.setTimer(100, l -> {
+          testContext.assertEquals(0, pool.connCount());
+          async.complete();
         });
-      } else {
-        log.info(result.cause());
-        testContext.fail(result.cause());
-      }
-    });
+      }));
+    }));
   }
 
 }

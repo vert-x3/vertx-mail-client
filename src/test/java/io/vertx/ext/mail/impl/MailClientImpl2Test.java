@@ -22,6 +22,7 @@ import io.vertx.ext.mail.SMTPTestWiser;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -40,6 +41,7 @@ public class MailClientImpl2Test extends SMTPTestWiser {
    * interface and actually sends a mail)
    */
   @Test
+  @Ignore("https://github.com/vert-x3/vertx-mail-client/issues/92")
   public final void testCloseWhileMailActive(TestContext testContext) {
     Async async = testContext.async();
     Async async2 = testContext.async();

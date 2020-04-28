@@ -63,12 +63,11 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
 
     // since we want to spy on connCount, we have to use MailClientImpl directly
     MailClientImpl mailClient = (MailClientImpl) MailClient.create(vertx, defaultConfig().setMaxPoolSize(1));
-    SMTPConnectionPool pool = mailClient.getConnectionPool();
-
-    testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
 
     mailClient.sendMail(exampleMessage(), result -> {
       testContext.assertTrue(result.failed());
+
+      SMTPConnectionPool pool = mailClient.getConnectionPool();
       testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
 
       mailClient.sendMail(exampleMessage(), result2 -> {

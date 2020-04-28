@@ -44,41 +44,41 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
   @Test
   public void mailConnectionCloseImmediatelyTest(TestContext context) {
     smtpServer.setCloseImmediately(true);
-    Async mail1 = context.async();
-    Async mail2 = context.async();
+    smtpServer.setDialogue("220 example.com ESMTP",
+      "EHLO",
+      "250-example.com\n" +
+        "250 SIZE 1000000",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789");
 
     MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
+    Async async = context.async();
     MailMessage email = exampleMessage();
-
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
     log.info("starting mail 1");
-    mailClient.sendMail(email, result -> {
-      log.info("mail finished 1");
+    mailClient.sendMail(email, context.asyncAssertSuccess(mr -> {
       pass1.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mail1.complete();
+      log.info("mail finished 1");
+      log.info(mr.toString());
+      vertx.setTimer(100, l -> {
         log.info("starting mail 2");
-        mailClient.sendMail(email, result2 -> {
+        mailClient.sendMail(email, context.asyncAssertSuccess(mr2 -> {
           pass2.passOnce();
           log.info("mail finished 2");
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            mailClient.close();
-            mail2.complete();
-          } else {
-            log.warn("got exception 2", result2.cause());
-            context.fail(result2.cause());
-          }
-        });
-      } else {
-        log.warn("got exception 1", result.cause());
-        context.fail(result.cause());
-      }
-    });
+          log.info(mr2.toString());
+          mailClient.close();
+          async.complete();
+        }));
+      });
+
+    }));
   }
 
   /**
@@ -91,41 +91,38 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
   public void mailConnectionCloseWaitTest(TestContext context) {
     smtpServer.setCloseImmediately(false);
     smtpServer.setCloseWaitTime(1);
-    Async mail1 = context.async();
-    Async mail2 = context.async();
+    smtpServer.setDialogue("220 example.com ESMTP",
+      "EHLO",
+      "250-example.com\n" +
+        "250 SIZE 1000000",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+      "QUIT",
+      "221 bye");
 
-    MailClient mailClient = MailClient.create(vertx, configNoSSL());
+    MailClient mailClient = MailClient.create(vertx, configNoSSL().setKeepAlive(false));
 
     MailMessage email = exampleMessage();
-
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
     log.info("starting mail 1");
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(mr -> {
       pass1.passOnce();
       log.info("mail finished 1");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mail1.complete();
-        log.info("starting mail 2");
-        mailClient.sendMail(email, result2 -> {
-          pass2.passOnce();
-          log.info("mail finished 2");
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            mailClient.close();
-            mail2.complete();
-          } else {
-            log.warn("got exception 2", result2.cause());
-            context.fail(result2.cause());
-          }
-        });
-      } else {
-        log.warn("got exception 1", result.cause());
-        context.fail(result.cause());
-      }
-    });
+      log.info(mr.toString());
+      log.info("starting mail 2");
+      mailClient.sendMail(email, context.asyncAssertSuccess(mr2 -> {
+        pass2.passOnce();
+        log.info("mail finished 2");
+        log.info(mr2.toString());
+        mailClient.close();
+      }));
+    }));
   }
 
   /**
@@ -145,44 +142,40 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       "DATA",
       "354 End data with <CR><LF>.<CR><LF>",
       "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-      "QUIT",
-      "220 bye bye");
-
-    Async mail1 = context.async();
-    Async mail2 = context.async();
+      "RSET",
+      "550 Fail");
 
     MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
-
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
     log.info("starting mail 1");
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(mr -> {
       pass1.passOnce();
       log.info("mail finished 1");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mail1.complete();
-        log.info("starting mail 2");
-        mailClient.sendMail(email, result2 -> {
-          pass2.passOnce();
-          log.info("mail finished 2");
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            mailClient.close();
-            mail2.complete();
-          } else {
-            log.warn("got exception 2", result2.cause());
-            context.fail(result2.cause());
-          }
-        });
-      } else {
-        log.warn("got exception 1", result.cause());
-        context.fail(result.cause());
-      }
-    });
+      log.info(mr.toString());
+      log.info("starting mail 2");
+      smtpServer.setDialogue("220 example.com ESMTP",
+        "EHLO",
+        "250-example.com\n" +
+          "250 SIZE 1000000",
+        "MAIL FROM",
+        "250 2.1.0 Ok",
+        "RCPT TO",
+        "250 2.1.5 Ok",
+        "DATA",
+        "354 End data with <CR><LF>.<CR><LF>",
+        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
+        "QUIT",
+        "221 Bye");
+      mailClient.sendMail(email, context.asyncAssertSuccess(mr2 -> {
+        pass2.passOnce();
+        log.info("mail finished 2");
+        log.info(mr2.toString());
+        mailClient.close();
+      }));
+    }));
   }
 
   /**
@@ -202,61 +195,26 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
       "DATA",
       "354 End data with <CR><LF>.<CR><LF>",
       "250 2.0.0 Ok: queued as ABCDDEF0123456789",
-      "RSET",
-      "220 reset ok");
-
-    Async mail1 = context.async();
-    Async mail2 = context.async();
+       "RSET",
+       "220 reset ok");
 
     MailClient mailClient = MailClient.create(vertx, configNoSSL());
-
     MailMessage email = exampleMessage();
-
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
-
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
     log.info("starting mail 1");
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(mr -> {
       pass1.passOnce();
       log.info("mail finished 1");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mail1.complete();
-        log.info("starting mail 2");
-        mailClient.sendMail(email, result2 -> {
-          pass2.passOnce();
-          log.info("mail finished 2");
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            mailClient.close();
-            context.fail("this test should fail");
-          } else {
-            log.info("(as expected) got exception 2", result2.cause());
-            mailClient.close();
-            mail2.complete();
-          }
-        });
-      } else {
-        log.warn("got exception 1", result.cause());
-        context.fail(result.cause());
-      }
-    });
-  }
-
-  @Override
-  public void startSMTP() {
-    super.startSMTP();
-    smtpServer.setDialogue("220 example.com ESMTP",
-      "EHLO",
-      "250-example.com\n" +
-        "250 SIZE 1000000",
-      "MAIL FROM",
-      "250 2.1.0 Ok",
-      "RCPT TO",
-      "250 2.1.5 Ok",
-      "DATA",
-      "354 End data with <CR><LF>.<CR><LF>",
-      "250 2.0.0 Ok: queued as ABCDDEF0123456789");
+      log.info(mr.toString());
+      log.info("starting mail 2");
+      mailClient.sendMail(email, context.asyncAssertFailure(t -> {
+        pass2.passOnce();
+        log.info("mail finished 2");
+        mailClient.close();
+        log.info("(as expected) got exception 2", t);
+      }));
+    }));
   }
 
 }
