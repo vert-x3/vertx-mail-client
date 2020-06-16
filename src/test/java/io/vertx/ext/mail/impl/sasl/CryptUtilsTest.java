@@ -22,6 +22,7 @@ package io.vertx.ext.mail.impl.sasl;
 import org.junit.Test;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 
@@ -109,7 +110,7 @@ public class CryptUtilsTest {
     }
     String source = CryptUtils.base64(sbSource.toString());
     String expected = sbExpected.toString();
-    assertEquals(expected, CryptUtils.encodeHex(CryptUtils.decodeb64(source).getBytes("ISO-8859-1")));
+    assertEquals(expected, CryptUtils.encodeHex(CryptUtils.decodeb64(source).getBytes(StandardCharsets.ISO_8859_1)));
   }
 
 }

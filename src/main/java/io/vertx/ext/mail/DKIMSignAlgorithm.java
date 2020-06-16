@@ -32,17 +32,17 @@ public enum DKIMSignAlgorithm {
   /**
    * The hash algorithm id used by {@link io.vertx.ext.auth.HashingAlgorithm} to distinguish from others.
    */
-  private String hashAlgoId;
+  private final String hashAlgoId;
 
   /**
    * The Hash type. It is: <code>rsa</code> now.
    */
-  private String type;
+  private final String type;
 
   /**
    * The actual algorithm that can be used by the {@link java.security.MessageDigest} to calculate the digest.
    */
-  private String hashAlgo;
+  private final String hashAlgo;
 
   DKIMSignAlgorithm(String hashAlgoId, String type, String hashAlgo) {
     this.hashAlgoId = hashAlgoId;

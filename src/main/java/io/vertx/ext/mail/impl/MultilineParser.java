@@ -38,7 +38,7 @@ class MultilineParser implements Handler<Buffer> {
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   private boolean initialized = false;
   private Buffer result;
-  private RecordParser rp;
+  private final RecordParser rp;
   private int expected = 1;
   private int actual = 0;
 

@@ -20,6 +20,7 @@
 package io.vertx.ext.mail;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
 
 import javax.mail.MessagingException;
@@ -54,7 +55,7 @@ public class TestUtils {
 
   public static MimeMessage getMessage(String mime) throws UnsupportedEncodingException, MessagingException {
     return new MimeMessage(Session.getInstance(new Properties(), null),
-        new ByteArrayInputStream(mime.getBytes("ASCII")));
+        new ByteArrayInputStream(mime.getBytes(StandardCharsets.US_ASCII)));
   }
 
   public static String inputStreamToString(final InputStream inputStream) throws IOException {

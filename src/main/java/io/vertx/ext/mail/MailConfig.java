@@ -76,7 +76,7 @@ public class MailConfig extends NetClientOptions {
   private boolean pipelining = DEFAULT_ENABLE_PIPELINING;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
-  private static Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
+  private static final Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
 
   /**
    * construct a config object with default options
@@ -549,8 +549,9 @@ public class MailConfig extends NetClientOptions {
    * get the key store filename to be used when opening SMTP connections
    *
    * @return the keyStore
-   * @deprecated 4.0.0
+   * @deprecated use {@link #getTrustStoreOptions}
    */
+  @Deprecated
   public String getKeyStore() {
     // Get the trust store options and if there are any get the path
     String keyStore = null;
@@ -569,8 +570,9 @@ public class MailConfig extends NetClientOptions {
    *
    * @param keyStore the key store filename to be set
    * @return a reference to this, so the API can be used fluently
-   * @deprecated 4.0.0
+   * @deprecated use {@link #getTrustStoreOptions}
    */
+  @Deprecated
   public MailConfig setKeyStore(String keyStore) {
     JksOptions options = getTrustStoreOptions();
     if (options == null) {
@@ -585,8 +587,9 @@ public class MailConfig extends NetClientOptions {
    * get the key store password to be used when opening SMTP connections
    *
    * @return the keyStorePassword
-   * @deprecated 4.0.0
+   * @deprecated use {@link #getTrustStoreOptions}
    */
+  @Deprecated
   public String getKeyStorePassword() {
     // Get the trust store options and if there are any get the password
     String keyStorePassword = null;
@@ -602,8 +605,9 @@ public class MailConfig extends NetClientOptions {
    *
    * @param keyStorePassword the key store passwords to be set
    * @return a reference to this, so the API can be used fluently
-   * @deprecated 4.0.0
+   * @deprecated use {@link #getTrustStoreOptions}
    */
+  @Deprecated
   public MailConfig setKeyStorePassword(String keyStorePassword) {
     JksOptions options = getTrustStoreOptions();
     if (options == null) {

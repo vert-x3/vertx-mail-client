@@ -60,7 +60,7 @@ public class MailMessageTest {
 
   @Test
   public void testAttachment2() {
-    List<MailAttachment> list = new ArrayList<MailAttachment>();
+    List<MailAttachment> list = new ArrayList<>();
     list.add(MailAttachment.create().setData(Buffer.buffer("asdfasdf")).setName("file.txt"));
     list.add(MailAttachment.create().setData(Buffer.buffer("xxxxx")).setName("file2.txt"));
     MailMessage message = new MailMessage();

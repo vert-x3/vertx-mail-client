@@ -18,6 +18,8 @@ package io.vertx.ext.mail.mailencoder;
 
 import org.junit.Test;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -49,14 +51,14 @@ public class UtilsTest {
 
   @Test
   public void testBase64() throws Exception {
-    assertEquals("", Utils.base64("".getBytes("ISO-8859-1")));
-    assertEquals("Kg==", Utils.base64("*".getBytes("ISO-8859-1")));
-    assertEquals("Kio=", Utils.base64("**".getBytes("ISO-8859-1")));
-    assertEquals("Kioq", Utils.base64("***".getBytes("ISO-8859-1")));
-    assertEquals("KioqKg==", Utils.base64("****".getBytes("ISO-8859-1")));
+    assertEquals("", Utils.base64("".getBytes(StandardCharsets.ISO_8859_1)));
+    assertEquals("Kg==", Utils.base64("*".getBytes(StandardCharsets.ISO_8859_1)));
+    assertEquals("Kio=", Utils.base64("**".getBytes(StandardCharsets.ISO_8859_1)));
+    assertEquals("Kioq", Utils.base64("***".getBytes(StandardCharsets.ISO_8859_1)));
+    assertEquals("KioqKg==", Utils.base64("****".getBytes(StandardCharsets.ISO_8859_1)));
     assertEquals("KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq\n"
         + "KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKg==",
-      Utils.base64("**********************************************************************************************".getBytes("ISO-8859-1")));
+      Utils.base64("**********************************************************************************************".getBytes(StandardCharsets.ISO_8859_1)));
   }
 
 }

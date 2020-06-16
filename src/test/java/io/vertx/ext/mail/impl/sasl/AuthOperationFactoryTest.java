@@ -19,9 +19,6 @@
  */
 package io.vertx.ext.mail.impl.sasl;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import io.vertx.ext.mail.MailConfig;
 import org.junit.Test;
 

@@ -139,7 +139,7 @@ class AttachmentPart extends EncodedPart {
     private Handler<Buffer> handler;
     private Handler<Void> endHandler;
     private boolean caching;
-    private AtomicBoolean streamEnded = new AtomicBoolean();
+    private final AtomicBoolean streamEnded = new AtomicBoolean();
 
     private BodyReadStream(Context context, ReadStream<Buffer> stream, boolean tryReset) {
       Objects.requireNonNull(stream, "ReadStream cannot be null");

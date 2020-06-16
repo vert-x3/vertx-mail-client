@@ -55,7 +55,7 @@ public class MailEncoderTest {
       .setText("asdf=\n\näöüÄÖÜ\u00ff\n\t=======================================================================================\n");
     message.setHtml("<a href=\"http://vertx.io\">vertx.io</a>\n");
 
-    List<MailAttachment> attachments = new ArrayList<MailAttachment>();
+    List<MailAttachment> attachments = new ArrayList<>();
 
     attachments
       .add(MailAttachment.create()
@@ -67,8 +67,8 @@ public class MailEncoderTest {
     attachments.add(MailAttachment.create()
       .setData(Buffer.buffer("испытание", "UTF-8")));
 
-    attachments.add(MailAttachment.create().setData(TestUtils.asBuffer(new int[]{0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBF,
-      0xD1, 0x8B, 0xD1, 0x82, 0xD0, 0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD0, 0xB5})));
+    attachments.add(MailAttachment.create().setData(TestUtils.asBuffer(0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBF,
+      0xD1, 0x8B, 0xD1, 0x82, 0xD0, 0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD0, 0xB5)));
 
     message.setAttachment(attachments);
 
@@ -148,7 +148,7 @@ public class MailEncoderTest {
   @Test
   public void testToMany() throws Exception {
     MailMessage message = new MailMessage();
-    List<String> to = new ArrayList<String>();
+    List<String> to = new ArrayList<>();
     for (int i = 0; i < 20; i++) {
       to.add("user" + i + "@example.com");
     }
@@ -169,7 +169,7 @@ public class MailEncoderTest {
   @Test
   public void testToManyName() throws Exception {
     MailMessage message = new MailMessage();
-    List<String> to = new ArrayList<String>();
+    List<String> to = new ArrayList<>();
     for (int i = 0; i < 20; i++) {
       to.add("user" + i + "@example.com (Some User Name)");
     }
@@ -196,7 +196,7 @@ public class MailEncoderTest {
   @Test
   public void testToManyEncoded() throws Exception {
     MailMessage message = new MailMessage();
-    List<String> to = new ArrayList<String>();
+    List<String> to = new ArrayList<>();
     for (int i = 0; i < 20; i++) {
       to.add("user" + i + "@example.com (Äa)");
     }
@@ -503,7 +503,7 @@ public class MailEncoderTest {
 
   /*
    *  test that tabs not not turn on quoted-printable encoding unless there are
-   *  other chars that make it necessary 
+   *  other chars that make it necessary
    */
   @Test
   public void testMailTextContainsTabs() throws Exception {
@@ -563,7 +563,7 @@ public class MailEncoderTest {
         .setText("this mail is readable as html only")
         .setHtml("<img src=\"cid:image1@localhost\">");
 
-    List<MailAttachment> list=new ArrayList<MailAttachment>();
+    List<MailAttachment> list= new ArrayList<>();
     MailAttachment attachment = MailAttachment.create();
     attachment.setData(Buffer.buffer("******"));
     attachment.setContentType("image/jpg");

@@ -52,7 +52,7 @@ public class MailDummyTest extends SMTPTestDummy {
       .setText("this is a message")
       .setHtml("<a href=\"http://vertx.io\">vertx.io</a>");
 
-    List<MailAttachment> list = new ArrayList<MailAttachment>();
+    List<MailAttachment> list = new ArrayList<>();
 
     list.add(MailAttachment.create()
       .setData(Buffer.buffer(image.getBytes()))

@@ -240,7 +240,7 @@ public class Utils {
     return format.format(new Date());
   }
 
-  private final static byte lf[] = { 10 };
+  private final static byte[] lf = { 10 };
 
   /*
    * base64 with lf line terminators, the crlf will be added in the write operation

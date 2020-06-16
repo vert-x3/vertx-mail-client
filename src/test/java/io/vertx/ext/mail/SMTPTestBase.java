@@ -208,7 +208,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testSuccess(MailClient mailClient, MailMessage email) {
-    testSuccess(mailClient, email, (AdditionalAsserts) null);
+    testSuccess(mailClient, email, null);
   }
 
 

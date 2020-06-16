@@ -38,7 +38,7 @@ public class EmailAddress {
 
   public static final String POSTMASTER = "postmaster";
 
-  private String email;
+  private final String email;
   private String name;
 
   /**

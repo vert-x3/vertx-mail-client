@@ -44,8 +44,8 @@ public class TestSmtpServer {
   private boolean closeImmediately = false;
   private int closeWaitTime = 10;
 
-  private boolean ssl = false; 
-  private String keystore = null;
+  private boolean ssl;
+  private String keystore;
   /*
    * set up server with a default reply that works for EHLO and no login with one recipient
    */

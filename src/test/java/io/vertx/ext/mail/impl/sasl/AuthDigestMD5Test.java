@@ -122,7 +122,7 @@ public class AuthDigestMD5Test {
 
   private String mapSortToString(Map<String, String> map) {
     StringBuilder sb = new StringBuilder();
-    List<String> keys = new ArrayList<String>(map.keySet());
+    List<String> keys = new ArrayList<>(map.keySet());
     Collections.sort(keys);
     boolean first = true;
     for (String k : keys) {

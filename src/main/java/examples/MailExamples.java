@@ -31,7 +31,8 @@ public class MailExamples {
 
   public void createSharedClient(Vertx vertx) {
     MailConfig config = new MailConfig();
-    MailClient mailClient = MailClient.createShared(vertx, config, "exampleclient");
+    MailClient mailClient = MailClient
+      .createShared(vertx, config, "exampleclient");
   }
 
   public void createNonSharedClient(Vertx vertx) {
@@ -82,18 +83,16 @@ public class MailExamples {
     dkimSignOptions.setAuid("identifier@example.com");
     dkimSignOptions.setSelector("selector");
     dkimSignOptions.setSdid("example.com");
-    MailConfig config = new MailConfig().setDKIMSignOption(dkimSignOptions).setEnableDKIM(true);
+    MailConfig config = new MailConfig()
+      .setDKIMSignOption(dkimSignOptions)
+      .setEnableDKIM(true);
+
     MailClient mailClient = MailClient.createShared(vertx, config);
   }
 
   public void sendMail(MailMessage message, MailClient mailClient) {
-    mailClient.sendMail(message, result -> {
-      if (result.succeeded()) {
-        System.out.println(result.result());
-      } else {
-        result.cause().printStackTrace();
-      }
-    });
+    mailClient.sendMail(message)
+      .onSuccess(System.out::println)
+      .onFailure(Throwable::printStackTrace);
   }
-
 }

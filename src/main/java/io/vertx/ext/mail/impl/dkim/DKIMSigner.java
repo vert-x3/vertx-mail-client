@@ -219,7 +219,7 @@ public class DKIMSigner {
       }
     });
     pipe.to(new WriteStream<Buffer>() {
-      private AtomicBoolean ended = new AtomicBoolean(false);
+      private final AtomicBoolean ended = new AtomicBoolean(false);
 
       @Override
       public WriteStream<Buffer> exceptionHandler(Handler<Throwable> handler) {
