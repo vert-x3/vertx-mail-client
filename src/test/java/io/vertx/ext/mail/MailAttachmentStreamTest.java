@@ -41,7 +41,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
     this.testContext = testContext;
     String text = "This is a message with attachment data specified";
     MailMessage message = exampleMessage().setText(text);
-    String path = "log4j.properties";
+    String path = "log4j2-test.xml";
     Buffer buffer = vertx.fileSystem().readFileBlocking(path);
     MailAttachment attachment = MailAttachment.create().setContentType("text/plain").setName("file").setData(buffer);
     message.setAttachment(attachment);
@@ -67,14 +67,14 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       .setDisposition("inline")
       .setDescription("logo of vert.x web page"));
 
-    String path = "log4j.properties";
+    String path = "log4j2-test.xml";
     Buffer logFile = vertx.fileSystem().readFileBlocking(path);
     list.add(MailAttachment.create()
       .setData(logFile)
       .setName(path)
       .setContentType("text/plain")
       .setDisposition("attachment")
-      .setDescription("This is a log4j properties file")
+      .setDescription("This is a log4j2-test.xml file")
     );
     message.setAttachment(list);
     testSuccess(mailClientLogin(), message, () -> {
@@ -91,7 +91,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
     this.testContext = testContext;
     String text = "This is a message with an attachment and with stream specified";
     MailMessage message = exampleMessage().setText(text);
-    String path = "log4j.properties";
+    String path = "log4j2-test.xml";
     Buffer buffer = vertx.fileSystem().readFileBlocking(path);
     MailAttachment attachment = MailAttachment.create()
       .setContentType("text/plain")
@@ -123,7 +123,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       .setDisposition("inline")
       .setDescription("logo of vert.x web page"));
 
-    String path = "log4j.properties";
+    String path = "log4j2-test.xml";
     Buffer logFile = vertx.fileSystem().readFileBlocking(path);
     list.add(MailAttachment.create()
       .setStream(vertx.fileSystem().openBlocking(path, new OpenOptions()))
@@ -131,7 +131,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       .setName(path)
       .setContentType("text/plain")
       .setDisposition("attachment")
-      .setDescription("This is a log4j properties file")
+      .setDescription("This is a log4j2-test.xml file")
     );
     message.setAttachment(list);
     testSuccess(mailClientLogin(), message, () -> {
@@ -144,7 +144,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   }
 
   // This method creates 2 attachments on each call, the first one is the logo image file specified by it's data.
-  // the second attachment is the log4j.properties file specified by the stream.
+  // the second attachment is the log4j2-test.xml file specified by the stream.
   private List<MailAttachment> mailAttachments(String deposition, Buffer logoBuffer) {
     List<MailAttachment> list = new ArrayList<>();
     String imgPath = "logo-white-big.png";
@@ -157,13 +157,13 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       .setDisposition(deposition)
       .setDescription("logo of vert.x web page"));
 
-    String path = "log4j.properties";
+    String path = "log4j2-test.xml";
     list.add(MailAttachment.create()
       .setStream(vertx.fileSystem().openBlocking(path, new OpenOptions()))
       .setName(path)
       .setContentType("text/plain")
       .setDisposition(deposition)
-      .setDescription("This is a log4j properties file")
+      .setDescription("This is a log4j2-test.xml file")
     );
     return list;
   }
@@ -172,7 +172,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void mailWithOneDataOtherStreamForAttachment(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String text = "This is a message with 2 attachments, one is specified by data, and the other is specified by stream";
     MailMessage message = exampleMessage().setText(text);
     message.setAttachment(mailAttachments("attachment", image));
@@ -189,7 +189,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLWithAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String html = "Here is the html email, Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
     MailMessage message = exampleMessage()
       .setAttachment(mailAttachments("attachment", image))
@@ -208,7 +208,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLWithInlineAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String html = "Here is the html email, Take a look at the Logo: <img src=\"cid:logo@example.com\" /> </br> " +
       "Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
     MailMessage message = exampleMessage()
@@ -228,7 +228,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLWithAttachmentsAndInlineAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String html = "Here is the html email, Take a look at the Logo: <img src=\"cid:logo@example.com\" /> </br> " +
       "Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
     MailMessage message = exampleMessage()
@@ -256,7 +256,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLAndTextWithAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String text = "This is a message with 2 attachments, one is specified by data, and the other is specified by stream";
     String html = "Here is the html email, Take a look at the Logo: <img src=\"cid:logo@example.com\" /> </br> " +
       "Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
@@ -270,7 +270,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       //    1.1: text body
       //    1.2: html body
       // 2: the logo image attachment
-      // 3: the log4j properties attachment
+      // 3: the log4j2-test.xml attachment
       testContext.assertEquals(3, multiPart.getCount());
       MimeMultipart alternative = (MimeMultipart)multiPart.getBodyPart(0).getContent();
       testContext.assertEquals(2, alternative.getCount());
@@ -286,7 +286,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLAndTextWithInlineAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String text = "This is a message with 2 attachments, one is specified by data, and the other is specified by stream";
     String html = "Here is the html email, Take a look at the Logo: <img src=\"cid:logo@example.com\" /> </br> " +
       "Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
@@ -301,7 +301,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       //    1.2: html part as alternative multipart
       //      1.2.1: the html body
       //      1.2.1: log image inline attachment
-      //      1.2.2: the log4j properties attachment
+      //      1.2.2: the log4j2-test.xml attachment
       testContext.assertEquals(2, multiPart.getCount());
       testContext.assertEquals(text, TestUtils.conv2nl(TestUtils.inputStreamToString(multiPart.getBodyPart(0).getInputStream())));
 
@@ -317,7 +317,7 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
   public void testHTMLAndTextWithAttachmentsAndInlineAttachments(TestContext testContext) {
     this.testContext = testContext;
     Buffer image = vertx.fileSystem().readFileBlocking("logo-white-big.png");
-    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j.properties");
+    Buffer logFile = vertx.fileSystem().readFileBlocking("log4j2-test.xml");
     String text = "This is a message with 2 attachments, one is specified by data, and the other is specified by stream";
     String html = "Here is the html email, Take a look at the Logo: <img src=\"cid:logo@example.com\" /> </br> " +
       "Click <a href=\"http://vertx.io\">Vert Home</a> to visit.";
@@ -334,9 +334,9 @@ public class MailAttachmentStreamTest extends SMTPTestWiser {
       //      1.1.2: html part as multipart
       //         1.2.1: the html body
       //         1.2.1: log image inline attachment
-      //         1.2.2: the log4j properties attachment
+      //         1.2.2: the log4j2-test.xml attachment
       // 2: the logo image attachment
-      // 3: the log4j properties attachment
+      // 3: the log4j2-test.xml attachment
       testContext.assertEquals(3, multiPart.getCount());
 
       MimeMultipart alternative = (MimeMultipart)multiPart.getBodyPart(0).getContent();
