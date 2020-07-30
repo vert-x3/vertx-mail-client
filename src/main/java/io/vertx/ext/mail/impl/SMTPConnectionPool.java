@@ -130,6 +130,10 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
     }
   }
 
+  NetClient getNetClient() {
+    return this.netClient;
+  }
+
   // Private methods
 
   private synchronized void getConnection0(Handler<AsyncResult<SMTPConnection>> handler) {
@@ -214,6 +218,7 @@ class SMTPConnectionPool implements ConnectionLifeCycleListener {
         }
       }
     } else {
+      this.netClient.close();
       if (closeFinishedHandler != null) {
         closeFinishedHandler.handle(null);
       }
