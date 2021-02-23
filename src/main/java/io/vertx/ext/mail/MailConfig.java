@@ -57,6 +57,7 @@ public class MailConfig extends NetClientOptions {
   private static final boolean DEFAULT_ENABLE_DKIM = false;
   public static final String DEFAULT_USER_AGENT = "vertxmail";
   public static final boolean DEFAULT_ENABLE_PIPELINING = true;
+  public static final boolean DEFAULT_MULTI_PART_ONLY = false;
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -74,6 +75,7 @@ public class MailConfig extends NetClientOptions {
   private boolean enableDKIM = DEFAULT_ENABLE_DKIM;
   private List<DKIMSignOptions> dkimSignOptions;
   private boolean pipelining = DEFAULT_ENABLE_PIPELINING;
+  private boolean multiPartOnly = DEFAULT_MULTI_PART_ONLY;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
   private static final Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
@@ -146,6 +148,7 @@ public class MailConfig extends NetClientOptions {
       dkimSignOptions = other.dkimSignOptions.stream().map(DKIMSignOptions::new).collect(Collectors.toList());
     }
     pipelining = other.pipelining;
+    multiPartOnly = other.multiPartOnly;
   }
 
   /**
@@ -194,6 +197,7 @@ public class MailConfig extends NetClientOptions {
       dkimOps.stream().map(dkim -> new DKIMSignOptions((JsonObject)dkim)).forEach(dkimSignOptions::add);
     }
     pipelining = config.getBoolean("pipelining", DEFAULT_ENABLE_PIPELINING);
+    multiPartOnly = config.getBoolean("multiPartOnly", DEFAULT_MULTI_PART_ONLY);
   }
 
   public MailConfig setSendBufferSize(int sendBufferSize) {
@@ -916,6 +920,29 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
+   * Should the mail message be always encoded as multipart.
+   *
+   * @return if the mail message will be encoded as multipart only.
+   */
+  public boolean isMultiPartOnly() {
+    return multiPartOnly;
+  }
+
+  /**
+   * Sets to encode multipart only or not.
+   *
+   * When sets to <code>true</code>, the mail message will be encoded as multipart even for simple mails without
+   * attachments, see https://github.com/vert-x3/vertx-mail-client/issues/161.
+   *
+   * @param multiPartOnly encoded as multipart only or not, default to <code>false</code>.
+   * @return this to be able to use the object fluently
+   */
+  public MailConfig setMultiPartOnly(boolean multiPartOnly) {
+    this.multiPartOnly = multiPartOnly;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -966,13 +993,14 @@ public class MailConfig extends NetClientOptions {
       json.put("dkimSignOptions", array);
     }
     json.put("pipelining", pipelining);
+    json.put("multiFormatOnly", multiPartOnly);
 
     return json;
   }
 
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
-      keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining);
+      keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining, multiPartOnly);
   }
 
   /*

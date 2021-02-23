@@ -30,7 +30,7 @@ import java.util.List;
  * <p>
  * example usage is:
  * <p>
- * 
+ *
  * <pre>
  * {@code
  * MailMessage = new MailMessage();
@@ -48,6 +48,7 @@ public class MailEncoder {
   private final MailMessage message;
   private final String hostname;
   private final String userAgent;
+  private final MailConfig mailConfig;
 
   private String messageID;
 
@@ -61,7 +62,7 @@ public class MailEncoder {
    * @param hostname the hostname to be used in message-id or null to get hostname from OS network config
    */
   public MailEncoder(MailMessage message, String hostname) {
-    this(message, hostname, null);
+    this(message, hostname, new MailConfig());
   }
 
   /**
@@ -78,6 +79,21 @@ public class MailEncoder {
     this.message = message;
     this.hostname = hostname;
     this.userAgent = userAgent == null ? MailConfig.DEFAULT_USER_AGENT : userAgent;
+    this.mailConfig = new MailConfig();
+  }
+
+  /**
+   * Creates a MailEncoder for the message.
+   *
+   * @param message the message to encode later
+   * @param hostname the hostname to be used in message-id or null to get hostname from OS network config
+   * @param mailConfig the MailConfig used to encode the mail message
+   */
+  public MailEncoder(MailMessage message, String hostname, MailConfig mailConfig) {
+    this.message = message;
+    this.hostname = hostname;
+    this.mailConfig = mailConfig;
+    this.userAgent = mailConfig.getUserAgent();
   }
 
   /**
@@ -108,7 +124,7 @@ public class MailEncoder {
     }
 
     List<MailAttachment> attachments = message.getAttachment();
-    if (attachments != null && attachments.size() > 0) {
+    if (attachments != null && (attachments.size() > 0 || mailConfig.isMultiPartOnly())) {
       List<EncodedPart> parts = new ArrayList<>();
       if (mainPart != null) {
         parts.add(mainPart);
@@ -136,7 +152,7 @@ public class MailEncoder {
    */
   private EncodedPart htmlPart() {
     EncodedPart mainPart;
-    if (message.getInlineAttachment() != null) {
+    if (message.getInlineAttachment() != null && (message.getInlineAttachment().size() > 0 || mailConfig.isMultiPartOnly())) {
       List<EncodedPart> parts = new ArrayList<>();
       parts.add(new TextPart(message.getHtml(), "html"));
       for (MailAttachment a : message.getInlineAttachment()) {
@@ -191,7 +207,7 @@ public class MailEncoder {
     }
 
     messageID = headers.get("Message-ID");
-    
+
     return headers;
   }
 
