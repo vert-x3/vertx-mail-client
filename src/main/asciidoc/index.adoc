@@ -213,6 +213,7 @@ The configuration has the following properties
 * `enableDKIM` boolean if true, the DKIM signing will be enabled if DKIM configurations are set as well, default is `false`.
 * `dkimSignOptions` List of `DKIMSignOptions` which are used to perform the DKIM sign.
 * `pipelining` enables pipelining if the SMTP server supports it. Default is `true`
+* `multiPartOnly` boolean, if encode mail messages as multipart only or not. Default is `false`
 
 === MailResult object
 The MailResult object has the following members

@@ -148,7 +148,7 @@ public class MailClientImpl implements MailClient {
       returnResult(result, resultHandler, context);
     };
     try {
-      final MailEncoder encoder = new MailEncoder(email, hostname);
+      final MailEncoder encoder = new MailEncoder(email, hostname, config);
       final EncodedPart encodedPart = encoder.encodeMail();
       final String messageId = encoder.getMessageID();
 

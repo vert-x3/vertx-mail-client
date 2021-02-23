@@ -25,11 +25,13 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailAttachment;
+import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.TestUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -603,6 +605,105 @@ public class MailEncoderTest {
     message.setAttachment(attachment);
     final MailEncoder encoder = new MailEncoder(message, HOSTNAME, "My_Email_Client");
     assertThat(encoder.encode(), containsString("--=--My_Email_Client"));
+  }
+
+  @Test
+  public void testMultiPartFormatDefault() {
+    MailConfig config = new MailConfig();
+
+    // text part only
+    MailMessage textbasedMessage = new MailMessage("user@example.com", "user@example.net", "hello", "message");
+    MailEncoder encoder = new MailEncoder(textbasedMessage, HOSTNAME, config);
+    EncodedPart encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/plain"));
+
+    // text part with empty attachments
+    textbasedMessage.setAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/plain"));
+
+    // text part with one attachment
+    textbasedMessage.setAttachment(MailAttachment.create().setData(Buffer.buffer("test attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
+    // html part only
+    MailMessage htmlBasedMessage = new MailMessage().setFrom("user@example.com").setTo("user@example.next")
+      .setSubject("hello").setHtml("html message");
+    encoder = new MailEncoder(htmlBasedMessage, HOSTNAME, config);
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/html"));
+
+    // html part with empty inline attachments
+    htmlBasedMessage.setInlineAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/html"));
+
+    // html part with one inline attachment
+    htmlBasedMessage.setInlineAttachment(MailAttachment.create().setData(Buffer.buffer("test inline attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/related"));
+
+    // html part with one inline attachment and one attachment
+    htmlBasedMessage.setAttachment(MailAttachment.create().setData(Buffer.buffer("test attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
+    // both text and html part
+    htmlBasedMessage.setText("text part").setAttachment(Collections.emptyList()).setInlineAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/alternative"));
+
+  }
+
+  // provide a way to roll back old behavior so that all emails were sent as multipart, regardless if you have attachments.
+  @Test
+  public void testMultiPartFormatLegacy() {
+    MailConfig config = new MailConfig().setMultiPartOnly(true);
+
+    // text part only
+    MailMessage textbasedMessage = new MailMessage("user@example.com", "user@example.net", "hello", "message");
+    MailEncoder encoder = new MailEncoder(textbasedMessage, HOSTNAME, config);
+    EncodedPart encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/plain"));
+
+    // text part with empty attachments
+    textbasedMessage.setAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
+    // text part with one attachment
+    textbasedMessage.setAttachment(MailAttachment.create().setData(Buffer.buffer("test attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
+    // html part only
+    MailMessage htmlBasedMessage = new MailMessage().setFrom("user@example.com").setTo("user@example.next")
+      .setSubject("hello").setHtml("html message");
+    encoder = new MailEncoder(htmlBasedMessage, HOSTNAME, config);
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("text/html"));
+
+    // html part with empty inline attachments
+    htmlBasedMessage.setInlineAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/related"));
+
+    // html part with one inline attachment
+    htmlBasedMessage.setInlineAttachment(MailAttachment.create().setData(Buffer.buffer("test inline attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/related"));
+
+    // html part with one inline attachment and one attachment
+    htmlBasedMessage.setAttachment(MailAttachment.create().setData(Buffer.buffer("test attachment")).setName("hello.txt"));
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
+    // both text and html part
+    htmlBasedMessage.setText("text part").setAttachment(Collections.emptyList()).setInlineAttachment(Collections.emptyList());
+    encodedPart = encoder.encodeMail();
+    assertThat(encodedPart.headers().get("Content-Type"), containsString("multipart/mixed"));
+
   }
 
 }
