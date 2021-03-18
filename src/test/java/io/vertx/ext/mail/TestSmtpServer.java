@@ -151,6 +151,10 @@ public class TestSmtpServer {
             } else if (!holdFire.get() && lines.get() < dialogue.length) {
               writeResponses(socket, dialogue[lines.getAndIncrement()]);
             }
+            if (inputLine.equals("QUIT")) {
+              log.debug("Got QUIT, response has been written back, close the socket");
+              socket.close();
+            }
           }
           if (lines.get() == dialogue.length) {
             if (closeImmediately) {

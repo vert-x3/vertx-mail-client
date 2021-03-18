@@ -87,7 +87,7 @@ public class MailSendContextTest extends SMTPTestWiser {
   public void sendMailDifferentContext(TestContext testContext) {
     VerticleA verticleA = new VerticleA();
     log.debug("Deploy VerticleA");
-    vertx.deployVerticle(verticleA).onComplete(testContext.asyncAssertSuccess());
+    vertx.deployVerticle(verticleA).onComplete(testContext.asyncAssertSuccess(va -> vertx.undeploy(va, testContext.asyncAssertSuccess())));
   }
 
 }
