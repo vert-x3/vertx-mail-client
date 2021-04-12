@@ -52,6 +52,7 @@ class SMTPConnectionPool {
 
   private boolean closed = false;
   private SMTPEndPoint endPoint;
+  private long timerID = -1;
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
@@ -67,6 +68,20 @@ class SMTPConnectionPool {
     endPoint = new SMTPEndPoint(netClient, config, this::dispose);
     this.prng = new PRNG(vertx);
     this.authOperationFactory = new AuthOperationFactory(prng);
+    if (config.getPoolCleanerPeriod() > 0 && config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
+      timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+    }
+  }
+
+  private synchronized void checkExpired(long timer) {
+    endPoint.checkExpired(ar -> {
+      if (ar.succeeded()) {
+        ar.result().forEach(c -> c.quitCloseConnection(Promise.promise()));
+      }
+    });
+    if (!closed) {
+      timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+    }
   }
 
   void dispose() {
@@ -168,6 +183,10 @@ class SMTPConnectionPool {
       throw new IllegalStateException("pool is already closed");
     } else {
       closed = true;
+      if (timerID >= 0) {
+        vertx.cancelTimer(timerID);
+        timerID = -1;
+      }
       this.prng.close();
       Promise<List<Future<SMTPConnection>>> closePromise = Promise.promise();
       closePromise.future()
