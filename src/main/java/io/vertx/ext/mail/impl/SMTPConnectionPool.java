@@ -35,6 +35,7 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 class SMTPConnectionPool {
@@ -51,7 +52,7 @@ class SMTPConnectionPool {
   private final MailConfig config;
 
   private boolean closed = false;
-  private SMTPEndPoint endPoint;
+  private final AtomicReference<SMTPEndPoint> endPoint = new AtomicReference<>();
   private long timerID = -1;
 
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
@@ -65,7 +66,6 @@ class SMTPConnectionPool {
       config.setHostnameVerificationAlgorithm("HTTPS");
     }
     netClient = vertx.createNetClient(config);
-    endPoint = new SMTPEndPoint(netClient, config, this::dispose);
     this.prng = new PRNG(vertx);
     this.authOperationFactory = new AuthOperationFactory(prng);
     if (config.getPoolCleanerPeriod() > 0 && config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
@@ -73,19 +73,17 @@ class SMTPConnectionPool {
     }
   }
 
-  private synchronized void checkExpired(long timer) {
-    endPoint.checkExpired(ar -> {
+  private void checkExpired(long timer) {
+    getSMTPEndPoint().checkExpired(ar -> {
       if (ar.succeeded()) {
         ar.result().forEach(c -> c.quitCloseConnection(Promise.promise()));
       }
     });
-    if (!closed) {
-      timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+    synchronized (this) {
+      if (!closed) {
+        timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+      }
     }
-  }
-
-  void dispose() {
-    log.trace("SMTPEndPoint gets disposed.");
   }
 
   AuthOperationFactory getAuthOperationFactory() {
@@ -100,72 +98,74 @@ class SMTPConnectionPool {
     getConnection0(hostname, ctx, resultHandler, 0);
   }
 
-  private synchronized void getConnection0(String hostname, Context ctx, Handler<AsyncResult<SMTPConnection>> resultHandler, final int i) {
-    if (closed) {
-      resultHandler.handle(Future.failedFuture("connection pool is closed"));
-    } else {
-      ContextInternal ctxInternal = (ContextInternal)ctx;
-      Promise<Lease<SMTPConnection>> promise = ctxInternal.promise();
-      promise.future().map(l -> l.get().setLease(l)).onComplete(cr -> {
-        if (cr.succeeded()) {
-          SMTPConnection conn = cr.result();
-          conn.setInUse();
-          if (conn.isInitialized()) {
-            Promise<SMTPConnection> connReset = Promise.promise();
-            connReset.future().onComplete(reset -> {
-              if (reset.succeeded()) {
-                resultHandler.handle(Future.succeededFuture(conn));
-              } else {
-                // close the conn by sending quit, and try to get another one
-                Promise<Void> closePromise = Promise.promise();
-                closePromise.future().onComplete(v -> {
-                  if (i < RSET_MAX_RETRY) {
-                    // close this one, and try get another connection
-                    log.debug("Failed on RSET, try " + (i + 1) + " time");
-                    getConnection0(hostname, ctx, resultHandler, i + 1);
-                  } else {
-                    // RSET failed more than 5 times, fail
-                    resultHandler.handle(Future.failedFuture(reset.cause()));
-                  }
-                });
-                conn.quitCloseConnection(closePromise);
-              }
-            });
-            new SMTPReset(conn, connReset).start();
-          } else {
-            Promise<SMTPConnection> connInitial = Promise.promise();
-            connInitial.future().onComplete(v -> {
-              if (v.succeeded()) {
-                resultHandler.handle(Future.succeededFuture(conn));
-              } else {
-                Throwable cause = v.cause();
-                if (cause instanceof IOException) {
-                  conn.shutdown();
-                  resultHandler.handle(Future.failedFuture(cause));
-                } else {
-                  Promise<Void> quitPromise = Promise.promise();
-                  quitPromise.future().onComplete(vv -> resultHandler.handle(Future.failedFuture(v.cause())));
-                  conn.quitCloseConnection(quitPromise);
-                }
-              }
-            });
-            SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
-            try {
-              conn.init(starter::serverGreeting);
-            } catch (Exception e) {
-              connInitial.handle(Future.failedFuture(e));
-            }
-          }
-        } else {
-          resultHandler.handle(Future.failedFuture(cr.cause()));
-        }
-      });
-      if (!endPoint.getConnection(ctxInternal, config.getConnectTimeout(), promise)) {
-        log.debug("EndPoint was disposed, create a new one");
-        endPoint = new SMTPEndPoint(netClient, config, this::dispose);
-        getConnection(hostname, ctx, resultHandler);
+  private void getConnection0(String hostname, Context ctx, Handler<AsyncResult<SMTPConnection>> resultHandler, final int i) {
+    synchronized (this) {
+      if (closed) {
+        resultHandler.handle(Future.failedFuture("connection pool is closed"));
+        return;
       }
     }
+    ContextInternal contextInternal = (ContextInternal)ctx;
+    Promise<Lease<SMTPConnection>> promise = contextInternal.promise();
+    promise.future().map(l -> l.get().setLease(l)).onComplete(cr -> {
+      if (cr.succeeded()) {
+        SMTPConnection conn = cr.result();
+        conn.setInUse();
+        if (conn.isInitialized()) {
+          Promise<SMTPConnection> connReset = Promise.promise();
+          connReset.future().onComplete(reset -> {
+            if (reset.succeeded()) {
+              resultHandler.handle(Future.succeededFuture(conn));
+            } else {
+              // close the conn by sending quit, and try to get another one
+              Promise<Void> closePromise = Promise.promise();
+              closePromise.future().onComplete(v -> {
+                if (i < RSET_MAX_RETRY) {
+                  // close this one, and try get another connection
+                  log.debug("Failed on RSET, try " + (i + 1) + " time");
+                  getConnection0(hostname, ctx, resultHandler, i + 1);
+                } else {
+                  // RSET failed more than 5 times, fail
+                  resultHandler.handle(Future.failedFuture(reset.cause()));
+                }
+              });
+              conn.quitCloseConnection(closePromise);
+            }
+          });
+          new SMTPReset(conn, connReset).start();
+        } else {
+          Promise<SMTPConnection> connInitial = Promise.promise();
+          connInitial.future().onComplete(v -> {
+            if (v.succeeded()) {
+              resultHandler.handle(Future.succeededFuture(conn));
+            } else {
+              Throwable cause = v.cause();
+              if (cause instanceof IOException) {
+                conn.shutdown();
+                resultHandler.handle(Future.failedFuture(cause));
+              } else {
+                Promise<Void> quitPromise = Promise.promise();
+                quitPromise.future().onComplete(vv -> resultHandler.handle(Future.failedFuture(v.cause())));
+                conn.quitCloseConnection(quitPromise);
+              }
+            }
+          });
+          SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
+          try {
+            conn.init(starter::serverGreeting);
+          } catch (Exception e) {
+            connInitial.handle(Future.failedFuture(e));
+          }
+        }
+      } else {
+        resultHandler.handle(Future.failedFuture(cr.cause()));
+      }
+    });
+    getSMTPEndPoint().getConnection(contextInternal, config.getConnectTimeout(), promise);
+  }
+
+  private SMTPEndPoint getSMTPEndPoint() {
+    return endPoint.accumulateAndGet(endPoint.get(), (p, n) -> p == null ? new SMTPEndPoint(netClient, config, () -> endPoint.set(null)) : p);
   }
 
   public void close() {
@@ -177,51 +177,52 @@ class SMTPConnectionPool {
     });
   }
 
-  synchronized void close(Handler<AsyncResult<Void>> finishedHandler) {
+  void close(Handler<AsyncResult<Void>> finishedHandler) {
     log.debug("trying to close the connection pool");
-    if (closed) {
-      throw new IllegalStateException("pool is already closed");
-    } else {
+    synchronized (this) {
+      if (closed) {
+        throw new IllegalStateException("pool is already closed");
+      }
       closed = true;
       if (timerID >= 0) {
         vertx.cancelTimer(timerID);
         timerID = -1;
       }
-      this.prng.close();
-      Promise<List<Future<SMTPConnection>>> closePromise = Promise.promise();
-      closePromise.future()
-        .flatMap(list -> {
-          List<Future> futures = list.stream()
-            .filter(connFuture -> connFuture.succeeded() && connFuture.result().isAvailable())
-            .map(connFuture -> {
-              Promise<Void> promise = Promise.promise();
-              connFuture.result().close(promise);
-              return promise.future();
-            })
-            .collect(Collectors.toList());
-          return CompositeFuture.all(futures);
-        })
-        .onComplete(r -> {
-          log.debug("Close net client");
-          if (r.succeeded()) {
-            if (finishedHandler != null) {
-              this.netClient.close(finishedHandler);
-            } else {
-              this.netClient.close();
-            }
+    }
+    this.prng.close();
+    Promise<List<Future<SMTPConnection>>> closePromise = Promise.promise();
+    closePromise.future()
+      .flatMap(list -> {
+        List<Future> futures = list.stream()
+          .filter(connFuture -> connFuture.succeeded() && connFuture.result().isAvailable())
+          .map(connFuture -> {
+            Promise<Void> promise = Promise.promise();
+            connFuture.result().close(promise);
+            return promise.future();
+          })
+          .collect(Collectors.toList());
+        return CompositeFuture.all(futures);
+      })
+      .onComplete(r -> {
+        log.debug("Close net client");
+        if (r.succeeded()) {
+          if (finishedHandler != null) {
+            this.netClient.close(finishedHandler);
           } else {
             this.netClient.close();
-            if (finishedHandler != null) {
-              finishedHandler.handle(Future.failedFuture(r.cause()));
-            }
           }
-        });
-      endPoint.close(closePromise);
-    }
+        } else {
+          this.netClient.close();
+          if (finishedHandler != null) {
+            finishedHandler.handle(Future.failedFuture(r.cause()));
+          }
+        }
+      });
+    getSMTPEndPoint().close(closePromise);
   }
 
   int connCount() {
-    return endPoint.size();
+    return getSMTPEndPoint().size();
   }
 
   NetClient getNetClient() {

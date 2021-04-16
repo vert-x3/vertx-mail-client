@@ -115,7 +115,7 @@ public class MailClientImpl implements MailClient {
   }
 
   private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    context.runOnContext(v -> connectionPool.getConnection(hostname, context, result -> {
+    connectionPool.getConnection(hostname, context, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
         connection.setErrorHandler(th -> handleError(th, resultHandler, context));
@@ -123,7 +123,7 @@ public class MailClientImpl implements MailClient {
       } else {
         handleError(result.cause(), resultHandler, context);
       }
-    }));
+    });
   }
 
   private Future<Void> dkimFuture(Context context, EncodedPart encodedPart) {
