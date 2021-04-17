@@ -107,60 +107,47 @@ class SMTPConnectionPool {
     }
     ContextInternal contextInternal = (ContextInternal)ctx;
     Promise<Lease<SMTPConnection>> promise = contextInternal.promise();
-    promise.future().map(l -> l.get().setLease(l)).onComplete(cr -> {
-      if (cr.succeeded()) {
-        SMTPConnection conn = cr.result();
-        conn.setInUse();
-        if (conn.isInitialized()) {
-          Promise<SMTPConnection> connReset = Promise.promise();
-          connReset.future().onComplete(reset -> {
-            if (reset.succeeded()) {
-              resultHandler.handle(Future.succeededFuture(conn));
-            } else {
-              // close the conn by sending quit, and try to get another one
-              Promise<Void> closePromise = Promise.promise();
-              closePromise.future().onComplete(v -> {
-                if (i < RSET_MAX_RETRY) {
-                  // close this one, and try get another connection
-                  log.debug("Failed on RSET, try " + (i + 1) + " time");
-                  getConnection0(hostname, ctx, resultHandler, i + 1);
-                } else {
-                  // RSET failed more than 5 times, fail
-                  resultHandler.handle(Future.failedFuture(reset.cause()));
-                }
-              });
-              conn.quitCloseConnection(closePromise);
-            }
-          });
-          new SMTPReset(conn, connReset).start();
-        } else {
-          Promise<SMTPConnection> connInitial = Promise.promise();
-          connInitial.future().onComplete(v -> {
-            if (v.succeeded()) {
-              resultHandler.handle(Future.succeededFuture(conn));
-            } else {
-              Throwable cause = v.cause();
-              if (cause instanceof IOException) {
-                conn.shutdown();
-                resultHandler.handle(Future.failedFuture(cause));
-              } else {
-                Promise<Void> quitPromise = Promise.promise();
-                quitPromise.future().onComplete(vv -> resultHandler.handle(Future.failedFuture(v.cause())));
-                conn.quitCloseConnection(quitPromise);
-              }
-            }
-          });
-          SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
-          try {
-            conn.init(starter::serverGreeting);
-          } catch (Exception e) {
-            connInitial.handle(Future.failedFuture(e));
-          }
-        }
+    promise.future()
+      .map(l -> l.get().setLease(l)).flatMap(conn -> {
+      final Future<SMTPConnection> future;
+      final boolean reset;
+      conn.setInUse();
+      if (conn.isInitialized()) {
+        reset = true;
+        Promise<SMTPConnection> connReset = contextInternal.promise();
+        new SMTPReset(conn, connReset).start();
+        future = connReset.future();
       } else {
-        resultHandler.handle(Future.failedFuture(cr.cause()));
+        reset = false;
+        Promise<SMTPConnection> connInitial = contextInternal.promise();
+        SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
+        try {
+          conn.init(starter::serverGreeting);
+        } catch (Exception e) {
+          connInitial.handle(Future.failedFuture(e));
+        }
+        future = connInitial.future();
       }
-    });
+      return future.recover(t -> {
+        // close the connection as it failed either in rset or handshake
+        Promise<Void> quitPromise = contextInternal.promise();
+        if (t instanceof IOException) {
+          conn.shutdown();
+          quitPromise.fail(t);
+        } else {
+          conn.quitCloseConnection(quitPromise);
+        }
+        return quitPromise.future().transform(v -> {
+          if (reset && i < RSET_MAX_RETRY) {
+            Promise<SMTPConnection> getConnAgain = contextInternal.promise();
+            log.debug("Failed on RSET, try " + (i + 1) + " time");
+            getConnection0(hostname, ctx, getConnAgain, i + 1);
+            return getConnAgain.future();
+          }
+          return Future.failedFuture(t);
+        });
+      });
+    }).onComplete(resultHandler);
     getSMTPEndPoint().getConnection(contextInternal, config.getConnectTimeout(), promise);
   }
 

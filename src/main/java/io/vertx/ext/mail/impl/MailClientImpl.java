@@ -17,6 +17,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
@@ -82,7 +83,7 @@ public class MailClientImpl implements MailClient {
 
   @Override
   public MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
-    Context context = vertx.getOrCreateContext();
+    ContextInternal context = (ContextInternal)vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
         if (hostname == null) {
@@ -114,7 +115,7 @@ public class MailClientImpl implements MailClient {
     return this;
   }
 
-  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     connectionPool.getConnection(hostname, context, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
@@ -138,13 +139,13 @@ public class MailClientImpl implements MailClient {
   }
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
-                           Context context) {
-    Promise<MailResult> sentResultHandler = Promise.promise();
+                           ContextInternal context) {
+    Promise<MailResult> sentResultHandler = context.promise();
     sentResultHandler.future().onComplete(mr -> {
       if (mr.succeeded()) {
         conn.returnToPool().onComplete(cn -> returnResult(mr, resultHandler, context));
       } else {
-        Promise<Void> promise = Promise.promise();
+        Promise<Void> promise = context.promise();
         promise.future().onComplete(v -> returnResult(Future.failedFuture(mr.cause()), resultHandler, context));
         conn.quitCloseConnection(promise);
       }
@@ -174,7 +175,7 @@ public class MailClientImpl implements MailClient {
 
   // do some validation before we open the connection
   // return true on successful validation so we can stop processing above
-  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
       handleError("sender address is not present", resultHandler, context);
       return false;
@@ -189,19 +190,19 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     log.debug("handleError:" + message);
     returnResult(Future.failedFuture(message), resultHandler, context);
   }
 
-  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     log.debug("handleError", t);
     returnResult(Future.failedFuture(t), resultHandler, context);
   }
 
-  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     // Note - results must always be executed on the right context, asynchronously, not directly!
-    context.runOnContext(v -> {
+    context.emit(v -> {
       if (resultHandler != null) {
         resultHandler.handle(result);
       } else {
