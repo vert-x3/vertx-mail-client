@@ -63,10 +63,13 @@ public class MailConfig extends NetClientOptions {
    * Default pool cleaner period = 1000 ms (1 second)
    */
   public static final int DEFAULT_POOL_CLEANER_PERIOD = 1000;
+  public static final TimeUnit DEFAULT_POOL_CLEANER_PERIOD_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
+
   /**
    * The default keep alive timeout for SMTP connection = 5 minutes
    */
   public static final int DEFAULT_KEEP_ALIVE_TIMEOUT = 300;
+  public static final TimeUnit DEFAULT_KEEP_ALIVE_TIMEOUT_UNIT = TimeUnit.SECONDS;
 
   private String hostname = DEFAULT_HOST;
   private int port = DEFAULT_PORT;
@@ -86,7 +89,9 @@ public class MailConfig extends NetClientOptions {
   private boolean pipelining = DEFAULT_ENABLE_PIPELINING;
   private boolean multiPartOnly = DEFAULT_MULTI_PART_ONLY;
   private int poolCleanerPeriod = DEFAULT_POOL_CLEANER_PERIOD;
+  private TimeUnit poolCleanerPeriodUnit = DEFAULT_POOL_CLEANER_PERIOD_TIMEOUT_UNIT;
   private int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
+  private TimeUnit keepAliveTimeoutUnit = DEFAULT_KEEP_ALIVE_TIMEOUT_UNIT;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
   private static final Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
@@ -161,7 +166,9 @@ public class MailConfig extends NetClientOptions {
     pipelining = other.pipelining;
     multiPartOnly = other.multiPartOnly;
     poolCleanerPeriod = other.poolCleanerPeriod;
+    poolCleanerPeriodUnit =  other.poolCleanerPeriodUnit;
     keepAliveTimeout = other.keepAliveTimeout;
+    keepAliveTimeoutUnit = other.keepAliveTimeoutUnit;
   }
 
   /**
@@ -213,6 +220,18 @@ public class MailConfig extends NetClientOptions {
     multiPartOnly = config.getBoolean("multiPartOnly", DEFAULT_MULTI_PART_ONLY);
     poolCleanerPeriod = config.getInteger("poolCleanerPeriod", DEFAULT_POOL_CLEANER_PERIOD);
     keepAliveTimeout = config.getInteger("keepAliveTimeout", DEFAULT_KEEP_ALIVE_TIMEOUT);
+    Object keepAliveTU = config.getValue("keepAliveTimeoutUnit");
+    if (keepAliveTU instanceof String) {
+      keepAliveTimeoutUnit = TimeUnit.valueOf((String)keepAliveTU);
+    } else {
+      keepAliveTimeoutUnit = DEFAULT_KEEP_ALIVE_TIMEOUT_UNIT;
+    }
+    Object poolCleanerU = config.getValue("poolCleanerPeriodUnit");
+    if (keepAliveTU instanceof String) {
+      poolCleanerPeriodUnit = TimeUnit.valueOf((String)poolCleanerU);
+    } else {
+      poolCleanerPeriodUnit = DEFAULT_POOL_CLEANER_PERIOD_TIMEOUT_UNIT;
+    }
   }
 
   public MailConfig setSendBufferSize(int sendBufferSize) {
@@ -965,7 +984,7 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
-   * Set the connection pool cleaner period in milli seconds, a non positive value disables expiration checks and connections
+   * Set the connection pool cleaner period, defaults in milli seconds, a non positive value disables expiration checks and connections
    * will remain in the pool until they are closed.
    *
    * @param poolCleanerPeriod the pool cleaner period
@@ -984,7 +1003,7 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
-   * Set the keep alive timeout for SMTP connection, in seconds.
+   * Set the keep alive timeout for SMTP connection, Defaults in seconds.
    * <p/>
    * This value determines how long a connection remains unused in the pool before being evicted and closed.
    * <p/>
@@ -998,6 +1017,46 @@ public class MailConfig extends NetClientOptions {
       throw new IllegalArgumentException("keepAliveTimeout must be >= 0");
     }
     this.keepAliveTimeout = keepAliveTimeout;
+    return this;
+  }
+
+  /**
+   * Gets the {@code TimeUnit} of pool cleaning period. Defaults to {@link TimeUnit#MILLISECONDS}
+   *
+   * @return the {@code TimeUnit} of the pool cleaning period.
+   */
+  public TimeUnit getPoolCleanerPeriodUnit() {
+    return poolCleanerPeriodUnit;
+  }
+
+  /**
+   * Sets the {@code TimeUnit} of pool cleaning period.
+   *
+   * @param poolCleanerPeriodUnit the {@code TimeUnit} of the pool cleaning period.
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setPoolCleanerPeriodUnit(TimeUnit poolCleanerPeriodUnit) {
+    this.poolCleanerPeriodUnit = poolCleanerPeriodUnit;
+    return this;
+  }
+
+  /**
+   * Gets the {@code TimeUnit} of keeping the connections alive timeout. Defaults to {@link TimeUnit#SECONDS}
+   *
+   * @return the {@code TimeUnit} of keeping the connections alive timeout
+   */
+  public TimeUnit getKeepAliveTimeoutUnit() {
+    return keepAliveTimeoutUnit;
+  }
+
+  /**
+   * Sets {@code TimeUnit} of keeping connections in the pool alive.
+   *
+   * @param keepAliveTimeoutUnit the {@code TimeUnit} of keeping the connections alive timeout
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setKeepAliveTimeoutUnit(TimeUnit keepAliveTimeoutUnit) {
+    this.keepAliveTimeoutUnit = keepAliveTimeoutUnit;
     return this;
   }
 
@@ -1055,6 +1114,8 @@ public class MailConfig extends NetClientOptions {
     json.put("multiFormatOnly", multiPartOnly);
     json.put("poolCleanerPeriod", poolCleanerPeriod);
     json.put("keepAliveTimeout", keepAliveTimeout);
+    json.put("poolCleanerPeriodUnit", poolCleanerPeriodUnit.name());
+    json.put("keepAliveTimeoutUnit", keepAliveTimeoutUnit.name());
 
     return json;
   }
@@ -1062,7 +1123,7 @@ public class MailConfig extends NetClientOptions {
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
       keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining, multiPartOnly,
-      poolCleanerPeriod, keepAliveTimeout);
+      poolCleanerPeriod, keepAliveTimeout, poolCleanerPeriodUnit, keepAliveTimeoutUnit);
   }
 
   /*

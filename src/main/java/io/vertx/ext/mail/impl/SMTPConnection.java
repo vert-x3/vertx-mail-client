@@ -74,11 +74,12 @@ class SMTPConnection {
   /**
    * Compute the expiration timeout of the connection, relative to the current time.
    *
-   * @param timeout the timeout
+   * @param config the MailConfig
    * @return the expiration timestamp
    */
-  private static long expirationTimestampOf(long timeout) {
-    return timeout == 0 ? 0L : System.currentTimeMillis() + timeout * 1000;
+  private static long expirationTimestampOf(MailConfig config) {
+    long timeout = config.getKeepAliveTimeout();
+    return timeout == 0 ? 0L : System.currentTimeMillis() + config.getKeepAliveTimeoutUnit().toMillis(timeout);
   }
 
   SMTPConnection setLease(Lease<SMTPConnection> lease) {
@@ -109,7 +110,7 @@ class SMTPConnection {
     ns.exceptionHandler(this::handleNSException);
     ns.closeHandler(this::handleNSClosed);
     commandReplyHandler = initialReplyHandler;
-    this.expirationTimestamp = expirationTimestampOf(config.getKeepAliveTimeout());
+    this.expirationTimestamp = expirationTimestampOf(config);
     ns.handler(this.nsHandler);
   }
 
@@ -294,7 +295,7 @@ class SMTPConnection {
         cleanHandlers();
         lease.recycle();
         inuse = false;
-        expirationTimestamp = expirationTimestampOf(config.getKeepAliveTimeout());
+        expirationTimestamp = expirationTimestampOf(config);
         promise.complete(this);
       } else {
         Promise<Void> p = Promise.promise();
@@ -335,7 +336,7 @@ class SMTPConnection {
 
   void setInUse() {
     inuse = true;
-    expirationTimestamp = expirationTimestampOf(config.getKeepAliveTimeout());
+    expirationTimestamp = expirationTimestampOf(config);
   }
 
   /**

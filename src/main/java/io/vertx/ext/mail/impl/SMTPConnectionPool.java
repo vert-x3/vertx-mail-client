@@ -69,8 +69,12 @@ class SMTPConnectionPool {
     this.prng = new PRNG(vertx);
     this.authOperationFactory = new AuthOperationFactory(prng);
     if (config.getPoolCleanerPeriod() > 0 && config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
-      timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+      timerID = vertx.setTimer(poolCleanTimeout(config), this::checkExpired);
     }
+  }
+
+  private static long poolCleanTimeout(MailConfig config) {
+    return config.getPoolCleanerPeriodUnit().toMillis(config.getPoolCleanerPeriod());
   }
 
   private void checkExpired(long timer) {
@@ -81,7 +85,7 @@ class SMTPConnectionPool {
     });
     synchronized (this) {
       if (!closed) {
-        timerID = vertx.setTimer(config.getPoolCleanerPeriod(), this::checkExpired);
+        timerID = vertx.setTimer(poolCleanTimeout(config), this::checkExpired);
       }
     }
   }
