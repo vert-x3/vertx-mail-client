@@ -17,6 +17,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
@@ -51,7 +52,7 @@ public class MailClientImpl implements MailClient {
   private final MailHolder holder;
   // hostname will cache getOwnhostname/getHostname result, we have to resolve only once
   // this cannot be done in the constructor since it is async, so its not final
-  private String hostname = null;
+  private volatile String hostname = null;
 
   private volatile boolean closed = false;
 
@@ -82,28 +83,28 @@ public class MailClientImpl implements MailClient {
 
   @Override
   public MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
-    Context context = vertx.getOrCreateContext();
+    ContextInternal context = (ContextInternal)vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {
         if (hostname == null) {
           vertx.<String>executeBlocking(
-              fut -> {
-                String hname;
-                if (config.getOwnHostname() != null) {
-                  hname = config.getOwnHostname();
-                } else {
-                  hname = Utils.getHostname();
-                }
-                fut.complete(hname);
-              },
-              res -> {
-                if (res.succeeded()) {
-                  hostname = res.result();
-                  getConnection(message, resultHandler, context);
-                } else {
-                  handleError(res.cause(), resultHandler, context);
-                }
-              });
+            fut -> {
+              String hname;
+              if (config.getOwnHostname() != null) {
+                hname = config.getOwnHostname();
+              } else {
+                hname = Utils.getHostname();
+              }
+              fut.complete(hname);
+            },
+            res -> {
+              if (res.succeeded()) {
+                hostname = res.result();
+                getConnection(message, resultHandler, context);
+              } else {
+                handleError(res.cause(), resultHandler, context);
+              }
+            });
         } else {
           getConnection(message, resultHandler, context);
         }
@@ -114,8 +115,8 @@ public class MailClientImpl implements MailClient {
     return this;
   }
 
-  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
-    connectionPool.getConnection(hostname, result -> {
+  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
+    connectionPool.getConnection(hostname, context, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
         connection.setErrorHandler(th -> handleError(th, resultHandler, context));
@@ -138,15 +139,17 @@ public class MailClientImpl implements MailClient {
   }
 
   private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
-      Context context) {
-    final Handler<AsyncResult<MailResult>> sentResultHandler = result -> {
-      if (result.succeeded()) {
-        conn.returnToPool();
+                           ContextInternal context) {
+    Promise<MailResult> sentResultHandler = context.promise();
+    sentResultHandler.future().onComplete(mr -> {
+      if (mr.succeeded()) {
+        conn.returnToPool().onComplete(cn -> returnResult(mr, resultHandler, context));
       } else {
-        conn.setBroken();
+        Promise<Void> promise = context.promise();
+        promise.future().onComplete(v -> returnResult(Future.failedFuture(mr.cause()), resultHandler, context));
+        conn.quitCloseConnection(promise);
       }
-      returnResult(result, resultHandler, context);
-    };
+    });
     try {
       final MailEncoder encoder = new MailEncoder(email, hostname, config);
       final EncodedPart encodedPart = encoder.encodeMail();
@@ -172,13 +175,13 @@ public class MailClientImpl implements MailClient {
 
   // do some validation before we open the connection
   // return true on successful validation so we can stop processing above
-  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     if (email.getBounceAddress() == null && email.getFrom() == null) {
       handleError("sender address is not present", resultHandler, context);
       return false;
     } else if ((email.getTo() == null || email.getTo().size() == 0)
-        && (email.getCc() == null || email.getCc().size() == 0)
-        && (email.getBcc() == null || email.getBcc().size() == 0)) {
+      && (email.getCc() == null || email.getCc().size() == 0)
+      && (email.getBcc() == null || email.getBcc().size() == 0)) {
       log.warn("no recipient addresses are present");
       handleError("no recipient addresses are present", resultHandler, context);
       return false;
@@ -187,19 +190,19 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     log.debug("handleError:" + message);
     returnResult(Future.failedFuture(message), resultHandler, context);
   }
 
-  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     log.debug("handleError", t);
     returnResult(Future.failedFuture(t), resultHandler, context);
   }
 
-  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, Context context) {
+  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
     // Note - results must always be executed on the right context, asynchronously, not directly!
-    context.runOnContext(v -> {
+    context.emit(v -> {
       if (resultHandler != null) {
         resultHandler.handle(result);
       } else {

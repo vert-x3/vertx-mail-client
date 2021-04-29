@@ -38,7 +38,7 @@ import org.junit.runner.RunWith;
 public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
 
   /**
-   * 
+   *
    */
   private static final String HOSTNAME = "my.hostname.com";
 
@@ -53,13 +53,6 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
         "EHLO",
         "250-example.com\n" +
           "250 SIZE 1000000",
-        "MAIL FROM:",
-        "250 2.1.0 Ok",
-        "RCPT TO:",
-        "250 2.1.5 Ok",
-        "DATA",
-        "354 End data with <CR><LF>.<CR><LF>",
-        "250 2.0.0 Ok: queued as ABCDDEF0123456789",
         "RSET",
         "500 command failed");
 
@@ -72,22 +65,21 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
       if (result.succeeded()) {
         log.debug("got 1st connection");
         testContext.assertEquals(1, pool.connCount());
-        result.result().returnToPool();
-        testContext.assertEquals(1, pool.connCount());
-
-        pool.getConnection(HOSTNAME, result2 -> {
-          if (result2.succeeded()) {
-            log.debug("got 2nd connection");
-            testContext.assertEquals(1, pool.connCount());
-            result2.result().returnToPool();
-            pool.close(v -> {
-              testContext.assertEquals(0, pool.connCount());
-              async.complete();
-            });
-          } else {
-            log.info(result2.cause());
-            testContext.fail(result2.cause());
-          }
+        result.result().returnToPool().onComplete(v -> {
+          testContext.assertEquals(1, pool.connCount());
+          pool.getConnection(HOSTNAME, result2 -> {
+            if (result2.succeeded()) {
+              log.debug("got 2nd connection");
+              testContext.assertEquals(1, pool.connCount());
+              result2.result().returnToPool().onComplete(c -> pool.close(vv -> {
+                testContext.assertEquals(0, pool.connCount());
+                async.complete();
+              }));
+            } else {
+              log.info(result2.cause());
+              testContext.fail(result2.cause());
+            }
+          });
         });
       } else {
         log.info(result.cause());

@@ -214,6 +214,10 @@ The configuration has the following properties
 * `dkimSignOptions` List of `DKIMSignOptions` which are used to perform the DKIM sign.
 * `pipelining` enables pipelining if the SMTP server supports it. Default is `true`
 * `multiPartOnly` boolean, if encode mail messages as multipart only or not. Default is `false`
+* `poolCleanerPeriod` int, the connection pool cleaner period in milli seconds. Default is `1000 ms`.
+* `poolCleanerPeriodUnit` TimeUnit of cleaning the pool, Default is `TimeUnit.MILLISECONDS`
+* `keepAliveTimeout` int, the keep alive timeout for SMTP connection in seconds. Default is `300 s`.
+* `keepAliveTimeoutUnit`, TimeUnit of keeping connections in the pool alive. Default is `TimeUnit.SECONDS`
 
 === MailResult object
 The MailResult object has the following members

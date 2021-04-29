@@ -60,6 +60,7 @@ public class MailClosedConnectionTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        mailClient.close();
         async.complete();
       } else {
         log.warn("got exception", result.cause());
@@ -86,6 +87,7 @@ public class MailClosedConnectionTest {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
+        mailClient.close();
         async.complete();
       } else {
         log.warn("got exception", result.cause());

@@ -45,7 +45,7 @@ class SMTPAuthentication {
   private final AuthOperationFactory authOperationFactory;
 
   SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, Handler<Void> finishedHandler,
-                            Handler<Throwable> errorHandler) {
+                     Handler<Throwable> errorHandler) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
@@ -135,7 +135,6 @@ class SMTPAuthentication {
       blank = 0;
     }
     connection.write(nextLine, blank, message2 -> {
-      log.debug("AUTH command result: " + message2);
       if (StatusCode.isStatusOk(message2)) {
         if (StatusCode.isStatusContinue(message2)) {
           authCmdStep(authMethod, message2, onError);

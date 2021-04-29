@@ -18,8 +18,6 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.Future;
 
 /**
@@ -31,44 +29,22 @@ import io.vertx.core.Future;
 class SMTPReset {
 
   private final SMTPConnection connection;
-  private final Handler<AsyncResult<Void>> handler;
+  private final Handler<AsyncResult<SMTPConnection>> handler;
 
-  private static final Logger log = LoggerFactory.getLogger(SMTPReset.class);
-
-  public SMTPReset(SMTPConnection connection, Handler<AsyncResult<Void>> finishedHandler) {
+  SMTPReset(SMTPConnection connection, Handler<AsyncResult<SMTPConnection>> finishedHandler) {
     this.connection = connection;
     this.handler = finishedHandler;
   }
 
-  public void start() {
-    connection.setErrorHandler(th -> {
-      log.info("exception on RSET " + th);
-      connection.resetErrorHandler();
-      connection.setBroken();
-      connection.shutdown();
-      handleError("exception on RSET " + th);
-    });
+  void start() {
+    connection.setErrorHandler(th -> handler.handle(Future.failedFuture(th)));
     connection.write("RSET", message -> {
-      log.debug("RSET result: " + message);
-      connection.resetErrorHandler();
       if (!StatusCode.isStatusOk(message)) {
-        log.warn("RSET failed: " + message);
-        handleError("reset command failed: " + message);
+        handler.handle(Future.failedFuture("reset command failed: " + message));
       } else {
-        finished();
+        handler.handle(Future.succeededFuture(connection));
       }
     });
-  }
-
-  /**
-   *
-   */
-  private void finished() {
-    handler.handle(Future.succeededFuture(null));
-  }
-
-  private void handleError(String message) {
-    handler.handle(Future.failedFuture(message));
   }
 
 }

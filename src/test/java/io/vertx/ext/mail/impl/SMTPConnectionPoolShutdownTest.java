@@ -61,7 +61,8 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
           closeFinished.set(true);
         });
         testContext.assertFalse(closeFinished.get(), "connection closed though it was still active");
-        testContext.assertEquals(1, pool.connCount());
+        // the new connection pool resets size to 0 on close() directly
+        testContext.assertEquals(0, pool.connCount());
         result.result().returnToPool();
         vertx.setTimer(1000, v1 -> {
           testContext.assertTrue(closeFinished.get(), "connection not closed by pool.close()");

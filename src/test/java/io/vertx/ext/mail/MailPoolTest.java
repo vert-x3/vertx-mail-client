@@ -33,8 +33,6 @@ public class MailPoolTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(MailPoolTest.class);
 
-  MailClient mailClient;
-
   @Test
   public void mailTest(TestContext context) {
     Async async = context.async();
@@ -89,6 +87,9 @@ public class MailPoolTest extends SMTPTestWiser {
       pass1.passOnce();
       if (result.succeeded()) {
         log.info(result.result().toString());
+        if (mail2.isCompleted()) {
+          mailClient.close();
+        }
         mail1.complete();
       } else {
         log.warn("got exception", result.cause());
@@ -101,6 +102,9 @@ public class MailPoolTest extends SMTPTestWiser {
       pass2.passOnce();
       if (result2.succeeded()) {
         log.info(result2.result().toString());
+        if (mail1.isCompleted()) {
+          mailClient.close();
+        }
         mail2.complete();
       } else {
         log.warn("got exception", result2.cause());
@@ -138,6 +142,9 @@ public class MailPoolTest extends SMTPTestWiser {
             pass2.passOnce();
             if (result2.succeeded()) {
               log.info(result2.result().toString());
+              if (mail2.isCompleted()) {
+                mailClient.close();
+              }
               mail1.complete();
             } else {
               log.warn("got exception", result2.cause());
@@ -161,6 +168,9 @@ public class MailPoolTest extends SMTPTestWiser {
             pass4.passOnce();
             if (result2.succeeded()) {
               log.info(result2.result().toString());
+              if (mail1.isCompleted()) {
+                mailClient.close();
+              }
               mail2.complete();
             } else {
               log.warn("got exception", result2.cause());

@@ -51,6 +51,7 @@ public class MailProxyTest extends SMTPTestWiser {
     client.sendMail(exampleMessage(), r -> {
       if (r.succeeded()) {
         assertEquals("localhost:1587", proxy.getLastUri());
+        client.close();
         async.complete();
       } else {
         log.debug("Failed to send mail", r.cause());
@@ -75,6 +76,7 @@ public class MailProxyTest extends SMTPTestWiser {
     client.sendMail(exampleMessage(), r -> {
       if (r.succeeded()) {
         assertEquals("localhost:1587", proxy.getLastUri());
+        client.close();
         async.complete();
       } else {
         log.debug("Failed to send mail", r.cause());
