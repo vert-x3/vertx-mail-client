@@ -26,7 +26,7 @@ import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetSocket;
-import io.vertx.core.net.impl.clientconnection.Lease;
+import io.vertx.core.net.impl.pool.Lease;
 import io.vertx.ext.mail.MailConfig;
 
 import java.io.IOException;
