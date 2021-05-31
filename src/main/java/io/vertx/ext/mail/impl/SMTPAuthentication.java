@@ -109,7 +109,7 @@ class SMTPAuthentication {
   private void authMethod(String auth, Handler<Void> onError) {
     AuthOperation authMethod;
     try {
-      authMethod = authOperationFactory.createAuth(config.getUsername(), config.getPassword(), auth);
+      authMethod = authOperationFactory.createAuth(config, auth);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
       handleError(ex);
@@ -121,22 +121,36 @@ class SMTPAuthentication {
   private void authCmdStep(AuthOperation authMethod, String message, Handler<Void> onError) {
     String nextLine;
     int blank;
-    if (message == null) {
-      String authParameter = authMethod.nextStep(null);
-      if (!authParameter.isEmpty()) {
-        nextLine = "AUTH " + authMethod.getName() + " " + CryptUtils.base64(authParameter);
-        blank = authMethod.getName().length() + 6;
+    try {
+      if (message == null) {
+        String authParameter = authMethod.nextStep(null);
+        if (!authParameter.isEmpty()) {
+          if (!authMethod.handleCoding()) {
+            authParameter = CryptUtils.base64(authParameter);
+          }
+          nextLine = "AUTH " + authMethod.getName() + " " + authParameter;
+          blank = authMethod.getName().length() + 6;
+        } else {
+          nextLine = "AUTH " + authMethod.getName();
+          blank = -1;
+        }
       } else {
-        nextLine = "AUTH " + authMethod.getName();
-        blank = -1;
+        if (!authMethod.handleCoding()) {
+          nextLine = CryptUtils.base64(authMethod.nextStep(CryptUtils.decodeb64(message.substring(4))));
+        } else {
+          nextLine = authMethod.nextStep(message.substring(4));
+        }
+        blank = 0;
       }
-    } else {
-      nextLine = CryptUtils.base64(authMethod.nextStep(CryptUtils.decodeb64(message.substring(4))));
-      blank = 0;
+    } catch (Exception e) {
+      log.warn("Failed to handle server auth message: " + message, e);
+      onError.handle(null);
+      return;
     }
     connection.write(nextLine, blank, message2 -> {
       if (StatusCode.isStatusOk(message2)) {
         if (StatusCode.isStatusContinue(message2)) {
+          log.debug("Auth Continue with response: " + message2);
           authCmdStep(authMethod, message2, onError);
         } else {
           authOperationFactory.setAuthMethod(authMethod.getName());

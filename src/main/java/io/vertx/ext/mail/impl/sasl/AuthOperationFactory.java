@@ -21,6 +21,7 @@ import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.Utils;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -32,6 +33,7 @@ public final class AuthOperationFactory {
   // algorithms are sorted by preference
   private static final String[] ALGORITHMS = {
     "XOAUTH2",
+    "NTLM",
     "DIGEST-MD5",
     "CRAM-SHA256",
     "CRAM-SHA1",
@@ -66,7 +68,9 @@ public final class AuthOperationFactory {
     return this;
   }
 
-  public AuthOperation createAuth(String username, String password, String authMethod) {
+  public AuthOperation createAuth(MailConfig mailConfig, String authMethod) {
+    String username = mailConfig.getUsername();
+    String password = mailConfig.getPassword();
     switch (authMethod) {
       case "XOAUTH2":
         return new AuthXOAUTH2(username, password);
@@ -82,6 +86,14 @@ public final class AuthOperationFactory {
         return new AuthLogin(username, password);
       case "PLAIN":
         return new AuthPlain(username, password);
+      case "NTLM":
+        int idx = username.indexOf('\\');
+        String ntDomain = mailConfig.getNtDomain();
+        if (idx != -1) {
+          ntDomain = username.substring(0, idx).toUpperCase(Locale.ENGLISH);
+          username = username.substring(idx + 1);
+        }
+        return new NTLMAuth(username, password, ntDomain, mailConfig.getWorkstation());
     }
     throw new IllegalArgumentException("Unsupported Authentication Method: " + authMethod);
   }

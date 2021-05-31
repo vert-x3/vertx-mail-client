@@ -24,4 +24,14 @@ public interface AuthOperation {
   String nextStep(String line);
 
   String getName();
+
+  /**
+   * If the authentication operation handles the base64 encode/decode itself.
+   *
+   * @return true if it handles the base64 encode/decode, false otherwise
+   */
+  default boolean handleCoding() {
+    return false;
+  }
+
 }
