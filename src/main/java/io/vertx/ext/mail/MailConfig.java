@@ -92,6 +92,8 @@ public class MailConfig extends NetClientOptions {
   private TimeUnit poolCleanerPeriodUnit = DEFAULT_POOL_CLEANER_PERIOD_TIMEOUT_UNIT;
   private int keepAliveTimeout = DEFAULT_KEEP_ALIVE_TIMEOUT;
   private TimeUnit keepAliveTimeoutUnit = DEFAULT_KEEP_ALIVE_TIMEOUT_UNIT;
+  private String ntDomain;
+  private String workstation;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
   private static final Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
@@ -169,6 +171,8 @@ public class MailConfig extends NetClientOptions {
     poolCleanerPeriodUnit =  other.poolCleanerPeriodUnit;
     keepAliveTimeout = other.keepAliveTimeout;
     keepAliveTimeoutUnit = other.keepAliveTimeoutUnit;
+    ntDomain = other.ntDomain;
+    workstation = other.workstation;
   }
 
   /**
@@ -232,6 +236,8 @@ public class MailConfig extends NetClientOptions {
     } else {
       poolCleanerPeriodUnit = DEFAULT_POOL_CLEANER_PERIOD_TIMEOUT_UNIT;
     }
+    ntDomain = config.getString("ntDomain");
+    workstation = config.getString("workstation");
   }
 
   public MailConfig setSendBufferSize(int sendBufferSize) {
@@ -1061,6 +1067,45 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
+   * Domain used on NTLM authentication.
+   *
+   * @return the domain name used on NTLM authentication
+   */
+  public String getNtDomain() {
+    return ntDomain;
+  }
+
+  /**
+   * Sets the domain used on NTLM authentication
+   * @param ntDomain the NTLM domain
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setNtDomain(String ntDomain) {
+    this.ntDomain = ntDomain;
+    return this;
+  }
+
+  /**
+   * Workstation used on NTLM authentication
+   *
+   * @return the workstation used on NTLM authentication
+   */
+  public String getWorkstation() {
+    return workstation;
+  }
+
+  /**
+   * Sets the workstation used on NTLM authentication
+   *
+   * @param workstation the workstation
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setWorkstation(String workstation) {
+    this.workstation = workstation;
+    return this;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -1116,6 +1161,12 @@ public class MailConfig extends NetClientOptions {
     json.put("keepAliveTimeout", keepAliveTimeout);
     json.put("poolCleanerPeriodUnit", poolCleanerPeriodUnit.name());
     json.put("keepAliveTimeoutUnit", keepAliveTimeoutUnit.name());
+    if (ntDomain != null) {
+      json.put("ntDomain", ntDomain);
+    }
+    if (workstation != null) {
+      json.put("workstation", workstation);
+    }
 
     return json;
   }
@@ -1123,7 +1174,7 @@ public class MailConfig extends NetClientOptions {
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
       keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining, multiPartOnly,
-      poolCleanerPeriod, keepAliveTimeout, poolCleanerPeriodUnit, keepAliveTimeoutUnit);
+      poolCleanerPeriod, keepAliveTimeout, poolCleanerPeriodUnit, keepAliveTimeoutUnit, ntDomain, workstation);
   }
 
   /*

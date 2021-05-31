@@ -32,22 +32,22 @@ public class AuthOperationFactoryTest {
 
   /**
    * Test method for
-   * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(java.lang.String, java.lang.String, java.lang.String)}
+   * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(MailConfig, java.lang.String)}
    * make sure that the default auth method works and is PLAIN
    */
   @Test
   public final void testCreateAuth() {
-    assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth("user", "pw", "PLAIN").getClass());
+    assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "PLAIN").getClass());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public final void testAuthNotFound() {
-    assertNull(new AuthOperationFactory(null).createAuth("user", "pw", "ASDF"));
+    assertNull(new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "ASDF"));
   }
 
   @Test
   public final void testCreateXOAUTH2Auth() {
-    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth("user", "token", "XOAUTH2").getClass());
+    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("token"), "XOAUTH2").getClass());
   }
 
   @Test
@@ -55,7 +55,7 @@ public class AuthOperationFactoryTest {
     //TODO intersection between supported and specified
     AuthOperationFactory authOperationFactory = new AuthOperationFactory(null);
     MailConfig mailConfig = new MailConfig();
-    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("XOAUTH2", "DIGEST-MD5", "CRAM-SHA256", "CRAM-SHA1", "CRAM-MD5", "LOGIN", "PLAIN"));
+    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("XOAUTH2", "NTLM", "DIGEST-MD5", "CRAM-SHA256", "CRAM-SHA1", "CRAM-MD5", "LOGIN", "PLAIN"));
 
     mailConfig.setAuthMethods("PLAIN LOGIN");
     // pay attention on the order
