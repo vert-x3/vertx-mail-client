@@ -169,6 +169,18 @@ class SMTPConnection {
   void parseCapabilities(String message) {
     capa = new Capabilities();
     capa.parseCapabilities(message);
+    if (log.isDebugEnabled()) {
+      StringBuilder sb = new StringBuilder();
+      sb.append("Supported Auth methods: ");
+      capa.getCapaAuth().forEach(a -> sb.append(a).append(" "));
+      sb.append("\n");
+      if (capa.getSize() > 0) {
+        sb.append("Max Size: ").append(capa.getSize()).append("\n");
+      }
+      sb.append("Support STARTTLS: ").append(capa.isStartTLS()).append(", Current connection TLS: ").append(this.isSsl()).append("\n");
+      sb.append("Support PIPELINING: ").append(capa.isCapaPipelining()).append("\n");
+      log.debug(sb);
+    }
   }
 
   void shutdown() {
