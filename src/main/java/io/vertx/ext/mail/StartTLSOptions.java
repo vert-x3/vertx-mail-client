@@ -25,8 +25,8 @@ import io.vertx.codegen.annotations.VertxGen;
  * <p>
  * DISABLED means STARTTLS will not be used in any case
  * <p>
- * OPTIONS means STARTTLS will be used if the server supports it and a plain connection will be used otherwise
- * please note that this option is not a secure as it seems since a MITM attacker can remove the STARTTLS line
+ * OPTIONAL means STARTTLS will be used if the server supports it and a plain connection will be used otherwise;
+ * please note that this option is not as secure as it seems since a MITM attacker can remove the STARTTLS line
  * from the capabilities reply.
  * <p>
  * REQUIRED means that STARTTLS will be used if the server supports it and the send operation will fail otherwise
