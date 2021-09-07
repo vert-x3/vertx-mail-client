@@ -29,11 +29,11 @@
       
     <artifactId>vertx-mail-client</artifactId>
       
-    <version>3.9.9</version>
+    <version>3.9.10-SNAPSHOT</version>
       
     <properties>
             
-        <stack.version>3.9.9</stack.version>
+        <stack.version>3.9.10-SNAPSHOT</stack.version>
           
     </properties>
       
