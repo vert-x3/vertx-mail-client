@@ -55,7 +55,7 @@ public class EmailAddress {
         email = matcher.group(1);
         name = matcher.group(2);
       } else {
-        throw new IllegalArgumentException("invalid email address");
+        throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
       }
     } else if (fullAddress.contains("<")) {
       Matcher matcher = PATTERN_EMAIL_ANGLE.matcher(fullAddress);
@@ -66,7 +66,7 @@ public class EmailAddress {
         }
         email = matcher.group(2);
       } else {
-        throw new IllegalArgumentException("invalid email address");
+        throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
       }
     } else {
       email = fullAddress;
@@ -76,7 +76,7 @@ public class EmailAddress {
     // this only catches very simple errors
     // mostly to avoid protocol errors due to spaces and newlines
     if (!PATTERN_EMAIL_INVALID.matcher(email).matches()) {
-      throw new IllegalArgumentException("invalid email address");
+      throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
     }
 
   }
