@@ -53,14 +53,15 @@ class SMTPInitialDialogue {
   }
 
   public void start(final String message) {
-    if (StatusCode.isStatusOk(message)) {
+    SMTPResponse response = new SMTPResponse(message);
+    if (response.isStatusOk()) {
       if (!config.isDisableEsmtp()) {
         ehloCmd();
       } else {
         heloCmd();
       }
     } else {
-      handleError("got error response " + message);
+      handleError(response.toException("got error response"));
     }
   }
 
@@ -69,7 +70,8 @@ class SMTPInitialDialogue {
       .write(
         "EHLO " + hostname,
         message -> {
-          if (StatusCode.isStatusOk(message)) {
+          SMTPResponse response = new SMTPResponse(message);
+          if (response.isStatusOk()) {
             connection.parseCapabilities(message);
             if (connection.getCapa().isStartTLS()
               && !connection.isSsl()
@@ -91,16 +93,17 @@ class SMTPInitialDialogue {
 
   private void heloCmd() {
     connection.write("HELO " + hostname, message -> {
-      if (StatusCode.isStatusOk(message)) {
+      SMTPResponse response = new SMTPResponse(message);
+      if (response.isStatusOk()) {
         finished();
       } else {
-        handleError("HELO failed with " + message);
+        handleError(response.toException("HELO failed."));
       }
     });
   }
 
-  private void handleError(String message) {
-    errorHandler.handle(new NoStackTraceThrowable(message));
+  private void handleError(Throwable throwable) {
+    errorHandler.handle(throwable);
   }
 
   /**
@@ -127,7 +130,7 @@ class SMTPInitialDialogue {
       finishedHandler.handle(null);
     } else {
       log.warn("STARTTLS required but not supported by server");
-      handleError("STARTTLS required but not supported by server");
+      errorHandler.handle(new NoStackTraceThrowable("STARTTLS required but not supported by server"));
     }
   }
 

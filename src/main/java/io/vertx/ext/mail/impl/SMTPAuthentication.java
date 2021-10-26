@@ -92,21 +92,24 @@ class SMTPAuthentication {
       if (log.isDebugEnabled()) {
         log.debug("Using default auth method: " + defaultAuth);
       }
-      authMethod(defaultAuth, error -> authChain(auths, 0));
+      authMethod(defaultAuth, error -> authChain(auths, 0, null));
     } else {
-      authChain(auths, 0);
+      authChain(auths, 0, null);
     }
   }
 
-  private void authChain(List<String> auths, int i) {
+  private void authChain(List<String> auths, int i, Throwable e) {
     if (i < auths.size()) {
-      authMethod(auths.get(i), error -> authChain(auths, i + 1));
+      if (e != null) {
+        log.warn(e);
+      }
+      authMethod(auths.get(i), error -> authChain(auths, i + 1, error));
     } else {
-      handleError("Failed to authenticate");
+      handleError(e);
     }
   }
 
-  private void authMethod(String auth, Handler<Void> onError) {
+  private void authMethod(String auth, Handler<Throwable> onError) {
     AuthOperation authMethod;
     try {
       authMethod = authOperationFactory.createAuth(config, auth);
@@ -118,7 +121,7 @@ class SMTPAuthentication {
     authCmdStep(authMethod, null, onError);
   }
 
-  private void authCmdStep(AuthOperation authMethod, String message, Handler<Void> onError) {
+  private void authCmdStep(AuthOperation authMethod, String message, Handler<Throwable> onError) {
     String nextLine;
     int blank;
     try {
@@ -144,12 +147,13 @@ class SMTPAuthentication {
       }
     } catch (Exception e) {
       log.warn("Failed to handle server auth message: " + message, e);
-      onError.handle(null);
+      onError.handle(e);
       return;
     }
     connection.write(nextLine, blank, message2 -> {
-      if (StatusCode.isStatusOk(message2)) {
-        if (StatusCode.isStatusContinue(message2)) {
+      SMTPResponse response = new SMTPResponse(message2);
+      if (response.isStatusOk()) {
+        if (response.isStatusContinue()) {
           log.debug("Auth Continue with response: " + message2);
           authCmdStep(authMethod, message2, onError);
         } else {
@@ -157,8 +161,7 @@ class SMTPAuthentication {
           finished();
         }
       } else {
-        log.warn("AUTH " + authMethod.getName() + " failed " + message2);
-        onError.handle(null);
+        onError.handle(response.toException("AUTH " + authMethod.getName() + " failed"));
       }
     });
   }

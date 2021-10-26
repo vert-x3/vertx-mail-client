@@ -137,30 +137,31 @@ class SMTPSendMail {
               // result follows the same order in the commands list
               for (int i = 0; i < evenlopeResult.length; i ++) {
                 String message = evenlopeResult[i];
+                SMTPResponse response = new SMTPResponse(message);
                 if (i == 0) {
-                  if (!StatusCode.isStatusOk(message)) {
-                    evenlopePromise.fail("sender address not accepted: " + message);
+                  if (!response.isStatusOk()) {
+                    evenlopePromise.fail(response.toException("sender address not accepted"));
                     return;
                   }
                 } else if (i < evenlopeResult.length - 1) {
-                  if (StatusCode.isStatusOk(message)) {
+                  if (response.isStatusOk()) {
                     mailResult.getRecipients().add(allRecipients.get(i - 1));
                   } else {
                     if (!config.isAllowRcptErrors()) {
-                      evenlopePromise.fail("recipient address not accepted: " + message);
+                      evenlopePromise.fail(response.toException("recipient address not accepted"));
                       return;
                     }
                   }
                 } else {
                   // DATA result
-                  if (StatusCode.isStatusOk(message)) {
+                  if (response.isStatusOk()) {
                     if (mailResult.getRecipients().size() == 0) {
                       // send dot only
                       evenlopePromise.complete(false);
                       return;
                     }
                   } else {
-                    evenlopePromise.fail("DATA command not accepted: " + message);
+                    evenlopePromise.fail(response.toException("DATA command not accepted"));
                     return;
                   }
                 }
@@ -191,10 +192,11 @@ class SMTPSendMail {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
-      if (StatusCode.isStatusOk(message)) {
+      SMTPResponse response = new SMTPResponse(message);
+      if (response.isStatusOk()) {
         promise.complete();
       } else {
-        promise.fail("sender address not accepted: " + message);
+        promise.fail(response.toException("sender address not accepted"));
       }
     });
     return promise.future();
@@ -209,14 +211,15 @@ class SMTPSendMail {
           written.getAndAdd(line.length());
         }
         try {
-          if (StatusCode.isStatusOk(message)) {
+          SMTPResponse response = new SMTPResponse(message);
+          if (response.isStatusOk()) {
             mailResult.getRecipients().add(email);
             promise.complete();
           } else {
             if (config.isAllowRcptErrors()) {
               promise.complete();
             } else {
-              promise.fail("recipient address not accepted: " + message);
+              promise.fail(response.toException("recipient address not accepted"));
             }
           }
         } catch (Exception e) {
@@ -237,10 +240,11 @@ class SMTPSendMail {
           if (log.isDebugEnabled()) {
             written.getAndAdd(4);
           }
-          if (StatusCode.isStatusOk(message)) {
+          SMTPResponse response = new SMTPResponse(message);
+          if (response.isStatusOk()) {
             promise.complete(true);
           } else {
-            promise.fail("DATA command not accepted: " + message);
+            promise.fail(response.toException("DATA command not accepted"));
           }
         });
       } else {
@@ -278,10 +282,11 @@ class SMTPSendMail {
     Promise<MailResult> promise = Promise.promise();
     try {
       connection.getContext().runOnContext(v -> connection.write(".", msg -> {
-        if (StatusCode.isStatusOk(msg)) {
+        SMTPResponse response = new SMTPResponse(msg);
+        if (response.isStatusOk()) {
           promise.complete(mailResult);
         } else {
-          promise.fail("sending data failed: " + msg);
+          promise.fail(response.toException("sending data failed"));
         }
       }));
     } catch (Exception e) {
