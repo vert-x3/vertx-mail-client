@@ -53,8 +53,8 @@ public class TestMailClient implements MailClient {
    * @see io.vertx.ext.mail.MailClient#close()
    */
   @Override
-  public void close() {
-    mailClient.close();
+  public void close(Handler<AsyncResult<Void>> closedHandler) {
+    mailClient.close(closedHandler);
   }
 
   /**
