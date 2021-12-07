@@ -53,7 +53,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(oneLineResp, message);
         async.countDown();
       }
@@ -85,7 +86,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(capaMessage, message);
         Capabilities capa = new Capabilities();
         capa.parseCapabilities(message);
@@ -127,7 +129,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(expected, message);
         Capabilities capa = new Capabilities();
         capa.parseCapabilities(message);
@@ -164,7 +167,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(multilines, message);
         String[] lines = message.split("\r\n");
         for (String l: lines) {
@@ -203,7 +207,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(multilinesWithLF, message);
         String[] lines = message.split("\r\n");
         testContext.assertEquals(3, lines.length);
@@ -243,7 +248,8 @@ public class MultilineParserTest {
         async.countDown();
       } else {
         String message = b.toString();
-        testContext.assertTrue(StatusCode.isStatusOk(message));
+        SMTPResponse response = new SMTPResponse(message);
+        testContext.assertTrue(response.isStatusOk());
         testContext.assertEquals(expected, message);
         String[] lines = message.split("\r\n");
         testContext.assertEquals(3, lines.length);

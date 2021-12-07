@@ -19,6 +19,7 @@ package io.vertx.ext.mail.impl;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.SMTPException;
 import io.vertx.ext.mail.SMTPTestDummy;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -114,6 +115,11 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailClient mailClient = mailClientLogin();
     mailClient.sendMail(message, testContext.asyncAssertFailure(t -> {
+        testContext.assertEquals(t.getClass(), SMTPException.class);
+        SMTPException smtpException = (SMTPException)t;
+        testContext.assertEquals(550, smtpException.getReplyCode());
+        testContext.assertEquals("550 5.1.1 Unknown user: userB@example.com", smtpException.getReplyMessage());
+        testContext.assertTrue(smtpException.isPermanent());
         testContext.assertTrue(t.getMessage().contains("550 5.1.1 Unknown user: userB@example.com"));
         mailClient.close();
       })
@@ -221,6 +227,11 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailConfig mailConfig = configLogin().setAllowRcptErrors(true);
     MailClient mailClient = MailClient.createShared(vertx, mailConfig);
     mailClient.sendMail(message, testContext.asyncAssertFailure(t -> {
+      testContext.assertEquals(t.getClass(), SMTPException.class);
+      SMTPException smtpException = (SMTPException)t;
+      testContext.assertEquals(554, smtpException.getReplyCode());
+      testContext.assertEquals("554 no valid recipients given", smtpException.getReplyMessage());
+      testContext.assertTrue(smtpException.isPermanent());
       testContext.assertTrue(t.getMessage().contains("554 no valid recipients given"));
       mailClient.close();
     }));

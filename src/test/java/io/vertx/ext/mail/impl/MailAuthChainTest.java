@@ -18,6 +18,7 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailMessage;
+import io.vertx.ext.mail.SMTPException;
 import io.vertx.ext.mail.SMTPTestDummy;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -140,6 +141,11 @@ public class MailAuthChainTest extends SMTPTestDummy {
 
     assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
     mailClient.sendMail(email, testContext.asyncAssertFailure(r1 -> {
+      testContext.assertEquals(r1.getClass(), SMTPException.class);
+      SMTPException smtpException = (SMTPException)r1;
+      testContext.assertEquals(435, smtpException.getReplyCode());
+      testContext.assertEquals("435 4.7.8 Error: authentication failed: bad protocol / cancel", smtpException.getReplyMessage());
+      testContext.assertTrue(smtpException.isTransient());
       assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
       mailClient.close();
     }));

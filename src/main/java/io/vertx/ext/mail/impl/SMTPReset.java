@@ -39,8 +39,9 @@ class SMTPReset {
   void start() {
     connection.setErrorHandler(th -> handler.handle(Future.failedFuture(th)));
     connection.write("RSET", message -> {
-      if (!StatusCode.isStatusOk(message)) {
-        handler.handle(Future.failedFuture("reset command failed: " + message));
+      SMTPResponse response = new SMTPResponse(message);
+      if (!response.isStatusOk()) {
+        handler.handle(Future.failedFuture(response.toException("reset command failed")));
       } else {
         handler.handle(Future.succeededFuture(connection));
       }
