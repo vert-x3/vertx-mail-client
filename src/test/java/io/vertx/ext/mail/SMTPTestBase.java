@@ -185,26 +185,16 @@ public abstract class SMTPTestBase extends VertxTestBase {
   }
 
   protected void testException(MailClient mailClient, MailMessage email, Class<? extends Exception> exceptionClass) {
-    Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
-
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, testContext.asyncAssertFailure(cause -> {
       log.info("mail finished");
       pass.passOnce();
-      mailClient.close();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        testContext.fail("this test should throw an Exception");
-      } else {
-        final Throwable cause = result.cause();
-        if(exceptionClass == null || exceptionClass.equals(cause.getClass())) {
-          async.complete();
-        } else {
-          log.warn("got exception", cause);
-          testContext.fail("didn't get expected exception " + exceptionClass + " but " + cause.getClass());
-        }
+      if (exceptionClass != null && !exceptionClass.equals(cause.getClass())) {
+        log.warn("got exception", cause);
+        testContext.fail("didn't get expected exception " + exceptionClass + " but " + cause.getClass());
       }
-    });
+      mailClient.close(testContext.asyncAssertSuccess());
+    }));
   }
 
   protected void testSuccess(MailClient mailClient, MailMessage email) {
@@ -217,28 +207,21 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * so we do not fail after we have called async.complete()
    */
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
-    Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, testContext.asyncAssertSuccess(result -> {
       log.info("mail finished");
       pass.passOnce();
-      mailClient.close();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        if (asserts != null) {
-          try {
-            asserts.doAsserts();
-          } catch (Exception e) {
-            testContext.fail(e);
-          }
+      log.info(result.toString());
+      if (asserts != null) {
+        try {
+          asserts.doAsserts();
+        } catch (Exception e) {
+          testContext.fail(e);
         }
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        testContext.fail(result.cause());
       }
-    });
+      mailClient.close(testContext.asyncAssertSuccess());
+    }));
   }
 
   protected void testSuccess(MailClient mailClient) {

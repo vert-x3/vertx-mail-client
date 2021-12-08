@@ -96,7 +96,7 @@ public class MailDummyTest extends SMTPTestDummy {
     final MailClient mailClient = mailClientDefault();
     mailClient.sendMail(exampleMessage(), null);
     Thread.sleep(1000);
-    mailClient.close();
+    mailClient.close(testContext.asyncAssertSuccess());
   }
 
 }

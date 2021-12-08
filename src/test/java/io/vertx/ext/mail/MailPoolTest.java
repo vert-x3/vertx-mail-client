@@ -35,37 +35,24 @@ public class MailPoolTest extends SMTPTestWiser {
 
   @Test
   public void mailTest(TestContext context) {
-    Async async = context.async();
-
     MailClient mailClient = MailClient.create(vertx, configNoSSL());
 
     MailMessage email = exampleMessage();
 
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
 
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
       log.info("mail finished");
       pass1.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mailClient.sendMail(email, result2 -> {
-          log.info("mail finished");
-          pass2.passOnce();
-          mailClient.close();
-          if (result2.succeeded()) {
-            log.info(result2.result().toString());
-            async.complete();
-          } else {
-            log.warn("got exception", result2.cause());
-            context.fail(result2.cause());
-          }
-        });
-      } else {
-        log.warn("got exception", result.cause());
-        context.fail(result.cause());
-      }
-    });
+      log.info(result.toString());
+      mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+        log.info("mail finished");
+        pass2.passOnce();
+        log.info(result2.toString());
+        mailClient.close(context.asyncAssertSuccess());
+      }));
+    }));
   }
 
   @Test
@@ -79,38 +66,28 @@ public class MailPoolTest extends SMTPTestWiser {
 
     MailMessage email = exampleMessage();
 
-    PassOnce pass1 = new PassOnce(s -> context.fail(s));
-    PassOnce pass2 = new PassOnce(s -> context.fail(s));
+    PassOnce pass1 = new PassOnce(context::fail);
+    PassOnce pass2 = new PassOnce(context::fail);
 
-    mailClient.sendMail(email, result -> {
-      log.info("mail finished");
+    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+      log.info("mail1 finished");
       pass1.passOnce();
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        if (mail2.isCompleted()) {
-          mailClient.close();
-        }
-        mail1.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        context.fail(result.cause());
+      log.info(result.toString());
+      if (mail2.isCompleted()) {
+        mailClient.close(context.asyncAssertSuccess());
       }
-    });
+      mail1.complete();
+    }));
 
-    mailClient.sendMail(email, result2 -> {
-      log.info("mail finished");
+    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+      log.info("mail2 finished");
       pass2.passOnce();
-      if (result2.succeeded()) {
-        log.info(result2.result().toString());
-        if (mail1.isCompleted()) {
-          mailClient.close();
-        }
-        mail2.complete();
-      } else {
-        log.warn("got exception", result2.cause());
-        context.fail(result2.cause());
+      log.info(result.toString());
+      if (mail1.isCompleted()) {
+        mailClient.close(context.asyncAssertSuccess());
       }
-    });
+      mail2.complete();
+    }));
   }
 
   @Test
@@ -126,62 +103,42 @@ public class MailPoolTest extends SMTPTestWiser {
 
       MailMessage email = exampleMessage();
 
-      PassOnce pass1 = new PassOnce(s -> context.fail(s));
-      PassOnce pass2 = new PassOnce(s -> context.fail(s));
-      PassOnce pass3 = new PassOnce(s -> context.fail(s));
-      PassOnce pass4 = new PassOnce(s -> context.fail(s));
+      PassOnce pass1 = new PassOnce(context::fail);
+      PassOnce pass2 = new PassOnce(context::fail);
+      PassOnce pass3 = new PassOnce(context::fail);
+      PassOnce pass4 = new PassOnce(context::fail);
 
       log.info("starting mail 1");
-      mailClient.sendMail(email, result -> {
+      mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
         log.info("mail finished");
         pass1.passOnce();
-        if (result.succeeded()) {
-          log.info(result.result().toString());
-          mailClient.sendMail(email, result2 -> {
-            log.info("mail finished");
-            pass2.passOnce();
-            if (result2.succeeded()) {
-              log.info(result2.result().toString());
-              if (mail2.isCompleted()) {
-                mailClient.close();
-              }
-              mail1.complete();
-            } else {
-              log.warn("got exception", result2.cause());
-              context.fail(result2.cause());
-            }
-          });
-        } else {
-          log.warn("got exception", result.cause());
-          context.fail(result.cause());
-        }
-      });
+        log.info(result.toString());
+        mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+          log.info("mail finished");
+          pass2.passOnce();
+          log.info(result2.toString());
+          if (mail2.isCompleted()) {
+            mailClient.close(context.asyncAssertSuccess());
+          }
+          mail1.complete();
+        }));
+      }));
 
       log.info("starting mail 2");
-      mailClient.sendMail(email, result -> {
+      mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
         log.info("mail finished");
         pass3.passOnce();
-        if (result.succeeded()) {
-          log.info(result.result().toString());
-          mailClient.sendMail(email, result2 -> {
-            log.info("mail finished");
-            pass4.passOnce();
-            if (result2.succeeded()) {
-              log.info(result2.result().toString());
-              if (mail1.isCompleted()) {
-                mailClient.close();
-              }
-              mail2.complete();
-            } else {
-              log.warn("got exception", result2.cause());
-              context.fail(result2.cause());
-            }
-          });
-        } else {
-          log.warn("got exception", result.cause());
-          context.fail(result.cause());
-        }
-      });
+        log.info(result.toString());
+        mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+          log.info("mail finished");
+          pass4.passOnce();
+          log.info(result2.toString());
+          if (mail1.isCompleted()) {
+            mailClient.close(context.asyncAssertSuccess());
+          }
+          mail2.complete();
+        }));
+      }));
     });
   }
 

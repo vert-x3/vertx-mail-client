@@ -56,22 +56,15 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
         .setAllowRcptErrors(true);
     MailClient mailClient = MailClient.create(vertx, config);
 
-    Async async = testContext.async();
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
-    mailClient.sendMail(mail, result -> {
+    mailClient.sendMail(mail, testContext.asyncAssertSuccess(result -> {
       log.info("mail finished");
       pass.passOnce();
-      mailClient.close();
-      if (result.succeeded()) {
-        log.info(result.result());
-        testContext.assertEquals("[user@example.com]", result.result().getRecipients().toString());
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        testContext.fail(result.cause());
-      }
-    });
+      log.info(result);
+      testContext.assertEquals("[user@example.com]", result.getRecipients().toString());
+      mailClient.close(testContext.asyncAssertSuccess());
+    }));
   }
 
   @Test

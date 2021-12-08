@@ -121,7 +121,7 @@ public class MailPipeliningTest extends SMTPTestDummy {
         testContext.assertEquals("550 5.1.1 Unknown user: userB@example.com", smtpException.getReplyMessage());
         testContext.assertTrue(smtpException.isPermanent());
         testContext.assertTrue(t.getMessage().contains("550 5.1.1 Unknown user: userB@example.com"));
-        mailClient.close();
+        mailClient.close(testContext.asyncAssertSuccess());
       })
     );
   }
@@ -158,7 +158,7 @@ public class MailPipeliningTest extends SMTPTestDummy {
     mailClient.sendMail(message, testContext.asyncAssertSuccess(mr -> {
       testContext.assertTrue(mr.getRecipients().contains("userA@example.com"));
       testContext.assertFalse(mr.getRecipients().contains("userB@example.com"));
-      mailClient.close();
+      mailClient.close(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -194,7 +194,7 @@ public class MailPipeliningTest extends SMTPTestDummy {
       testContext.assertFalse(mr.getRecipients().contains("userA@example.com"));
       testContext.assertFalse(mr.getRecipients().contains("userB@example.com"));
       // only dot got sent, but no way to test it in smtp server.
-      mailClient.close();
+      mailClient.close(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -233,7 +233,7 @@ public class MailPipeliningTest extends SMTPTestDummy {
       testContext.assertEquals("554 no valid recipients given", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isPermanent());
       testContext.assertTrue(t.getMessage().contains("554 no valid recipients given"));
-      mailClient.close();
+      mailClient.close(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -268,7 +268,7 @@ public class MailPipeliningTest extends SMTPTestDummy {
     mailClient.sendMail(message, testContext.asyncAssertSuccess(mr -> {
       testContext.assertTrue(mr.getRecipients().contains("userA@example.com"));
       testContext.assertTrue(mr.getRecipients().contains("userB@example.com"));
-      mailClient.close();
+      mailClient.close(testContext.asyncAssertSuccess());
     }));
 
   }

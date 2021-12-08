@@ -19,7 +19,6 @@ package io.vertx.ext.mail;
 import io.vertx.core.Vertx;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.junit.After;
@@ -46,8 +45,6 @@ public class MailClosedConnectionTest {
   public void mailTest(TestContext context) {
     log.info("starting");
 
-    Async async = context.async();
-
     MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email = new MailMessage()
@@ -56,25 +53,17 @@ public class MailClosedConnectionTest {
       .setSubject("Test email")
       .setText("this is a message");
 
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
       log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mailClient.close();
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        context.fail(result.cause());
-      }
-    });
+      log.info(result.toString());
+      mailClient.close(context.asyncAssertSuccess());
+    }));
   }
 
   @Test
   public void mailTest2(TestContext context) {
     log.info("starting");
 
-    Async async = context.async();
-
     MailClient mailClient = MailClient.create(vertx, mailConfig());
 
     MailMessage email = new MailMessage()
@@ -83,17 +72,11 @@ public class MailClosedConnectionTest {
       .setSubject("Test email")
       .setText("this is a message");
 
-    mailClient.sendMail(email, result -> {
+    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
       log.info("mail finished");
-      if (result.succeeded()) {
-        log.info(result.result().toString());
-        mailClient.close();
-        async.complete();
-      } else {
-        log.warn("got exception", result.cause());
-        context.fail(result.cause());
-      }
-    });
+      log.info(result.toString());
+      mailClient.close(context.asyncAssertSuccess());
+    }));
   }
 
   /**

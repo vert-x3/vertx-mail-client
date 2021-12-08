@@ -22,7 +22,6 @@ import org.junit.runner.RunWith;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.SMTPTestDummy;
-import io.vertx.ext.mail.impl.MailClientImpl;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -47,8 +46,7 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
       testContext.assertTrue(result.failed());
       mailClient.sendMail(exampleMessage(), result2 -> {
         testContext.assertTrue(result2.failed());
-        mailClient.close();
-        async.complete();
+        mailClient.close(testContext.asyncAssertSuccess(v -> async.complete()));
       });
     });
   }
@@ -58,8 +56,6 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
    */
   @Test
   public void countLessThan0Test(TestContext testContext) {
-    Async async = testContext.async();
-
     smtpServer.setDialogue("500 connection rejected", "QUIT", "220 bye");
 
     // since we want to spy on connCount, we have to use MailClientImpl directly
@@ -68,17 +64,13 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
 
     testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
 
-    mailClient.sendMail(exampleMessage(), result -> {
-      testContext.assertTrue(result.failed());
+    mailClient.sendMail(exampleMessage(), testContext.asyncAssertFailure(result -> {
       testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
-
-      mailClient.sendMail(exampleMessage(), result2 -> {
-        testContext.assertTrue(result2.failed());
+      mailClient.sendMail(exampleMessage(), testContext.asyncAssertFailure(result2 -> {
         testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
-        mailClient.close();
-        async.complete();
-      });
-    });
+        mailClient.close(testContext.asyncAssertSuccess());
+      }));
+    }));
   }
 
 }
