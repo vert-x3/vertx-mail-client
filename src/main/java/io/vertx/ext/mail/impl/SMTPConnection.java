@@ -117,8 +117,13 @@ class SMTPConnection {
   void handleNSException(Throwable t) {
     if (!socketClosed && !shutdown) {
       shutdown();
-      log.debug("got an exception on the netsocket", t);
-      handleError(t);
+      // some SMTP servers may not close the TCP connection gracefully
+      // https://github.com/vert-x3/vertx-mail-client/issues/175
+      if (quitSent) {
+        log.debug("got an exception on the netsocket after quit sent", t);
+      } else {
+        handleError(t);
+      }
     } else {
       log.debug("not returning follow-up exception", t);
     }
