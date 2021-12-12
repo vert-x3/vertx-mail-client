@@ -63,10 +63,14 @@ class SMTPResponse {
   }
 
   SMTPException toException(String message) {
+    return toException(message, false);
+  }
+
+  SMTPException toException(String message, boolean supportEnhancementStatusCode) {
     if (isStatusOk()) {
       throw new IllegalStateException("Status is OK, no exceptions");
     }
-    return new SMTPException(message, replyCode, lines);
+    return new SMTPException(message, replyCode, lines, supportEnhancementStatusCode);
   }
 
 }

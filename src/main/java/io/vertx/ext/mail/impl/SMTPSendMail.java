@@ -140,7 +140,7 @@ class SMTPSendMail {
                 SMTPResponse response = new SMTPResponse(message);
                 if (i == 0) {
                   if (!response.isStatusOk()) {
-                    evenlopePromise.fail(response.toException("sender address not accepted"));
+                    evenlopePromise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                     return;
                   }
                 } else if (i < evenlopeResult.length - 1) {
@@ -148,7 +148,7 @@ class SMTPSendMail {
                     mailResult.getRecipients().add(allRecipients.get(i - 1));
                   } else {
                     if (!config.isAllowRcptErrors()) {
-                      evenlopePromise.fail(response.toException("recipient address not accepted"));
+                      evenlopePromise.fail(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                       return;
                     }
                   }
@@ -161,7 +161,7 @@ class SMTPSendMail {
                       return;
                     }
                   } else {
-                    evenlopePromise.fail(response.toException("DATA command not accepted"));
+                    evenlopePromise.fail(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                     return;
                   }
                 }
@@ -196,7 +196,7 @@ class SMTPSendMail {
       if (response.isStatusOk()) {
         promise.complete();
       } else {
-        promise.fail(response.toException("sender address not accepted"));
+        promise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
       }
     });
     return promise.future();
@@ -219,7 +219,7 @@ class SMTPSendMail {
             if (config.isAllowRcptErrors()) {
               promise.complete();
             } else {
-              promise.fail(response.toException("recipient address not accepted"));
+              promise.fail(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
             }
           }
         } catch (Exception e) {
@@ -244,7 +244,7 @@ class SMTPSendMail {
           if (response.isStatusOk()) {
             promise.complete(true);
           } else {
-            promise.fail(response.toException("DATA command not accepted"));
+            promise.fail(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
           }
         });
       } else {
@@ -286,7 +286,7 @@ class SMTPSendMail {
         if (response.isStatusOk()) {
           promise.complete(mailResult);
         } else {
-          promise.fail(response.toException("sending data failed"));
+          promise.fail(response.toException("sending data failed", connection.getCapa().isCapaEnhancedStatusCodes()));
         }
       }));
     } catch (Exception e) {
