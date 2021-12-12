@@ -179,6 +179,7 @@ class SMTPConnection {
       }
       sb.append("Support STARTTLS: ").append(capa.isStartTLS()).append(", Current connection TLS: ").append(this.isSsl()).append("\n");
       sb.append("Support PIPELINING: ").append(capa.isCapaPipelining()).append("\n");
+      sb.append("Support ENHANCEDSTATUSCODES: ").append(capa.isCapaEnhancedStatusCodes()).append("\n");
       log.debug(sb);
     }
   }

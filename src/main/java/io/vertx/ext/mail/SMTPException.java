@@ -28,20 +28,128 @@ import java.util.Objects;
  */
 public class SMTPException extends NoStackTraceThrowable {
 
+  /**
+   * The Enhanced Status codes.
+   *<p>
+   * See: https://datatracker.ietf.org/doc/html/rfc3463#section-3
+   *</p>
+   */
+  public enum EnhancedStatus {
+
+    /**
+     * <b>x.0.x</b> for Undefined errors
+     */
+    OTHER_UNDEFINED(0),
+    /**
+     * <b>x.1.x</b> for Address Status errors
+     */
+    OTHER_ADDRESS(1),
+    /**
+     * <b>x.2.x</b> for Mailbox Status errors
+     */
+    OTHER_MAILBOX(2),
+    /**
+     * <b>x.3.x</b> for Mail System errors
+     */
+    OTHER_MAIL_SYSTEM(3),
+    /**
+     * <b>x.4.x</b> for Network and Routing errors
+     */
+    OTHER_NETWORK(4),
+    /**
+     * <b>x.5.x</b> for Mail Delivery Protocol errors
+     */
+    OTHER_MAIL_DELIVERY(5),
+    /**
+     * <b>x.6.x</b> for Message Content or Message Media errors
+     */
+    OTHER_MAIL_MESSAGE(6),
+    /**
+     * <b>x.7.x</b> for Security or Policy errors
+     */
+    OTHER_SECURITY(7),
+    /**
+     * Anything else is unknown, like failures happen before knowing the capabilities or smtp server reply maliciously.
+     */
+    OTHER_UNKNOWN(-1);
+
+    private final int subject;
+    private int detail;
+
+    EnhancedStatus(int subject) {
+      this.subject = subject;
+    }
+
+    /**
+     * Gets the subject of the EnhancedStatus.
+     *
+     * @return the subject of the EnhancedStatus
+     */
+    public int getSubject() {
+      return subject;
+    }
+
+    /**
+     * Gets detail number of the EnhancedStatus.
+     *
+     * @return the detail of the EnhancedStatus
+     */
+    public int getDetail() {
+      return detail;
+    }
+
+    private void setDetail(int detail) {
+      this.detail = detail;
+    }
+
+    /**
+     * Gets the EnhancedStatus from the subject.
+     *
+     * @param subject the subject
+     * @return the associated EnhancedStatus
+     */
+    static EnhancedStatus fromSubject(int subject) {
+      if (subject >= 0 && subject < values().length) {
+        return values()[subject];
+      }
+      return OTHER_UNKNOWN;
+    }
+
+  }
+
   private final int replyCode;
   private final List<String> replyMessages;
+  private final EnhancedStatus enhancedStatus;
 
   /**
    * Constructor of SMTPException.
    *
    * @param message the informative message prepending the reply messages
    * @param replyCode the SMTP reply code
+   * @param supportEnhancementStatusCode if <code>ENHANCEDSTATUSCODES</code> is supported or not
    * @param replyMessages the SMTP reply messages
    */
-  public SMTPException(String message, int replyCode, List<String> replyMessages) {
+  public SMTPException(String message, int replyCode, List<String> replyMessages, boolean supportEnhancementStatusCode) {
     super(message + ": " + String.join("\n", Objects.requireNonNull(replyMessages)));
     this.replyCode = replyCode;
     this.replyMessages = replyMessages;
+    if (supportEnhancementStatusCode) {
+      int subject;
+      int detail;
+      try {
+        final String line = replyMessages.get(0).substring(4);
+        final String statusStr = line.substring(0, line.indexOf(" "));
+        subject = Integer.parseInt(statusStr.substring(statusStr.indexOf(".") + 1, statusStr.lastIndexOf(".")));
+        detail = Integer.parseInt(statusStr.substring(statusStr.lastIndexOf(".") + 1));
+      } catch (Exception e) {
+        subject = -1;
+        detail = 0;
+      }
+      this.enhancedStatus = EnhancedStatus.fromSubject(subject);
+      this.enhancedStatus.setDetail(detail);
+    } else {
+      this.enhancedStatus = EnhancedStatus.OTHER_UNKNOWN;
+    }
   }
 
   /**
@@ -87,6 +195,15 @@ public class SMTPException extends NoStackTraceThrowable {
    */
   public boolean isTransient() {
     return replyCode >= 400 && replyCode < 500;
+  }
+
+  /**
+   * EnhancedStatus of the exception.
+   *
+   * @return the EnhancedStatus.
+   */
+  public EnhancedStatus getEnhancedStatus() {
+    return enhancedStatus;
   }
 
 }

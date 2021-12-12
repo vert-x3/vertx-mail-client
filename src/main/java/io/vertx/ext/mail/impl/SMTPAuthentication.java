@@ -161,7 +161,7 @@ class SMTPAuthentication {
           finished();
         }
       } else {
-        onError.handle(response.toException("AUTH " + authMethod.getName() + " failed"));
+        onError.handle(response.toException("AUTH " + authMethod.getName() + " failed", connection.getCapa().isCapaEnhancedStatusCodes()));
       }
     });
   }

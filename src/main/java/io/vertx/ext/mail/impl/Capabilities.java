@@ -57,6 +57,11 @@ class Capabilities {
   private boolean capaPipelining;
 
   /**
+   * if the server supports ENHANCEDSTATUSCODES
+   */
+  private boolean capaEnhancedStatusCodes;
+
+  /**
    * @return Set of Strings of capabilities
    */
   Set<String> getCapaAuth() {
@@ -75,6 +80,13 @@ class Capabilities {
    */
   boolean isCapaPipelining() {
     return capaPipelining;
+  }
+
+  /**
+   * @return if the server supports ENHANCEDSTATUSCODES
+   */
+  boolean isCapaEnhancedStatusCodes() {
+    return capaEnhancedStatusCodes;
   }
 
   /**
@@ -102,6 +114,9 @@ class Capabilities {
       }
       if (c.equals("PIPELINING")) {
         capaPipelining = true;
+      }
+      if (c.equals("ENHANCEDSTATUSCODES")) {
+        capaEnhancedStatusCodes = true;
       }
       if (c.startsWith("AUTH ")) {
         capaAuth = Utils.parseCapaAuth(c.substring(5));

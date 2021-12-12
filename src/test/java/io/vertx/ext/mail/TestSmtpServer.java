@@ -130,8 +130,8 @@ public class TestSmtpServer {
                 }
               }
               if (!inputValid) {
-                socket.write("500 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")\r\n");
-                log.info("sending 500 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")");
+                socket.write("500 5.3.5 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")\r\n");
+                log.info("sending 500 5.3.5 didn't expect commands (\"" + String.join(",", dialogue[currentLine]) + "\"/\"" + inputLine + "\")");
                 // stop here
                 lines.set(dialogue.length);
               }
