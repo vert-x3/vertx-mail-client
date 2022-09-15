@@ -116,13 +116,18 @@ class SMTPConnection {
 
   void handleNSException(Throwable t) {
     if (!socketClosed && !shutdown) {
+      // shutdown() clear the handler, so gets a reference on the error handler first.
+      Handler<Throwable> handler;
+      synchronized (this) {
+        handler = errorHandler;
+      }
       shutdown();
       // some SMTP servers may not close the TCP connection gracefully
       // https://github.com/vert-x3/vertx-mail-client/issues/175
       if (quitSent) {
         log.debug("got an exception on the netsocket after quit sent", t);
       } else {
-        handleError(t);
+        handleError(t, handler);
       }
     } else {
       log.debug("not returning follow-up exception", t);
@@ -282,6 +287,20 @@ class SMTPConnection {
       synchronized (SMTPConnection.this) {
         handler = errorHandler;
       }
+      if (handler != null) {
+        handler.handle(err);
+      } else {
+        if (log.isDebugEnabled()) {
+          log.error(t.getMessage(), t);
+        } else {
+          log.error(t.getMessage());
+        }
+      }
+    });
+  }
+
+  private void handleError(Throwable t, Handler<Throwable> handler) {
+    context.emit(t, err -> {
       if (handler != null) {
         handler.handle(err);
       } else {
