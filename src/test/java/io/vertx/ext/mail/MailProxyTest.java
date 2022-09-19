@@ -44,7 +44,7 @@ public class MailProxyTest extends SMTPTestWiser {
   public void testSetUpProxy(TestContext context) throws Exception {
     this.testContext = context;
     MailConfig mailConfig = configLogin().setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setPort(11080));
-    proxy = new SocksProxy(null);
+    proxy = new SocksProxy();
     proxy.start(vertx);
     Async async = testContext.async();
     MailClient client = MailClient.createShared(vertx, mailConfig);
@@ -69,7 +69,8 @@ public class MailProxyTest extends SMTPTestWiser {
       .setUsername("proxyUser")
       .setPassword("proxyUser")
     );
-    proxy = new SocksProxy("proxyUser");
+    proxy = new SocksProxy();
+    proxy.username("proxyUser");
     proxy.start(vertx);
     Async async = testContext.async();
     MailClient client = MailClient.createShared(vertx, mailConfig);
