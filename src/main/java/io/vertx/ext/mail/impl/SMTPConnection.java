@@ -291,9 +291,7 @@ class SMTPConnection {
         handler.handle(err);
       } else {
         if (log.isDebugEnabled()) {
-          log.error(t.getMessage(), t);
-        } else {
-          log.error(t.getMessage());
+          log.debug(t.getMessage(), t);
         }
       }
     });
@@ -305,9 +303,7 @@ class SMTPConnection {
         handler.handle(err);
       } else {
         if (log.isDebugEnabled()) {
-          log.error(t.getMessage(), t);
-        } else {
-          log.error(t.getMessage());
+          log.debug(t.getMessage(), t);
         }
       }
     });
