@@ -16,8 +16,10 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.Promise;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.LoginOption;
@@ -37,37 +39,30 @@ class SMTPAuthentication {
 
   private final SMTPConnection connection;
   private final MailConfig config;
-  private final Handler<Void> finishedHandler;
-  private final Handler<Throwable> errorHandler;
-
   private static final Logger log = LoggerFactory.getLogger(SMTPAuthentication.class);
-
   private final AuthOperationFactory authOperationFactory;
 
-  SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, Handler<Void> finishedHandler,
-                     Handler<Throwable> errorHandler) {
+  SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory) {
     this.connection = connection;
     this.config = config;
-    this.finishedHandler = finishedHandler;
-    this.errorHandler = errorHandler;
     this.authOperationFactory = authOperationFactory;
   }
 
-  public void start() {
+  public Future<SMTPConnection> start() {
     List<String> auths = intersectAllowedMethods();
     final boolean foundAllowedMethods = !auths.isEmpty();
     if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
       && foundAllowedMethods) {
-      authCmd(auths);
+      return authCmd(auths);
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
         if (!foundAllowedMethods) {
-          handleError("login is required, but no allowed AUTH methods available. You may need to do STARTTLS");
+          return Future.failedFuture("login is required, but no allowed AUTH methods available. You may need to do STARTTLS");
         } else {
-          handleError("login is required, but no credentials supplied");
+          return Future.failedFuture("login is required, but no credentials supplied");
         }
       } else {
-        finished();
+        return Future.succeededFuture(connection);
       }
     }
   }
@@ -83,45 +78,62 @@ class SMTPAuthentication {
     return supported;
   }
 
-  private void authCmd(List<String> auths) {
+  private Future<SMTPConnection> authCmd(List<String> auths) {
     // if we have defined a choice of methods, only use these
     // this works for example to avoid plain text pw methods with
     // "CRAM-SHA1 CRAM-MD5"
     String defaultAuth = this.authOperationFactory.getAuthMethod();
+    Promise<SMTPConnection> promise = Promise.promise();
     if (defaultAuth != null) {
       if (log.isDebugEnabled()) {
         log.debug("Using default auth method: " + defaultAuth);
       }
-      authMethod(defaultAuth, error -> authChain(auths, 0, null));
+      Promise<SMTPConnection> innerPromise = Promise.promise();
+      innerPromise.future().onComplete(result -> {
+        if (result.succeeded()) {
+          promise.handle(Future.succeededFuture(connection));
+        } else {
+          authChain(auths, 0, promise, null);
+        }
+      });
+      authMethod(defaultAuth, innerPromise);
     } else {
-      authChain(auths, 0, null);
+      authChain(auths, 0, promise, null);
     }
+    return promise.future();
   }
 
-  private void authChain(List<String> auths, int i, Throwable e) {
+  private void authChain(List<String> auths, int i, Handler<AsyncResult<SMTPConnection>> handler, Throwable e) {
     if (i < auths.size()) {
-      if (e != null) {
-        log.warn(e);
-      }
-      authMethod(auths.get(i), error -> authChain(auths, i + 1, error));
+      Promise<SMTPConnection> promise = Promise.promise();
+      promise.future().onComplete(result -> {
+        if (result.succeeded()) {
+          handler.handle(Future.succeededFuture(connection));
+        } else {
+          log.warn(result.cause());
+          authChain(auths, i + 1, handler, result.cause());
+        }
+      });
+      authMethod(auths.get(i), promise);
     } else {
-      handleError(e);
+      handler.handle(Future.failedFuture(e));
     }
   }
 
-  private void authMethod(String auth, Handler<Throwable> onError) {
+  private void authMethod(String auth, Handler<AsyncResult<SMTPConnection>> handler) {
     AuthOperation authMethod;
     try {
       authMethod = authOperationFactory.createAuth(config, auth);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
-      handleError(ex);
+      handler.handle(Future.failedFuture(ex));
       return;
     }
-    authCmdStep(authMethod, null, onError);
+    authCmdStep(authMethod, null, handler);
   }
 
-  private void authCmdStep(AuthOperation authMethod, String message, Handler<Throwable> onError) {
+  private void authCmdStep(AuthOperation authMethod, String message, Handler<AsyncResult<SMTPConnection>> handler) {
+    Promise<String> promise = Promise.promise();
     String nextLine;
     int blank;
     try {
@@ -147,35 +159,29 @@ class SMTPAuthentication {
       }
     } catch (Exception e) {
       log.warn("Failed to handle server auth message: " + message, e);
-      onError.handle(e);
+      handler.handle(Future.failedFuture(e));
       return;
     }
-    connection.write(nextLine, blank, message2 -> {
-      SMTPResponse response = new SMTPResponse(message2);
-      if (response.isStatusOk()) {
-        if (response.isStatusContinue()) {
-          log.debug("Auth Continue with response: " + message2);
-          authCmdStep(authMethod, message2, onError);
+    connection.write(nextLine, blank, promise);
+    promise.future().onComplete(result -> {
+      if (result.succeeded()) {
+        String message2 = result.result();
+        SMTPResponse response = new SMTPResponse(message2);
+        if (response.isStatusOk()) {
+          if (response.isStatusContinue()) {
+            log.debug("Auth Continue with response: " + message2);
+            authCmdStep(authMethod, message2, handler);
+          } else {
+            authOperationFactory.setAuthMethod(authMethod.getName());
+            handler.handle(Future.succeededFuture(connection));
+          }
         } else {
-          authOperationFactory.setAuthMethod(authMethod.getName());
-          finished();
+          handler.handle(Future.failedFuture(response.toException("AUTH " + authMethod.getName() + " failed", connection.getCapa().isCapaEnhancedStatusCodes())));
         }
       } else {
-        onError.handle(response.toException("AUTH " + authMethod.getName() + " failed", connection.getCapa().isCapaEnhancedStatusCodes()));
+        handler.handle(Future.failedFuture(result.cause()));
       }
     });
-  }
-
-  private void finished() {
-    finishedHandler.handle(null);
-  }
-
-  private void handleError(String message) {
-    errorHandler.handle(new NoStackTraceThrowable(message));
-  }
-
-  private void handleError(Throwable th) {
-    errorHandler.handle(th);
   }
 
 }

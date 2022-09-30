@@ -16,9 +16,8 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.Future;
+import io.vertx.core.Promise;
 
 /**
  * Handle the reset command, this is mostly used to check if the connection is
@@ -29,21 +28,20 @@ import io.vertx.core.Future;
 class SMTPReset {
 
   private final SMTPConnection connection;
-  private final Handler<AsyncResult<SMTPConnection>> handler;
 
-  SMTPReset(SMTPConnection connection, Handler<AsyncResult<SMTPConnection>> finishedHandler) {
+  SMTPReset(SMTPConnection connection) {
     this.connection = connection;
-    this.handler = finishedHandler;
   }
 
-  void start() {
-    connection.setErrorHandler(th -> handler.handle(Future.failedFuture(th)));
-    connection.write("RSET", message -> {
+  Future<SMTPConnection> start() {
+    Promise<String> promise = Promise.promise();
+    connection.write("RSET", promise);
+    return promise.future().flatMap(message -> {
       SMTPResponse response = new SMTPResponse(message);
       if (!response.isStatusOk()) {
-        handler.handle(Future.failedFuture(response.toException("reset command failed", connection.getCapa().isCapaEnhancedStatusCodes())));
+        return Future.failedFuture(response.toException("reset command failed", connection.getCapa().isCapaEnhancedStatusCodes()));
       } else {
-        handler.handle(Future.succeededFuture(connection));
+        return Future.succeededFuture(connection);
       }
     });
   }

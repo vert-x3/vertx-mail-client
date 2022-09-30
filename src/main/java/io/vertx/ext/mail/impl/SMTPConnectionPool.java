@@ -118,19 +118,13 @@ class SMTPConnectionPool {
       conn.setInUse();
       if (conn.isInitialized()) {
         reset = true;
-        Promise<SMTPConnection> connReset = contextInternal.promise();
-        new SMTPReset(conn, connReset).start();
-        future = connReset.future();
+        future = new SMTPReset(conn).start();
       } else {
         reset = false;
-        Promise<SMTPConnection> connInitial = contextInternal.promise();
-        SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
-        try {
-          conn.init(starter::serverGreeting);
-        } catch (Exception e) {
-          connInitial.handle(Future.failedFuture(e));
-        }
-        future = connInitial.future();
+        SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory);
+        Promise<String> greeting = contextInternal.promise();
+        conn.init(greeting);
+        future = greeting.future().flatMap(starter::serverGreeting);
       }
       return future.recover(t -> {
         // close the connection as it failed either in rset or handshake
@@ -186,7 +180,6 @@ class SMTPConnectionPool {
     closePromise.future()
       .flatMap(list -> {
         List<Future> futures = list.stream()
-          .filter(connFuture -> connFuture.succeeded() && connFuture.result().isAvailable())
           .map(connFuture -> {
             Promise<Void> promise = Promise.promise();
             connFuture.result().close(promise);

@@ -22,7 +22,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetSocket;
@@ -39,6 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * Encapsulate the NetSocket connection and the data writing/reading
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
+ * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
 class SMTPConnection {
 
@@ -53,14 +53,12 @@ class SMTPConnection {
   private boolean evicted;
   private boolean socketClosed;
   private boolean shutdown;
-  private boolean closing;
   private boolean inuse;
   private boolean quitSent;
 
-  private Handler<String> commandReplyHandler;
-  private Handler<Throwable> errorHandler;
+  private Handler<AsyncResult<String>> commandReplyHandler;
+  private Handler<Throwable> exceptionHandler;
   private Handler<AsyncResult<Void>> closeHandler;
-
   private Capabilities capa = new Capabilities();
   private final ContextInternal context;
   private long expirationTimestamp;
@@ -94,19 +92,19 @@ class SMTPConnection {
     return this.nsHandler != null;
   }
 
-  void init(Handler<String> initialReplyHandler) {
+  void init(Promise<String> initialReplyHandler) {
     if (nsHandler != null) {
       throw new IllegalStateException("SMTPConnection has been initialized.");
     }
     this.nsHandler = new MultilineParser(buffer -> {
       if (commandReplyHandler == null && !quitSent) {
-        handleError(new IllegalStateException("dropping reply arriving after we stopped processing the buffer."));
+        log.error("dropping reply arriving after we stopped processing the buffer.");
       } else {
         // make sure we only call the handler once
-        Handler<String> currentHandler = commandReplyHandler;
+        Handler<AsyncResult<String>> currentHandler = commandReplyHandler;
         commandReplyHandler = null;
         if (currentHandler != null) {
-          context.emit(buffer.toString(), currentHandler);
+          currentHandler.handle(Future.succeededFuture(buffer.toString()));
         }
       }
     });
@@ -118,11 +116,11 @@ class SMTPConnection {
   }
 
   void handleNSException(Throwable t) {
-    if (!socketClosed && !shutdown) {
+    if (isAvailable()) {
       // shutdown() clear the handler, so gets a reference on the error handler first.
-      Handler<Throwable> handler;
+      final Handler<Throwable> handler;
       synchronized (this) {
-        handler = errorHandler;
+        handler = exceptionHandler;
       }
       shutdown();
       // some SMTP servers may not close the TCP connection gracefully
@@ -130,14 +128,16 @@ class SMTPConnection {
       if (quitSent) {
         log.debug("got an exception on the netsocket after quit sent", t);
       } else {
-        handleError(t, handler);
+        if (handler != null) {
+          context.emit(t, handler);
+        }
       }
     } else {
       log.debug("not returning follow-up exception", t);
     }
   }
 
-  boolean isAvailable() {
+  private boolean isAvailable() {
     return !socketClosed && !shutdown;
   }
 
@@ -147,15 +147,20 @@ class SMTPConnection {
 
   void handleNSClosed(Void v) {
     log.trace("handleNSClosed() - socket has been closed");
+    boolean unexpected = false;
     socketClosed = true;
     if (!shutdown && !quitSent) {
       handleError(new IOException("socket was closed unexpected."));
+      unexpected = true;
+    }
+    if (unexpected) {
       shutdown();
     }
     handleClosed();
   }
 
   private void handleClosed() {
+    setNoUse();
     if (closeHandler != null) {
       closeHandler.handle(Future.succeededFuture());
       closeHandler = null;
@@ -166,6 +171,102 @@ class SMTPConnection {
       cleanHandlers();
     }
     this.emailsSent.set(0);
+  }
+
+  void shutdown() {
+    shutdown = true;
+    if (!socketClosed) {
+      socketClosed = true;
+      ns.close();
+    }
+    handleClosed();
+  }
+
+  private void cleanHandlers() {
+    exceptionHandler = null;
+    commandReplyHandler = null;
+  }
+
+  Future<SMTPConnection> returnToPool() {
+    log.trace("return to pool");
+    setNoUse();
+    Promise<SMTPConnection> promise = context.promise();
+    try {
+      final long count = emailsSent.incrementAndGet();
+      boolean exceed = config.getMaxMailsPerConnection() > 0 && count >= config.getMaxMailsPerConnection();
+      if (!config.isKeepAlive() || this.closeHandler != null || exceed) {
+        Promise<Void> p = Promise.promise();
+        p.future().onComplete(conn -> {
+          handleClosed();
+          promise.complete(this);
+        });
+        quitCloseConnection(p);
+      } else {
+        // recycle
+        log.trace("recycle for next use");
+        cleanHandlers();
+        lease.recycle();
+        expirationTimestamp = expirationTimestampOf(config);
+        promise.complete(this);
+      }
+    } catch (Exception e) {
+      promise.fail(e);
+    }
+    return promise.future();
+  }
+
+  /**
+   * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
+   * connection on exception as well
+   */
+  void quitCloseConnection(Promise<Void> promise) {
+    quitSent = true;
+    setNoUse();
+    writeLineWithDrainPromise("QUIT", true, promise);
+  }
+
+  void setExceptionHandler(Handler<Throwable> exceptionHandler) {
+    this.exceptionHandler = exceptionHandler;
+  }
+
+  void setInUse() {
+    inuse = true;
+    expirationTimestamp = expirationTimestampOf(config);
+  }
+
+  void setNoUse() {
+    inuse = false;
+  }
+
+  /**
+   * close the connection doing a QUIT command first
+   */
+  void close(Promise<Void> promise) {
+    if (!isAvailable()) {
+      promise.complete();
+      return;
+    }
+    if (!inuse) {
+      log.trace("close by sending quit in close()");
+      quitCloseConnection(promise);
+    } else {
+      this.closeHandler = promise;
+      if (quitSent) {
+        shutdown();
+      }
+    }
+  }
+
+  private void handleError(Throwable t) {
+    context.emit(roc -> {
+      Handler<AsyncResult<String>> currentHandler = commandReplyHandler;
+      if (currentHandler != null) {
+        commandReplyHandler = null;
+        currentHandler.handle(Future.failedFuture(t));
+      } else if (log.isDebugEnabled()) {
+        log.debug(t.getMessage(), t);
+      }
+    });
   }
 
   /**
@@ -198,45 +299,25 @@ class SMTPConnection {
     }
   }
 
-  void shutdown() {
-    shutdown = true;
-    if (!socketClosed) {
-      socketClosed = true;
-      ns.close();
-    }
-    handleClosed();
-  }
-
-  private void cleanHandlers() {
-    errorHandler = null;
-    commandReplyHandler = null;
-  }
-
-  void writeCommands(List<String> commands, Handler<String> resultHandler) {
+  void writeCommands(List<String> commands, Promise<String> commandReplyHandler) {
     String cmds = String.join("\r\n", commands);
     this.nsHandler.setExpected(commands.size());
-    this.write(cmds, r -> {
-      try {
-        resultHandler.handle(r);
-      } finally {
-        this.nsHandler.setExpected(1);
-      }
-    });
+    commandReplyHandler.future().onComplete(v -> this.nsHandler.setExpected(1));
+    this.write(cmds, commandReplyHandler);
   }
 
   /*
    * write command without masking anything
    */
-  void write(String str, Handler<String> commandResultHandler) {
-    write(str, -1, commandResultHandler);
+  void write(String str, Handler<AsyncResult<String>> commandReplyHandler) {
+    write(str, -1, commandReplyHandler);
   }
 
   /*
    * write command masking everything after position blank
+   * this method expects a response from SMTP server
    */
-  void write(String str, int blank, Handler<String> commandResultHandler) {
-    this.commandReplyHandler = commandResultHandler;
-    checkClosed();
+  void write(String str, int blank, Handler<AsyncResult<String>> commandReplyHandler) {
     context.emit(roc -> {
       if (log.isDebugEnabled()) {
         String logStr;
@@ -256,56 +337,32 @@ class SMTPConnection {
           log.debug("command: " + logStr.substring(0, 1000) + "...");
         }
       }
-      ns.write(str + "\r\n").onFailure(this::handleNSException);
+      this.commandReplyHandler = commandReplyHandler;
+      ns.write(str + "\r\n").onFailure(t -> {
+        handleError(t);
+        shutdown();
+      });
     });
   }
 
   // write single line not expecting a reply, using drain handler
   void writeLineWithDrainPromise(String str, boolean mayLog, Promise<Void> promise) {
-    if (checkClosed()) {
-      promise.fail("Connection was closed");
-      return;
-    }
     if (mayLog) {
       log.debug(str);
     }
     context.emit(roc -> {
-      if (ns.writeQueueFull()) {
-        ns.drainHandler(v -> {
-          // avoid getting confused by being called twice
-          ns.drainHandler(null);
+      if (isAvailable()) {
+        if (ns.writeQueueFull()) {
+          ns.drainHandler(v -> {
+            // avoid getting confused by being called twice
+            ns.drainHandler(null);
+            ns.write(str + "\r\n").onComplete(promise);
+          });
+        } else {
           ns.write(str + "\r\n").onComplete(promise);
-        });
-      } else {
-        ns.write(str + "\r\n").onComplete(promise);
-      }
-    });
-  }
-
-  private void handleError(Throwable t) {
-    context.emit(t, err -> {
-      Handler<Throwable> handler;
-      synchronized (SMTPConnection.this) {
-        handler = errorHandler;
-      }
-      if (handler != null) {
-        handler.handle(err);
-      } else {
-        if (log.isDebugEnabled()) {
-          log.debug(t.getMessage(), t);
         }
-      }
-    });
-  }
-
-  private void handleError(Throwable t, Handler<Throwable> handler) {
-    context.emit(t, err -> {
-      if (handler != null) {
-        handler.handle(err);
       } else {
-        if (log.isDebugEnabled()) {
-          log.debug(t.getMessage(), t);
-        }
+        promise.fail("Connection was closed.");
       }
     });
   }
@@ -315,77 +372,10 @@ class SMTPConnection {
   }
 
   void upgradeToSsl(Handler<AsyncResult<Void>> handler) {
-    ns.upgradeToSsl().onComplete(handler);
-  }
-
-  Future<SMTPConnection> returnToPool() {
-    log.trace("return to pool");
-    Promise<SMTPConnection> promise = context.promise();
     try {
-      final long count = emailsSent.incrementAndGet();
-      boolean exceed = config.getMaxMailsPerConnection() > 0 && count >= config.getMaxMailsPerConnection();
-      if (!config.isKeepAlive() || closing || exceed) {
-        Promise<Void> p = Promise.promise();
-        p.future().onComplete(conn -> {
-          handleClosed();
-          promise.complete(this);
-        });
-        quitCloseConnection(p);
-      } else {
-        // recycle
-        log.trace("recycle for next use");
-        cleanHandlers();
-        lease.recycle();
-        inuse = false;
-        expirationTimestamp = expirationTimestampOf(config);
-        promise.complete(this);
-      }
+      ns.upgradeToSsl().onComplete(handler);
     } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
-  }
-
-  /**
-   * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
-   * connection on exception as well
-   */
-  void quitCloseConnection(Promise<Void> promise) {
-    quitSent = true;
-    inuse = false;
-    writeLineWithDrainPromise("QUIT", true, promise);
-  }
-
-  private boolean checkClosed() {
-    if (isClosed() || shutdown) {
-      handleError(new NoStackTraceThrowable("Connection was closed."));
-      return true;
-    }
-    return false;
-  }
-
-  void setErrorHandler(Handler<Throwable> newHandler) {
-    errorHandler = newHandler;
-  }
-
-  void setInUse() {
-    inuse = true;
-    expirationTimestamp = expirationTimestampOf(config);
-  }
-
-  /**
-   * close the connection doing a QUIT command first
-   */
-  void close(Promise<Void> promise) {
-    closing = true;
-    if (!inuse) {
-      log.trace("close by sending quit in close()");
-      quitCloseConnection(promise);
-    } else {
-      this.closeHandler = promise;
-      if (quitSent) {
-        shutdown();
-      }
+      handler.handle(Future.failedFuture(e));
     }
   }
 

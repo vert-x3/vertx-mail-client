@@ -129,7 +129,14 @@ class SMTPSendMail {
           groupCommands.add(mailFromLine);
           groupCommands.addAll(allRecipients.stream().map(r -> "RCPT TO:<" + r + ">").collect(Collectors.toList()));
           groupCommands.add("DATA");
-          connection.writeCommands(groupCommands, evenlopeResultStr -> {
+          Promise<String> promise = Promise.promise();
+          connection.writeCommands(groupCommands, promise);
+          promise.future().onComplete(result -> {
+            if (result.failed()) {
+              evenlopePromise.fail(result.cause());
+              return;
+            }
+            String evenlopeResultStr = result.result();
             String[] evenlopeResult = linePattern.split(evenlopeResultStr);
             if (groupCommands.size() != evenlopeResult.length) {
               evenlopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
@@ -187,73 +194,77 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailFrom(String mailFromLine) {
-    Promise<Void> promise = Promise.promise();
-    connection.write(mailFromLine, message -> {
+    Promise<String> promise = Promise.promise();
+    connection.write(mailFromLine, promise);
+    return promise.future().flatMap(message -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
-      SMTPResponse response = new SMTPResponse(message);
-      if (response.isStatusOk()) {
-        promise.complete();
-      } else {
-        promise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+      try {
+        SMTPResponse response = new SMTPResponse(message);
+        if (response.isStatusOk()) {
+          return Future.succeededFuture();
+        } else {
+          return Future.failedFuture(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+        }
+      } catch (Exception e) {
+        return Future.failedFuture(e);
       }
     });
-    return promise.future();
   }
 
   private Future<Void> sendRcptTo(String email) {
-    Promise<Void> promise = Promise.promise();
-    try {
-      final String line =  "RCPT TO:<" + email + ">";
-      connection.write(line, message -> {
-        if (log.isDebugEnabled()) {
-          written.getAndAdd(line.length());
-        }
-        try {
-          SMTPResponse response = new SMTPResponse(message);
-          if (response.isStatusOk()) {
-            mailResult.getRecipients().add(email);
-            promise.complete();
+    Promise<String> promise = Promise.promise();
+    final String line =  "RCPT TO:<" + email + ">";
+    connection.write(line, promise);
+    return promise.future().flatMap(message -> {
+      if (log.isDebugEnabled()) {
+        written.getAndAdd(line.length());
+      }
+      try {
+        SMTPResponse response = new SMTPResponse(message);
+        if (response.isStatusOk()) {
+          mailResult.getRecipients().add(email);
+          return Future.succeededFuture();
+        } else {
+          if (config.isAllowRcptErrors()) {
+            return Future.succeededFuture();
           } else {
-            if (config.isAllowRcptErrors()) {
-              promise.complete();
-            } else {
-              promise.fail(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
-            }
+            return Future.failedFuture(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
           }
-        } catch (Exception e) {
-          promise.fail(e);
         }
-      });
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   private Future<Boolean> sendDataCmd() {
-    Promise<Boolean> promise = Promise.promise();
+    Promise<String> promise = Promise.promise();
     try {
       if (mailResult.getRecipients().size() > 0) {
-        connection.write("DATA", message -> {
-          if (log.isDebugEnabled()) {
-            written.getAndAdd(4);
-          }
-          SMTPResponse response = new SMTPResponse(message);
-          if (response.isStatusOk()) {
-            promise.complete(true);
-          } else {
-            promise.fail(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
-          }
-        });
+        connection.write("DATA", promise);
       } else {
         promise.fail("no recipient addresses were accepted, not sending mail");
       }
     } catch (Exception e) {
       promise.fail(e);
     }
-    return promise.future();
+    return promise.future().flatMap(message -> {
+      if (log.isDebugEnabled()) {
+        written.getAndAdd(4);
+      }
+      try {
+        SMTPResponse response = new SMTPResponse(message);
+        if (response.isStatusOk()) {
+          return Future.succeededFuture(true);
+        } else {
+          return Future.failedFuture(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+        }
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   private Future<MailResult> sendMailData(boolean includeData) {
@@ -279,20 +290,20 @@ class SMTPSendMail {
   }
 
   private Future<MailResult> sendEndDot() {
-    Promise<MailResult> promise = Promise.promise();
-    try {
-      connection.getContext().runOnContext(v -> connection.write(".", msg -> {
+    Promise<String> promise = Promise.promise();
+    connection.getContext().runOnContext(v -> connection.write(".", promise));
+    return promise.future().flatMap(msg -> {
+      try {
         SMTPResponse response = new SMTPResponse(msg);
         if (response.isStatusOk()) {
-          promise.complete(mailResult);
+          return Future.succeededFuture(mailResult);
         } else {
-          promise.fail(response.toException("sending data failed", connection.getCapa().isCapaEnhancedStatusCodes()));
+          return Future.failedFuture(response.toException("sending data failed", connection.getCapa().isCapaEnhancedStatusCodes()));
         }
-      }));
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+      } catch (Exception e) {
+        return Future.failedFuture(e);
+      }
+    });
   }
 
   private Future<Void> sendMailBody() {

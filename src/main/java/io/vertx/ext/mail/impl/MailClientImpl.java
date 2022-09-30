@@ -30,6 +30,7 @@ import io.vertx.ext.mail.impl.dkim.DKIMSigner;
 import io.vertx.ext.mail.mailencoder.EncodedPart;
 import io.vertx.ext.mail.mailencoder.MailEncoder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -123,7 +124,7 @@ public class MailClientImpl implements MailClient {
     connectionPool.getConnection(hostname, context, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
-        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
+        connection.setExceptionHandler(th -> handleError(th, resultHandler, context));
         sendMessage(message, connection, resultHandler, context);
       } else {
         handleError(result.cause(), resultHandler, context);
@@ -146,12 +147,17 @@ public class MailClientImpl implements MailClient {
                            ContextInternal context) {
     Promise<MailResult> sentResultHandler = context.promise();
     sentResultHandler.future().onComplete(mr -> {
+      conn.setNoUse();
       if (mr.succeeded()) {
         conn.returnToPool().onComplete(cn -> returnResult(mr, resultHandler, context));
       } else {
-        Promise<Void> promise = context.promise();
-        promise.future().onComplete(v -> returnResult(Future.failedFuture(mr.cause()), resultHandler, context));
-        conn.quitCloseConnection(promise);
+        if (mr.cause() instanceof IOException) {
+          returnResult(Future.failedFuture(mr.cause()), resultHandler, context);
+        } else {
+          Promise<Void> promise = context.promise();
+          promise.future().onComplete(v -> returnResult(Future.failedFuture(mr.cause()), resultHandler, context));
+          conn.quitCloseConnection(promise);
+        }
       }
     });
     try {

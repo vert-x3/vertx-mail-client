@@ -218,7 +218,6 @@ public class MailPipeliningTest extends SMTPTestDummy {
       {"250 2.1.0 Ok"},
       {"MAIL FROM", "RCPT TO", "RCPT TO", "DATA"},
       {"250 2.1.0 Ok", "550 5.1.1 Unknown user: userA@example.com", "550 5.1.1 Unknown user: userB@example.com", "554 no valid recipients given"},
-      {"250 2.0.0 Ok: queued as ABCD"},
       {"QUIT"},
       {"221 2.0.0 Bye"}
     };
