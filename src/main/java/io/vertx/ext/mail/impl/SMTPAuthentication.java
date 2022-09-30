@@ -150,7 +150,12 @@ class SMTPAuthentication {
       onError.handle(e);
       return;
     }
-    connection.write(nextLine, blank, message2 -> {
+    connection.write(nextLine, blank, ar -> {
+      if (ar.failed()) {
+        onError.handle(ar.cause());
+        return;
+      }
+      String message2 = ar.result();
       SMTPResponse response = new SMTPResponse(message2);
       if (response.isStatusOk()) {
         if (response.isStatusContinue()) {

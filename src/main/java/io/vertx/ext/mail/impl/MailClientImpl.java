@@ -123,7 +123,7 @@ public class MailClientImpl implements MailClient {
     connectionPool.getConnection(hostname, context, result -> {
       if (result.succeeded()) {
         final SMTPConnection connection = result.result();
-        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
+        connection.setExceptionHandler(th -> handleError(th, resultHandler, context));
         sendMessage(message, connection, resultHandler, context);
       } else {
         handleError(result.cause(), resultHandler, context);

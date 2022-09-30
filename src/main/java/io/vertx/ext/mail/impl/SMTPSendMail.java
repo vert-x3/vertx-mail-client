@@ -129,7 +129,12 @@ class SMTPSendMail {
           groupCommands.add(mailFromLine);
           groupCommands.addAll(allRecipients.stream().map(r -> "RCPT TO:<" + r + ">").collect(Collectors.toList()));
           groupCommands.add("DATA");
-          connection.writeCommands(groupCommands, evenlopeResultStr -> {
+          connection.writeCommands(groupCommands, ar -> {
+            if (ar.failed()) {
+              evenlopePromise.fail(ar.cause());
+              return;
+            }
+            String evenlopeResultStr = ar.result();
             String[] evenlopeResult = linePattern.split(evenlopeResultStr);
             if (groupCommands.size() != evenlopeResult.length) {
               evenlopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
@@ -188,10 +193,16 @@ class SMTPSendMail {
 
   private Future<Void> sendMailFrom(String mailFromLine) {
     Promise<Void> promise = Promise.promise();
-    connection.write(mailFromLine, message -> {
+    connection.write(mailFromLine, ar -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
+
+      if (ar.failed()) {
+        promise.fail(ar.cause());
+        return;
+      }
+      String message = ar.result();
       SMTPResponse response = new SMTPResponse(message);
       if (response.isStatusOk()) {
         promise.complete();
@@ -206,10 +217,16 @@ class SMTPSendMail {
     Promise<Void> promise = Promise.promise();
     try {
       final String line =  "RCPT TO:<" + email + ">";
-      connection.write(line, message -> {
+      connection.write(line, ar -> {
         if (log.isDebugEnabled()) {
           written.getAndAdd(line.length());
         }
+
+        if (ar.failed()) {
+          promise.fail(ar.cause());
+          return;
+        }
+        String message = ar.result();
         try {
           SMTPResponse response = new SMTPResponse(message);
           if (response.isStatusOk()) {
@@ -236,10 +253,16 @@ class SMTPSendMail {
     Promise<Boolean> promise = Promise.promise();
     try {
       if (mailResult.getRecipients().size() > 0) {
-        connection.write("DATA", message -> {
+        connection.write("DATA", ar -> {
           if (log.isDebugEnabled()) {
             written.getAndAdd(4);
           }
+
+          if (ar.failed()) {
+            promise.fail(ar.cause());
+            return;
+          }
+          String message = ar.result();
           SMTPResponse response = new SMTPResponse(message);
           if (response.isStatusOk()) {
             promise.complete(true);
@@ -281,7 +304,12 @@ class SMTPSendMail {
   private Future<MailResult> sendEndDot() {
     Promise<MailResult> promise = Promise.promise();
     try {
-      connection.getContext().runOnContext(v -> connection.write(".", msg -> {
+      connection.getContext().runOnContext(v -> connection.write(".", ar -> {
+        if (ar.failed()) {
+          promise.fail(ar.cause());
+          return;
+        }
+        String msg = ar.result();
         SMTPResponse response = new SMTPResponse(msg);
         if (response.isStatusOk()) {
           promise.complete(mailResult);
