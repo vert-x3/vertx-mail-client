@@ -58,6 +58,7 @@ public class MailConfig extends NetClientOptions {
   public static final String DEFAULT_USER_AGENT = "vertxmail";
   public static final boolean DEFAULT_ENABLE_PIPELINING = true;
   public static final boolean DEFAULT_MULTI_PART_ONLY = false;
+  public static final long DEFAULT_MAILS_PER_CONNECTION = -1L;
 
   /**
    * Default pool cleaner period = 1000 ms (1 second)
@@ -94,6 +95,7 @@ public class MailConfig extends NetClientOptions {
   private TimeUnit keepAliveTimeoutUnit = DEFAULT_KEEP_ALIVE_TIMEOUT_UNIT;
   private String ntDomain;
   private String workstation;
+  private long maxMailsPerConnection = DEFAULT_MAILS_PER_CONNECTION;
 
   // https://tools.ietf.org/html/rfc5322#section-3.2.3, atext
   private static final Pattern A_TEXT_PATTERN = Pattern.compile("[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~ ]+");
@@ -173,6 +175,7 @@ public class MailConfig extends NetClientOptions {
     keepAliveTimeoutUnit = other.keepAliveTimeoutUnit;
     ntDomain = other.ntDomain;
     workstation = other.workstation;
+    maxMailsPerConnection = other.maxMailsPerConnection;
   }
 
   /**
@@ -238,6 +241,7 @@ public class MailConfig extends NetClientOptions {
     }
     ntDomain = config.getString("ntDomain");
     workstation = config.getString("workstation");
+    maxMailsPerConnection = config.getLong("maxMailsPerConnection", DEFAULT_MAILS_PER_CONNECTION);
   }
 
   public MailConfig setSendBufferSize(int sendBufferSize) {
@@ -1106,6 +1110,29 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
+   * Sets the max emails count per connection before it gets closed.
+   * <p>
+   * Some SMTP servers have requirement to allow only a number of emails sent per connection.
+   * </p>
+   *
+   * @param maxMailsPerConnection the emails count per connection
+   * @return a reference to this, so the API can be used fluently
+   */
+  public MailConfig setMaxMailsPerConnection(long maxMailsPerConnection) {
+    this.maxMailsPerConnection = maxMailsPerConnection;
+    return this;
+  }
+
+  /**
+   * The max emails count per connection.
+   *
+   * @return the max emails count per connection before it gets closed.
+   */
+  public long getMaxMailsPerConnection() {
+    return maxMailsPerConnection;
+  }
+
+  /**
    * convert config object to Json representation
    *
    * @return json object of the config
@@ -1167,6 +1194,7 @@ public class MailConfig extends NetClientOptions {
     if (workstation != null) {
       json.put("workstation", workstation);
     }
+    json.put("maxMailsPerConnection", maxMailsPerConnection);
 
     return json;
   }
@@ -1174,7 +1202,7 @@ public class MailConfig extends NetClientOptions {
   private List<Object> getList() {
     return Arrays.asList(hostname, port, starttls, login, username, password, authMethods, ownHostname, maxPoolSize,
       keepAlive, allowRcptErrors, disableEsmtp, userAgent, enableDKIM, dkimSignOptions, pipelining, multiPartOnly,
-      poolCleanerPeriod, keepAliveTimeout, poolCleanerPeriodUnit, keepAliveTimeoutUnit, ntDomain, workstation);
+      poolCleanerPeriod, keepAliveTimeout, poolCleanerPeriodUnit, keepAliveTimeoutUnit, ntDomain, workstation, maxMailsPerConnection);
   }
 
   /*
