@@ -81,10 +81,20 @@ public class Utils {
    * if these are there are no other chars to encode
    */
   static boolean mustEncode(String s) {
+    int lineLen = 0;
     for (int i = 0; i < s.length(); i++) {
       final char ch = s.charAt(i);
       if (ch != '=' && ch != '\t' && mustEncode(ch)) {
         return true;
+      }
+      if (ch == '\n') {
+        lineLen = 0;
+      } else {
+        // line limit is 1000 - CRLF = 998
+        // https://www.rfc-editor.org/rfc/rfc5322#section-2.1.1
+        if (++lineLen > 998) {
+          return true;
+        }
       }
     }
     return false;
