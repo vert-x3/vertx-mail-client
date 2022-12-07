@@ -30,7 +30,7 @@
     <hamcrest.version>2.2</hamcrest.version>
     <james.jdkim.version>0.3</james.jdkim.version>
     <junit.version>4.13.2</junit.version>
-    <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version> 
+    <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
     <subethasmtp.version>3.1.7</subethasmtp.version>
   </properties>
 
@@ -101,21 +101,6 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.james.jdkim</groupId>
       <artifactId>apache-jdkim-library</artifactId>
       <version>${james.jdkim.version}</version>
@@ -153,8 +138,6 @@
             <systemPropertyVariables>
               <buildDirectory>${project.build.directory}</buildDirectory>
               <vertxVersion>${project.version}</vertxVersion>
-              <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.Log4j2LogDelegateFactory</vertx.logger-delegate-factory-class-name>
-              <log4j.configurationFile>log4j2-test.xml</log4j.configurationFile>
             </systemPropertyVariables>
             <!-- Needs to be small enough to run in a EC2 1.7GB small instance -->
             <!-- IMPORTANT: when modifying this line, don't forge to modify
