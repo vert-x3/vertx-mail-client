@@ -31,6 +31,7 @@ import io.vertx.ext.mail.MailConfig;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * SMTP connection to a server.
@@ -63,12 +64,14 @@ class SMTPConnection {
   private Capabilities capa = new Capabilities();
   private final ContextInternal context;
   private long expirationTimestamp;
+  private final AtomicLong emailsSent;
 
   SMTPConnection(MailConfig config, NetSocket ns, ContextInternal context, Handler<Void> evictionHandler) {
     this.config = config;
     this.ns = ns;
     this.context = context;
     this.evictionHandler = evictionHandler;
+    this.emailsSent = new AtomicLong(0);
   }
 
   /**
@@ -162,6 +165,7 @@ class SMTPConnection {
       evictionHandler.handle(null);
       cleanHandlers();
     }
+    this.emailsSent.set(0);
   }
 
   /**
@@ -321,7 +325,16 @@ class SMTPConnection {
     log.trace("return to pool");
     Promise<SMTPConnection> promise = context.promise();
     try {
-      if (config.isKeepAlive() && !closing) {
+      final long count = emailsSent.incrementAndGet();
+      boolean exceed = config.getMaxMailsPerConnection() > 0 && count >= config.getMaxMailsPerConnection();
+      if (!config.isKeepAlive() || closing || exceed) {
+        Promise<Void> p = Promise.promise();
+        p.future().onComplete(conn -> {
+          handleClosed();
+          promise.complete(this);
+        });
+        quitCloseConnection(p);
+      } else {
         // recycle
         log.trace("recycle for next use");
         cleanHandlers();
@@ -329,13 +342,6 @@ class SMTPConnection {
         inuse = false;
         expirationTimestamp = expirationTimestampOf(config);
         promise.complete(this);
-      } else {
-        Promise<Void> p = Promise.promise();
-        p.future().onComplete(conn -> {
-          handleClosed();
-          promise.complete(this);
-        });
-        quitCloseConnection(p);
       }
     } catch (Exception e) {
       promise.fail(e);
@@ -350,8 +356,7 @@ class SMTPConnection {
   void quitCloseConnection(Promise<Void> promise) {
     quitSent = true;
     inuse = false;
-    log.trace("send QUIT to close");
-    writeLineWithDrainPromise("QUIT", false, promise);
+    writeLineWithDrainPromise("QUIT", true, promise);
   }
 
   private boolean checkClosed() {

@@ -220,6 +220,7 @@ The configuration has the following properties
 * `keepAliveTimeoutUnit`, TimeUnit of keeping connections in the pool alive. Default is `TimeUnit.SECONDS`
 * `ntDomain`, String, the domain name used for NTLM authentication. If `username` follows format: `<DOMAIN>\<UserName>`, the part before `\` will be used for the domain name.
 * `workstation`, String, the workstation name used for NTLM authentication
+* `maxMailsPerConnection`, long, the max emails count per connection before it gets closed
 
 === MailResult object
 The MailResult object has the following members
