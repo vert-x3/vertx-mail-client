@@ -73,11 +73,11 @@ public class MailClientImpl implements MailClient {
   }
 
   @Override
-  public void close() {
+  public void close(Handler<AsyncResult<Void>> closedHandler) {
     if (closed) {
       throw new IllegalStateException("Already closed");
     }
-    holder.close();
+    holder.close(closedHandler);
     closed = true;
   }
 
@@ -260,12 +260,14 @@ public class MailClientImpl implements MailClient {
       refCount++;
     }
 
-    synchronized void close() {
+    synchronized void close(Handler<AsyncResult<Void>> closedHandler) {
       if (--refCount == 0) {
-        pool.close();
+        pool.close(closedHandler);
         if (closeRunner != null) {
           closeRunner.run();
         }
+      } else {
+        closedHandler.handle(Future.succeededFuture());
       }
     }
   }

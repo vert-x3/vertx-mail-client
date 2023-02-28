@@ -94,8 +94,20 @@ public interface MailClient {
   }
 
   /**
-   * close the MailClient
+   * Same as {@link #close(Handler)} but returning a Future
+   * {@inheritDoc}
    */
-  void close();
+  default Future<Void> close() {
+    final Promise<Void> promise = Promise.promise();
+    close(promise);
+    return promise.future();
+  }
+
+  /**
+   * Close the MailClient
+   *
+   * @param closedHandler will be called after it is closed.
+   */
+  void close(Handler<AsyncResult<Void>> closedHandler);
 
 }

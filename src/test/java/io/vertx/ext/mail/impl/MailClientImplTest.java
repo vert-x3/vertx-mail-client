@@ -52,21 +52,21 @@ public class MailClientImplTest extends VertxTestBase {
   @Test
   public final void testClose(TestContext testContext) {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
-    mailClient.close();
+    mailClient.close(testContext.asyncAssertSuccess());
   }
 
   @Test(expected=IllegalStateException.class)
   public final void test2xClose(TestContext testContext) {
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
-    mailClient.close();
-    mailClient.close();
+    mailClient.close(testContext.asyncAssertSuccess());
+    mailClient.close(testContext.asyncAssertSuccess());
   }
 
   @Test
   public final void testClosedSend(TestContext testContext) {
     Async async = testContext.async();
     MailClient mailClient = new MailClientImpl(vertx, new MailConfig(), "foo");
-    mailClient.close();
+    mailClient.close(testContext.asyncAssertSuccess());
     mailClient.sendMail(new MailMessage(), result -> {
       if (result.succeeded()) {
         log.info(result.result().toString());

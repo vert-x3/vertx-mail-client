@@ -103,7 +103,7 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close()));
+      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close(testContext.asyncAssertSuccess())));
     }));
   }
 
@@ -147,7 +147,7 @@ public class MailAuthChainTest extends SMTPTestDummy {
       testContext.assertEquals("435 4.7.8 Error: authentication failed: bad protocol / cancel", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isTransient());
       assertNull(clientImpl.getConnectionPool().getAuthOperationFactory().getAuthMethod());
-      mailClient.close();
+      mailClient.close(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -225,7 +225,7 @@ public class MailAuthChainTest extends SMTPTestDummy {
         "QUIT",
         "221 2.0.0 Bye"
       );
-      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close()));
+      mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close(testContext.asyncAssertSuccess())));
     }));
   }
 

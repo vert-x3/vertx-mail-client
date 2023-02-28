@@ -20,7 +20,6 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.ProxyType;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.test.proxy.SocksProxy;
@@ -46,18 +45,11 @@ public class MailProxyTest extends SMTPTestWiser {
     MailConfig mailConfig = configLogin().setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setPort(11080));
     proxy = new SocksProxy();
     proxy.start(vertx);
-    Async async = testContext.async();
     MailClient client = MailClient.createShared(vertx, mailConfig);
-    client.sendMail(exampleMessage(), r -> {
-      if (r.succeeded()) {
-        assertEquals("localhost:1587", proxy.getLastUri());
-        client.close();
-        async.complete();
-      } else {
-        log.debug("Failed to send mail", r.cause());
-        testContext.fail(r.cause());
-      }
-    });
+    client.sendMail(exampleMessage(), context.asyncAssertSuccess(r -> {
+      assertEquals("localhost:1587", proxy.getLastUri());
+      client.close(context.asyncAssertSuccess());
+    }));
   }
 
   @Test
@@ -72,18 +64,11 @@ public class MailProxyTest extends SMTPTestWiser {
     proxy = new SocksProxy();
     proxy.username("proxyUser");
     proxy.start(vertx);
-    Async async = testContext.async();
     MailClient client = MailClient.createShared(vertx, mailConfig);
-    client.sendMail(exampleMessage(), r -> {
-      if (r.succeeded()) {
-        assertEquals("localhost:1587", proxy.getLastUri());
-        client.close();
-        async.complete();
-      } else {
-        log.debug("Failed to send mail", r.cause());
-        testContext.fail(r.cause());
-      }
-    });
+    client.sendMail(exampleMessage(), context.asyncAssertSuccess(r -> {
+      assertEquals("localhost:1587", proxy.getLastUri());
+      client.close(context.asyncAssertSuccess());
+    }));
   }
 
   @Override

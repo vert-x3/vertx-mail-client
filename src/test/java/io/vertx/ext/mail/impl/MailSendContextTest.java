@@ -61,8 +61,8 @@ public class MailSendContextTest extends SMTPTestWiser {
       });
     }
     @Override
-    public void stop() throws Exception {
-      mailClientA.close();
+    public void stop(Promise<Void> stopPromise) throws Exception {
+      mailClientA.close(stopPromise);
     }
   }
 
@@ -78,8 +78,8 @@ public class MailSendContextTest extends SMTPTestWiser {
       });
     }
     @Override
-    public void stop() throws Exception {
-      mailClientB.close();
+    public void stop(Promise<Void> stopPromise) throws Exception {
+      mailClientB.close(stopPromise);
     }
   }
 

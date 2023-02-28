@@ -148,6 +148,7 @@ class SMTPConnectionPool {
             getConnection0(hostname, ctx, getConnAgain, i + 1);
             return getConnAgain.future();
           }
+          conn.shutdown();
           return Future.failedFuture(t);
         });
       });
@@ -194,16 +195,14 @@ class SMTPConnectionPool {
           .collect(Collectors.toList());
         return CompositeFuture.all(futures);
       })
+      .flatMap(f -> this.netClient.close())
       .onComplete(r -> {
         log.debug("Close net client");
         if (r.succeeded()) {
           if (finishedHandler != null) {
-            this.netClient.close(finishedHandler);
-          } else {
-            this.netClient.close();
+            finishedHandler.handle(Future.succeededFuture());
           }
         } else {
-          this.netClient.close();
           if (finishedHandler != null) {
             finishedHandler.handle(Future.failedFuture(r.cause()));
           }
