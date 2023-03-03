@@ -81,6 +81,7 @@ public interface MailClient {
    * @return this MailClient instance so the method can be used fluently
    */
   @Fluent
+  @Deprecated
   MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler);
 
   /**
@@ -108,6 +109,7 @@ public interface MailClient {
    *
    * @param closedHandler will be called after it is closed.
    */
+  @Deprecated
   void close(Handler<AsyncResult<Void>> closedHandler);
 
 }
