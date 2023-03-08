@@ -1,6 +1,7 @@
 == Vert.x mail (SMTP client)
 
-image:https://github.com/vert-x3/vertx-mail-client/workflows/CI/badge.svg?branch=master["Build Status", link="https://github.com/vert-x3/vertx-mail-client/actions?query=workflow%3ACI"]
+image:https://github.com/vert-x3/vertx-mail-client/actions/workflows/ci-5.x.yml/badge.svg["Build Status (5.x)",link="https://github.com/vert-x3/vertx-mail-client/actions/workflows/ci-5.x.yml"]
+image:https://github.com/vert-x3/vertx-mail-client/actions/workflows/ci-4.x.yml/badge.svg["Build Status (4.x)",link="https://github.com/vert-x3/vertx-mail-client/actions/workflows/ci-4.x.yml"]
 
 A simple asynchronous SMTP client for Vert.x
 
