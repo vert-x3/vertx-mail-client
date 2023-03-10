@@ -27,6 +27,11 @@
   <properties>
     <stack.version>5.0.0-SNAPSHOT</stack.version>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+    <hamcrest.version>2.2</hamcrest.version>
+    <james.jdkim.version>0.3</james.jdkim.version>
+    <junit.version>4.13.2</junit.version>
+    <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
+    <subethasmtp.version>3.1.7</subethasmtp.version>
   </properties>
 
   <dependencyManagement>
@@ -63,19 +68,19 @@
     <dependency>
       <groupId>org.subethamail</groupId>
       <artifactId>subethasmtp</artifactId>
-      <version>3.1.7</version>
+      <version>${subethasmtp.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-core</artifactId>
-      <version>2.2</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-library</artifactId>
-      <version>2.2</version>
+      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -88,7 +93,7 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <scope>test</scope>
-      <version>4.13.2</version>
+      <version>${junit.version}</version>
     </dependency>
     <dependency>
       <groupId>io.vertx</groupId>
@@ -96,24 +101,9 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-api</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
       <groupId>org.apache.james.jdkim</groupId>
       <artifactId>apache-jdkim-library</artifactId>
-      <version>0.2</version>
+      <version>${james.jdkim.version}</version>
       <scope>test</scope>
       <exclusions>
         <exclusion>
@@ -125,7 +115,7 @@
     <dependency>
       <groupId>org.apache.james.jdkim</groupId>
       <artifactId>apache-jdkim-library</artifactId>
-      <version>0.2</version>
+      <version>${james.jdkim.version}</version>
       <classifier>tests</classifier>
       <scope>test</scope>
       <exclusions>
@@ -148,8 +138,6 @@
             <systemPropertyVariables>
               <buildDirectory>${project.build.directory}</buildDirectory>
               <vertxVersion>${project.version}</vertxVersion>
-              <vertx.logger-delegate-factory-class-name>io.vertx.core.logging.Log4j2LogDelegateFactory</vertx.logger-delegate-factory-class-name>
-              <log4j.configurationFile>log4j2-test.xml</log4j.configurationFile>
             </systemPropertyVariables>
             <!-- Needs to be small enough to run in a EC2 1.7GB small instance -->
             <!-- IMPORTANT: when modifying this line, don't forge to modify
@@ -169,7 +157,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
-        <version>2.22.2</version>
+        <version>${maven.failsafe.plugin.version}</version>
         <executions>
           <execution>
             <id>test</id>
