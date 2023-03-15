@@ -228,28 +228,17 @@ public class DKIMSigner {
 
       @Override
       public Future<Void> write(Buffer data) {
-        Promise<Void> promise = Promise.promise();
-        write(data, promise);
-        return promise.future();
-      }
-
-      @Override
-      public void write(Buffer data, Handler<AsyncResult<Void>> handler) {
         if (!ended.get() && !digest(md, data.getBytes(), written)) {
           // can be end now
           ended.set(true);
         }
-        if (handler != null) {
-          handler.handle(Future.succeededFuture());
-        }
+        return Future.succeededFuture();
       }
 
       @Override
-      public void end(Handler<AsyncResult<Void>> handler) {
-        ended.compareAndSet(false, true);
-        if (handler != null) {
-          handler.handle(Future.succeededFuture());
-        }
+      public Future<Void> end() {
+        ended.set(true);
+        return Future.succeededFuture();
       }
 
       @Override
