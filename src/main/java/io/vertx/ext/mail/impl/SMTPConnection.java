@@ -256,11 +256,7 @@ class SMTPConnection {
           log.debug("command: " + logStr.substring(0, 1000) + "...");
         }
       }
-      ns.write(str + "\r\n", r -> {
-        if (r.failed()) {
-          handleNSException(r.cause());
-        }
-      });
+      ns.write(str + "\r\n").onFailure(this::handleNSException);
     });
   }
 
@@ -319,7 +315,7 @@ class SMTPConnection {
   }
 
   void upgradeToSsl(Handler<AsyncResult<Void>> handler) {
-    ns.upgradeToSsl(handler);
+    ns.upgradeToSsl().onComplete(handler);
   }
 
   Future<SMTPConnection> returnToPool() {

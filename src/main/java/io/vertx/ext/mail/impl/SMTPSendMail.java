@@ -378,7 +378,7 @@ class SMTPSendMail {
     } else {
       ReadStream<Buffer> attachBodyStream = part.bodyStream(connection.getContext());
       if (attachBodyStream != null) {
-        attachBodyStream.pipe().endOnComplete(false).to(connection.getSocket(), promise);
+        attachBodyStream.pipe().endOnComplete(false).to(connection.getSocket()).onComplete(promise);
       } else {
         promise.fail(new IllegalStateException("No mail body and stream found"));
       }
