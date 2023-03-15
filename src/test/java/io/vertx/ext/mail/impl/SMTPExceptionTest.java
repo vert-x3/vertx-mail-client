@@ -51,7 +51,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(500, smtpException.getReplyCode());
       testContext.assertEquals("500 Service closed - bye!", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isPermanent());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -84,7 +84,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(435, smtpException.getReplyCode());
       testContext.assertEquals("435 4.7.8 Error: authentication failed: authentication failure", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isTransient());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -119,7 +119,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(451, smtpException.getReplyCode());
       testContext.assertEquals("451 4.1.7 Bad sender's mailbox address", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isTransient());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -156,7 +156,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(450, smtpException.getReplyCode());
       testContext.assertEquals("450 4.1.2 <foo@invalid.invalid>: Recipient address rejected: Domain not found", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isTransient());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -193,7 +193,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(556, smtpException.getReplyCode());
       testContext.assertEquals("556 5.1.10 <foo@example.com>: Recipient address rejected: Domain example.com does not accept mail (nullMX)", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isPermanent());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -232,7 +232,7 @@ public class SMTPExceptionTest extends SMTPTestDummy {
       testContext.assertEquals(452, smtpException.getReplyCode());
       testContext.assertEquals("452 failed to send email data because of insufficient system storage", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isTransient());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 

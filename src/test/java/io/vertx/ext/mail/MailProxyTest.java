@@ -46,9 +46,9 @@ public class MailProxyTest extends SMTPTestWiser {
     proxy = new SocksProxy();
     proxy.start(vertx);
     MailClient client = MailClient.createShared(vertx, mailConfig);
-    client.sendMail(exampleMessage(), context.asyncAssertSuccess(r -> {
+    client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
       assertEquals("localhost:1587", proxy.getLastUri());
-      client.close(context.asyncAssertSuccess());
+      client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
 
@@ -65,9 +65,9 @@ public class MailProxyTest extends SMTPTestWiser {
     proxy.username("proxyUser");
     proxy.start(vertx);
     MailClient client = MailClient.createShared(vertx, mailConfig);
-    client.sendMail(exampleMessage(), context.asyncAssertSuccess(r -> {
+    client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
       assertEquals("localhost:1587", proxy.getLastUri());
-      client.close(context.asyncAssertSuccess());
+      client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
 

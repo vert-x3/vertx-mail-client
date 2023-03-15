@@ -266,7 +266,7 @@ public class DKIMSigner {
       public WriteStream<Buffer> drainHandler(@Nullable Handler<Void> handler) {
         return this;
       }
-    }, pipePromise);
+    }).onComplete(pipePromise);
   }
 
   private boolean digest(MessageDigest md, byte[] bytes, AtomicInteger written) {

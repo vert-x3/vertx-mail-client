@@ -43,16 +43,16 @@ public class MailSendContextTest extends SMTPTestWiser {
     @Override
     public void start(Promise<Void> startPromise) {
       mailClientA = MailClient.create(vertx, configLogin());
-      mailClientA.sendMail(exampleMessage(), r -> {
+      mailClientA.sendMail(exampleMessage()).onComplete(r -> {
         assertTrue(r.succeeded());
         assertEquals(Vertx.currentContext(), context);
         // deploy Verticle B
         VerticleB verticleB = new VerticleB();
-        vertx.deployVerticle(verticleB, dr -> {
+        vertx.deployVerticle(verticleB).onComplete(dr -> {
           assertTrue(dr.succeeded());
           assertEquals(Vertx.currentContext(), context);
           assertNotNull(verticleB.mailClientB);
-          verticleB.mailClientB.sendMail(exampleMessage(), sr -> {
+          verticleB.mailClientB.sendMail(exampleMessage()).onComplete(sr -> {
             assertTrue(sr.succeeded());
             assertEquals(Vertx.currentContext(), context);
             startPromise.complete();
@@ -62,7 +62,7 @@ public class MailSendContextTest extends SMTPTestWiser {
     }
     @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
-      mailClientA.close(stopPromise);
+      mailClientA.close().onComplete(stopPromise);
     }
   }
 
@@ -71,7 +71,7 @@ public class MailSendContextTest extends SMTPTestWiser {
     @Override
     public void start(Promise<Void> startPromise) {
       mailClientB = MailClient.create(vertx, configLogin());
-      mailClientB.sendMail(exampleMessage(), sr -> {
+      mailClientB.sendMail(exampleMessage()).onComplete(sr -> {
         assertTrue(sr.succeeded());
         assertEquals(Vertx.currentContext(), context);
         startPromise.complete();
@@ -79,7 +79,7 @@ public class MailSendContextTest extends SMTPTestWiser {
     }
     @Override
     public void stop(Promise<Void> stopPromise) throws Exception {
-      mailClientB.close(stopPromise);
+      mailClientB.close().onComplete(stopPromise);
     }
   }
 
@@ -87,7 +87,7 @@ public class MailSendContextTest extends SMTPTestWiser {
   public void sendMailDifferentContext(TestContext testContext) {
     VerticleA verticleA = new VerticleA();
     log.debug("Deploy VerticleA");
-    vertx.deployVerticle(verticleA).onComplete(testContext.asyncAssertSuccess(va -> vertx.undeploy(va, testContext.asyncAssertSuccess())));
+    vertx.deployVerticle(verticleA).onComplete(testContext.asyncAssertSuccess(va -> vertx.undeploy(va).onComplete(testContext.asyncAssertSuccess())));
   }
 
 }

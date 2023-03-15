@@ -53,10 +53,10 @@ public class MailClosedConnectionTest {
       .setSubject("Test email")
       .setText("this is a message");
 
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       log.info("mail finished");
       log.info(result.toString());
-      mailClient.close(context.asyncAssertSuccess());
+      mailClient.close().onComplete(context.asyncAssertSuccess());
     }));
   }
 
@@ -72,10 +72,10 @@ public class MailClosedConnectionTest {
       .setSubject("Test email")
       .setText("this is a message");
 
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       log.info("mail finished");
       log.info(result.toString());
-      mailClient.close(context.asyncAssertSuccess());
+      mailClient.close().onComplete(context.asyncAssertSuccess());
     }));
   }
 

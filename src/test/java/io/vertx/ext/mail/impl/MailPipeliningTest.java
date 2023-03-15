@@ -114,14 +114,14 @@ public class MailPipeliningTest extends SMTPTestDummy {
     smtpServer.setDialogueArray(dialogue);
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailClient mailClient = mailClientLogin();
-    mailClient.sendMail(message, testContext.asyncAssertFailure(t -> {
+    mailClient.sendMail(message).onComplete(testContext.asyncAssertFailure(t -> {
         testContext.assertEquals(t.getClass(), SMTPException.class);
         SMTPException smtpException = (SMTPException)t;
         testContext.assertEquals(550, smtpException.getReplyCode());
         testContext.assertEquals("550 5.1.1 Unknown user: userB@example.com", smtpException.getReplyMessage());
         testContext.assertTrue(smtpException.isPermanent());
         testContext.assertTrue(t.getMessage().contains("550 5.1.1 Unknown user: userB@example.com"));
-        mailClient.close(testContext.asyncAssertSuccess());
+        mailClient.close().onComplete(testContext.asyncAssertSuccess());
       })
     );
   }
@@ -155,10 +155,10 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailConfig mailConfig = configLogin().setAllowRcptErrors(true);
     MailClient mailClient = MailClient.createShared(vertx, mailConfig);
-    mailClient.sendMail(message, testContext.asyncAssertSuccess(mr -> {
+    mailClient.sendMail(message).onComplete(testContext.asyncAssertSuccess(mr -> {
       testContext.assertTrue(mr.getRecipients().contains("userA@example.com"));
       testContext.assertFalse(mr.getRecipients().contains("userB@example.com"));
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -190,11 +190,11 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailConfig mailConfig = configLogin().setAllowRcptErrors(true);
     MailClient mailClient = MailClient.createShared(vertx, mailConfig);
-    mailClient.sendMail(message, testContext.asyncAssertSuccess(mr -> {
+    mailClient.sendMail(message).onComplete(testContext.asyncAssertSuccess(mr -> {
       testContext.assertFalse(mr.getRecipients().contains("userA@example.com"));
       testContext.assertFalse(mr.getRecipients().contains("userB@example.com"));
       // only dot got sent, but no way to test it in smtp server.
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -226,14 +226,14 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailConfig mailConfig = configLogin().setAllowRcptErrors(true);
     MailClient mailClient = MailClient.createShared(vertx, mailConfig);
-    mailClient.sendMail(message, testContext.asyncAssertFailure(t -> {
+    mailClient.sendMail(message).onComplete(testContext.asyncAssertFailure(t -> {
       testContext.assertEquals(t.getClass(), SMTPException.class);
       SMTPException smtpException = (SMTPException)t;
       testContext.assertEquals(554, smtpException.getReplyCode());
       testContext.assertEquals("554 no valid recipients given", smtpException.getReplyMessage());
       testContext.assertTrue(smtpException.isPermanent());
       testContext.assertTrue(t.getMessage().contains("554 no valid recipients given"));
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -265,10 +265,10 @@ public class MailPipeliningTest extends SMTPTestDummy {
     MailMessage message = exampleMessage().setTo(Arrays.asList("userA@example.com", "userB@example.com"));
     MailConfig mailConfig = configLogin().setAllowRcptErrors(true);
     MailClient mailClient = MailClient.createShared(vertx, mailConfig);
-    mailClient.sendMail(message, testContext.asyncAssertSuccess(mr -> {
+    mailClient.sendMail(message).onComplete(testContext.asyncAssertSuccess(mr -> {
       testContext.assertTrue(mr.getRecipients().contains("userA@example.com"));
       testContext.assertTrue(mr.getRecipients().contains("userB@example.com"));
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
 
   }

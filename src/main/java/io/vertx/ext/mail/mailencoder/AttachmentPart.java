@@ -228,14 +228,14 @@ class AttachmentPart extends EncodedPart {
               if (c.succeeded()) {
                 synchronized (BodyReadStream.this) {
                   cachedFile = c.result();
-                  cachedFile.write(buffer, promise);
+                  cachedFile.write(buffer).onComplete(promise);
                 }
               } else {
                 promise.fail(c.cause());
               }
             }));
         } else {
-          cachedFile.write(buffer, promise);
+          cachedFile.write(buffer).onComplete(promise);
         }
       }
       return promise.future();

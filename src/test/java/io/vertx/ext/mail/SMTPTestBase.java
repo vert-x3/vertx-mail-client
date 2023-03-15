@@ -186,14 +186,14 @@ public abstract class SMTPTestBase extends VertxTestBase {
 
   protected void testException(MailClient mailClient, MailMessage email, Class<? extends Exception> exceptionClass) {
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
-    mailClient.sendMail(email, testContext.asyncAssertFailure(cause -> {
+    mailClient.sendMail(email).onComplete(testContext.asyncAssertFailure(cause -> {
       log.info("mail finished");
       pass.passOnce();
       if (exceptionClass != null && !exceptionClass.equals(cause.getClass())) {
         log.warn("got exception", cause);
         testContext.fail("didn't get expected exception " + exceptionClass + " but " + cause.getClass());
       }
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 
@@ -209,7 +209,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
   protected void testSuccess(MailClient mailClient, MailMessage email, AdditionalAsserts asserts) {
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
-    mailClient.sendMail(email, testContext.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(testContext.asyncAssertSuccess(result -> {
       log.info("mail finished");
       pass.passOnce();
       log.info(result.toString());
@@ -220,7 +220,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
           testContext.fail(e);
         }
       }
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 

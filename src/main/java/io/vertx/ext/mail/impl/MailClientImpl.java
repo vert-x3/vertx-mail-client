@@ -96,7 +96,7 @@ public class MailClientImpl implements MailClient {
                 hname = Utils.getHostname();
               }
               fut.complete(hname);
-            },
+            }).onComplete(
             res -> {
               if (res.succeeded()) {
                 hostname = res.result();

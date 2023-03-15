@@ -63,7 +63,7 @@ public class MailClientCloseTest extends SMTPTestDummy {
       mailClient.close(testContext.asyncAssertSuccess());
       try {
         mailClient.getConnectionPool().getNetClient()
-          .connect(config.getPort(), config.getHostname(), v -> {});
+          .connect(config.getPort(), config.getHostname());
         fail("SHOULD NOT HERE !");
       } catch (IllegalStateException e) {
         assertTrue(e.getMessage().contains("Client is closed"));
