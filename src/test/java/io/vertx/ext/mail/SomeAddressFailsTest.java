@@ -58,12 +58,12 @@ public class SomeAddressFailsTest extends SMTPTestDummy {
 
     PassOnce pass = new PassOnce(s -> testContext.fail(s));
 
-    mailClient.sendMail(mail, testContext.asyncAssertSuccess(result -> {
+    mailClient.sendMail(mail).onComplete(testContext.asyncAssertSuccess(result -> {
       log.info("mail finished");
       pass.passOnce();
       log.info(result);
       testContext.assertEquals("[user@example.com]", result.getRecipients().toString());
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
     }));
   }
 

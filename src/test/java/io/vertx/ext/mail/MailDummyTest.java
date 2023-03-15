@@ -94,9 +94,9 @@ public class MailDummyTest extends SMTPTestDummy {
   @Test
   public void mailTestNoResult(TestContext testContext) throws InterruptedException {
     final MailClient mailClient = mailClientDefault();
-    mailClient.sendMail(exampleMessage(), null);
+    mailClient.sendMail(exampleMessage());
     Thread.sleep(1000);
-    mailClient.close(testContext.asyncAssertSuccess());
+    mailClient.close().onComplete(testContext.asyncAssertSuccess());
   }
 
 }

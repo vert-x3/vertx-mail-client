@@ -42,11 +42,11 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
 
     MailClient mailClient = MailClient.create(vertx, new MailConfig("localhost", 20025).setMaxPoolSize(1));
 
-    mailClient.sendMail(exampleMessage(), result -> {
+    mailClient.sendMail(exampleMessage()).onComplete(result -> {
       testContext.assertTrue(result.failed());
-      mailClient.sendMail(exampleMessage(), result2 -> {
+      mailClient.sendMail(exampleMessage()).onComplete(result2 -> {
         testContext.assertTrue(result2.failed());
-        mailClient.close(testContext.asyncAssertSuccess(v -> async.complete()));
+        mailClient.close().onComplete(testContext.asyncAssertSuccess(v -> async.complete()));
       });
     });
   }

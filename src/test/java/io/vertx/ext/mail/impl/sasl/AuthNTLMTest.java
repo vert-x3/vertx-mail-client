@@ -99,7 +99,7 @@ public class AuthNTLMTest extends SMTPTestDummy {
     );
     final MailClient mailClient = MailClient.create(vertx, configLogin().setOwnHostname("localhost").setKeepAlive(false));
     final MailMessage email = exampleMessage();
-    mailClient.sendMail(email, testContext.asyncAssertSuccess(r2 -> mailClient.close(testContext.asyncAssertSuccess())));
+    mailClient.sendMail(email).onComplete(testContext.asyncAssertSuccess(r2 -> mailClient.close().onComplete(testContext.asyncAssertSuccess())));
   }
 
 }

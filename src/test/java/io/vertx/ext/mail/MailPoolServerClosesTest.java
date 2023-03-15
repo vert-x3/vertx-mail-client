@@ -51,16 +51,16 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     PassOnce pass2 = new PassOnce(context::fail);
 
     log.info("starting mail 1");
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       log.info("mail finished 1");
       pass1.passOnce();
       log.info(result.toString());
       log.info("starting mail 2");
-      mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+      mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result2 -> {
         pass2.passOnce();
         log.info("mail finished 2");
         log.info(result2.toString());
-        mailClient.close(context.asyncAssertSuccess());
+        mailClient.close().onComplete(context.asyncAssertSuccess());
       }));
     }));
   }
@@ -84,16 +84,16 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     PassOnce pass2 = new PassOnce(context::fail);
 
     log.info("starting mail 1");
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       log.info("mail finished 1");
       pass1.passOnce();
       log.info(result.toString());
       log.info("starting mail 2");
-      mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+      mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result2 -> {
         pass2.passOnce();
         log.info("mail finished 2");
         log.info(result2.toString());
-        mailClient.close(context.asyncAssertSuccess());
+        mailClient.close().onComplete(context.asyncAssertSuccess());
       }));
     }));
   }
@@ -126,16 +126,16 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     PassOnce pass2 = new PassOnce(context::fail);
 
     log.info("starting mail 1");
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       pass1.passOnce();
       log.info("mail finished 1");
       log.info(result.toString());
       log.info("starting mail 2");
-      mailClient.sendMail(email, context.asyncAssertSuccess(result2 -> {
+      mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result2 -> {
         pass2.passOnce();
         log.info("mail finished 2");
         log.info(result2.toString());
-        mailClient.close(context.asyncAssertSuccess());
+        mailClient.close().onComplete(context.asyncAssertSuccess());
       }));
     }));
   }
@@ -168,16 +168,16 @@ public class MailPoolServerClosesTest extends SMTPTestDummy {
     PassOnce pass2 = new PassOnce(context::fail);
 
     log.info("starting mail 1");
-    mailClient.sendMail(email, context.asyncAssertSuccess(result -> {
+    mailClient.sendMail(email).onComplete(context.asyncAssertSuccess(result -> {
       pass1.passOnce();
       log.info("mail finished 1");
       log.info(result.toString());
       log.info("starting mail 2");
-      mailClient.sendMail(email, context.asyncAssertFailure(result2 -> {
+      mailClient.sendMail(email).onComplete(context.asyncAssertFailure(result2 -> {
         pass2.passOnce();
         log.info("mail finished 2");
         log.info("(as expected) got exception 2", result2);
-        mailClient.close(context.asyncAssertSuccess());
+        mailClient.close().onComplete(context.asyncAssertSuccess());
       }));
     }));
   }

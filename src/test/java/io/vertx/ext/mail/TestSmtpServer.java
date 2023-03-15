@@ -145,7 +145,7 @@ public class TestSmtpServer {
             if (!holdFire.get() && inputLine.toUpperCase(Locale.ENGLISH).equals("STARTTLS")) {
               writeResponses(socket, dialogue[lines.getAndIncrement()]);
               //TODO loop
-              socket.upgradeToSsl(v -> {
+              socket.upgradeToSsl().onComplete(v -> {
                 log.debug("tls upgrade finished");
               });
             } else if (!holdFire.get() && lines.get() < dialogue.length) {
@@ -169,7 +169,7 @@ public class TestSmtpServer {
       }
     });
     CountDownLatch latch = new CountDownLatch(1);
-    netServer.listen(r -> latch.countDown());
+    netServer.listen().onComplete(r -> latch.countDown());
     try {
       latch.await();
     } catch (InterruptedException e) {
@@ -221,7 +221,7 @@ public class TestSmtpServer {
   public void stop() {
     if (netServer != null) {
       CountDownLatch latch = new CountDownLatch(1);
-      netServer.close(v -> latch.countDown());
+      netServer.close().onComplete(v -> latch.countDown());
       try {
         latch.await();
       } catch (InterruptedException e) {
