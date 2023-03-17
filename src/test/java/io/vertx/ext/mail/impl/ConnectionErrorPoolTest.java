@@ -64,11 +64,11 @@ public class ConnectionErrorPoolTest extends SMTPTestDummy {
 
     testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
 
-    mailClient.sendMail(exampleMessage(), testContext.asyncAssertFailure(result -> {
+    mailClient.sendMail(exampleMessage()).onComplete(testContext.asyncAssertFailure(result -> {
       testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
-      mailClient.sendMail(exampleMessage(), testContext.asyncAssertFailure(result2 -> {
+      mailClient.sendMail(exampleMessage()).onComplete(testContext.asyncAssertFailure(result2 -> {
         testContext.assertTrue(pool.connCount()>=0, "connCount() is " + pool.connCount());
-        mailClient.close(testContext.asyncAssertSuccess());
+        mailClient.close().onComplete(testContext.asyncAssertSuccess());
       }));
     }));
   }

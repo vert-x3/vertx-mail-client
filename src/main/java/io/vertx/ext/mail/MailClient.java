@@ -16,7 +16,6 @@
 
 package io.vertx.ext.mail;
 
-import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
 import io.vertx.ext.mail.impl.MailClientImpl;
@@ -76,40 +75,14 @@ public interface MailClient {
    * send a single mail via MailClient
    *
    * @param email         MailMessage object containing the mail text, from/to, attachments etc
-   * @param resultHandler will be called when the operation is finished or it fails
+   * @return a future notified when the operation is finished or it fails
    *                      (may be null to ignore the result)
-   * @return this MailClient instance so the method can be used fluently
    */
-  @Fluent
-  @Deprecated
-  MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler);
-
-  /**
-   * Same as {@link #sendMail(MailMessage, Handler)} but returning a Future.
-   * {@inheritDoc}
-   */
-  default Future<MailResult> sendMail(MailMessage email) {
-    final Promise<MailResult> promise = Promise.promise();
-    sendMail(email, promise);
-    return promise.future();
-  }
-
-  /**
-   * Same as {@link #close(Handler)} but returning a Future
-   * {@inheritDoc}
-   */
-  default Future<Void> close() {
-    final Promise<Void> promise = Promise.promise();
-    close(promise);
-    return promise.future();
-  }
+  Future<MailResult> sendMail(MailMessage email);
 
   /**
    * Close the MailClient
-   *
-   * @param closedHandler will be called after it is closed.
    */
-  @Deprecated
-  void close(Handler<AsyncResult<Void>> closedHandler);
+  Future<Void> close();
 
 }

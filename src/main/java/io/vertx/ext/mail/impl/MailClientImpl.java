@@ -73,16 +73,20 @@ public class MailClientImpl implements MailClient {
   }
 
   @Override
-  public void close(Handler<AsyncResult<Void>> closedHandler) {
+  public Future<Void> close() {
     if (closed) {
       throw new IllegalStateException("Already closed");
     }
-    holder.close(closedHandler);
     closed = true;
+    return Future.future(holder::close);
   }
 
   @Override
-  public MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
+  public Future<MailResult> sendMail(MailMessage email) {
+    return Future.future(h -> sendMail(email, h));
+  }
+
+  private MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
     ContextInternal context = (ContextInternal)vertx.getOrCreateContext();
     if (!closed) {
       if (validateHeaders(message, resultHandler, context)) {

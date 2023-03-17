@@ -59,8 +59,8 @@ public class MailClientCloseTest extends SMTPTestDummy {
     MailConfig config = configLogin();
     MailClientImpl mailClient = (MailClientImpl)MailClient.create(vertx, config);
     Async async = testContext.async();
-    mailClient.sendMail(exampleMessage(), testContext.asyncAssertFailure(t1 -> vertx.setTimer(100, r -> {
-      mailClient.close(testContext.asyncAssertSuccess());
+    mailClient.sendMail(exampleMessage()).onComplete(testContext.asyncAssertFailure(t1 -> vertx.setTimer(100, r -> {
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
       try {
         mailClient.getConnectionPool().getNetClient()
           .connect(config.getPort(), config.getHostname());

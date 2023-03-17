@@ -17,6 +17,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.AsyncResult;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.ext.mail.MailClient;
@@ -41,20 +42,14 @@ public class TestMailClient implements MailClient {
     mailClient = new MailClientImpl(vertx, config, "foo");
   }
 
-  /* (non-Javadoc)
-   * @see io.vertx.ext.mail.MailClient#sendMail(io.vertx.ext.mail.MailMessage, io.vertx.core.Handler)
-   */
   @Override
-  public MailClient sendMail(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler) {
-    return mailClient.sendMail(email, resultHandler);
+  public Future<MailResult> sendMail(MailMessage email) {
+    return mailClient.sendMail(email);
   }
 
-  /* (non-Javadoc)
-   * @see io.vertx.ext.mail.MailClient#close()
-   */
   @Override
-  public void close(Handler<AsyncResult<Void>> closedHandler) {
-    mailClient.close(closedHandler);
+  public Future<Void> close() {
+    return mailClient.close();
   }
 
   /**

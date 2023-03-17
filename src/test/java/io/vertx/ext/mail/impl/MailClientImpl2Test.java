@@ -48,7 +48,7 @@ public class MailClientImpl2Test extends SMTPTestWiser {
 
     testContext.assertEquals(0, mailClient.getConnectionPool().connCount());
 
-    mailClient.sendMail(largeMessage(), result -> {
+    mailClient.sendMail(largeMessage()).onComplete(result -> {
       log.info("mail finished");
       if (result.succeeded()) {
         log.info(result.result().toString());
@@ -66,7 +66,7 @@ public class MailClientImpl2Test extends SMTPTestWiser {
     vertx.setTimer(100, v1 -> {
       testContext.assertEquals(1, mailClient.getConnectionPool().connCount());
       log.info("closing mail service");
-      mailClient.close(testContext.asyncAssertSuccess());
+      mailClient.close().onComplete(testContext.asyncAssertSuccess());
       // after using new connection pool, pool.close() will reset size to 0 directly
       // but it won't close the SMTPConnections before current mail transaction is finished.
       // it can be tested that the sendMail still succeeds.
