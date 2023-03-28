@@ -153,7 +153,7 @@ class SMTPConnectionPool {
         });
       });
     }).onComplete(resultHandler);
-    getSMTPEndPoint().getConnection(contextInternal, config.getConnectTimeout(), promise);
+    getSMTPEndPoint().getConnection(contextInternal, config.getConnectTimeout()).onComplete(promise);
   }
 
   private SMTPEndPoint getSMTPEndPoint() {

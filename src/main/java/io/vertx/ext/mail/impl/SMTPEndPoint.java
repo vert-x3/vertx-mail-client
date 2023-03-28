@@ -51,14 +51,14 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
   }
 
   @Override
-  public void requestConnection(ContextInternal ctx, long timeout, Handler<AsyncResult<Lease<SMTPConnection>>> handler) {
+  public Future<Lease<SMTPConnection>> requestConnection(ContextInternal ctx, long timeout) {
     EventLoopContext eventLoopContext;
     if (ctx instanceof EventLoopContext) {
       eventLoopContext = (EventLoopContext)ctx;
     } else {
       eventLoopContext = ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
     }
-    pool.acquire(eventLoopContext, 0, handler);
+    return pool.acquire(eventLoopContext, 0);
   }
 
   void checkExpired(Handler<AsyncResult<List<SMTPConnection>>> handler) {
@@ -66,19 +66,16 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
   }
 
   @Override
-  public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<SMTPConnection>>> handler) {
-    netClient.connect(config.getPort(), config.getHostname()).onComplete(ar -> {
-      if (ar.succeeded()) {
+  public Future<ConnectResult<SMTPConnection>> connect(EventLoopContext context, Listener listener) {
+    return netClient.connect(config.getPort(), config.getHostname())
+      .map(conn -> {
         incRefCount();
-        SMTPConnection connection = new SMTPConnection(config, ar.result(), context, v -> {
+        SMTPConnection connection = new SMTPConnection(config, conn, context, v -> {
           decRefCount();
           listener.onRemove();
         });
-        handler.handle(Future.succeededFuture(new ConnectResult<>(connection, 1, 0)));
-      } else {
-        handler.handle(Future.failedFuture(ar.cause()));
-      }
-    });
+        return new ConnectResult<>(connection, 1, 0);
+      });
   }
 
   void close(Promise<List<Future<SMTPConnection>>> promise) {
