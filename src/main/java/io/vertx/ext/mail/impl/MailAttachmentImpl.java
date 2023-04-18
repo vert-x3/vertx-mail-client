@@ -62,7 +62,6 @@ public class MailAttachmentImpl implements MailAttachment {
     this.contentType = other.contentType;
     this.disposition = other.disposition;
     this.description = other.description;
-    this.description = other.description;
     this.contentId = other.contentId;
     this.headers = other.headers == null ? null : MultiMap.caseInsensitiveMultiMap().addAll(other.headers);
     this.size = other.size;

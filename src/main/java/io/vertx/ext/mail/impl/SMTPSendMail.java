@@ -18,6 +18,7 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
@@ -38,6 +39,7 @@ class SMTPSendMail {
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
   private static final Pattern linePattern = Pattern.compile("\r\n");
 
+  private final ContextInternal context;
   private final SMTPConnection connection;
   private final MailMessage email;
   private final MailConfig config;
@@ -45,8 +47,9 @@ class SMTPSendMail {
   private final EncodedPart encodedPart;
   private final AtomicLong written = new AtomicLong();
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config,
+  SMTPSendMail(ContextInternal context, SMTPConnection connection, MailMessage email, MailConfig config,
                EncodedPart encodedPart, String messageId) {
+    this.context = context;
     this.connection = connection;
     this.email = email;
     this.config = config;
@@ -58,10 +61,9 @@ class SMTPSendMail {
   /**
    * Starts a mail transaction.
    */
-  void startMailTransaction(final Handler<AsyncResult<MailResult>> resultHandler) {
-    sendMailEvenlope()
-      .flatMap(this::sendMailData)
-      .onComplete(resultHandler);
+  Future<MailResult> startMailTransaction() {
+    return sendMailEvenlope()
+      .flatMap(this::sendMailData);
   }
 
   /**
@@ -119,7 +121,7 @@ class SMTPSendMail {
   }
 
   private Future<Boolean> sendMailEvenlope() {
-    Promise<Boolean> evenlopePromise = Promise.promise();
+    Promise<Boolean> envelopePromise = context.promise();
     try {
       if (checkSize()) {
         final String mailFromLine = "MAIL FROM:<" + mailFromAddress() + ">" + sizeParameter();
@@ -129,23 +131,21 @@ class SMTPSendMail {
           groupCommands.add(mailFromLine);
           groupCommands.addAll(allRecipients.stream().map(r -> "RCPT TO:<" + r + ">").collect(Collectors.toList()));
           groupCommands.add("DATA");
-          connection.writeCommands(groupCommands, ar -> {
+          connection.writeCommands(groupCommands).onComplete(ar -> {
             if (ar.failed()) {
-              evenlopePromise.fail(ar.cause());
+              envelopePromise.fail(ar.cause());
               return;
             }
-            String evenlopeResultStr = ar.result();
-            String[] evenlopeResult = linePattern.split(evenlopeResultStr);
+            SMTPResponse[] evenlopeResult = ar.result();
             if (groupCommands.size() != evenlopeResult.length) {
-              evenlopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
+              envelopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
             } else {
               // result follows the same order in the commands list
-              for (int i = 0; i < evenlopeResult.length; i ++) {
-                String message = evenlopeResult[i];
-                SMTPResponse response = new SMTPResponse(message);
+              for (int i = 0; i < evenlopeResult.length; i++) {
+                SMTPResponse response = evenlopeResult[i];
                 if (i == 0) {
                   if (!response.isStatusOk()) {
-                    evenlopePromise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+                    envelopePromise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                     return;
                   }
                 } else if (i < evenlopeResult.length - 1) {
@@ -153,7 +153,7 @@ class SMTPSendMail {
                     mailResult.getRecipients().add(allRecipients.get(i - 1));
                   } else {
                     if (!config.isAllowRcptErrors()) {
-                      evenlopePromise.fail(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+                      envelopePromise.fail(response.toException("recipient address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                       return;
                     }
                   }
@@ -162,16 +162,16 @@ class SMTPSendMail {
                   if (response.isStatusOk()) {
                     if (mailResult.getRecipients().size() == 0) {
                       // send dot only
-                      evenlopePromise.complete(false);
+                      envelopePromise.complete(false);
                       return;
                     }
                   } else {
-                    evenlopePromise.fail(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
+                    envelopePromise.fail(response.toException("DATA command not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
                     return;
                   }
                 }
               }
-              evenlopePromise.complete(true);
+              envelopePromise.complete(true);
             }
           });
         } else {
@@ -183,17 +183,17 @@ class SMTPSendMail {
           return future.flatMap(v -> sendDataCmd());
         }
       } else {
-        evenlopePromise.fail("message exceeds allowed size limit");
+        envelopePromise.fail("message exceeds allowed size limit");
       }
     } catch (Exception e) {
-      evenlopePromise.fail(e);
+      envelopePromise.fail(e);
     }
-    return evenlopePromise.future();
+    return envelopePromise.future();
   }
 
   private Future<Void> sendMailFrom(String mailFromLine) {
-    Promise<Void> promise = Promise.promise();
-    connection.write(mailFromLine, ar -> {
+    Promise<Void> promise = context.promise();
+    connection.write(mailFromLine).onComplete(ar -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
@@ -202,8 +202,7 @@ class SMTPSendMail {
         promise.fail(ar.cause());
         return;
       }
-      String message = ar.result();
-      SMTPResponse response = new SMTPResponse(message);
+      SMTPResponse response = ar.result();
       if (response.isStatusOk()) {
         promise.complete();
       } else {
@@ -214,10 +213,10 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendRcptTo(String email) {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     try {
       final String line =  "RCPT TO:<" + email + ">";
-      connection.write(line, ar -> {
+      connection.write(line).onComplete(ar -> {
         if (log.isDebugEnabled()) {
           written.getAndAdd(line.length());
         }
@@ -226,9 +225,8 @@ class SMTPSendMail {
           promise.fail(ar.cause());
           return;
         }
-        String message = ar.result();
+        SMTPResponse response = ar.result();
         try {
-          SMTPResponse response = new SMTPResponse(message);
           if (response.isStatusOk()) {
             mailResult.getRecipients().add(email);
             promise.complete();
@@ -250,10 +248,10 @@ class SMTPSendMail {
   }
 
   private Future<Boolean> sendDataCmd() {
-    Promise<Boolean> promise = Promise.promise();
+    Promise<Boolean> promise = context.promise();
     try {
       if (mailResult.getRecipients().size() > 0) {
-        connection.write("DATA", ar -> {
+        connection.write("DATA").onComplete(ar -> {
           if (log.isDebugEnabled()) {
             written.getAndAdd(4);
           }
@@ -262,8 +260,7 @@ class SMTPSendMail {
             promise.fail(ar.cause());
             return;
           }
-          String message = ar.result();
-          SMTPResponse response = new SMTPResponse(message);
+          SMTPResponse response = ar.result();
           if (response.isStatusOk()) {
             promise.complete(true);
           } else {
@@ -289,28 +286,20 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailHeaders(MultiMap headers) {
-    Promise<Void> promise = Promise.promise();
-    try {
-      StringBuilder sb = new StringBuilder();
-      headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
-      final String headerLines = sb.toString();
-      connection.writeLineWithDrainPromise(headerLines, written.getAndAdd(headerLines.length()) < 1000, promise);
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+    StringBuilder sb = new StringBuilder();
+    headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
+    final String headerLines = sb.toString();
+    return connection.writeLineWithDrain(headerLines, written.getAndAdd(headerLines.length()) < 1000);
   }
 
   private Future<MailResult> sendEndDot() {
-    Promise<MailResult> promise = Promise.promise();
+    Promise<MailResult> promise = context.promise();
     try {
-      connection.getContext().runOnContext(v -> connection.write(".", ar -> {
+      connection.getContext().runOnContext(v -> connection.write(".").onComplete(ar -> {
         if (ar.failed()) {
           promise.fail(ar.cause());
-          return;
         }
-        String msg = ar.result();
-        SMTPResponse response = new SMTPResponse(msg);
+        SMTPResponse response = ar.result();
         if (response.isStatusOk()) {
           promise.complete(mailResult);
         } else {
@@ -324,7 +313,7 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailBody() {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     final EncodedPart part = this.encodedPart;
     try {
       if (isMultiPart(part)) {
@@ -343,16 +332,16 @@ class SMTPSendMail {
       final String boundaryStart = "--" + multiPart.boundary();
       final EncodedPart thePart = multiPart.parts().get(i);
 
-      Promise<Void> boundaryStartPromise = Promise.promise();
+      Promise<Void> boundaryStartPromise = context.promise();
       boundaryStartPromise.future()
         .compose(v -> sendMailHeaders(thePart.headers())).onComplete(v -> {
         if (v.succeeded()) {
-          Promise<Void> nextPromise = Promise.promise();
+          Promise<Void> nextPromise = context.promise();
           nextPromise.future().onComplete(vv -> {
             if (vv.succeeded()) {
               if (i == multiPart.parts().size() - 1) {
                 String boundaryEnd = boundaryStart + "--";
-                connection.writeLineWithDrainPromise(boundaryEnd, written.getAndAdd(boundaryEnd.length()) < 1000, promise);
+                connection.writeLineWithDrain(boundaryEnd, written.getAndAdd(boundaryEnd.length()) < 1000).onComplete(promise);
               } else {
                 sendMultiPart(multiPart, i + 1, promise);
               }
@@ -369,7 +358,7 @@ class SMTPSendMail {
           promise.fail(v.cause());
         }
       });
-      connection.writeLineWithDrainPromise(boundaryStart, written.getAndAdd(boundaryStart.length()) < 1000, boundaryStartPromise);
+      connection.writeLineWithDrain(boundaryStart, written.getAndAdd(boundaryStart.length()) < 1000).onComplete(boundaryStartPromise);
     } catch (Exception e) {
       promise.fail(e);
     }
@@ -385,9 +374,7 @@ class SMTPSendMail {
       if (line.startsWith(".")) {
         line = "." + line;
       }
-      Promise<Void> writeLinePromise = Promise.promise();
-      connection.writeLineWithDrainPromise(line, written.getAndAdd(line.length()) < 1000, writeLinePromise);
-      writeLinePromise.future().onComplete(v -> {
+      connection.writeLineWithDrain(line, written.getAndAdd(line.length()) < 1000).onComplete(v -> {
         if (v.succeeded()) {
           sendBodyLineByLine(lines, i + 1, promise);
         } else {

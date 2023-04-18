@@ -31,6 +31,7 @@ import io.vertx.ext.mail.MailConfig;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.regex.Pattern;
 
 /**
  * SMTP connection to a server.
@@ -43,6 +44,7 @@ import java.util.concurrent.atomic.AtomicLong;
 class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
+  private static final Pattern linePattern = Pattern.compile("\r\n");
 
   private final NetSocket ns;
   private final MailConfig config;
@@ -92,10 +94,11 @@ class SMTPConnection {
     return this.nsHandler != null;
   }
 
-  void init(Handler<AsyncResult<String>> initialReplyHandler) {
+  Future<String> init() {
     if (nsHandler != null) {
-      throw new IllegalStateException("SMTPConnection has been initialized.");
+      return context.failedFuture(new IllegalStateException("SMTPConnection has been initialized."));
     }
+
     this.nsHandler = new MultilineParser(buffer -> {
       if (commandReplyHandler == null && !quitSent) {
         log.error("dropping reply arriving after we stopped processing the buffer.");
@@ -108,11 +111,15 @@ class SMTPConnection {
         }
       }
     });
+
+    Promise<String> promise = context.promise();
+    commandReplyHandler = promise;
+    expirationTimestamp = expirationTimestampOf(config);
+    ns.handler(this.nsHandler);
     ns.exceptionHandler(this::handleNSException);
     ns.closeHandler(this::handleNSClosed);
-    commandReplyHandler = initialReplyHandler;
-    this.expirationTimestamp = expirationTimestampOf(config);
-    ns.handler(this.nsHandler);
+
+    return promise.future();
   }
 
   void handleNSException(Throwable t) {
@@ -187,27 +194,25 @@ class SMTPConnection {
     commandReplyHandler = null;
   }
 
-  Future<SMTPConnection> returnToPool() {
+  Future<Void> returnToPool() {
     log.trace("return to pool");
     setNoUse();
-    Promise<SMTPConnection> promise = context.promise();
+    Promise<Void> promise = context.promise();
     try {
       final long count = emailsSent.incrementAndGet();
       boolean exceed = config.getMaxMailsPerConnection() > 0 && count >= config.getMaxMailsPerConnection();
       if (!config.isKeepAlive() || this.closeHandler != null || exceed) {
-        Promise<Void> p = Promise.promise();
-        p.future().onComplete(conn -> {
+        quitCloseConnection().onComplete(ignored -> {
           handleClosed();
-          promise.complete(this);
+          promise.complete();
         });
-        quitCloseConnection(p);
       } else {
         // recycle
         log.trace("recycle for next use");
         cleanHandlers();
         lease.recycle();
         expirationTimestamp = expirationTimestampOf(config);
-        promise.complete(this);
+        promise.complete();
       }
     } catch (Exception e) {
       promise.fail(e);
@@ -219,10 +224,10 @@ class SMTPConnection {
    * send QUIT and close the connection, this operation waits for the success of the quit command but will close the
    * connection on exception as well
    */
-  void quitCloseConnection(Promise<Void> promise) {
+  Future<Void> quitCloseConnection() {
     quitSent = true;
     setNoUse();
-    writeLineWithDrainPromise("QUIT", true, promise);
+    return writeLineWithDrain("QUIT", true);
   }
 
   void setExceptionHandler(Handler<Throwable> exceptionHandler) {
@@ -241,19 +246,20 @@ class SMTPConnection {
   /**
    * close the connection doing a QUIT command first
    */
-  void close(Promise<Void> promise) {
+  Future<Void> close() {
     if (!isAvailable()) {
-      promise.complete();
-      return;
+      return context.succeededFuture();
     }
     if (!inuse) {
       log.trace("close by sending quit in close()");
-      quitCloseConnection(promise);
+      return quitCloseConnection();
     } else {
+      Promise<Void> promise = context.promise();
       this.closeHandler = promise;
       if (quitSent) {
         shutdown();
       }
+      return promise.future();
     }
   }
 
@@ -299,30 +305,41 @@ class SMTPConnection {
     }
   }
 
-  void writeCommands(List<String> commands, Handler<AsyncResult<String>> commandReplyHandler) {
+  Future<SMTPResponse[]> writeCommands(List<String> commands) {
     String cmds = String.join("\r\n", commands);
-    this.nsHandler.setExpected(commands.size());
-    this.write(cmds, ar -> {
+    nsHandler.setExpected(commands.size());
+    return doWrite(cmds, -1).map(response -> {
       try {
-        commandReplyHandler.handle(ar);
+        String[] lines = linePattern.split(response);
+        SMTPResponse[] result = new SMTPResponse[lines.length];
+        for (int i = 0; i < lines.length; i++) {
+          String message = lines[i];
+          result[i] = new SMTPResponse(message);
+        }
+        return result;
       } finally {
-        this.nsHandler.setExpected(1);
+        nsHandler.setExpected(1);
       }
     });
   }
 
-  /*
-   * write command without masking anything
+  /**
+   * write command without log masking
    */
-  void write(String str, Handler<AsyncResult<String>> commandReplyHandler) {
-    write(str, -1, commandReplyHandler);
+  Future<SMTPResponse> write(String str) {
+    return doWrite(str, -1).map(SMTPResponse::new);
   }
 
-  /*
-   * write command masking everything after position blank
+  /**
+   * write command with log masking (everything after position {@code blank} is replaced with {@code *})
    * this method expects a response from SMTP server
    */
-  void write(String str, int blank, Handler<AsyncResult<String>> commandReplyHandler) {
+  Future<SMTPResponse> write(String str, int blank) {
+    return doWrite(str, blank).map(SMTPResponse::new);
+  }
+
+  private Future<String> doWrite(String str, int blank) {
+    Promise<String> promise = context.promise();
     context.emit(roc -> {
       if (log.isDebugEnabled()) {
         String logStr;
@@ -342,19 +359,23 @@ class SMTPConnection {
           log.debug("command: " + logStr.substring(0, 1000) + "...");
         }
       }
-      this.commandReplyHandler = commandReplyHandler;
+      this.commandReplyHandler = promise;
       ns.write(str + "\r\n").onFailure(t -> {
         handleError(t);
         shutdown();
       });
     });
+    return promise.future();
   }
 
-  // write single line not expecting a reply, using drain handler
-  void writeLineWithDrainPromise(String str, boolean mayLog, Promise<Void> promise) {
+  /**
+   * write single line not expecting a reply, using drain handler
+   */
+  Future<Void> writeLineWithDrain(String str, boolean mayLog) {
     if (mayLog) {
       log.debug(str);
     }
+    Promise<Void> promise = context.promise();
     context.emit(roc -> {
       if (isAvailable()) {
         if (ns.writeQueueFull()) {
@@ -370,18 +391,15 @@ class SMTPConnection {
         promise.fail("Connection was closed.");
       }
     });
+    return promise.future();
   }
 
   boolean isSsl() {
     return ns.isSsl();
   }
 
-  void upgradeToSsl(Handler<AsyncResult<Void>> handler) {
-    try {
-      ns.upgradeToSsl().onComplete(handler);
-    } catch (Exception e) {
-      handler.handle(Future.failedFuture(e));
-    }
+  Future<Void> upgradeToSsl() {
+    return ns.upgradeToSsl();
   }
 
   /**
