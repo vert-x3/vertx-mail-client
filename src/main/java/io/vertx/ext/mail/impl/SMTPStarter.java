@@ -16,9 +16,9 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 
@@ -29,30 +29,23 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
  */
 class SMTPStarter {
 
+  private final ContextInternal context;
   private final SMTPConnection connection;
   private final String hostname;
   private final MailConfig config;
   private final AuthOperationFactory authOperationFactory;
-  private final Handler<AsyncResult<SMTPConnection>> handler;
 
-  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory, Handler<AsyncResult<SMTPConnection>> handler) {
+  SMTPStarter(ContextInternal context, SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory) {
+    this.context = context;
     this.connection = connection;
     this.hostname = hostname;
     this.config = config;
     this.authOperationFactory = authOperationFactory;
-    this.handler = handler;
   }
 
-  void serverGreeting(String message) {
-    new SMTPInitialDialogue(connection, config, hostname, v -> doAuthentication(), this::handleError).start(message);
-  }
-
-  private void doAuthentication() {
-    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture(connection)), this::handleError).start();
-  }
-
-  private void handleError(Throwable throwable) {
-    handler.handle(Future.failedFuture(throwable));
+  Future<Void> serverGreeting(String message) {
+    return new SMTPInitialDialogue(context, connection, config, hostname).start(message)
+      .flatMap(ignored -> new SMTPAuthentication(context, connection, config, this.authOperationFactory).start());
   }
 
 }

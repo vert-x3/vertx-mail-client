@@ -16,8 +16,9 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.Handler;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.MailConfig;
@@ -35,25 +36,22 @@ class SMTPInitialDialogue {
 
   private final SMTPConnection connection;
 
-  private final Handler<Throwable> errorHandler;
-  private final Handler<Void> finishedHandler;
-
   private final MailConfig config;
 
   private final String hostname;
 
-  public SMTPInitialDialogue(SMTPConnection connection, MailConfig config, String hostname, Handler<Void> finishedHandler,
-                             Handler<Throwable> errorHandler) {
+  private final Promise<Void> promise;
+
+  public SMTPInitialDialogue(ContextInternal context, SMTPConnection connection, MailConfig config, String hostname) {
     this.connection = connection;
     this.config = config;
     this.hostname = hostname;
-    this.finishedHandler = finishedHandler;
-    this.errorHandler = errorHandler;
-    this.connection.setErrorHandler(errorHandler);
+    this.promise = context.promise();
+    this.connection.setErrorHandler(promise::fail);
   }
 
-  public void start(final String message) {
-    SMTPResponse response = new SMTPResponse(message);
+  public Future<Void> start(final String serverGreeting) {
+    SMTPResponse response = new SMTPResponse(serverGreeting);
     if (response.isStatusOk()) {
       if (!config.isDisableEsmtp()) {
         ehloCmd();
@@ -61,34 +59,32 @@ class SMTPInitialDialogue {
         heloCmd();
       }
     } else {
-      handleError(response.toException("got error response"));
+      promise.fail(response.toException("got error response"));
     }
+    return promise.future();
   }
 
   private void ehloCmd() {
-    connection
-      .write(
-        "EHLO " + hostname,
-        message -> {
-          SMTPResponse response = new SMTPResponse(message);
-          if (response.isStatusOk()) {
-            connection.parseCapabilities(message);
-            if (connection.getCapa().isStartTLS()
-              && !connection.isSsl()
-              && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
-              // do not start TLS if we are connected with SSL or are already in TLS
-              startTLSCmd();
-            } else {
-              finished();
-            }
-          } else {
-            // if EHLO fails, assume we have to do HELO
-            // if the command is not supported, the response is probably
-            // a 5xx error code and we should be able to continue, if not
-            // the options disableEsmtp has to be set
-            heloCmd();
-          }
-        });
+    connection.write("EHLO " + hostname, message -> {
+      SMTPResponse response = new SMTPResponse(message);
+      if (response.isStatusOk()) {
+        connection.parseCapabilities(message);
+        if (connection.getCapa().isStartTLS()
+          && !connection.isSsl()
+          && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
+          // do not start TLS if we are connected with SSL or are already in TLS
+          startTLSCmd();
+        } else {
+          finished();
+        }
+      } else {
+        // if EHLO fails, assume we have to do HELO
+        // if the command is not supported, the response is probably
+        // a 5xx error code and we should be able to continue, if not
+        // the options disableEsmtp has to be set
+        heloCmd();
+      }
+    });
   }
 
   private void heloCmd() {
@@ -97,13 +93,9 @@ class SMTPInitialDialogue {
       if (response.isStatusOk()) {
         finished();
       } else {
-        handleError(response.toException("HELO failed."));
+        promise.fail(response.toException("HELO failed."));
       }
     });
-  }
-
-  private void handleError(Throwable throwable) {
-    errorHandler.handle(throwable);
   }
 
   /**
@@ -119,7 +111,7 @@ class SMTPInitialDialogue {
           // on secure channel (e.g. googlemail)
           ehloCmd();
         } else {
-          errorHandler.handle(ar.cause());
+          promise.fail(ar.cause());
         }
       });
     });
@@ -127,10 +119,10 @@ class SMTPInitialDialogue {
 
   private void finished() {
     if (connection.isSsl() || config.getStarttls() != StartTLSOptions.REQUIRED) {
-      finishedHandler.handle(null);
+      promise.complete();
     } else {
       log.warn("STARTTLS required but not supported by server");
-      errorHandler.handle(new NoStackTraceThrowable("STARTTLS required but not supported by server"));
+      promise.fail("STARTTLS required but not supported by server");
     }
   }
 

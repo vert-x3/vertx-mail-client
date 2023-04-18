@@ -52,11 +52,11 @@ public class SMTPConnectionPoolShutdownTest extends SMTPTestWiser {
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection("hostname", result -> {
+    pool.getConnection("hostname").onComplete(result -> {
       if (result.succeeded()) {
         log.debug("got connection");
         testContext.assertEquals(1, pool.connCount());
-        pool.close(v1 -> {
+        pool.doClose().onComplete(v1 -> {
           log.debug("pool.close finished");
           closeFinished.set(true);
         });

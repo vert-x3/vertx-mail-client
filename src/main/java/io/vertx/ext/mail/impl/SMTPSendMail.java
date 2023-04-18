@@ -18,6 +18,7 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.streams.ReadStream;
@@ -38,6 +39,7 @@ class SMTPSendMail {
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
   private static final Pattern linePattern = Pattern.compile("\r\n");
 
+  private final ContextInternal context;
   private final SMTPConnection connection;
   private final MailMessage email;
   private final MailConfig config;
@@ -45,8 +47,9 @@ class SMTPSendMail {
   private final EncodedPart encodedPart;
   private final AtomicLong written = new AtomicLong();
 
-  SMTPSendMail(SMTPConnection connection, MailMessage email, MailConfig config,
+  SMTPSendMail(ContextInternal context, SMTPConnection connection, MailMessage email, MailConfig config,
                EncodedPart encodedPart, String messageId) {
+    this.context = context;
     this.connection = connection;
     this.email = email;
     this.config = config;
@@ -58,10 +61,9 @@ class SMTPSendMail {
   /**
    * Starts a mail transaction.
    */
-  void startMailTransaction(final Handler<AsyncResult<MailResult>> resultHandler) {
-    sendMailEvenlope()
-      .flatMap(this::sendMailData)
-      .onComplete(resultHandler);
+  Future<MailResult> startMailTransaction() {
+    return sendMailEvenlope()
+      .flatMap(this::sendMailData);
   }
 
   /**
@@ -119,7 +121,7 @@ class SMTPSendMail {
   }
 
   private Future<Boolean> sendMailEvenlope() {
-    Promise<Boolean> evenlopePromise = Promise.promise();
+    Promise<Boolean> evenlopePromise = context.promise();
     try {
       if (checkSize()) {
         final String mailFromLine = "MAIL FROM:<" + mailFromAddress() + ">" + sizeParameter();
@@ -187,7 +189,7 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailFrom(String mailFromLine) {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     connection.write(mailFromLine, message -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
@@ -203,7 +205,7 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendRcptTo(String email) {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     try {
       final String line =  "RCPT TO:<" + email + ">";
       connection.write(line, message -> {
@@ -233,7 +235,7 @@ class SMTPSendMail {
   }
 
   private Future<Boolean> sendDataCmd() {
-    Promise<Boolean> promise = Promise.promise();
+    Promise<Boolean> promise = context.promise();
     try {
       if (mailResult.getRecipients().size() > 0) {
         connection.write("DATA", message -> {
@@ -266,7 +268,7 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailHeaders(MultiMap headers) {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     try {
       StringBuilder sb = new StringBuilder();
       headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
@@ -279,7 +281,7 @@ class SMTPSendMail {
   }
 
   private Future<MailResult> sendEndDot() {
-    Promise<MailResult> promise = Promise.promise();
+    Promise<MailResult> promise = context.promise();
     try {
       connection.getContext().runOnContext(v -> connection.write(".", msg -> {
         SMTPResponse response = new SMTPResponse(msg);
@@ -296,7 +298,7 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailBody() {
-    Promise<Void> promise = Promise.promise();
+    Promise<Void> promise = context.promise();
     final EncodedPart part = this.encodedPart;
     try {
       if (isMultiPart(part)) {
@@ -315,11 +317,11 @@ class SMTPSendMail {
       final String boundaryStart = "--" + multiPart.boundary();
       final EncodedPart thePart = multiPart.parts().get(i);
 
-      Promise<Void> boundaryStartPromise = Promise.promise();
+      Promise<Void> boundaryStartPromise = context.promise();
       boundaryStartPromise.future()
         .compose(v -> sendMailHeaders(thePart.headers())).onComplete(v -> {
         if (v.succeeded()) {
-          Promise<Void> nextPromise = Promise.promise();
+          Promise<Void> nextPromise = context.promise();
           nextPromise.future().onComplete(vv -> {
             if (vv.succeeded()) {
               if (i == multiPart.parts().size() - 1) {
@@ -357,7 +359,7 @@ class SMTPSendMail {
       if (line.startsWith(".")) {
         line = "." + line;
       }
-      Promise<Void> writeLinePromise = Promise.promise();
+      Promise<Void> writeLinePromise = context.promise();
       connection.writeLineWithDrainPromise(line, written.getAndAdd(line.length()) < 1000, writeLinePromise);
       writeLinePromise.future().onComplete(v -> {
         if (v.succeeded()) {

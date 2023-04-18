@@ -78,60 +78,76 @@ public class MailClientImpl implements MailClient {
       throw new IllegalStateException("Already closed");
     }
     closed = true;
-    return Future.future(holder::close);
+    return holder.close();
   }
 
   @Override
   public Future<MailResult> sendMail(MailMessage email) {
-    return Future.future(h -> sendMail(email, h));
-  }
-
-  private MailClient sendMail(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler) {
-    ContextInternal context = (ContextInternal)vertx.getOrCreateContext();
+    ContextInternal context = (ContextInternal) vertx.getOrCreateContext();
+    Promise<MailResult> promise = context.promise();
     if (!closed) {
-      if (validateHeaders(message, resultHandler, context)) {
-        if (hostname == null) {
-          vertx.<String>executeBlocking(
-            fut -> {
-              String hname;
-              if (config.getOwnHostname() != null) {
-                hname = config.getOwnHostname();
-              } else {
-                hname = Utils.getHostname();
-              }
-              fut.complete(hname);
-            }).onComplete(
-            res -> {
-              if (res.succeeded()) {
-                hostname = res.result();
-                getConnection(message, resultHandler, context);
-              } else {
-                handleError(res.cause(), resultHandler, context);
-              }
-            });
-        } else {
-          getConnection(message, resultHandler, context);
-        }
-      }
+      validateHeaders(email, context)
+        .flatMap(ignored -> getHostname())
+        .flatMap(ignored -> getConnection(promise, context))
+        .flatMap(conn -> sendMessage(email, conn, context).compose(
+          result -> returnConnToPool(result, conn, context),
+          failure -> closeFailedConn(failure, conn, context)))
+        .onComplete(promise);
     } else {
-      handleError("mail client has been closed", resultHandler, context);
+      promise.fail("mail client has been closed");
     }
-    return this;
+    return promise.future();
   }
 
-  private void getConnection(MailMessage message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
-    connectionPool.getConnection(hostname, context, result -> {
-      if (result.succeeded()) {
-        final SMTPConnection connection = result.result();
-        connection.setErrorHandler(th -> handleError(th, resultHandler, context));
-        sendMessage(message, connection, resultHandler, context);
+  private Future<Void> validateHeaders(MailMessage email, ContextInternal context) {
+    if (email.getBounceAddress() == null && email.getFrom() == null) {
+      return context.failedFuture("sender address is not present");
+    } else if ((email.getTo() == null || email.getTo().size() == 0)
+      && (email.getCc() == null || email.getCc().size() == 0)
+      && (email.getBcc() == null || email.getBcc().size() == 0)) {
+      log.warn("no recipient addresses are present");
+      return context.failedFuture("no recipient addresses are present");
+    } else {
+      return context.succeededFuture();
+    }
+  }
+
+  private Future<String> getHostname() {
+    if (hostname != null) {
+      return Future.succeededFuture(hostname);
+    }
+
+    return vertx.executeBlocking(promise -> {
+      String hname;
+      if (config.getOwnHostname() != null) {
+        hname = config.getOwnHostname();
       } else {
-        handleError(result.cause(), resultHandler, context);
+        hname = Utils.getHostname();
       }
+      hostname = hname;
+      promise.complete(hname);
     });
   }
 
-  private Future<Void> dkimFuture(Context context, EncodedPart encodedPart) {
+  private Future<SMTPConnection> getConnection(Promise<MailResult> resultHandler, ContextInternal context) {
+    Promise<SMTPConnection> promise = context.promise();
+    connectionPool.getConnection(hostname, context).onComplete(result -> {
+      if (result.succeeded()) {
+        final SMTPConnection connection = result.result();
+        connection.setErrorHandler(resultHandler::fail);
+        promise.complete(connection);
+      } else {
+        promise.fail(result.cause());
+      }
+    });
+    return promise.future();
+  }
+
+  private Future<Void> dkimSign(ContextInternal context, EncodedPart encodedPart) {
+    if (dkimSigners.isEmpty()) {
+      return context.succeededFuture();
+    }
+
     List<Future> dkimFutures = new ArrayList<>();
     // run dkim sign, and add email header after that.
     dkimSigners.forEach(dkim -> dkimFutures.add(dkim.signEmail(context, encodedPart)));
@@ -142,81 +158,30 @@ public class MailClientImpl implements MailClient {
     });
   }
 
-  private void sendMessage(MailMessage email, SMTPConnection conn, Handler<AsyncResult<MailResult>> resultHandler,
-                           ContextInternal context) {
-    Promise<MailResult> sentResultHandler = context.promise();
-    sentResultHandler.future().onComplete(mr -> {
-      if (mr.succeeded()) {
-        conn.returnToPool().onComplete(cn -> returnResult(mr, resultHandler, context));
-      } else {
-        Promise<Void> promise = context.promise();
-        promise.future().onComplete(v -> returnResult(Future.failedFuture(mr.cause()), resultHandler, context));
-        conn.quitCloseConnection(promise);
-      }
-    });
+  private Future<MailResult> sendMessage(MailMessage email, SMTPConnection conn, ContextInternal context) {
     try {
       final MailEncoder encoder = new MailEncoder(email, hostname, config);
-      final EncodedPart encodedPart = encoder.encodeMail();
+      final EncodedPart encodedPart = encoder.encodeMail(); // may throw
       final String messageId = encoder.getMessageID();
+      final SMTPSendMail sendMail = new SMTPSendMail(context, conn, email, config, encodedPart, messageId);
 
-      final SMTPSendMail sendMail = new SMTPSendMail(conn, email, config, encodedPart, messageId);
-      if (dkimSigners.isEmpty()) {
-        sendMail.startMailTransaction(sentResultHandler);
-      } else {
-        // generate the DKIM header before start
-        dkimFuture(context, encodedPart).onComplete(dkim -> context.runOnContext(h -> {
-          if (dkim.succeeded()) {
-            sendMail.startMailTransaction(sentResultHandler);
-          } else {
-            sentResultHandler.handle(Future.failedFuture(dkim.cause()));
-          }
-        }));
-      }
+      return dkimSign(context, encodedPart)
+        .flatMap(ignored -> sendMail.startMailTransaction());
     } catch (Exception e) {
-      handleError(e, sentResultHandler, context);
+      return context.failedFuture(e);
     }
   }
 
-  // do some validation before we open the connection
-  // return true on successful validation so we can stop processing above
-  private boolean validateHeaders(MailMessage email, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
-    if (email.getBounceAddress() == null && email.getFrom() == null) {
-      handleError("sender address is not present", resultHandler, context);
-      return false;
-    } else if ((email.getTo() == null || email.getTo().size() == 0)
-      && (email.getCc() == null || email.getCc().size() == 0)
-      && (email.getBcc() == null || email.getBcc().size() == 0)) {
-      log.warn("no recipient addresses are present");
-      handleError("no recipient addresses are present", resultHandler, context);
-      return false;
-    } else {
-      return true;
-    }
+  private Future<MailResult> returnConnToPool(MailResult result, SMTPConnection conn, ContextInternal context) {
+    return conn.returnToPool().transform(ignored -> context.succeededFuture(result));
   }
 
-  private void handleError(String message, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
-    log.debug("handleError:" + message);
-    returnResult(Future.failedFuture(message), resultHandler, context);
-  }
-
-  private void handleError(Throwable t, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
-    log.debug("handleError", t);
-    returnResult(Future.failedFuture(t), resultHandler, context);
-  }
-
-  private void returnResult(AsyncResult<MailResult> result, Handler<AsyncResult<MailResult>> resultHandler, ContextInternal context) {
-    // Note - results must always be executed on the right context, asynchronously, not directly!
-    context.emit(v -> {
-      if (resultHandler != null) {
-        resultHandler.handle(result);
-      } else {
-        if (result.succeeded()) {
-          log.debug("dropping sendMail result");
-        } else {
-          log.info("dropping sendMail failure", result.cause());
-        }
-      }
-    });
+  private Future<MailResult> closeFailedConn(Throwable failure, SMTPConnection conn, ContextInternal context) {
+    Promise<MailResult> promise = context.promise();
+    Promise<Void> promiseInternal = context.promise();
+    promiseInternal.future().onComplete(ignored -> promise.fail(failure));
+    conn.quitCloseConnection(promiseInternal);
+    return promise.future();
   }
 
   SMTPConnectionPool getConnectionPool() {
@@ -253,7 +218,7 @@ public class MailClientImpl implements MailClient {
 
     MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
       this.closeRunner = closeRunner;
-      this.pool= new SMTPConnectionPool(vertx, config);
+      this.pool = new SMTPConnectionPool(vertx, config);
     }
 
     SMTPConnectionPool pool() {
@@ -264,14 +229,15 @@ public class MailClientImpl implements MailClient {
       refCount++;
     }
 
-    synchronized void close(Handler<AsyncResult<Void>> closedHandler) {
+    synchronized Future<Void> close() {
       if (--refCount == 0) {
-        pool.close(closedHandler);
+        Future<Void> result = pool.doClose();
         if (closeRunner != null) {
           closeRunner.run();
         }
+        return result;
       } else {
-        closedHandler.handle(Future.succeededFuture());
+        return Future.succeededFuture();
       }
     }
   }

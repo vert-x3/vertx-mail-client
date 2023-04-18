@@ -23,6 +23,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.impl.future.PromiseInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetSocket;
@@ -94,10 +95,11 @@ class SMTPConnection {
     return this.nsHandler != null;
   }
 
-  void init(Handler<String> initialReplyHandler) {
+  Future<String> init() {
     if (nsHandler != null) {
-      throw new IllegalStateException("SMTPConnection has been initialized.");
+      return context.failedFuture(new IllegalStateException("SMTPConnection has been initialized."));
     }
+
     this.nsHandler = new MultilineParser(buffer -> {
       if (commandReplyHandler == null && !quitSent) {
         handleError(new IllegalStateException("dropping reply arriving after we stopped processing the buffer."));
@@ -110,11 +112,16 @@ class SMTPConnection {
         }
       }
     });
+
+    Promise<String> promise = context.promise();
+
+    commandReplyHandler = promise::complete;
+    expirationTimestamp = expirationTimestampOf(config);
+    ns.handler(this.nsHandler);
     ns.exceptionHandler(this::handleNSException);
     ns.closeHandler(this::handleNSClosed);
-    commandReplyHandler = initialReplyHandler;
-    this.expirationTimestamp = expirationTimestampOf(config);
-    ns.handler(this.nsHandler);
+
+    return promise.future();
   }
 
   void handleNSException(Throwable t) {
@@ -376,7 +383,8 @@ class SMTPConnection {
   /**
    * close the connection doing a QUIT command first
    */
-  void close(Promise<Void> promise) {
+  Future<Void> close() {
+    Promise<Void> promise = context.promise();
     closing = true;
     if (!inuse) {
       log.trace("close by sending quit in close()");
@@ -387,6 +395,7 @@ class SMTPConnection {
         shutdown();
       }
     }
+    return promise.future();
   }
 
   /**
