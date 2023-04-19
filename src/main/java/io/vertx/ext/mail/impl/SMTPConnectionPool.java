@@ -76,7 +76,7 @@ class SMTPConnectionPool {
 
   private void checkExpired(long timer) {
     getSMTPEndPoint().checkExpired()
-      .onSuccess(conns -> conns.forEach(c -> c.quitCloseConnection(Promise.promise())));
+      .onSuccess(conns -> conns.forEach(SMTPConnection::quitCloseConnection));
     synchronized (this) {
       if (!closed) {
         timerID = vertx.setTimer(poolCleanTimeout(config), this::checkExpired);
@@ -112,7 +112,8 @@ class SMTPConnectionPool {
         conn.setInUse();
         if (conn.isInitialized()) {
           reset = true;
-          future = new SMTPReset(conn).start(contextInternal);
+          future = new SMTPReset(conn).start(contextInternal)
+            .map(ignored -> conn);
         } else {
           reset = false;
           future = conn.init()
@@ -126,7 +127,7 @@ class SMTPConnectionPool {
             conn.shutdown();
             quitPromise.fail(t);
           } else {
-            conn.quitCloseConnection(quitPromise);
+            conn.quitCloseConnection().onComplete(quitPromise);
           }
           return quitPromise.future().transform(v -> {
             if (reset && retryAttempt < RSET_MAX_RETRY) {

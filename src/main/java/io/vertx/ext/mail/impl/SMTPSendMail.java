@@ -131,15 +131,13 @@ class SMTPSendMail {
           groupCommands.add(mailFromLine);
           groupCommands.addAll(allRecipients.stream().map(r -> "RCPT TO:<" + r + ">").collect(Collectors.toList()));
           groupCommands.add("DATA");
-          connection.writeCommands(groupCommands, evenlopeResultStr -> {
-            String[] evenlopeResult = linePattern.split(evenlopeResultStr);
+          connection.writeCommands(groupCommands).onSuccess(evenlopeResult -> {
             if (groupCommands.size() != evenlopeResult.length) {
               evenlopePromise.fail("Sent " + groupCommands.size() + " commands, but got " + evenlopeResult.length + " responses.");
             } else {
               // result follows the same order in the commands list
-              for (int i = 0; i < evenlopeResult.length; i ++) {
-                String message = evenlopeResult[i];
-                SMTPResponse response = new SMTPResponse(message);
+              for (int i = 0; i < evenlopeResult.length; i++) {
+                SMTPResponse response = evenlopeResult[i];
                 if (i == 0) {
                   if (!response.isStatusOk()) {
                     evenlopePromise.fail(response.toException("sender address not accepted", connection.getCapa().isCapaEnhancedStatusCodes()));
@@ -190,11 +188,10 @@ class SMTPSendMail {
 
   private Future<Void> sendMailFrom(String mailFromLine) {
     Promise<Void> promise = context.promise();
-    connection.write(mailFromLine, message -> {
+    connection.write(mailFromLine).onSuccess(response -> {
       if (log.isDebugEnabled()) {
         written.getAndAdd(mailFromLine.length());
       }
-      SMTPResponse response = new SMTPResponse(message);
       if (response.isStatusOk()) {
         promise.complete();
       } else {
@@ -208,12 +205,11 @@ class SMTPSendMail {
     Promise<Void> promise = context.promise();
     try {
       final String line =  "RCPT TO:<" + email + ">";
-      connection.write(line, message -> {
+      connection.write(line).onSuccess(response -> {
         if (log.isDebugEnabled()) {
           written.getAndAdd(line.length());
         }
         try {
-          SMTPResponse response = new SMTPResponse(message);
           if (response.isStatusOk()) {
             mailResult.getRecipients().add(email);
             promise.complete();
@@ -238,11 +234,10 @@ class SMTPSendMail {
     Promise<Boolean> promise = context.promise();
     try {
       if (mailResult.getRecipients().size() > 0) {
-        connection.write("DATA", message -> {
+        connection.write("DATA").onSuccess(response -> {
           if (log.isDebugEnabled()) {
             written.getAndAdd(4);
           }
-          SMTPResponse response = new SMTPResponse(message);
           if (response.isStatusOk()) {
             promise.complete(true);
           } else {
@@ -268,23 +263,16 @@ class SMTPSendMail {
   }
 
   private Future<Void> sendMailHeaders(MultiMap headers) {
-    Promise<Void> promise = context.promise();
-    try {
-      StringBuilder sb = new StringBuilder();
-      headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
-      final String headerLines = sb.toString();
-      connection.writeLineWithDrainPromise(headerLines, written.getAndAdd(headerLines.length()) < 1000, promise);
-    } catch (Exception e) {
-      promise.fail(e);
-    }
-    return promise.future();
+    StringBuilder sb = new StringBuilder();
+    headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
+    final String headerLines = sb.toString();
+    return connection.writeLineWithDrain(headerLines, written.getAndAdd(headerLines.length()) < 1000);
   }
 
   private Future<MailResult> sendEndDot() {
     Promise<MailResult> promise = context.promise();
     try {
-      connection.getContext().runOnContext(v -> connection.write(".", msg -> {
-        SMTPResponse response = new SMTPResponse(msg);
+      connection.getContext().runOnContext(v -> connection.write(".").onSuccess(response -> {
         if (response.isStatusOk()) {
           promise.complete(mailResult);
         } else {
@@ -326,7 +314,7 @@ class SMTPSendMail {
             if (vv.succeeded()) {
               if (i == multiPart.parts().size() - 1) {
                 String boundaryEnd = boundaryStart + "--";
-                connection.writeLineWithDrainPromise(boundaryEnd, written.getAndAdd(boundaryEnd.length()) < 1000, promise);
+                connection.writeLineWithDrain(boundaryEnd, written.getAndAdd(boundaryEnd.length()) < 1000).onComplete(promise);
               } else {
                 sendMultiPart(multiPart, i + 1, promise);
               }
@@ -343,7 +331,7 @@ class SMTPSendMail {
           promise.fail(v.cause());
         }
       });
-      connection.writeLineWithDrainPromise(boundaryStart, written.getAndAdd(boundaryStart.length()) < 1000, boundaryStartPromise);
+      connection.writeLineWithDrain(boundaryStart, written.getAndAdd(boundaryStart.length()) < 1000).onComplete(boundaryStartPromise);
     } catch (Exception e) {
       promise.fail(e);
     }
@@ -359,9 +347,7 @@ class SMTPSendMail {
       if (line.startsWith(".")) {
         line = "." + line;
       }
-      Promise<Void> writeLinePromise = context.promise();
-      connection.writeLineWithDrainPromise(line, written.getAndAdd(line.length()) < 1000, writeLinePromise);
-      writeLinePromise.future().onComplete(v -> {
+      connection.writeLineWithDrain(line, written.getAndAdd(line.length()) < 1000).onComplete(v -> {
         if (v.succeeded()) {
           sendBodyLineByLine(lines, i + 1, promise);
         } else {

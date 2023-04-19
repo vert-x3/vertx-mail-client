@@ -88,10 +88,10 @@ public class MailClientImpl implements MailClient {
     if (!closed) {
       validateHeaders(email, context)
         .flatMap(ignored -> getHostname())
-        .flatMap(ignored -> getConnection(promise, context))
+        .flatMap(ignored -> getConnection(promise::fail, context))
         .flatMap(conn -> sendMessage(email, conn, context).compose(
-          result -> returnConnToPool(result, conn, context),
-          failure -> closeFailedConn(failure, conn, context)))
+          result -> conn.returnToPool().transform(ignored -> context.succeededFuture(result)),
+          failure -> conn.quitCloseConnection().transform(ignored -> context.failedFuture(failure))))
         .onComplete(promise);
     } else {
       promise.fail("mail client has been closed");
@@ -112,9 +112,9 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private Future<String> getHostname() {
+  private Future<Void> getHostname() {
     if (hostname != null) {
-      return Future.succeededFuture(hostname);
+      return Future.succeededFuture();
     }
 
     return vertx.executeBlocking(promise -> {
@@ -125,22 +125,16 @@ public class MailClientImpl implements MailClient {
         hname = Utils.getHostname();
       }
       hostname = hname;
-      promise.complete(hname);
+      promise.complete();
     });
   }
 
-  private Future<SMTPConnection> getConnection(Promise<MailResult> resultHandler, ContextInternal context) {
-    Promise<SMTPConnection> promise = context.promise();
-    connectionPool.getConnection(hostname, context).onComplete(result -> {
-      if (result.succeeded()) {
-        final SMTPConnection connection = result.result();
-        connection.setErrorHandler(resultHandler::fail);
-        promise.complete(connection);
-      } else {
-        promise.fail(result.cause());
-      }
-    });
-    return promise.future();
+  private Future<SMTPConnection> getConnection(Handler<Throwable> errorHandler, ContextInternal context) {
+    return connectionPool.getConnection(hostname, context)
+      .map(conn -> {
+        conn.setErrorHandler(errorHandler);
+        return conn;
+      });
   }
 
   private Future<Void> dkimSign(ContextInternal context, EncodedPart encodedPart) {
@@ -170,18 +164,6 @@ public class MailClientImpl implements MailClient {
     } catch (Exception e) {
       return context.failedFuture(e);
     }
-  }
-
-  private Future<MailResult> returnConnToPool(MailResult result, SMTPConnection conn, ContextInternal context) {
-    return conn.returnToPool().transform(ignored -> context.succeededFuture(result));
-  }
-
-  private Future<MailResult> closeFailedConn(Throwable failure, SMTPConnection conn, ContextInternal context) {
-    Promise<MailResult> promise = context.promise();
-    Promise<Void> promiseInternal = context.promise();
-    promiseInternal.future().onComplete(ignored -> promise.fail(failure));
-    conn.quitCloseConnection(promiseInternal);
-    return promise.future();
   }
 
   SMTPConnectionPool getConnectionPool() {

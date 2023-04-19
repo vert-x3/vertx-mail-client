@@ -153,12 +153,11 @@ class SMTPAuthentication {
       onError.handle(e);
       return;
     }
-    connection.write(nextLine, blank, message2 -> {
-      SMTPResponse response = new SMTPResponse(message2);
+    connection.write(nextLine, blank).onSuccess(response -> {
       if (response.isStatusOk()) {
         if (response.isStatusContinue()) {
-          log.debug("Auth Continue with response: " + message2);
-          authCmdStep(authMethod, message2, onError);
+          log.debug("Auth Continue with response: " + response.getValue());
+          authCmdStep(authMethod, response.getValue(), onError);
         } else {
           authOperationFactory.setAuthMethod(authMethod.getName());
           promise.complete();

@@ -34,15 +34,14 @@ class SMTPReset {
     this.connection = connection;
   }
 
-  Future<SMTPConnection> start(ContextInternal contextInternal) {
-    Promise<SMTPConnection> promise = contextInternal.promise();
+  Future<Void> start(ContextInternal contextInternal) {
+    Promise<Void> promise = contextInternal.promise();
     connection.setErrorHandler(promise::fail);
-    connection.write("RSET", message -> {
-      SMTPResponse response = new SMTPResponse(message);
-      if (!response.isStatusOk()) {
-        promise.fail(response.toException("reset command failed", connection.getCapa().isCapaEnhancedStatusCodes()));
+    connection.write("RSET").onSuccess(response -> {
+      if (response.isStatusOk()) {
+        promise.complete();
       } else {
-        promise.complete(connection);
+        promise.fail(response.toException("reset command failed", connection.getCapa().isCapaEnhancedStatusCodes()));
       }
     });
     return promise.future();

@@ -53,10 +53,10 @@ class SMTPInitialDialogue {
   public Future<Void> start(final String serverGreeting) {
     SMTPResponse response = new SMTPResponse(serverGreeting);
     if (response.isStatusOk()) {
-      if (!config.isDisableEsmtp()) {
-        ehloCmd();
+      if (config.isDisableEsmtp()) {
+        helo();
       } else {
-        heloCmd();
+        ehlo();
       }
     } else {
       promise.fail(response.toException("got error response"));
@@ -64,16 +64,15 @@ class SMTPInitialDialogue {
     return promise.future();
   }
 
-  private void ehloCmd() {
-    connection.write("EHLO " + hostname, message -> {
-      SMTPResponse response = new SMTPResponse(message);
+  private void ehlo() {
+    connection.write("EHLO " + hostname).onSuccess(response -> {
       if (response.isStatusOk()) {
-        connection.parseCapabilities(message);
+        connection.parseCapabilities(response.getValue());
         if (connection.getCapa().isStartTLS()
           && !connection.isSsl()
           && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
           // do not start TLS if we are connected with SSL or are already in TLS
-          startTLSCmd();
+          startTLS();
         } else {
           finished();
         }
@@ -82,14 +81,13 @@ class SMTPInitialDialogue {
         // if the command is not supported, the response is probably
         // a 5xx error code and we should be able to continue, if not
         // the options disableEsmtp has to be set
-        heloCmd();
+        helo();
       }
     });
   }
 
-  private void heloCmd() {
-    connection.write("HELO " + hostname, message -> {
-      SMTPResponse response = new SMTPResponse(message);
+  private void helo() {
+    connection.write("HELO " + hostname).onSuccess(response -> {
       if (response.isStatusOk()) {
         finished();
       } else {
@@ -101,20 +99,20 @@ class SMTPInitialDialogue {
   /**
    * run STARTTLS command and redo EHLO
    */
-  private void startTLSCmd() {
-    connection.write("STARTTLS", message -> {
-      connection.upgradeToSsl(ar -> {
+  private void startTLS() {
+    connection.write("STARTTLS")
+      .flatMap(ignored -> connection.upgradeToSsl())
+      .onComplete(ar -> {
         if (ar.succeeded()) {
           log.trace("tls started");
           // capabilities may have changed, e.g.
           // if a service only announces PLAIN/LOGIN
           // on secure channel (e.g. googlemail)
-          ehloCmd();
+          ehlo();
         } else {
           promise.fail(ar.cause());
         }
       });
-    });
   }
 
   private void finished() {
