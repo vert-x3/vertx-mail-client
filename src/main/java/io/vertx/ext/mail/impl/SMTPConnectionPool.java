@@ -185,7 +185,7 @@ class SMTPConnectionPool {
     Promise<List<Future<SMTPConnection>>> closePromise = Promise.promise();
     closePromise.future()
       .flatMap(list -> {
-        List<Future> futures = list.stream()
+        List<Future<Void>> futures = list.stream()
           .filter(connFuture -> connFuture.succeeded() && connFuture.result().isAvailable())
           .map(connFuture -> {
             Promise<Void> promise = Promise.promise();

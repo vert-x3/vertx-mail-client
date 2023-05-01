@@ -132,7 +132,7 @@ public class MailClientImpl implements MailClient {
   }
 
   private Future<Void> dkimFuture(Context context, EncodedPart encodedPart) {
-    List<Future> dkimFutures = new ArrayList<>();
+    List<Future<String>> dkimFutures = new ArrayList<>();
     // run dkim sign, and add email header after that.
     dkimSigners.forEach(dkim -> dkimFutures.add(dkim.signEmail(context, encodedPart)));
     return CompositeFuture.all(dkimFutures).map(f -> {
