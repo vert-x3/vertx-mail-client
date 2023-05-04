@@ -49,7 +49,7 @@ class SMTPInitialDialogue {
     this.hostname = hostname;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
-    this.connection.setErrorHandler(errorHandler);
+    this.connection.setExceptionHandler(errorHandler);
   }
 
   public void start(final String message) {
@@ -66,33 +66,40 @@ class SMTPInitialDialogue {
   }
 
   private void ehloCmd() {
-    connection
-      .write(
-        "EHLO " + hostname,
-        message -> {
-          SMTPResponse response = new SMTPResponse(message);
-          if (response.isStatusOk()) {
-            connection.parseCapabilities(message);
-            if (connection.getCapa().isStartTLS()
-              && !connection.isSsl()
-              && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
-              // do not start TLS if we are connected with SSL or are already in TLS
-              startTLSCmd();
-            } else {
-              finished();
-            }
-          } else {
-            // if EHLO fails, assume we have to do HELO
-            // if the command is not supported, the response is probably
-            // a 5xx error code and we should be able to continue, if not
-            // the options disableEsmtp has to be set
-            heloCmd();
-          }
-        });
+    connection.write("EHLO " + hostname, ar -> {
+      if (ar.failed()) {
+        errorHandler.handle(ar.cause());
+        return;
+      }
+      String message = ar.result();
+      SMTPResponse response = new SMTPResponse(message);
+      if (response.isStatusOk()) {
+        connection.parseCapabilities(message);
+        if (connection.getCapa().isStartTLS()
+          && !connection.isSsl()
+          && (config.getStarttls() == StartTLSOptions.REQUIRED || config.getStarttls() == StartTLSOptions.OPTIONAL)) {
+          // do not start TLS if we are connected with SSL or are already in TLS
+          startTLSCmd();
+        } else {
+          finished();
+        }
+      } else {
+        // if EHLO fails, assume we have to do HELO
+        // if the command is not supported, the response is probably
+        // a 5xx error code and we should be able to continue, if not
+        // the options disableEsmtp has to be set
+        heloCmd();
+      }
+    });
   }
 
   private void heloCmd() {
-    connection.write("HELO " + hostname, message -> {
+    connection.write("HELO " + hostname, ar -> {
+      if (ar.failed()) {
+        errorHandler.handle(ar.cause());
+        return;
+      }
+      String message = ar.result();
       SMTPResponse response = new SMTPResponse(message);
       if (response.isStatusOk()) {
         finished();
@@ -110,16 +117,20 @@ class SMTPInitialDialogue {
    * run STARTTLS command and redo EHLO
    */
   private void startTLSCmd() {
-    connection.write("STARTTLS", message -> {
-      connection.upgradeToSsl(ar -> {
-        if (ar.succeeded()) {
+    connection.write("STARTTLS", ar1 -> {
+      if (ar1.failed()) {
+        errorHandler.handle(ar1.cause());
+        return;
+      }
+      connection.upgradeToSsl(ar2 -> {
+        if (ar2.succeeded()) {
           log.trace("tls started");
           // capabilities may have changed, e.g.
           // if a service only announces PLAIN/LOGIN
           // on secure channel (e.g. googlemail)
           ehloCmd();
         } else {
-          errorHandler.handle(ar.cause());
+          errorHandler.handle(ar2.cause());
         }
       });
     });

@@ -37,8 +37,13 @@ class SMTPReset {
   }
 
   void start() {
-    connection.setErrorHandler(th -> handler.handle(Future.failedFuture(th)));
-    connection.write("RSET", message -> {
+    connection.setExceptionHandler(th -> handler.handle(Future.failedFuture(th)));
+    connection.write("RSET", ar -> {
+      if (ar.failed()) {
+        handler.handle(Future.failedFuture(ar.cause()));
+        return;
+      }
+      String message = ar.result();
       SMTPResponse response = new SMTPResponse(message);
       if (!response.isStatusOk()) {
         handler.handle(Future.failedFuture(response.toException("reset command failed", connection.getCapa().isCapaEnhancedStatusCodes())));

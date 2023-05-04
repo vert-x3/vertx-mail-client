@@ -126,7 +126,13 @@ class SMTPConnectionPool {
         Promise<SMTPConnection> connInitial = contextInternal.promise();
         SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
         try {
-          conn.init(starter::serverGreeting);
+          conn.init(ar -> {
+            if (ar.failed()) {
+              connInitial.fail(ar.cause());
+              return;
+            }
+            starter.serverGreeting(ar.result());
+          });
         } catch (Exception e) {
           connInitial.handle(Future.failedFuture(e));
         }
@@ -186,7 +192,6 @@ class SMTPConnectionPool {
     closePromise.future()
       .flatMap(list -> {
         List<Future<Void>> futures = list.stream()
-          .filter(connFuture -> connFuture.succeeded() && connFuture.result().isAvailable())
           .map(connFuture -> {
             Promise<Void> promise = Promise.promise();
             connFuture.result().close(promise);
