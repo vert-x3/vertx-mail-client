@@ -32,12 +32,12 @@ import java.util.Objects;
 class SMTPResponse {
 
   private final int replyCode;
-  private final List<String> lines;
+  private final String message;
 
-  SMTPResponse(String line) {
-    Objects.requireNonNull(line, "SMTP response should not be null.");
-    this.replyCode = getStatusCode(line);
-    this.lines = Arrays.asList(line.split("\n"));
+  SMTPResponse(String message) {
+    Objects.requireNonNull(message, "SMTP response should not be null.");
+    this.replyCode = getStatusCode(message);
+    this.message = message;
   }
 
   private static int getStatusCode(String message) {
@@ -52,6 +52,10 @@ class SMTPResponse {
     } catch (NumberFormatException n) {
       return 500;
     }
+  }
+
+  String getValue() {
+    return message;
   }
 
   boolean isStatusOk() {
@@ -70,7 +74,8 @@ class SMTPResponse {
     if (isStatusOk()) {
       throw new IllegalStateException("Status is OK, no exceptions");
     }
-    return new SMTPException(message, replyCode, lines, supportEnhancementStatusCode);
+    List<String> replyLines = Arrays.asList(this.message.split("\n"));
+    return new SMTPException(message, replyCode, replyLines, supportEnhancementStatusCode);
   }
 
 }

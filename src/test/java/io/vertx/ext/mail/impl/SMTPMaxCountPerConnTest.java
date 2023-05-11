@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.SMTPTestWiser;
@@ -48,22 +49,23 @@ public class SMTPMaxCountPerConnTest extends SMTPTestWiser {
   }
 
   private void sendMail(TestContext testContext, SMTPConnectionPool pool, MailMessage mail, Async async, int idx) {
+    ContextInternal context = (ContextInternal) vertx.getOrCreateContext();
     final MailEncoder encoder = new MailEncoder(mail, "host", config);
-    pool.getConnection("localhost", testContext.asyncAssertSuccess(conn -> {
-      new SMTPSendMail(conn, mail, config, encoder.encodeMail(), encoder.getMessageID()).startMailTransaction(testContext.asyncAssertSuccess(mr -> {
+    pool.getConnection("localhost").onComplete(testContext.asyncAssertSuccess(conn -> {
+      new SMTPSendMail(context, conn, mail, config, encoder.encodeMail(), encoder.getMessageID()).startMailTransaction().onComplete(testContext.asyncAssertSuccess(mr -> {
         conn.returnToPool().onComplete(testContext.asyncAssertSuccess(c -> {
           if (idx < MAX_MAILS_COUNTS_PER_CONN - 1) {
             Assert.assertEquals(1, pool.connCount());
             sendMail(testContext, pool, mail, async, idx + 1);
           } else {
             Assert.assertEquals(0, pool.connCount());
-            pool.getConnection("localhost", testContext.asyncAssertSuccess(conn2 -> {
+            pool.getConnection("localhost").onComplete(testContext.asyncAssertSuccess(conn2 -> {
               MailEncoder encoder2 = new MailEncoder(mail, "host", config);
-              new SMTPSendMail(conn2, mail, config, encoder2.encodeMail(), encoder2.getMessageID()).startMailTransaction(testContext.asyncAssertSuccess(mrr -> {
+              new SMTPSendMail(context, conn2, mail, config, encoder2.encodeMail(), encoder2.getMessageID()).startMailTransaction().onComplete(testContext.asyncAssertSuccess(mrr -> {
                 conn2.returnToPool().onComplete(testContext.asyncAssertSuccess(vv -> {
                   // connect will be created again.
                   Assert.assertEquals(1, pool.connCount());
-                  pool.close(vvv -> async.complete());
+                  pool.doClose().onComplete(vvv -> async.complete());
                 }));
               }));
             }));

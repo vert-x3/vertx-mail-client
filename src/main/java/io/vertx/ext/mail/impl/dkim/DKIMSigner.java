@@ -19,6 +19,7 @@ package io.vertx.ext.mail.impl.dkim;
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.streams.Pipe;
@@ -179,7 +180,7 @@ public class DKIMSigner {
    * @return The Future with a result as the value of header: 'DKIM-Signature'
    */
   public Future<String> signEmail(Context context, EncodedPart encodedMessage) {
-    return bodyHashing(context, encodedMessage).map(bh -> {
+    return bodyHashing((ContextInternal) context, encodedMessage).map(bh -> {
       if (logger.isDebugEnabled()) {
         logger.debug("DKIM Body Hash: " + bh);
       }
@@ -340,12 +341,12 @@ public class DKIMSigner {
   }
 
   // https://tools.ietf.org/html/rfc6376#section-3.7
-  private Future<String> bodyHashing(Context context, EncodedPart encodedMessage) {
-    Promise<String> bodyHashPromise = Promise.promise();
+  private Future<String> bodyHashing(ContextInternal context, EncodedPart encodedMessage) {
+    Promise<String> bodyHashPromise = context.promise();
     try {
       final MessageDigest md = MessageDigest.getInstance(dkimSignOptions.getSignAlgo().hashAlgorithm());
       if (encodedMessage.parts() != null && encodedMessage.parts().size() > 0) {
-        Promise<Void> multiPartWalkThrough = Promise.promise();
+        Promise<Void> multiPartWalkThrough = context.promise();
         multiPartWalkThrough.future().onComplete(r -> {
           if (r.succeeded()) {
             try {

@@ -15,10 +15,7 @@
  */
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.NetClient;
@@ -38,6 +35,7 @@ import java.util.List;
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
 class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnector<SMTPConnection> {
+
   private final NetClient netClient;
   private final MailConfig config;
   private final ConnectionPool<SMTPConnection> pool;
@@ -61,8 +59,8 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
     return pool.acquire(eventLoopContext, 0);
   }
 
-  void checkExpired(Handler<AsyncResult<List<SMTPConnection>>> handler) {
-    pool.evict(conn -> !conn.isValid(), handler);
+  Future<List<SMTPConnection>> checkExpired() {
+    return pool.evict(conn -> !conn.isValid());
   }
 
   @Override
@@ -78,8 +76,8 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
       });
   }
 
-  void close(Promise<List<Future<SMTPConnection>>> promise) {
-    pool.close(promise);
+  Future<List<Future<SMTPConnection>>> doClose() {
+    return pool.close();
   }
 
   @Override

@@ -61,17 +61,17 @@ public class SMTPConnectionPoolDummySMTPTest extends SMTPTestDummy {
 
     testContext.assertEquals(0, pool.connCount());
 
-    pool.getConnection(HOSTNAME, result -> {
+    pool.getConnection(HOSTNAME).onComplete(result -> {
       if (result.succeeded()) {
         log.debug("got 1st connection");
         testContext.assertEquals(1, pool.connCount());
         result.result().returnToPool().onComplete(v -> {
           testContext.assertEquals(1, pool.connCount());
-          pool.getConnection(HOSTNAME, result2 -> {
+          pool.getConnection(HOSTNAME).onComplete(result2 -> {
             if (result2.succeeded()) {
               log.debug("got 2nd connection");
               testContext.assertEquals(1, pool.connCount());
-              result2.result().returnToPool().onComplete(c -> pool.close(vv -> {
+              result2.result().returnToPool().onComplete(c -> pool.doClose().onComplete(vv -> {
                 testContext.assertEquals(0, pool.connCount());
                 async.complete();
               }));

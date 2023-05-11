@@ -16,8 +16,10 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.Promise;
+import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.ext.mail.LoginOption;
@@ -35,25 +37,24 @@ import java.util.List;
  */
 class SMTPAuthentication {
 
-  private final SMTPConnection connection;
-  private final MailConfig config;
-  private final Handler<Void> finishedHandler;
-  private final Handler<Throwable> errorHandler;
-
   private static final Logger log = LoggerFactory.getLogger(SMTPAuthentication.class);
+
+  private final SMTPConnection connection;
+
+  private final MailConfig config;
 
   private final AuthOperationFactory authOperationFactory;
 
-  SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, Handler<Void> finishedHandler,
-                     Handler<Throwable> errorHandler) {
+  private final Promise<Void> promise;
+
+  SMTPAuthentication(ContextInternal context, SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory) {
     this.connection = connection;
     this.config = config;
-    this.finishedHandler = finishedHandler;
-    this.errorHandler = errorHandler;
     this.authOperationFactory = authOperationFactory;
+    this.promise = context.promise();
   }
 
-  public void start() {
+  public Future<Void> start() {
     List<String> auths = intersectAllowedMethods();
     final boolean foundAllowedMethods = !auths.isEmpty();
     if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
@@ -62,14 +63,16 @@ class SMTPAuthentication {
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
         if (!foundAllowedMethods) {
-          handleError("login is required, but no allowed AUTH methods available. You may need to do STARTTLS");
+          promise.fail("login is required, but no allowed AUTH methods available. You may need to do STARTTLS");
         } else {
-          handleError("login is required, but no credentials supplied");
+          promise.fail("login is required, but no credentials supplied");
         }
       } else {
-        finished();
+        promise.complete();
       }
     }
+
+    return promise.future();
   }
 
   /**
@@ -105,7 +108,7 @@ class SMTPAuthentication {
       }
       authMethod(auths.get(i), error -> authChain(auths, i + 1, error));
     } else {
-      handleError(e);
+      promise.fail(e);
     }
   }
 
@@ -115,7 +118,7 @@ class SMTPAuthentication {
       authMethod = authOperationFactory.createAuth(config, auth);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
-      handleError(ex);
+      promise.fail(ex);
       return;
     }
     authCmdStep(authMethod, null, onError);
@@ -150,37 +153,24 @@ class SMTPAuthentication {
       onError.handle(e);
       return;
     }
-    connection.write(nextLine, blank, ar -> {
+    connection.write(nextLine, blank).onComplete(ar -> {
       if (ar.failed()) {
         onError.handle(ar.cause());
         return;
       }
-      String message2 = ar.result();
-      SMTPResponse response = new SMTPResponse(message2);
+      SMTPResponse response = ar.result();
       if (response.isStatusOk()) {
         if (response.isStatusContinue()) {
-          log.debug("Auth Continue with response: " + message2);
-          authCmdStep(authMethod, message2, onError);
+          log.debug("Auth Continue with response: " + response.getValue());
+          authCmdStep(authMethod, response.getValue(), onError);
         } else {
           authOperationFactory.setAuthMethod(authMethod.getName());
-          finished();
+          promise.complete();
         }
       } else {
         onError.handle(response.toException("AUTH " + authMethod.getName() + " failed", connection.getCapa().isCapaEnhancedStatusCodes()));
       }
     });
-  }
-
-  private void finished() {
-    finishedHandler.handle(null);
-  }
-
-  private void handleError(String message) {
-    errorHandler.handle(new NoStackTraceThrowable(message));
-  }
-
-  private void handleError(Throwable th) {
-    errorHandler.handle(th);
   }
 
 }
