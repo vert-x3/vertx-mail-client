@@ -16,7 +16,6 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
@@ -75,7 +74,7 @@ class SMTPConnectionPool {
   }
 
   private void checkExpired(long timer) {
-    getSMTPEndPoint().checkExpired()
+    getSMTPEndPoint().checkExpired2()
       .onSuccess(conns -> conns.forEach(SMTPConnection::quitCloseConnection));
     synchronized (this) {
       if (!closed) {
@@ -172,7 +171,7 @@ class SMTPConnectionPool {
         List<Future<Void>> futures = list.stream()
           .map(connFuture -> connFuture.result().close())
           .collect(Collectors.toList());
-        return CompositeFuture.all(futures);
+        return Future.all(futures);
       })
       .flatMap(f -> this.netClient.close())
       .eventually(ignored -> {

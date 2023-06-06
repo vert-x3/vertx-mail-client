@@ -59,7 +59,7 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
     return pool.acquire(eventLoopContext, 0);
   }
 
-  Future<List<SMTPConnection>> checkExpired() {
+  Future<List<SMTPConnection>> checkExpired2() {
     return pool.evict(conn -> !conn.isValid());
   }
 
