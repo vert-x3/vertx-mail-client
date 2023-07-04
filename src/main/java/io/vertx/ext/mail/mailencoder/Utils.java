@@ -68,6 +68,24 @@ public class Utils {
     }
   }
 
+  private static String encodeUnicode(char input) {
+    byte[] bs = String.valueOf(input).getBytes(StandardCharsets.UTF_8);
+    StringBuilder sb = new StringBuilder();
+    for (byte b : bs) {
+      char ch = (char) b;
+      if (!mustEncode(ch) && ch != '_' && ch != '?') {
+        if (ch == ' ') {
+          sb.append("_");
+        } else {
+          sb.append(ch);
+        }
+      } else {
+        sb.append(encodeChar(ch));
+      }
+    }
+    return sb.toString();
+  }
+
   /*
    * check if a single char must be encoded as qp, this assumes we
    * already have decided that we have to encode the text
@@ -129,24 +147,19 @@ public class Utils {
    * index is the offset of the line that is already used (i.e. the length of the header including ": ")
    */
   static String encodeHeader(String subject, int index) {
-    if (mustEncode(subject)) {
-      byte[] utf8 = subject.getBytes(StandardCharsets.UTF_8);
+    if (!mustEncode(subject)) {
+      return subject;
+    } else {
       StringBuilder sb = new StringBuilder();
       sb.append("=?UTF-8?Q?");
       int column = 10 + index;
-      for (byte b : utf8) {
-        char ch = (char) b;
+      char[] subjectChars = subject.toCharArray();
+
+      for (char ch : subjectChars) {
         if (ch == '\n') {
           column = 1;
         } else {
-          String encChar;
-          if (mustEncode(ch) || ch == '_' || ch == '?') {
-            encChar = encodeChar(ch);
-          } else if (ch == ' ') {
-            encChar = "_";
-          } else {
-            encChar = String.valueOf(ch);
-          }
+          String encChar = encodeUnicode(ch);
           int newColumn = column + encChar.length();
           if (newColumn <= 74) {
             sb.append(encChar);
@@ -159,8 +172,6 @@ public class Utils {
       }
       sb.append("?=");
       return sb.toString();
-    } else {
-      return subject;
     }
   }
 
@@ -203,7 +214,11 @@ public class Utils {
       if (!name.isEmpty()) {
         if (mustEncode(name)) {
           boolean hadSpace = false;
-          if (index + 12 >= 71) {
+          // 12 is the size of the string " (=?UTF-8?Q?".
+          // 71 is 76 - 5, and 5 is the size of "/n " plus the minimal size of the encode char (3 bytes)
+          // However, the encoded char may be larger, for example "=AA=BB=CC",
+          // and needs to fold to the next line as a whole, and in this case it will leave a " (=?UTF-8?Q??="
+          if (encodeHeader(name, index + 2).contains("=?UTF-8?Q??=") || (index + 12 >= 71)) {
             sb.append("\n ");
             index = 1;
             hadSpace = true;
