@@ -20,6 +20,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import io.vertx.core.MultiMap;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.logging.Logger;
@@ -206,10 +208,10 @@ public class MailEncoderTest {
     String mime = new MailEncoder(message, HOSTNAME).encode();
     assertThat(mime, containsString("To: user0@example.com (=?UTF-8?Q?=C3=84a?=),user1@example.com\n"
       + " (=?UTF-8?Q?=C3=84a?=),user2@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user3@example.com (=?UTF-8?Q?=C3=84a?=),user4@example.com (=?UTF-8?Q?=C3?=\n"
-      + " =?UTF-8?Q?=84a?=),user5@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user6@example.com (=?UTF-8?Q?=C3=84a?=),user7@example.com (=?UTF-8?Q?=C3?=\n"
-      + " =?UTF-8?Q?=84a?=),user8@example.com (=?UTF-8?Q?=C3=84a?=),\n"
+      + " user3@example.com (=?UTF-8?Q?=C3=84a?=),user4@example.com\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user5@example.com (=?UTF-8?Q?=C3=84a?=),\n"
+      + " user6@example.com (=?UTF-8?Q?=C3=84a?=),user7@example.com\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user8@example.com (=?UTF-8?Q?=C3=84a?=),\n"
       + " user9@example.com (=?UTF-8?Q?=C3=84a?=),user10@example.com\n"
       + " (=?UTF-8?Q?=C3=84a?=),user11@example.com (=?UTF-8?Q?=C3=84a?=),\n"
       + " user12@example.com (=?UTF-8?Q?=C3=84a?=),user13@example.com\n"
@@ -229,6 +231,45 @@ public class MailEncoderTest {
       mime,
       containsString("To: user@example.com\n"
         + " (this email has an insanely long username just to check that the text is correctly wrapped into multiple lines)\n"));
+  }
+
+  @Test
+  public void testToLongUnicode() {
+    MailMessage message = new MailMessage();
+
+    String[] expected1 = {
+      "To: 0123456789012345678901234567890123456789@me.com (=?UTF-8?Q?=E6=88=91a?=)\n",
+      "To: 0123456789012345678901234567890123456789x@me.com (=?UTF-8?Q?=E6=88=91a?=)\n",
+      "To: 0123456789012345678901234567890123456789xx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
+      "To: 0123456789012345678901234567890123456789xxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
+      "To: 0123456789012345678901234567890123456789xxxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)"
+    };
+    StringBuilder emailHeader = new StringBuilder("0123456789012345678901234567890123456789");
+    for (int i = 0; i < 5; i++) {
+      message.setTo(emailHeader + "@me.com (我a)");
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      assertThat(mime, containsString(expected1[i]));
+      int foldedAt = mime.substring(mime.indexOf("To:")).indexOf('\n') - 1;
+      assertTrue(foldedAt <= 76);
+      emailHeader.append("x");
+    }
+
+    String[] expected2 = {
+      "To: 01234567890123456789012345678901234567890123456@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456x@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xx@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xxx@me.com\n (=?UTF-8?Q?a=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xxxx@me.com\n (=?UTF-8?Q?a=E6=88=91?=)"
+    };
+    emailHeader = new StringBuilder("01234567890123456789012345678901234567890123456");
+    for (int i = 0; i < 5; i++) {
+      message.setTo(emailHeader + "@me.com (a我)");
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      assertThat(mime, containsString(expected2[i]));
+      int foldedAt = mime.substring(mime.indexOf("To:")).indexOf('\n');
+      assertTrue(foldedAt <= 76);
+      emailHeader.append("x");
+    }
   }
 
   @Test
