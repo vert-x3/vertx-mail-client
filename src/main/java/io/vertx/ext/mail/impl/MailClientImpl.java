@@ -112,20 +112,21 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  private Future<Void> getHostname() {
+  private Future<?> getHostname() {
     if (hostname != null) {
       return Future.succeededFuture();
     }
 
-    return vertx.executeBlocking(promise -> {
-      String hname;
+    return vertx.executeBlocking(() -> {
       if (config.getOwnHostname() != null) {
-        hname = config.getOwnHostname();
+        return config.getOwnHostname();
       } else {
-        hname = Utils.getHostname();
+        return Utils.getHostname();
       }
-      hostname = hname;
-      promise.complete();
+    }).andThen(res -> {
+      if (res.succeeded()) {
+        hostname = res.result();
+      }
     });
   }
 
