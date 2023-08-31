@@ -174,7 +174,7 @@ class SMTPConnectionPool {
         return Future.all(futures);
       })
       .flatMap(f -> this.netClient.close())
-      .eventually(ignored -> {
+      .eventually(() -> {
         log.debug("Close net client");
         return Future.succeededFuture();
       });
