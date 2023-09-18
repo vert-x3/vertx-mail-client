@@ -20,7 +20,6 @@ import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.impl.ContextInternal;
-import io.vertx.core.impl.EventLoopContext;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.impl.pool.ConnectResult;
 import io.vertx.core.net.impl.pool.Endpoint;
@@ -52,9 +51,9 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
 
   @Override
   public void requestConnection(ContextInternal ctx, long timeout, Handler<AsyncResult<Lease<SMTPConnection>>> handler) {
-    EventLoopContext eventLoopContext;
-    if (ctx instanceof EventLoopContext) {
-      eventLoopContext = (EventLoopContext)ctx;
+    ContextInternal eventLoopContext;
+    if (ctx.isEventLoopContext()) {
+      eventLoopContext = ctx;
     } else {
       eventLoopContext = ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
     }
@@ -66,7 +65,7 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
   }
 
   @Override
-  public void connect(EventLoopContext context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<SMTPConnection>>> handler) {
+  public void connect(ContextInternal context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<SMTPConnection>>> handler) {
     netClient.connect(config.getPort(), config.getHostname()).onComplete(ar -> {
       if (ar.succeeded()) {
         incRefCount();
