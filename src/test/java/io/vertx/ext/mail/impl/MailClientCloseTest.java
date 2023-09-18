@@ -16,7 +16,8 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.ext.mail.LoginOption;
+import io.vertx.core.Future;
+import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.SMTPTestDummy;
@@ -61,14 +62,13 @@ public class MailClientCloseTest extends SMTPTestDummy {
     Async async = testContext.async();
     mailClient.sendMail(exampleMessage()).onComplete(testContext.asyncAssertFailure(t1 -> vertx.setTimer(100, r -> {
       mailClient.close().onComplete(testContext.asyncAssertSuccess());
-      try {
-        mailClient.getConnectionPool().getNetClient()
-          .connect(config.getPort(), config.getHostname());
-        fail("SHOULD NOT HERE !");
-      } catch (IllegalStateException e) {
-        assertTrue(e.getMessage().contains("Client is closed"));
+      Future<NetSocket> fut = mailClient.getConnectionPool().getNetClient()
+        .connect(config.getPort(), config.getHostname());
+      fut.onComplete(testContext.asyncAssertFailure(err -> {
+        testContext.assertEquals(IllegalStateException.class, err.getClass());
+        testContext.assertTrue(err.getMessage().contains("Client is closed"));
         async.complete();
-      }
+      }));
     })));
   }
 
