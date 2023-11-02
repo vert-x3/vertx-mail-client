@@ -103,7 +103,7 @@ class SMTPConnectionPool {
       }
     }
 
-    return getSMTPEndPoint().getConnection(contextInternal, config.getConnectTimeout())
+    return getSMTPEndPoint().requestConnection(contextInternal, config.getConnectTimeout())
       .map(l -> l.get().setLease(l))
       .flatMap(conn -> {
         final Future<SMTPConnection> future;

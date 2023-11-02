@@ -18,8 +18,8 @@ package io.vertx.ext.mail.impl;
 import io.vertx.core.Future;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.net.NetClient;
+import io.vertx.core.net.impl.endpoint.Endpoint;
 import io.vertx.core.net.impl.pool.ConnectResult;
-import io.vertx.core.net.impl.pool.Endpoint;
 import io.vertx.core.net.impl.pool.Lease;
 import io.vertx.core.net.impl.pool.ConnectionPool;
 import io.vertx.core.net.impl.pool.PoolConnector;
@@ -33,7 +33,7 @@ import java.util.List;
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
-class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnector<SMTPConnection> {
+class SMTPEndPoint extends Endpoint implements PoolConnector<SMTPConnection> {
 
   private final NetClient netClient;
   private final MailConfig config;
@@ -47,7 +47,6 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
     this.pool = ConnectionPool.pool(this, new int[] {maxSockets}, -1);
   }
 
-  @Override
   public Future<Lease<SMTPConnection>> requestConnection(ContextInternal ctx, long timeout) {
     ContextInternal eventLoopContext;
     if (ctx.isEventLoopContext()) {
