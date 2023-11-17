@@ -79,7 +79,7 @@ public class TestSmtpServer {
       keystore = "src/test/resources/certs/server2.jks";
     }
     JksOptions jksOptions = new JksOptions().setPath(keystore).setPassword("password");
-    nsOptions.setKeyStoreOptions(jksOptions);
+    nsOptions.setKeyCertOptions(jksOptions);
     if (ssl) {
       nsOptions.setSsl(true);
     }
