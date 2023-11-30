@@ -17,6 +17,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.codegen.annotations.DataObject;
+import io.vertx.codegen.json.annotations.JsonGen;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
@@ -32,7 +33,8 @@ import java.util.List;
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
-@DataObject(generateConverter = true)
+@DataObject
+@JsonGen(publicConverter = false)
 public class DKIMSignOptions {
 
   private static final List<String> DEFAULT_HEADERS = new ArrayList<>();
