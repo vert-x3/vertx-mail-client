@@ -60,6 +60,8 @@ class SMTPConnectionPool {
       (config.isSsl() || config.getStarttls() != StartTLSOptions.DISABLED)) {
       // we can use HTTPS verification, which matches the requirements for SMTPS
       config.setHostnameVerificationAlgorithm("HTTPS");
+    } else {
+      config.setHostnameVerificationAlgorithm("");
     }
     netClient = vertx.createNetClient(config);
     this.prng = new PRNG(vertx);
