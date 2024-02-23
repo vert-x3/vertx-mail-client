@@ -16,15 +16,16 @@
 
 package io.vertx.ext.mail;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.security.Security;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import javax.mail.internet.MimeMessage;
 
-import org.subethamail.smtp.AuthenticationHandler;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.RejectException;
+import org.subethamail.smtp.*;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
@@ -78,6 +79,49 @@ public class SMTPTestWiser extends SMTPTestBase {
     });
 
     Security.setProperty("ssl.SocketFactory.provider", factory);
+
+    MessageHandlerFactory originalFactory = wiser.getServer().getMessageHandlerFactory();
+    wiser.getServer().setMessageHandlerFactory(ctx -> {
+      final MessageHandler originalHandler = originalFactory.create(ctx);
+      return new MessageHandler() {
+        @Override
+        public void from(String from) throws RejectException {
+          originalHandler.from(from);
+        }
+
+        @Override
+        public void recipient(String recipient) throws RejectException {
+          originalHandler.recipient(recipient);
+        }
+
+        @Override
+        public void data(InputStream data) throws RejectException, TooMuchDataException, IOException {
+          String dataString = TestUtils.inputStreamToString(data);
+
+          List<Integer> bareLfIndexes = new ArrayList<>();
+          for(int i = 0; i< dataString.length(); i++){
+            if(dataString.charAt(i) == '\n'){
+              if(i == 0 || dataString.charAt(i-1) != '\r'){
+                bareLfIndexes.add(i);
+              }
+            }
+          }
+
+          if (!bareLfIndexes.isEmpty()) {
+            throw new RejectException(String.format("bare <LF> received after DATA %s", bareLfIndexes));
+          }
+
+          InputStream stream = new ByteArrayInputStream(dataString.getBytes(StandardCharsets.UTF_8));
+          originalHandler.data(stream);
+        }
+
+        @Override
+        public void done() {
+          originalHandler.done();
+        }
+      };
+    });
+
     wiser.getServer().setEnableTLS(true);
 
     wiser.start();
