@@ -47,7 +47,11 @@ public class SMTPTestWiser extends SMTPTestBase {
 
   protected Wiser wiser;
 
+
   protected void startSMTP(String factory) {
+    startSMTP(factory, false);
+  }
+  protected void startSMTP(String factory, boolean bareLf) {
     wiser = new Wiser();
 
     wiser.setPort(1587);
@@ -80,47 +84,49 @@ public class SMTPTestWiser extends SMTPTestBase {
 
     Security.setProperty("ssl.SocketFactory.provider", factory);
 
-    MessageHandlerFactory originalFactory = wiser.getServer().getMessageHandlerFactory();
-    wiser.getServer().setMessageHandlerFactory(ctx -> {
-      final MessageHandler originalHandler = originalFactory.create(ctx);
-      return new MessageHandler() {
-        @Override
-        public void from(String from) throws RejectException {
-          originalHandler.from(from);
-        }
+    if(bareLf) {
+      MessageHandlerFactory originalFactory = wiser.getServer().getMessageHandlerFactory();
+      wiser.getServer().setMessageHandlerFactory(ctx -> {
+        final MessageHandler originalHandler = originalFactory.create(ctx);
+        return new MessageHandler() {
+          @Override
+          public void from(String from) throws RejectException {
+            originalHandler.from(from);
+          }
 
-        @Override
-        public void recipient(String recipient) throws RejectException {
-          originalHandler.recipient(recipient);
-        }
+          @Override
+          public void recipient(String recipient) throws RejectException {
+            originalHandler.recipient(recipient);
+          }
 
-        @Override
-        public void data(InputStream data) throws RejectException, TooMuchDataException, IOException {
-          String dataString = TestUtils.inputStreamToString(data);
+          @Override
+          public void data(InputStream data) throws RejectException, TooMuchDataException, IOException {
+            String dataString = TestUtils.inputStreamToString(data);
 
-          List<Integer> bareLfIndexes = new ArrayList<>();
-          for(int i = 0; i< dataString.length(); i++){
-            if(dataString.charAt(i) == '\n'){
-              if(i == 0 || dataString.charAt(i-1) != '\r'){
-                bareLfIndexes.add(i);
+            List<Integer> bareLfIndexes = new ArrayList<>();
+            for (int i = 0; i < dataString.length(); i++) {
+              if (dataString.charAt(i) == '\n') {
+                if (i == 0 || dataString.charAt(i - 1) != '\r') {
+                  bareLfIndexes.add(i);
+                }
               }
             }
+
+            if (!bareLfIndexes.isEmpty()) {
+              throw new RejectException(String.format("bare <LF> received after DATA %s", bareLfIndexes));
+            }
+
+            InputStream stream = new ByteArrayInputStream(dataString.getBytes(StandardCharsets.UTF_8));
+            originalHandler.data(stream);
           }
 
-          if (!bareLfIndexes.isEmpty()) {
-            throw new RejectException(String.format("bare <LF> received after DATA %s", bareLfIndexes));
+          @Override
+          public void done() {
+            originalHandler.done();
           }
-
-          InputStream stream = new ByteArrayInputStream(dataString.getBytes(StandardCharsets.UTF_8));
-          originalHandler.data(stream);
-        }
-
-        @Override
-        public void done() {
-          originalHandler.done();
-        }
-      };
-    });
+        };
+      });
+    }
 
     wiser.getServer().setEnableTLS(true);
 
