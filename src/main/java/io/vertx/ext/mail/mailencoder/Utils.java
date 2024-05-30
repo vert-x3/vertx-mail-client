@@ -161,11 +161,29 @@ public class Utils {
         } else {
           String encChar = encodeUnicode(ch);
           int newColumn = column + encChar.length();
+          // https://datatracker.ietf.org/doc/html/rfc2047#section-2
+          // encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
+          //
+          // An 'encoded-word' may not be more than 75 characters long, including
+          //   'charset', 'encoding', 'encoded-text', and delimiters.  If it is
+          //   desirable to encode more text than will fit in an 'encoded-word' of
+          //   75 characters, multiple 'encoded-word's (separated by CRLF SPACE) may
+          //   be used.
+          // [...]
+          // While there is no limit to the length of a multiple-line header
+          //   field, each line of a header field that contains one or more
+          //   'encoded-word's is limited to 76 characters.
+
+          // https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+          // There are two limits that this specification places on the number of
+          //   characters in a line.  Each line of characters MUST be no more than
+          //   998 characters, and SHOULD be no more than 78 characters, excluding
+          //   the CRLF.
           if (newColumn <= 74) {
             sb.append(encChar);
             column = newColumn;
           } else {
-            sb.append("?=\n =?UTF-8?Q?").append(encChar);
+            sb.append("?=\r\n =?UTF-8?Q?").append(encChar);
             column = 11 + encChar.length();
           }
         }
@@ -205,8 +223,13 @@ public class Utils {
         email = adr.getEmail();
         name = adr.getName();
       }
+      // https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+      // There are two limits that this specification places on the number of
+      //   characters in a line.  Each line of characters MUST be no more than
+      //   998 characters, and SHOULD be no more than 78 characters, excluding
+      //   the CRLF.
       if (index + email.length() >= 76) {
-        sb.append("\n ");
+        sb.append("\r\n ");
         index = 1;
       }
       sb.append(email);
@@ -223,7 +246,7 @@ public class Utils {
             fold = index + 12 + 1 + 2 >= 76;
           }
           if (fold) {
-            sb.append("\n ");
+            sb.append("\r\n ");
             index = 1;
             hadSpace = true;
           }
@@ -245,7 +268,7 @@ public class Utils {
         } else {
           boolean hadSpace = false;
           if (index + name.length() + 3 >= 76) {
-            sb.append("\n ");
+            sb.append("\r\n ");
             index = 1;
             hadSpace = true;
           }
