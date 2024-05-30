@@ -196,6 +196,32 @@ public class SMTPSendMailTest extends SMTPTestWiser {
   }
 
   @Test
+  public void testLongFromName(TestContext testContext) {
+    String domain = "example.com";
+    final String subject = "testLongRecepientList";
+    final String text = "Hello testLongRecepientList!";
+    final String toName = strRepeat("U", 1024);
+    final String from = "\""+toName+"\" <user@"+domain+">";
+
+    this.testContext = testContext;
+    MailClient mailClient = mailClientLogin();
+
+    MailMessage message = exampleMessage()
+      .setSubject(subject)
+      .setText(text)
+      .setFrom(from);
+
+    testSuccess(mailClient, message, () -> {
+      final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
+      String rawSubject = mimeMessage.getHeader("Subject", null);
+      assertEquals("raw Subject is not Wrapped", subject, rawSubject);
+
+      String rawFrom = mimeMessage.getHeader("From", null);
+      assertTrue("raw To contains \\r\\n within the AutoWrapped text", rawFrom.contains("\r\n") && !rawFrom.endsWith("\r\n"));
+    });
+  }
+
+  @Test
   public void testUtfLongMsg(TestContext testContext) {
     int recipients = 1;
     String domain = "example.com";
