@@ -44,7 +44,7 @@ public class SMTPTestBareLfMessageHandlerFactory implements MessageHandlerFactor
             if (i == 0 || dataString.charAt(i - 1) != '\r') {
               log.warn(
                 String.format("bare <LF> detected near \"%s\"",
-                  dataString.substring(Math.max(0, i-10), i+10)
+                  dataString.substring(Math.max(0, i-10), Math.min(dataString.length(), i+10))
                     .replaceAll("\n", "\\\\n")
                     .replaceAll("\r", "\\\\r"))
               );

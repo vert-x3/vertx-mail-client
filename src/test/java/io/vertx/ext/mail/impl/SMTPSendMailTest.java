@@ -7,6 +7,7 @@ import io.vertx.ext.mail.*;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.hamcrest.core.StringStartsWith;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -14,6 +15,8 @@ import javax.mail.Address;
 import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.hamcrest.CoreMatchers.startsWith;
 
 @RunWith(VertxUnitRunner.class)
 public class SMTPSendMailTest extends SMTPTestWiser {
@@ -81,6 +84,60 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .flatMap(result -> {
           log.info("DATA end Response: " + result.getValue());
           assertFalse(result.isStatusOk());
+          assertThat(result.getValue(), startsWith("554 bare <LF> received after DATA"));
+          return Future.succeededFuture(result);
+        })
+        .andThen((ignore) -> async.complete());
+    });
+  }
+
+  @Test
+  public void testBareLfDetectionEdgeCases(TestContext testContext) {
+    this.testContext = testContext;
+
+    Async async = testContext.async();
+
+    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool.getConnection("hostname").onComplete(connectionResult -> {
+      SMTPConnection smtpConnection = connectionResult.result();
+
+      //smtpConnection.setExceptionHandler(log::info);
+      smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
+        .flatMap(result -> {
+          log.info("Auth Response: " + result.getValue());
+          assertTrue(result.isStatusOk());
+          return Future.succeededFuture(result);
+        })
+        .flatMap(ignore -> smtpConnection.write("MAIL FROM: <from@example.com>"))
+        .flatMap(result -> {
+          log.info("MAIL FROM Response: " + result.getValue());
+          assertTrue(result.isStatusOk());
+          return Future.succeededFuture(result);
+        })
+        .flatMap(ignore -> smtpConnection.write("RCPT TO: <user@xample.com>"))
+        .flatMap(result -> {
+          log.info("RCPT TO Response: " + result.getValue());
+          assertTrue(result.isStatusOk());
+          return Future.succeededFuture(result);
+        })
+        .flatMap((ignore) -> smtpConnection.write("DATA"))
+        .flatMap(result -> {
+          log.info("DATA Response: " + result.getValue());
+          assertTrue(result.isStatusContinue());
+          return Future.succeededFuture(result);
+        })
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("MIME-Version: 1.0\r\nMessage-ID: <msg.0815@bareLF>", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("Subject: BareLFDetection", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("From: from@example.com\r\nTo: user@example.com", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("Content-Type: text/plain; charset=utf-8\r\nContent-Transfer-Encoding: quoted-printable", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("will send some bare `\\n`", true))
+        .flatMap((ignore) -> smtpConnection.writeLineWithDrain("This should be invalid\n", true))
+        .flatMap((ignore) -> smtpConnection.write("."))
+        .flatMap(result -> {
+          log.info("DATA end Response: " + result.getValue());
+          assertFalse(result.isStatusOk());
+          assertThat(result.getValue(), startsWith("554 bare <LF> received after DATA"));
           return Future.succeededFuture(result);
         })
         .andThen((ignore) -> async.complete());
