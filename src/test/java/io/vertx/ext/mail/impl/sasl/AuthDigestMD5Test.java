@@ -17,7 +17,7 @@
 package io.vertx.ext.mail.impl.sasl;
 
 import io.vertx.core.Vertx;
-import io.vertx.ext.auth.PRNG;
+import io.vertx.ext.auth.prng.PRNG;
 import org.junit.Test;
 
 import java.util.*;

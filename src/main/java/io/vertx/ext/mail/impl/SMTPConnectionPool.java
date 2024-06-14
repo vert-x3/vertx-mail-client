@@ -24,7 +24,7 @@ import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
-import io.vertx.ext.auth.PRNG;
+import io.vertx.ext.auth.prng.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;

@@ -16,7 +16,7 @@
 
 package io.vertx.ext.mail.impl.sasl;
 
-import io.vertx.ext.auth.PRNG;
+import io.vertx.ext.auth.prng.PRNG;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -54,7 +54,7 @@ class AuthDigest extends AuthBaseClass {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see io.vertx.ext.mail.impl.AuthBaseClass#nextStep(java.lang.String)
    */
   @Override

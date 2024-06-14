@@ -30,7 +30,7 @@ public enum DKIMSignAlgorithm {
   RSA_SHA256("sha256", "rsa", "SHA-256"); // rsa-sha256
 
   /**
-   * The hash algorithm id used by {@link io.vertx.ext.auth.HashingAlgorithm} to distinguish from others.
+   * The hash algorithm id used by {@link io.vertx.ext.auth.hashing.HashingAlgorithm} to distinguish from others.
    */
   private final String hashAlgoId;
 
@@ -71,7 +71,7 @@ public enum DKIMSignAlgorithm {
   }
 
   /**
-   * Gets the Hash Algorithm ID that can be identified by the {@link io.vertx.ext.auth.HashingStrategy}.
+   * Gets the Hash Algorithm ID that can be identified by the {@link io.vertx.ext.auth.hashing.HashingStrategy}.
    *
    * @return the id of the Hash Algorithm.
    */
