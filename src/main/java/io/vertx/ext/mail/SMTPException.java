@@ -16,7 +16,7 @@
 
 package io.vertx.ext.mail;
 
-import io.vertx.core.impl.NoStackTraceThrowable;
+import io.vertx.core.VertxException;
 
 import java.util.List;
 import java.util.Objects;
@@ -26,7 +26,7 @@ import java.util.Objects;
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
-public class SMTPException extends NoStackTraceThrowable {
+public class SMTPException extends VertxException {
 
   /**
    * The Enhanced Status codes.
@@ -130,7 +130,7 @@ public class SMTPException extends NoStackTraceThrowable {
    * @param replyMessages the SMTP reply messages
    */
   public SMTPException(String message, int replyCode, List<String> replyMessages, boolean supportEnhancementStatusCode) {
-    super(message + ": " + String.join("\n", Objects.requireNonNull(replyMessages)));
+    super(message + ": " + String.join("\n", Objects.requireNonNull(replyMessages)), true);
     this.replyCode = replyCode;
     this.replyMessages = replyMessages;
     if (supportEnhancementStatusCode) {

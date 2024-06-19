@@ -18,7 +18,7 @@ package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 
 /**
  * Handle the reset command, this is mostly used to check if the connection is

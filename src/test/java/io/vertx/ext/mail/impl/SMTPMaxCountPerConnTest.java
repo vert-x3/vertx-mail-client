@@ -16,7 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.SMTPTestWiser;

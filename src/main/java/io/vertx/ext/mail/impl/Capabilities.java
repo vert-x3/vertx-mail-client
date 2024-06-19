@@ -16,8 +16,8 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;

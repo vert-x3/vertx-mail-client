@@ -17,8 +17,8 @@
 package io.vertx.ext.mail.impl.sasl;
 
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 
 /**
  * @author <a href="mailto:plopes@redhat.com">Paulo Lopes</a>

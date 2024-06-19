@@ -1,7 +1,7 @@
 package io.vertx.ext.mail;
 
-import io.vertx.core.impl.logging.Logger;
-import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.core.internal.logging.Logger;
+import io.vertx.core.internal.logging.LoggerFactory;
 import org.subethamail.smtp.*;
 
 import java.io.ByteArrayInputStream;

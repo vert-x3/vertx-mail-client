@@ -16,13 +16,13 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.Future;
-import io.vertx.core.impl.ContextInternal;
+import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.impl.endpoint.Endpoint;
-import io.vertx.core.net.impl.pool.ConnectResult;
-import io.vertx.core.net.impl.pool.Lease;
-import io.vertx.core.net.impl.pool.ConnectionPool;
-import io.vertx.core.net.impl.pool.PoolConnector;
+import io.vertx.core.internal.pool.ConnectResult;
+import io.vertx.core.internal.pool.Lease;
+import io.vertx.core.internal.pool.ConnectionPool;
+import io.vertx.core.internal.pool.PoolConnector;
 import io.vertx.ext.mail.MailConfig;
 
 import java.util.List;
