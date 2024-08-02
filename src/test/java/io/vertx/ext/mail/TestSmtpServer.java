@@ -17,6 +17,7 @@
 package io.vertx.ext.mail;
 
 import io.vertx.core.Vertx;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.net.JksOptions;
@@ -102,7 +103,7 @@ public class TestSmtpServer {
         final AtomicInteger inputLineIndex = new AtomicInteger(0);
         socket.handler(RecordParser.newDelimited("\r\n", buffer -> {
           final String inputLine = buffer.toString();
-          log.debug("C:" + inputLine);
+          System.out.println("----> C:" + inputLine);
           if (skipUntilDot.get() == 1) {
             if (inputLine.equals(".")) {
               skipUntilDot.set(0);
@@ -143,9 +144,10 @@ public class TestSmtpServer {
               skipUntilDot.set(1);
             }
             if (!holdFire.get() && inputLine.toUpperCase(Locale.ENGLISH).equals("STARTTLS")) {
-              writeResponses(socket, dialogue[lines.getAndIncrement()]);
+              Buffer responses = writeResponsesToBuffer(dialogue[lines.getAndIncrement()]);
               //TODO loop
-              socket.upgradeToSsl().onComplete(v -> {
+              log.debug("starting TLS upgrade");
+              socket.upgradeToSsl(responses).onComplete(v -> {
                 log.debug("tls upgrade finished");
               });
             } else if (!holdFire.get() && lines.get() < dialogue.length) {
@@ -182,6 +184,15 @@ public class TestSmtpServer {
       log.debug("S:" + line);
       socket.write(line + "\r\n");
     }
+  }
+
+  private Buffer writeResponsesToBuffer(String[] responses) {
+    Buffer buffer = Buffer.buffer();
+    for (String line: responses) {
+      log.debug("S:" + line);
+      buffer.appendString(line + "\r\n");
+    }
+    return buffer;
   }
 
   public TestSmtpServer setDialogue(String... dialogue) {
