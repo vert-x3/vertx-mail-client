@@ -29,12 +29,12 @@ import java.util.Objects;
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
-class SMTPResponse {
+public class SMTPResponse {
 
   private final int replyCode;
   private final String message;
 
-  SMTPResponse(String message) {
+  public SMTPResponse(String message) {
     Objects.requireNonNull(message, "SMTP response should not be null.");
     this.replyCode = getStatusCode(message);
     this.message = message;
@@ -54,15 +54,15 @@ class SMTPResponse {
     }
   }
 
-  String getValue() {
+  public String getValue() {
     return message;
   }
 
-  boolean isStatusOk() {
+  public boolean isStatusOk() {
     return replyCode >= 200 && replyCode < 400;
   }
 
-  boolean isStatusContinue() {
+  public boolean isStatusContinue() {
     return replyCode >= 300 && replyCode < 400;
   }
 

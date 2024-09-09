@@ -29,7 +29,7 @@ import java.util.Map;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-class AuthDigest extends AuthBaseClass {
+public class AuthDigest extends AuthBaseClass {
 
   private static final Map<String, String> NAME_MD_MAP = new HashMap<String, String>() {{
     put("DIGEST-MD5", "MD5");
@@ -41,7 +41,7 @@ class AuthDigest extends AuthBaseClass {
 
   private String serverResponse;
 
-  protected AuthDigest(String name, PRNG random, String username, String password) {
+  public AuthDigest(String name, PRNG random, String username, String password) {
     super(name, username, password);
     counter = 0;
     this.random = random;
@@ -215,7 +215,7 @@ class AuthDigest extends AuthBaseClass {
    * @param data
    * @return
    */
-  static Map<String, String> parseToMap(String data) {
+  public static Map<String, String> parseToMap(String data) {
     List<String> fields = new ArrayList<>();
 
     boolean inQuote = false;

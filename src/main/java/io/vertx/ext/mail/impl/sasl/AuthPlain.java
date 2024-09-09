@@ -19,7 +19,7 @@ package io.vertx.ext.mail.impl.sasl;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-class AuthPlain extends AuthBaseClass {
+public class AuthPlain extends AuthBaseClass {
 
   private boolean first;
 
@@ -30,7 +30,7 @@ class AuthPlain extends AuthBaseClass {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see io.vertx.ext.mail.impl.AuthBaseClass#nextStep(java.lang.String)
    */
   @Override

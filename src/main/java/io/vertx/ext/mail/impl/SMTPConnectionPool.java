@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-class SMTPConnectionPool {
+public class SMTPConnectionPool {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnectionPool.class);
 
@@ -51,7 +51,7 @@ class SMTPConnectionPool {
   private final AtomicReference<SMTPEndPoint> endPoint = new AtomicReference<>();
   private long timerID = -1;
 
-  SMTPConnectionPool(Vertx vertx, MailConfig config) {
+  public SMTPConnectionPool(Vertx vertx, MailConfig config) {
     this.vertx = vertx;
     this.config = config;
     // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
@@ -85,11 +85,11 @@ class SMTPConnectionPool {
     }
   }
 
-  AuthOperationFactory getAuthOperationFactory() {
+  public AuthOperationFactory getAuthOperationFactory() {
     return authOperationFactory;
   }
 
-  Future<SMTPConnection> getConnection(String hostname) {
+  public Future<SMTPConnection> getConnection(String hostname) {
     return getConnection(hostname, vertx.getOrCreateContext());
   }
 
@@ -155,7 +155,7 @@ class SMTPConnectionPool {
     });
   }
 
-  Future<Void> doClose() {
+  public Future<Void> doClose() {
     log.debug("trying to close the connection pool");
     synchronized (this) {
       if (closed) {
@@ -182,11 +182,11 @@ class SMTPConnectionPool {
       });
   }
 
-  int connCount() {
+  public int connCount() {
     return getSMTPEndPoint().size();
   }
 
-  NetClient getNetClient() {
+  public NetClient netClient() {
     return this.netClient;
   }
 

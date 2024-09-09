@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class MultilineParser implements Handler<Buffer> {
+public class MultilineParser implements Handler<Buffer> {
   private static final Pattern STATUS_LINE_CONTINUE = Pattern.compile("^\\d{3}-.*");
   private static final Logger log = LoggerFactory.getLogger(MultilineParser.class);
   private boolean initialized = false;
@@ -90,7 +90,7 @@ class MultilineParser implements Handler<Buffer> {
     rp = RecordParser.newDelimited("\n", mlp);
   }
 
-  boolean isFinalLine(final Buffer buffer) {
+  public boolean isFinalLine(final Buffer buffer) {
     String line = buffer.toString();
     if (line.contains("\n")) {
       String[] lines = line.split("\n");
@@ -104,7 +104,7 @@ class MultilineParser implements Handler<Buffer> {
     rp.handle(event);
   }
 
-  MultilineParser setExpected(int expected) {
+  public MultilineParser setExpected(int expected) {
     this.expected = expected;
     return this;
   }

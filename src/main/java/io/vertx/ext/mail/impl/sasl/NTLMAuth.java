@@ -19,7 +19,7 @@ package io.vertx.ext.mail.impl.sasl;
 /**
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class NTLMAuth extends AuthBaseClass {
+public class NTLMAuth extends AuthBaseClass {
 
     private final NTLMEngineImpl ntlmEngine;
     private boolean firstStep;
@@ -27,7 +27,7 @@ class NTLMAuth extends AuthBaseClass {
     private final String domain;
     private final String workstation;
 
-    NTLMAuth(String username, String password, String domain, String workstation) {
+    public NTLMAuth(String username, String password, String domain, String workstation) {
         super("NTLM", username, password);
         this.ntlmEngine = new NTLMEngineImpl();
         firstStep = true;
@@ -59,11 +59,11 @@ class NTLMAuth extends AuthBaseClass {
         return true;
     }
 
-    String getDomain() {
+    public String domain() {
         return this.domain;
     }
 
-    String getWorkstation() {
+    public String workstation() {
         return workstation;
     }
 }

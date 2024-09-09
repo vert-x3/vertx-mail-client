@@ -41,7 +41,7 @@ import java.util.regex.Pattern;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  * @author <a href="mailto:aoingl@gmail.com">Lin Gao</a>
  */
-class SMTPConnection {
+public class SMTPConnection {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPConnection.class);
   private static final Pattern linePattern = Pattern.compile("\r\n");
@@ -194,7 +194,7 @@ class SMTPConnection {
     commandReplyHandler = null;
   }
 
-  Future<Void> returnToPool() {
+  public Future<Void> returnToPool() {
     log.trace("return to pool");
     setNoUse();
     Promise<Void> promise = context.promise();
@@ -326,7 +326,7 @@ class SMTPConnection {
   /**
    * write command without log masking
    */
-  Future<SMTPResponse> write(String str) {
+  public Future<SMTPResponse> write(String str) {
     return doWrite(str, -1).map(SMTPResponse::new);
   }
 
@@ -371,7 +371,7 @@ class SMTPConnection {
   /**
    * write single line not expecting a reply, using drain handler
    */
-  Future<Void> writeLineWithDrain(String str, boolean mayLog) {
+  public Future<Void> writeLineWithDrain(String str, boolean mayLog) {
     if (mayLog) {
       log.debug(str);
     }
@@ -405,7 +405,7 @@ class SMTPConnection {
   /**
    * check if a connection is already closed (this is mostly for unit tests)
    */
-  boolean isClosed() {
+  public boolean isClosed() {
     return socketClosed;
   }
 

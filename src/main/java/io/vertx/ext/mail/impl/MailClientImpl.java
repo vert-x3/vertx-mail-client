@@ -167,7 +167,7 @@ public class MailClientImpl implements MailClient {
     }
   }
 
-  SMTPConnectionPool getConnectionPool() {
+  public SMTPConnectionPool getConnectionPool() {
     return connectionPool;
   }
 

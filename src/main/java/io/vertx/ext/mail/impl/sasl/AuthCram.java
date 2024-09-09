@@ -22,7 +22,7 @@ import java.util.Map;
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-class AuthCram extends AuthBaseClass {
+public class AuthCram extends AuthBaseClass {
 
   private boolean firstStep;
   private boolean finished;
@@ -35,7 +35,7 @@ class AuthCram extends AuthBaseClass {
   }};
 
 
-  protected AuthCram(String name, String username, String password) {
+  public AuthCram(String name, String username, String password) {
     super(name, username, password);
     firstStep = true;
     finished = false;
@@ -44,7 +44,7 @@ class AuthCram extends AuthBaseClass {
 
   /*
    * (non-Javadoc)
-   * 
+   *
    * @see io.vertx.ext.mail.impl.AuthBaseClass#nextStep(java.lang.String)
    */
   @Override

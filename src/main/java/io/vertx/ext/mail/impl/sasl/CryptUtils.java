@@ -32,7 +32,7 @@ public class CryptUtils {
   private CryptUtils() {
   }
 
-  protected static String hmacHex(String keyString, String message, String hmac) {
+  public static String hmacHex(String keyString, String message, String hmac) {
     try {
       SecretKey key = new SecretKeySpec(keyString.getBytes(StandardCharsets.UTF_8), hmac);
       Mac mac = Mac.getInstance(key.getAlgorithm());
@@ -48,7 +48,7 @@ public class CryptUtils {
    * @param bytes
    * @return
    */
-  protected static String encodeHex(byte[] bytes) {
+  public static String encodeHex(byte[] bytes) {
     StringBuilder sb = new StringBuilder(bytes.length * 2);
     for (byte b : bytes) {
       final int v = ((int) b) & 0xff;

@@ -23,7 +23,7 @@ import io.vertx.core.internal.logging.LoggerFactory;
 /**
  * @author <a href="mailto:plopes@redhat.com">Paulo Lopes</a>
  */
-class AuthXOAUTH2 extends AuthBaseClass {
+public class AuthXOAUTH2 extends AuthBaseClass {
 
   private static final Logger LOG = LoggerFactory.getLogger(AuthXOAUTH2.class);
 

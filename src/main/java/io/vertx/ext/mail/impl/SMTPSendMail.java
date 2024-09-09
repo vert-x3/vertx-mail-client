@@ -34,7 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-class SMTPSendMail {
+public class SMTPSendMail {
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMail.class);
   private static final Pattern linePattern = Pattern.compile("\r\n");
@@ -47,8 +47,8 @@ class SMTPSendMail {
   private final EncodedPart encodedPart;
   private final AtomicLong written = new AtomicLong();
 
-  SMTPSendMail(ContextInternal context, SMTPConnection connection, MailMessage email, MailConfig config,
-               EncodedPart encodedPart, String messageId) {
+  public SMTPSendMail(ContextInternal context, SMTPConnection connection, MailMessage email, MailConfig config,
+                      EncodedPart encodedPart, String messageId) {
     this.context = context;
     this.connection = connection;
     this.email = email;
@@ -61,7 +61,7 @@ class SMTPSendMail {
   /**
    * Starts a mail transaction.
    */
-  Future<MailResult> startMailTransaction() {
+  public Future<MailResult> startMailTransaction() {
     return sendMailEvenlope()
       .flatMap(this::sendMailData);
   }

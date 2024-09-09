@@ -90,7 +90,7 @@ public class Utils {
    * check if a single char must be encoded as qp, this assumes we
    * already have decided that we have to encode the text
    */
-  static boolean mustEncode(char ch) {
+  public static boolean mustEncode(char ch) {
     return ch >= 128 || ch < 10 || ch >= 11 && ch < 32 || ch == '=';
   }
 
@@ -287,7 +287,7 @@ public class Utils {
     return sb.toString();
   }
 
-  static String generateDate() {
+  public static String generateDate() {
     SimpleDateFormat format = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z (z)", Locale.ENGLISH);
     return format.format(new Date());
   }

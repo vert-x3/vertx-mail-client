@@ -130,7 +130,7 @@ public class DKIMSigner {
     }
   }
 
-  String dkimSignatureTemplate() {
+  public String dkimSignatureTemplate() {
     final StringBuilder sb = new StringBuilder();
     // version is always 1
     sb.append("v=1; ");
@@ -443,7 +443,7 @@ public class DKIMSigner {
    * @param emailHeaderValue the email header value for the canonicalization.
    * @return the canonicalization email header in format of 'Name':'Value'.
    */
-  String canonicHeader(String emailHeaderName, String emailHeaderValue) {
+  public String canonicHeader(String emailHeaderName, String emailHeaderValue) {
     if (this.dkimSignOptions.getHeaderCanonAlgo() == CanonicalizationAlgorithm.SIMPLE) {
       return emailHeaderName + ": " + emailHeaderValue;
     }
@@ -451,7 +451,7 @@ public class DKIMSigner {
     return headerName + ":" + canonicalLine(emailHeaderValue, this.dkimSignOptions.getHeaderCanonAlgo());
   }
 
-  String dkimMailBody(String mailBody) {
+  public String dkimMailBody(String mailBody) {
     Scanner scanner = new Scanner(mailBody).useDelimiter(DELIMITER);
     StringBuilder sb = new StringBuilder();
     while (scanner.hasNext()) {
@@ -470,7 +470,7 @@ public class DKIMSigner {
     return line;
   }
 
-  String canonicBodyLine(String line) {
+  public String canonicBodyLine(String line) {
     return canonicalLine(line, this.dkimSignOptions.getBodyCanonAlgo());
   }
 

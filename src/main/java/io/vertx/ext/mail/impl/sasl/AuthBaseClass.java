@@ -32,6 +32,14 @@ abstract class AuthBaseClass implements AuthOperation {
     this.password = password;
   }
 
+  public String username() {
+    return username;
+  }
+
+  public String password() {
+    return password;
+  }
+
   @Override
   public abstract String nextStep(String data);
 

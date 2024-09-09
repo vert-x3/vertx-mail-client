@@ -31,7 +31,7 @@ import java.util.Set;
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-class Capabilities {
+public class Capabilities {
 
   private static final Logger log = LoggerFactory.getLogger(Capabilities.class);
 
@@ -64,7 +64,7 @@ class Capabilities {
   /**
    * @return Set of Strings of capabilities
    */
-  Set<String> getCapaAuth() {
+  public Set<String> getCapaAuth() {
     return capaAuth;
   }
 
@@ -78,7 +78,7 @@ class Capabilities {
   /**
    * @return if the server supports PIPELINING
    */
-  boolean isCapaPipelining() {
+  public boolean isCapaPipelining() {
     return capaPipelining;
   }
 
@@ -92,11 +92,11 @@ class Capabilities {
   /**
    * @return if the server supports STARTTLS
    */
-  boolean isStartTLS() {
+  public boolean isStartTLS() {
     return capaStartTLS;
   }
 
-  Capabilities() {
+  public Capabilities() {
     capaAuth = Collections.emptySet();
   }
 
@@ -106,7 +106,7 @@ class Capabilities {
    *
    * @param message multi-line SMTP reply
    */
-  void parseCapabilities(final String message) {
+  public void parseCapabilities(final String message) {
     List<String> capabilities = parseEhlo(message);
     for (String c : capabilities) {
       if (c.equals("STARTTLS")) {
