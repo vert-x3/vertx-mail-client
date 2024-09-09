@@ -18,7 +18,6 @@ package io.vertx.ext.mail.impl;
 import io.vertx.core.Future;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.net.NetClient;
-import io.vertx.core.net.impl.endpoint.Endpoint;
 import io.vertx.core.internal.pool.ConnectResult;
 import io.vertx.core.internal.pool.Lease;
 import io.vertx.core.internal.pool.ConnectionPool;
@@ -26,6 +25,8 @@ import io.vertx.core.internal.pool.PoolConnector;
 import io.vertx.ext.mail.MailConfig;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  *
@@ -33,18 +34,19 @@ import java.util.List;
  *
  * @author <a href="mailto: aoingl@gmail.com">Lin Gao</a>
  */
-class SMTPEndPoint extends Endpoint implements PoolConnector<SMTPConnection> {
+class SMTPEndPoint implements PoolConnector<SMTPConnection> {
 
   private final NetClient netClient;
   private final MailConfig config;
   private final ConnectionPool<SMTPConnection> pool;
+  private final AtomicReference<SMTPEndPoint> endPoint;
 
-  SMTPEndPoint(NetClient netClient, MailConfig config, Runnable dispose) {
-    super(dispose);
+  SMTPEndPoint(NetClient netClient, MailConfig config, AtomicReference<SMTPEndPoint> endPoint) {
+    int maxSockets = config.getMaxPoolSize();
     this.config = config;
     this.netClient = netClient;
-    int maxSockets = config.getMaxPoolSize();
     this.pool = ConnectionPool.pool(this, new int[] {maxSockets}, -1);
+    this.endPoint = endPoint;
   }
 
   public Future<Lease<SMTPConnection>> requestConnection(ContextInternal ctx, long timeout) {
@@ -61,13 +63,17 @@ class SMTPEndPoint extends Endpoint implements PoolConnector<SMTPConnection> {
     return pool.evict(conn -> !conn.isValid());
   }
 
+  private final AtomicInteger refCount = new AtomicInteger();
+
   @Override
   public Future<ConnectResult<SMTPConnection>> connect(ContextInternal context, Listener listener) {
     return netClient.connect(config.getPort(), config.getHostname())
       .map(conn -> {
-        incRefCount();
+        refCount.incrementAndGet();
         SMTPConnection connection = new SMTPConnection(config, conn, context, v -> {
-          decRefCount();
+          if (refCount.decrementAndGet() == 0) {
+            cleanup();
+          }
           listener.onRemove();
         });
         return new ConnectResult<>(connection, 1, 0);
@@ -87,4 +93,7 @@ class SMTPEndPoint extends Endpoint implements PoolConnector<SMTPConnection> {
     return pool.size();
   }
 
+  private void cleanup() {
+    endPoint.set(null);
+  }
 }

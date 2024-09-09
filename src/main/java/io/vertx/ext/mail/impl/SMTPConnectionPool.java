@@ -143,7 +143,7 @@ class SMTPConnectionPool {
   }
 
   private SMTPEndPoint getSMTPEndPoint() {
-    return endPoint.accumulateAndGet(endPoint.get(), (p, n) -> p == null ? new SMTPEndPoint(netClient, config, () -> endPoint.set(null)) : p);
+    return endPoint.accumulateAndGet(endPoint.get(), (p, n) -> p == null ? new SMTPEndPoint(netClient, config, endPoint) : p);
   }
 
   public void close() {
