@@ -163,11 +163,18 @@
                 </annotationProcessorPaths>
               </configuration>
             </execution>
+            <execution>
+              <id>default-testCompile</id>
+              <configuration>
+                <useModulePath>false</useModulePath>
+              </configuration>
+            </execution>
           </executions>
         </plugin>
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <useModulePath>false</useModulePath>
             <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
             <systemPropertyVariables>
               <buildDirectory>${project.build.directory}</buildDirectory>
