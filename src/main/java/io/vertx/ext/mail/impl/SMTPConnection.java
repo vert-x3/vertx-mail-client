@@ -16,11 +16,7 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
@@ -58,9 +54,9 @@ public class SMTPConnection {
   private boolean inuse;
   private boolean quitSent;
 
-  private Handler<AsyncResult<String>> commandReplyHandler;
+  private Completable<String> commandReplyHandler;
   private Handler<Throwable> exceptionHandler;
-  private Handler<AsyncResult<Void>> closeHandler;
+  private Completable<Void> closeHandler;
   private Capabilities capa = new Capabilities();
   private final ContextInternal context;
   private long expirationTimestamp;
@@ -104,10 +100,10 @@ public class SMTPConnection {
         log.error("dropping reply arriving after we stopped processing the buffer.");
       } else {
         // make sure we only call the handler once
-        Handler<AsyncResult<String>> currentHandler = commandReplyHandler;
+        Completable<String> currentHandler = commandReplyHandler;
         commandReplyHandler = null;
         if (currentHandler != null) {
-          currentHandler.handle(Future.succeededFuture(buffer.toString()));
+          currentHandler.succeed(buffer.toString());
         }
       }
     });
@@ -169,7 +165,7 @@ public class SMTPConnection {
   private void handleClosed() {
     setNoUse();
     if (closeHandler != null) {
-      closeHandler.handle(Future.succeededFuture());
+      closeHandler.succeed();
       closeHandler = null;
     }
     if (!evicted) {
@@ -265,10 +261,10 @@ public class SMTPConnection {
 
   private void handleError(Throwable t) {
     context.emit(roc -> {
-      Handler<AsyncResult<String>> currentHandler = commandReplyHandler;
+      Completable<String> currentHandler = commandReplyHandler;
       if (currentHandler != null) {
         commandReplyHandler = null;
-        currentHandler.handle(Future.failedFuture(t));
+        currentHandler.fail(t);
       } else if (log.isDebugEnabled()) {
         log.debug(t.getMessage(), t);
       }
