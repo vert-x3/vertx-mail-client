@@ -13,7 +13,8 @@
   ~       http://www.opensource.org/licenses/apache2.0.php
   ~
   ~  You may elect to redistribute this code under either of these licenses.
-  --><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <artifactId>vertx5-parent</artifactId>
     <groupId>io.vertx</groupId>
@@ -32,6 +33,7 @@
 
   <properties>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
+    <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
     <hamcrest.version>2.2</hamcrest.version>
     <james.jdkim.version>0.3</james.jdkim.version>
     <junit.version>4.13.2</junit.version>
@@ -173,7 +175,6 @@
         <plugin>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <useModulePath>false</useModulePath>
             <failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
             <systemPropertyVariables>
               <buildDirectory>${project.build.directory}</buildDirectory>
