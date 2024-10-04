@@ -1,11 +1,13 @@
 package io.vertx.tests.mail.internal;
 
+import io.vertx.core.Expectation;
 import io.vertx.core.Future;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.ext.mail.*;
 import io.vertx.ext.mail.impl.SMTPConnection;
 import io.vertx.ext.mail.impl.SMTPConnectionPool;
+import io.vertx.ext.mail.impl.SMTPResponse;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
@@ -22,6 +24,26 @@ import static org.hamcrest.CoreMatchers.startsWith;
 
 @RunWith(VertxUnitRunner.class)
 public class SMTPSendMailTest extends SMTPTestWiser {
+
+  private Expectation<SMTPResponse> AUTH_OK = response -> {
+    log.info("Auth response: " + response.getValue());
+    return response.isStatusOk();
+  };
+
+  private Expectation<SMTPResponse> MAIL_FROM_OK = response -> {
+    log.info("MAIL FROM response: " + response.getValue());
+    return response.isStatusOk();
+  };
+
+  private Expectation<SMTPResponse> RCP_TO_OK = response -> {
+    log.info("MAIL FROM response: " + response.getValue());
+    return response.isStatusOk();
+  };
+
+  private Expectation<SMTPResponse> DATA_CONTINUE = response -> {
+    log.info("DATA Response: " + response.getValue());
+    return response.isStatusContinue();
+  };
 
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMailTest.class);
 
@@ -44,37 +66,18 @@ public class SMTPSendMailTest extends SMTPTestWiser {
   public void testBareLfDetectionFailing(TestContext testContext) {
     this.testContext = testContext;
 
-    Async async = testContext.async();
-
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
-    pool.getConnection("hostname").onComplete(connectionResult -> {
-      SMTPConnection smtpConnection = connectionResult.result();
+    pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
-      smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
-        .flatMap(result -> {
-          log.info("Auth Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+      return smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
+        .expecting(AUTH_OK)
         .flatMap(ignore -> smtpConnection.write("MAIL FROM: <from@example.com>"))
-        .flatMap(result -> {
-          log.info("MAIL FROM Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(MAIL_FROM_OK)
         .flatMap(ignore -> smtpConnection.write("RCPT TO: <user@xample.com>"))
-        .flatMap(result -> {
-          log.info("RCPT TO Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(RCP_TO_OK)
         .flatMap((ignore) -> smtpConnection.write("DATA"))
-        .flatMap(result -> {
-          log.info("DATA Response: " + result.getValue());
-          assertTrue(result.isStatusContinue());
-          return Future.succeededFuture(result);
-        })
+        .expecting(DATA_CONTINUE)
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("MIME-Version: 1.0\r\nMessage-ID: <msg.0815@bareLF>", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("Subject: BareLFDetection", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("From: from@example.com\r\nTo: user@example.com", true))
@@ -83,51 +86,29 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("will send some bare `\\n` as LineEnding here \n", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("This should be invalid", true))
         .flatMap((ignore) -> smtpConnection.write("."))
-        .flatMap(result -> {
+        .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
-          assertFalse(result.isStatusOk());
-          assertThat(result.getValue(), startsWith("554 bare <LF> received after DATA"));
-          return Future.succeededFuture(result);
-        })
-        .andThen((ignore) -> async.complete());
-    });
+          return !result.isStatusOk() && result.getValue().startsWith("554 bare <LF> received after DATA");
+        });
+    }).onComplete(testContext.asyncAssertSuccess());
   }
 
   @Test
   public void testBareLfDetectionEdgeCases(TestContext testContext) {
     this.testContext = testContext;
 
-    Async async = testContext.async();
-
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
-    pool.getConnection("hostname").onComplete(connectionResult -> {
-      SMTPConnection smtpConnection = connectionResult.result();
+    pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
-      smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
-        .flatMap(result -> {
-          log.info("Auth Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+      return smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
+        .expecting(AUTH_OK)
         .flatMap(ignore -> smtpConnection.write("MAIL FROM: <from@example.com>"))
-        .flatMap(result -> {
-          log.info("MAIL FROM Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(MAIL_FROM_OK)
         .flatMap(ignore -> smtpConnection.write("RCPT TO: <user@xample.com>"))
-        .flatMap(result -> {
-          log.info("RCPT TO Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(RCP_TO_OK)
         .flatMap((ignore) -> smtpConnection.write("DATA"))
-        .flatMap(result -> {
-          log.info("DATA Response: " + result.getValue());
-          assertTrue(result.isStatusContinue());
-          return Future.succeededFuture(result);
-        })
+        .expecting(DATA_CONTINUE)
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("MIME-Version: 1.0\r\nMessage-ID: <msg.0815@bareLF>", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("Subject: BareLFDetection", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("From: from@example.com\r\nTo: user@example.com", true))
@@ -136,51 +117,29 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("will send some bare `\\n`", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("This should be invalid\n", true))
         .flatMap((ignore) -> smtpConnection.write("."))
-        .flatMap(result -> {
+        .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
-          assertFalse(result.isStatusOk());
-          assertThat(result.getValue(), startsWith("554 bare <LF> received after DATA"));
-          return Future.succeededFuture(result);
-        })
-        .andThen((ignore) -> async.complete());
-    });
+          return !result.isStatusOk() && result.getValue().startsWith("554 bare <LF> received after DATA");
+        });
+    }).onComplete(testContext.asyncAssertSuccess());
   }
 
   @Test
   public void testBareLfDetectionSucceed(TestContext testContext) {
     this.testContext = testContext;
 
-    Async async = testContext.async();
-
     SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
-    pool.getConnection("hostname").onComplete(connectionResult -> {
-      SMTPConnection smtpConnection = connectionResult.result();
+    pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
-      smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
-        .flatMap(result -> {
-          log.info("Auth Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+      return smtpConnection.write("AUTH PLAIN AHh4eAB5eXk=")
+        .expecting(AUTH_OK)
         .flatMap(ignore -> smtpConnection.write("MAIL FROM: <from@example.com>"))
-        .flatMap(result -> {
-          log.info("MAIL FROM Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(MAIL_FROM_OK)
         .flatMap(ignore -> smtpConnection.write("RCPT TO: <user@xample.com>"))
-        .flatMap(result -> {
-          log.info("RCPT TO Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
-        })
+        .expecting(RCP_TO_OK)
         .flatMap((ignore) -> smtpConnection.write("DATA"))
-        .flatMap(result -> {
-          log.info("DATA Response: " + result.getValue());
-          assertTrue(result.isStatusContinue());
-          return Future.succeededFuture(result);
-        })
+        .expecting(DATA_CONTINUE)
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("MIME-Version: 1.0\r\nMessage-ID: <msg.0815.1@bareLF>", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("Subject: BareLFDetection", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("From: from@example.com\r\nTo: user@example.com", true))
@@ -189,13 +148,13 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("will send some `\\r\\n` as LineEnding here \r\n", true))
         .flatMap((ignore) -> smtpConnection.writeLineWithDrain("This should be ok for us", true))
         .flatMap((ignore) -> smtpConnection.write("."))
-        .flatMap(result -> {
+        .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
           assertTrue(result.isStatusOk());
-          return Future.succeededFuture(result);
+          return result.isStatusOk();
         })
-        .andThen((ignore) -> async.complete());
-    });
+        ;
+    }).onComplete(testContext.asyncAssertSuccess());
   }
 
   @Test
