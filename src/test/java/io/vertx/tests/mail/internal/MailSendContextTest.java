@@ -16,9 +16,7 @@
 
 package io.vertx.tests.mail.internal;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.ext.mail.MailClient;
@@ -38,48 +36,39 @@ public class MailSendContextTest extends SMTPTestWiser {
 
   private static final Logger log = LoggerFactory.getLogger(MailSendContextTest.class);
 
-  private class VerticleA extends AbstractVerticle {
+  private class VerticleA extends VerticleBase {
     MailClient mailClientA;
     @Override
-    public void start(Promise<Void> startPromise) {
+    public Future<?> start() throws Exception {
       mailClientA = MailClient.create(vertx, configLogin());
-      mailClientA.sendMail(exampleMessage()).onComplete(r -> {
-        assertTrue(r.succeeded());
+      return mailClientA.sendMail(exampleMessage()).compose(r -> {
         assertEquals(Vertx.currentContext(), context);
         // deploy Verticle B
         VerticleB verticleB = new VerticleB();
-        vertx.deployVerticle(verticleB).onComplete(dr -> {
-          assertTrue(dr.succeeded());
+        return vertx.deployVerticle(verticleB).compose(dr -> {
           assertEquals(Vertx.currentContext(), context);
           assertNotNull(verticleB.mailClientB);
-          verticleB.mailClientB.sendMail(exampleMessage()).onComplete(sr -> {
-            assertTrue(sr.succeeded());
-            assertEquals(Vertx.currentContext(), context);
-            startPromise.complete();
-          });
+          return verticleB.mailClientB.sendMail(exampleMessage());
         });
       });
     }
     @Override
-    public void stop(Promise<Void> stopPromise) throws Exception {
-      mailClientA.close().onComplete(stopPromise);
+    public Future<?> stop() throws Exception {
+      return mailClientA.close();
     }
   }
 
-  private class VerticleB extends AbstractVerticle {
+  private class VerticleB extends VerticleBase {
     MailClient mailClientB;
+
     @Override
-    public void start(Promise<Void> startPromise) {
+    public Future<?> start() throws Exception {
       mailClientB = MailClient.create(vertx, configLogin());
-      mailClientB.sendMail(exampleMessage()).onComplete(sr -> {
-        assertTrue(sr.succeeded());
-        assertEquals(Vertx.currentContext(), context);
-        startPromise.complete();
-      });
+      return mailClientB.sendMail(exampleMessage());
     }
     @Override
-    public void stop(Promise<Void> stopPromise) throws Exception {
-      mailClientB.close().onComplete(stopPromise);
+    public Future<?> stop() throws Exception {
+      return mailClientB.close();
     }
   }
 
