@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
  * represent a mail address with an email address part and an optional full name e.g. <br>
  * {@code user@example.com} <br>
  * {@code user@example.com (This User)} <br>
- * {@code Another User <other@example.net>}
+ * {@code Another User <other@example.net>} <br>
+ * {@code "display(name)" <sample@email.com>}
  * <p>
  * the constructor will validate the address catching format errors like excess spaces, newlines the test is not very
  * strict, for example an IDN address will be considered valid, even though SMTP doesn't work with that yet
@@ -54,6 +55,7 @@ public class EmailAddress {
       if (matcher.matches()) {
         email = matcher.group(1);
         name = matcher.group(2);
+        // TODO check if the parentheses were in the display name
       } else {
         throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
       }
