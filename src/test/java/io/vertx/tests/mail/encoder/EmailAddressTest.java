@@ -38,6 +38,8 @@ public class EmailAddressTest {
     checkAddress("\"Last, First\" <user@example.com>", "[user@example.com,\"Last, First\"]");
     checkAddress("Last, First <user@example.com>", "[user@example.com,Last, First]");
     checkAddress("user@example.com (Last, First)", "[user@example.com,Last, First]");
+    // allow parentheses in display name (issue #218)
+    checkAddress("\"display(name)\" <sample@email.com>", "[sample@email.com,\"display(name)\"]");
     // <> can be used as MAIL FROM address
     checkAddress("", "[]");
     checkAddress("<>", "[]");
@@ -89,4 +91,9 @@ public class EmailAddressTest {
     new EmailAddress("<user@example.com");
   }
 
+  // from wikipedia: these special characters need to be in quotes
+  @Test(expected = IllegalArgumentException.class)
+  public void testEmailInvalid11() {
+    new EmailAddress("a\"b(c)d,e:f;g<h>i[j\\k]l@example.com");
+  }
 }

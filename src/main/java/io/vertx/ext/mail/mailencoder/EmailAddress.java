@@ -23,7 +23,8 @@ import java.util.regex.Pattern;
  * represent a mail address with an email address part and an optional full name e.g. <br>
  * {@code user@example.com} <br>
  * {@code user@example.com (This User)} <br>
- * {@code Another User <other@example.net>}
+ * {@code Another User <other@example.net>} <br>
+ * {@code "display(name)" <sample@email.com>}
  * <p>
  * the constructor will validate the address catching format errors like excess spaces, newlines the test is not very
  * strict, for example an IDN address will be considered valid, even though SMTP doesn't work with that yet
@@ -48,16 +49,7 @@ public class EmailAddress {
    * @throws IllegalArgumentException if an address is not valid
    */
   public EmailAddress(String fullAddress) {
-
-    if (fullAddress.contains("(")) {
-      Matcher matcher = PATTERN_EMAIL.matcher(fullAddress);
-      if (matcher.matches()) {
-        email = matcher.group(1);
-        name = matcher.group(2);
-      } else {
-        throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
-      }
-    } else if (fullAddress.contains("<")) {
+    if (fullAddress.contains("<")) {
       Matcher matcher = PATTERN_EMAIL_ANGLE.matcher(fullAddress);
       if (matcher.matches()) {
         name = matcher.group(1);
@@ -66,6 +58,15 @@ public class EmailAddress {
         }
         email = matcher.group(2);
       } else {
+        throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
+      }
+    } else if (fullAddress.contains("(")) {
+      Matcher matcher = PATTERN_EMAIL.matcher(fullAddress);
+      if (matcher.matches()) {
+        email = matcher.group(1);
+        name = matcher.group(2);
+      }
+      else {
         throw new IllegalArgumentException("invalid email address [" + fullAddress + "]");
       }
     } else {
