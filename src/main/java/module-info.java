@@ -1,4 +1,4 @@
-module io.vertx.client.mail {
+module io.vertx.mail.client {
   requires static io.vertx.docgen;
   requires static io.vertx.codegen.api;
   requires static io.vertx.codegen.json;
