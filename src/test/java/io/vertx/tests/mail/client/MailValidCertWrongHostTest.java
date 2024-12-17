@@ -16,6 +16,7 @@
 
 package io.vertx.tests.mail.client;
 
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
@@ -41,7 +42,9 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
   public void mailTestTLSValidCertWrongHost(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = defaultConfig().setHostname("127.0.0.1").setPort(1587).setStarttls(StartTLSOptions.REQUIRED)
-        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+      .setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testException(mailClient);
   }
@@ -50,7 +53,10 @@ public class MailValidCertWrongHostTest extends SMTPTestDummy {
   public void mailTestTLSWrongHostTrustAll(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = defaultConfig().setHostname("127.0.0.1").setPort(1587).setStarttls(StartTLSOptions.REQUIRED)
-        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password").setTrustAll(true);
+      .setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"))
+      .setTrustAll(true);
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }

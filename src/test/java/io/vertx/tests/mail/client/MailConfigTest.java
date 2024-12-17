@@ -224,20 +224,6 @@ public class MailConfigTest {
   }
 
   @Test
-  public void testKeyStore() {
-    MailConfig mailConfig = new MailConfig();
-    mailConfig.setKeyStore("asdfasdf");
-    assertEquals("asdfasdf", mailConfig.getKeyStore());
-  }
-
-  @Test
-  public void testKeyStorePasswprd() {
-    MailConfig mailConfig = new MailConfig();
-    mailConfig.setKeyStorePassword("qwertyqwerty");
-    assertEquals("qwertyqwerty", mailConfig.getKeyStorePassword());
-  }
-
-  @Test
   public void testOwnHostname() {
     MailConfig mailConfig = new MailConfig();
     mailConfig.setOwnHostname("localhost.localdomain");

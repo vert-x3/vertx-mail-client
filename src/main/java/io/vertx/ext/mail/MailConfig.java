@@ -200,12 +200,18 @@ public class MailConfig extends NetClientOptions {
     username = config.getString("username");
     password = config.getString("password");
     // Handle these for compatiblity
+    JksOptions trustOptions = null;
     if (config.containsKey("keyStore")) {
-      setKeyStore(config.getString("keyStore"));
+      trustOptions = new JksOptions();
+      trustOptions.setPath(config.getString("keyStore"));
     }
     if (config.containsKey("keyStorePassword")) {
-      setKeyStorePassword(config.getString("keyStorePassword"));
+      if (trustOptions == null) {
+        trustOptions = new JksOptions();
+      }
+      trustOptions.setPassword(config.getString("keyStorePassword"));
     }
+    setTrustOptions(trustOptions);
     authMethods = config.getString("authMethods");
     ownHostname = config.getString("ownHostname");
     maxPoolSize = config.getInteger("maxPoolSize", DEFAULT_MAX_POOL_SIZE);
@@ -545,79 +551,6 @@ public class MailConfig extends NetClientOptions {
   @Override
   public MailConfig setTrustAll(boolean trustAll) {
     super.setTrustAll(trustAll);
-    return this;
-  }
-
-  /**
-   * get the key store filename to be used when opening SMTP connections
-   *
-   * @return the keyStore
-   * @deprecated use {@link #getTrustOptions}
-   */
-  @Deprecated
-  public String getKeyStore() {
-    // Get the trust store options and if there are any get the path
-    String keyStore = null;
-    JksOptions options = (JksOptions) getTrustOptions();
-    if (options != null) {
-      keyStore = options.getPath();
-    }
-    return keyStore;
-  }
-
-  /**
-   * get the key store filename to be used when opening SMTP connections
-   * <p>
-   * if not set, an options object will be created based on other settings (ssl
-   * and trustAll)
-   *
-   * @param keyStore the key store filename to be set
-   * @return a reference to this, so the API can be used fluently
-   * @deprecated use {@link #getTrustOptions}
-   */
-  @Deprecated
-  public MailConfig setKeyStore(String keyStore) {
-    JksOptions options = (JksOptions) getTrustOptions();
-    if (options == null) {
-      options = new JksOptions();
-      this.setTrustOptions(options);
-    }
-    options.setPath(keyStore);
-    return this;
-  }
-
-  /**
-   * get the key store password to be used when opening SMTP connections
-   *
-   * @return the keyStorePassword
-   * @deprecated use {@link #getTrustOptions}
-   */
-  @Deprecated
-  public String getKeyStorePassword() {
-    // Get the trust store options and if there are any get the password
-    String keyStorePassword = null;
-    JksOptions options = (JksOptions) getTrustOptions();
-    if (options != null) {
-      keyStorePassword = options.getPassword();
-    }
-    return keyStorePassword;
-  }
-
-  /**
-   * get the key store password to be used when opening SMTP connections
-   *
-   * @param keyStorePassword the key store passwords to be set
-   * @return a reference to this, so the API can be used fluently
-   * @deprecated use {@link #getTrustOptions}
-   */
-  @Deprecated
-  public MailConfig setKeyStorePassword(String keyStorePassword) {
-    JksOptions options = (JksOptions) getTrustOptions();
-    if (options == null) {
-      options = new JksOptions();
-      this.setTrustOptions(options);
-    }
-    options.setPassword(keyStorePassword);
     return this;
   }
 
