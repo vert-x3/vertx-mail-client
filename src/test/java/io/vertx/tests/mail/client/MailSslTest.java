@@ -18,6 +18,7 @@ package io.vertx.tests.mail.client;
 
 import javax.net.ssl.SSLHandshakeException;
 
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
@@ -47,7 +48,9 @@ public class MailSslTest extends SMTPTestDummy {
     this.testContext = testContext;
     startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("localhost", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
+        .setSsl(true).setTrustOptions(new JksOptions()
+        .setPath(CLIENT_JKS)
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }
@@ -57,7 +60,9 @@ public class MailSslTest extends SMTPTestDummy {
     this.testContext = testContext;
     startServer(SERVER2_JKS);
     final MailConfig config = new MailConfig("127.0.0.1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
+        .setSsl(true).setTrustOptions(new JksOptions()
+        .setPath(CLIENT_JKS)
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testException(mailClient);
   }
@@ -70,7 +75,9 @@ public class MailSslTest extends SMTPTestDummy {
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("::1", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
+        .setSsl(true).setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }
@@ -81,7 +88,9 @@ public class MailSslTest extends SMTPTestDummy {
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[::1]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
+        .setSsl(true).setTrustOptions(new JksOptions()
+        .setPath(CLIENT_JKS)
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }
@@ -92,7 +101,9 @@ public class MailSslTest extends SMTPTestDummy {
     this.testContext = testContext;
     startServer(SERVER_JKS);
     final MailConfig config = new MailConfig("[0000:0000:0000:0000:0000:0000:0000:0001]", 1465, StartTLSOptions.DISABLED, LoginOption.DISABLED)
-        .setSsl(true).setKeyStore(CLIENT_JKS).setKeyStorePassword("password");
+        .setSsl(true).setTrustOptions(new JksOptions()
+        .setPath(CLIENT_JKS)
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient);
   }

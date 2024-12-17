@@ -16,6 +16,7 @@
 
 package io.vertx.tests.mail.client;
 
+import io.vertx.core.net.JksOptions;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
@@ -59,7 +60,9 @@ public class MailLocalTest extends SMTPTestWiser {
   public void mailTestTLSCorrectCert(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = configLogin().setStarttls(StartTLSOptions.REQUIRED)
-        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+      .setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
@@ -68,7 +71,9 @@ public class MailLocalTest extends SMTPTestWiser {
   public void mailTestTLSCase(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = configLogin().setHostname("LOCALHOST").setStarttls(StartTLSOptions.REQUIRED)
-        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+      .setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testSuccess(mailClient, exampleMessage(), assertExampleMessage());
   }
@@ -77,7 +82,9 @@ public class MailLocalTest extends SMTPTestWiser {
   public void mailTestTLSValidCertWrongHost(TestContext testContext) {
     this.testContext = testContext;
     final MailConfig config = configLogin().setHostname("127.0.0.1").setStarttls(StartTLSOptions.REQUIRED)
-        .setKeyStore("src/test/resources/certs/client.jks").setKeyStorePassword("password");
+      .setTrustOptions(new JksOptions()
+        .setPath("src/test/resources/certs/client.jks")
+        .setPassword("password"));
     MailClient mailClient = MailClient.create(vertx, config);
     testException(mailClient);
   }
