@@ -19,13 +19,13 @@ package io.vertx.ext.mail;
 import io.vertx.codegen.annotations.VertxGen;
 
 /**
- * possible options for a login into a SMTP server
+ * possible options for a login into an SMTP server
  * <br>
- * either DISABLED, OPTIONAL, REQUIRED or XOAUTH2
+ * either DISABLED, NONE, REQUIRED or XOAUTH2
  * <p>
  * DISABLED means no login will be attempted
  * <p>
- * NONE means a login will be attempted if the server supports in and login credentials are set
+ * NONE means a login will be attempted if the server supports it and login credentials are set
  * <p>
  * REQUIRED means that a login will be attempted if the server supports it and the send operation will fail otherwise
  * <p>
