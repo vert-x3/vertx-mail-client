@@ -483,9 +483,9 @@ public class MailConfig extends NetClientOptions {
   /**
    * Set the login mode for the connection.
    * <p>
-   * Either DISABLED, OPTIONAL or REQUIRED
+   * Either DISABLED, NONE, REQUIRED or XOAUTH2
    *
-   * @param login (default is OPTIONAL)
+   * @param login (default see {@link #DEFAULT_LOGIN})
    * @return a reference to this, so the API can be used fluently
    */
   public MailConfig setLogin(LoginOption login) {
