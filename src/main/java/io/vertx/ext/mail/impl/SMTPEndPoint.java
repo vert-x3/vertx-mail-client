@@ -54,7 +54,7 @@ class SMTPEndPoint implements PoolConnector<SMTPConnection> {
     if (ctx.isEventLoopContext()) {
       eventLoopContext = ctx;
     } else {
-      eventLoopContext = ctx.owner().createEventLoopContext(ctx.nettyEventLoop(), ctx.workerPool(), ctx.classLoader());
+      eventLoopContext = ctx.owner().contextBuilder().withEventLoop(ctx.nettyEventLoop()).withWorkerPool(ctx.workerPool()).build();
     }
     return pool.acquire(eventLoopContext, 0);
   }
