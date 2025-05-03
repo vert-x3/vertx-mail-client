@@ -24,6 +24,12 @@
   <artifactId>vertx-mail-client</artifactId>
   <version>4.5.15-SNAPSHOT</version>
 
+  <scm>
+    <connection>scm:git:git@github.com:vert-x3/vertx-mail-client.git</connection>
+    <developerConnection>scm:git:git@github.com:vert-x3/vertx-mail-client.git</developerConnection>
+    <url>git@github.com:vert-x3/vertx-mail-client.git</url>
+  </scm>
+
   <properties>
     <jar.manifest>${project.basedir}/src/main/resources/META-INF/MANIFEST.MF</jar.manifest>
   </properties>
