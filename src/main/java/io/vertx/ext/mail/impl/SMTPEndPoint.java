@@ -56,11 +56,11 @@ class SMTPEndPoint implements PoolConnector<SMTPConnection> {
     } else {
       eventLoopContext = ctx.owner().contextBuilder().withEventLoop(ctx.nettyEventLoop()).withWorkerPool(ctx.workerPool()).build();
     }
-    return pool.acquire(eventLoopContext, 0);
+    return eventLoopContext.future(p -> pool.acquire(eventLoopContext, 0, p));
   }
 
   Future<List<SMTPConnection>> checkExpired2() {
-    return pool.evict(conn -> !conn.isValid());
+    return Future.future(p -> pool.evict(conn -> !conn.isValid(), p));
   }
 
   private final AtomicInteger refCount = new AtomicInteger();
@@ -81,7 +81,7 @@ class SMTPEndPoint implements PoolConnector<SMTPConnection> {
   }
 
   Future<List<Future<SMTPConnection>>> doClose() {
-    return pool.close();
+    return Future.future(p -> pool.close(p));
   }
 
   @Override
