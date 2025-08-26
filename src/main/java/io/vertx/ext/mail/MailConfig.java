@@ -583,8 +583,9 @@ public class MailConfig extends NetClientOptions {
    *
    * @return the password supplier function
    */
-  public void setPasswordSupplier(Function<MailConfig, String> passwordSupplier) {
+  public MailConfig setPasswordSupplier(Function<MailConfig, String> passwordSupplier) {
     this.passwordSupplier = passwordSupplier;
+    return this;
   }
 
   // Maintain compatibility of return type
