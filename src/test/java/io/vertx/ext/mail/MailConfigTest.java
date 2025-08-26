@@ -204,6 +204,14 @@ public class MailConfigTest {
     mailConfig.setPassword("secret");
     assertEquals("secret", mailConfig.getPassword());
   }
+  
+  @Test
+  public void testPasswordSupplier() {
+    MailConfig mailConfig = new MailConfig();
+    mailConfig.setPassword("secret2");
+    mailConfig.setPasswordSupplier(config -> "secret");
+    assertEquals("secret", mailConfig.getPassword());
+  }
 
   @Test
   public void testTrustAll() {
