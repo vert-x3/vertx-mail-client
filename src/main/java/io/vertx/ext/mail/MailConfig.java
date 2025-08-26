@@ -211,7 +211,7 @@ public class MailConfig extends NetClientOptions {
     if (config.containsKey("keyStorePassword")) {
       if (trustOptions == null) {
         trustOptions = new JksOptions();
-      }
+    }
       trustOptions.setPassword(config.getString("keyStorePassword"));
     }
     setTrustOptions(trustOptions);
@@ -540,12 +540,16 @@ public class MailConfig extends NetClientOptions {
   }
 
   /**
-   * Set the password supplier function.
+   * Set a function that supplies the password for login dynamically.
+   * <p>
+   * Use this method when the password should be retrieved or computed at runtime (e.g., from a secure vault),
+   * instead of setting a static password with {@link #setPassword(String)}.
    *
-   * @return the password supplier function
+   * @param passwordSupplier a function that takes the current {@code MailConfig} and returns the password to use
    */
-  public void setPasswordSupplier(Function<MailConfig, String> passwordSupplier) {
+  public MailConfig setPasswordSupplier(Function<MailConfig, String> passwordSupplier) {
     this.passwordSupplier = passwordSupplier;
+    return this;
   }
 
   // Maintain compatibility of return type
