@@ -211,7 +211,7 @@ public class MailConfig extends NetClientOptions {
     if (config.containsKey("keyStorePassword")) {
       if (trustOptions == null) {
         trustOptions = new JksOptions();
-    }
+      }
       trustOptions.setPassword(config.getString("keyStorePassword"));
     }
     setTrustOptions(trustOptions);
