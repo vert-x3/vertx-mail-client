@@ -28,6 +28,7 @@ import io.vertx.core.net.SSLEngineOptions;
 import io.vertx.core.net.TrustOptions;
 
 import java.util.*;
+import java.util.function.*;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -74,6 +75,7 @@ public class MailConfig extends NetClientOptions {
   private String authMethods;
   private String username;
   private String password;
+  private Function<MailConfig, String> passwordSupplier;
   private String ownHostname;
   private int maxPoolSize = DEFAULT_MAX_POOL_SIZE;
   private boolean keepAlive = DEFAULT_KEEP_ALIVE;
@@ -151,6 +153,7 @@ public class MailConfig extends NetClientOptions {
     login = other.login;
     username = other.username;
     password = other.password;
+    passwordSupplier = other.passwordSupplier;
     authMethods = other.authMethods;
     ownHostname = other.ownHostname;
     maxPoolSize = other.maxPoolSize;
@@ -519,6 +522,9 @@ public class MailConfig extends NetClientOptions {
    * @return password
    */
   public String getPassword() {
+    if (passwordSupplier != null) {
+      return passwordSupplier.apply(this);
+    }
     return password;
   }
 
@@ -531,6 +537,15 @@ public class MailConfig extends NetClientOptions {
   public MailConfig setPassword(String password) {
     this.password = password;
     return this;
+  }
+
+  /**
+   * Set the password supplier function.
+   *
+   * @return the password supplier function
+   */
+  public void setPasswordSupplier(Function<MailConfig, String> passwordSupplier) {
+    this.passwordSupplier = passwordSupplier;
   }
 
   // Maintain compatibility of return type
