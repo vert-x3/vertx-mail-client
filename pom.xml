@@ -23,7 +23,7 @@
 
   <artifactId>vertx-mail-client</artifactId>
   <name>Vert.x Mail Client</name>
-  <version>4.5.21</version>
+  <version>4.5.22-SNAPSHOT</version>
 
   <scm>
     <connection>scm:git:git@github.com:vert-x3/vertx-mail-client.git</connection>
