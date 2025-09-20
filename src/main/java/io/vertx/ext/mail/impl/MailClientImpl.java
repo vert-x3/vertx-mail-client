@@ -33,6 +33,7 @@ import io.vertx.ext.mail.mailencoder.MailEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -61,9 +62,13 @@ public class MailClientImpl implements MailClient {
   private final List<DKIMSigner> dkimSigners;
 
   public MailClientImpl(Vertx vertx, MailConfig config, String poolName) {
+    this(vertx, config, poolName, MailConfig::getPassword);
+  }
+
+  public MailClientImpl(Vertx vertx, MailConfig config, String poolName, Function<MailConfig, String> accessTokenProvider) {
     this.vertx = vertx;
     this.config = config;
-    this.holder = lookupHolder(poolName, config);
+    this.holder = lookupHolder(poolName, config, accessTokenProvider);
     this.connectionPool = holder.pool();
     if (config != null && config.isEnableDKIM() && config.getDKIMSignOptions() != null) {
       dkimSigners = config.getDKIMSignOptions().stream().map(ops -> new DKIMSigner(ops, vertx)).collect(Collectors.toList());
@@ -171,12 +176,12 @@ public class MailClientImpl implements MailClient {
     return connectionPool;
   }
 
-  private MailHolder lookupHolder(String poolName, MailConfig config) {
+  private MailHolder lookupHolder(String poolName, MailConfig config, Function<MailConfig, String> accessTokenProvider) {
     synchronized (vertx) {
       LocalMap<String, MailHolder> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
       MailHolder theHolder = map.get(poolName);
       if (theHolder == null) {
-        theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName));
+        theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName), accessTokenProvider);
         map.put(poolName, theHolder);
       } else {
         theHolder.incRefCount();
@@ -199,9 +204,9 @@ public class MailClientImpl implements MailClient {
     final Runnable closeRunner;
     int refCount = 1;
 
-    MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
+    MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner, Function<MailConfig, String> accessTokenProvider) {
       this.closeRunner = closeRunner;
-      this.pool = new SMTPConnectionPool(vertx, config);
+      this.pool = new SMTPConnectionPool(vertx, config, accessTokenProvider);
     }
 
     SMTPConnectionPool pool() {

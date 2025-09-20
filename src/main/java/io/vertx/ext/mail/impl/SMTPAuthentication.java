@@ -57,8 +57,7 @@ class SMTPAuthentication {
   public Future<Void> start() {
     List<String> auths = intersectAllowedMethods();
     final boolean foundAllowedMethods = !auths.isEmpty();
-    if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-      && foundAllowedMethods) {
+    if ( authOperationFactory.isLoginConfigured(config) && foundAllowedMethods) {
       authCmd(auths);
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {

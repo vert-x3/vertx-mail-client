@@ -32,6 +32,7 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SMTPConnectionPool {
@@ -52,6 +53,10 @@ public class SMTPConnectionPool {
   private long timerID = -1;
 
   public SMTPConnectionPool(Vertx vertx, MailConfig config) {
+    this(vertx, config, MailConfig::getPassword);
+  }
+
+  public SMTPConnectionPool(Vertx vertx, MailConfig config, Function<MailConfig, String> accessTokenProvider) {
     this.vertx = vertx;
     this.config = config;
     // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
@@ -65,7 +70,7 @@ public class SMTPConnectionPool {
     }
     netClient = vertx.createNetClient(config);
     this.prng = new PRNG(vertx);
-    this.authOperationFactory = new AuthOperationFactory(prng);
+    this.authOperationFactory = new AuthOperationFactory(prng, accessTokenProvider);
     if (config.getPoolCleanerPeriod() > 0 && config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
       timerID = vertx.setTimer(poolCleanTimeout(config), this::checkExpired);
     }
