@@ -24,6 +24,7 @@ import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.auth.prng.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
@@ -32,7 +33,7 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 public class SMTPConnectionPool {
@@ -47,18 +48,21 @@ public class SMTPConnectionPool {
   private final Vertx vertx;
   private final NetClient netClient;
   private final MailConfig config;
+  private final Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier;
 
   private boolean closed = false;
   private final AtomicReference<SMTPEndPoint> endPoint = new AtomicReference<>();
   private long timerID = -1;
 
+  // Useful for testing
   public SMTPConnectionPool(Vertx vertx, MailConfig config) {
-    this(vertx, config, MailConfig::getPassword);
+    this(vertx, config, null);
   }
 
-  public SMTPConnectionPool(Vertx vertx, MailConfig config, Function<MailConfig, String> accessTokenProvider) {
+  public SMTPConnectionPool(Vertx vertx, MailConfig config, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
     this.vertx = vertx;
     this.config = config;
+    this.credentialsSupplier = credentialsSupplier;
     // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
     String verification = config.getHostnameVerificationAlgorithm();
     if ((verification == null || verification.isEmpty()) && !config.isTrustAll() &&
@@ -70,7 +74,7 @@ public class SMTPConnectionPool {
     }
     netClient = vertx.createNetClient(config);
     this.prng = new PRNG(vertx);
-    this.authOperationFactory = new AuthOperationFactory(prng, accessTokenProvider);
+    this.authOperationFactory = new AuthOperationFactory(prng);
     if (config.getPoolCleanerPeriod() > 0 && config.isKeepAlive() && config.getKeepAliveTimeout() > 0) {
       timerID = vertx.setTimer(poolCleanTimeout(config), this::checkExpired);
     }
@@ -123,7 +127,7 @@ public class SMTPConnectionPool {
         } else {
           reset = false;
           future = conn.init()
-            .flatMap(new SMTPStarter(contextInternal, conn, config, hostname, authOperationFactory)::serverGreeting)
+            .flatMap(new SMTPStarter(contextInternal, conn, config, hostname, authOperationFactory, credentialsSupplier)::serverGreeting)
             .map(ignored -> conn);
         }
         return future.recover(t -> {

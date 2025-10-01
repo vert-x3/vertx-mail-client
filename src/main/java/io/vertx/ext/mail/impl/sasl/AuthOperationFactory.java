@@ -16,14 +16,13 @@
 
 package io.vertx.ext.mail.impl.sasl;
 
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.auth.prng.PRNG;
-import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.Utils;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,17 +44,11 @@ public final class AuthOperationFactory {
   };
 
   private final PRNG prng;
-  private final Function<MailConfig, String> accessTokenProvider;
 
   private String authMethod;
 
   public AuthOperationFactory(PRNG prng) {
-    this(prng, MailConfig::getPassword);
-  }
-
-  public AuthOperationFactory(PRNG prng, Function<MailConfig, String> accessTokenProvider) {
     this.prng = prng;
-    this.accessTokenProvider = accessTokenProvider;
   }
 
   public List<String> supportedAuths(MailConfig config) {
@@ -76,9 +69,9 @@ public final class AuthOperationFactory {
     return this;
   }
 
-  public AuthOperation createAuth(MailConfig mailConfig, String authMethod) {
-    String username = mailConfig.getUsername();
-    String password = accessTokenProvider.apply(mailConfig);
+  public AuthOperation createAuth(MailConfig mailConfig, String authMethod, UsernamePasswordCredentials credentials) {
+    String username = credentials != null ? credentials.getUsername() : mailConfig.getUsername();
+    String password = credentials != null ? credentials.getPassword() : mailConfig.getPassword();
     switch (authMethod) {
       case "XOAUTH2":
         return new AuthXOAUTH2(username, password);
@@ -104,11 +97,5 @@ public final class AuthOperationFactory {
         return new NTLMAuth(username, password, ntDomain, mailConfig.getWorkstation());
     }
     throw new IllegalArgumentException("Unsupported Authentication Method: " + authMethod);
-  }
-
-  public boolean isLoginConfigured(MailConfig config) {
-    return config.getLogin() != LoginOption.DISABLED
-        && config.getUsername() != null
-        && accessTokenProvider.apply(config) != null;
   }
 }
