@@ -65,6 +65,19 @@ A more elaborate example using a mailserver that requires login via TLS
 {@link examples.MailExamples#createClient2}
 ----
 
+=== Dynamic credentials configuration
+
+You can configure credentials using a Java supplier in {@link io.vertx.ext.mail.MailClientBuilder} instead of properties of the {@link io.vertx.ext.mail.MailConfig}.
+
+Since the supplier is asynchronous, it can be used to provide dynamic pool configuration (e.g. password rotation).
+
+[source,$lang]
+----
+{@link examples.MailExamples#dynamicCredentials}
+----
+
+NOTE: When a credentials supplier is provided, username and password set in {@link io.vertx.ext.mail.MailConfig} get ignored.
+
 == Sending mails
 
 Once the client object is created, you can use it to send mails. Since the
