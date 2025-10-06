@@ -20,6 +20,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
@@ -44,20 +45,22 @@ class SMTPAuthentication {
 
   private final AuthOperationFactory authOperationFactory;
 
+  private final UsernamePasswordCredentials credentials;
+
   SMTPAuthentication(SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, Handler<Void> finishedHandler,
-                     Handler<Throwable> errorHandler) {
+                     Handler<Throwable> errorHandler, UsernamePasswordCredentials credentials) {
     this.connection = connection;
     this.config = config;
     this.finishedHandler = finishedHandler;
     this.errorHandler = errorHandler;
     this.authOperationFactory = authOperationFactory;
+    this.credentials = credentials;
   }
 
   public void start() {
     List<String> auths = intersectAllowedMethods();
     final boolean foundAllowedMethods = !auths.isEmpty();
-    if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-      && foundAllowedMethods) {
+    if (isLoginConfigured() && foundAllowedMethods) {
       authCmd(auths);
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
@@ -112,7 +115,7 @@ class SMTPAuthentication {
   private void authMethod(String auth, Handler<Throwable> onError) {
     AuthOperation authMethod;
     try {
-      authMethod = authOperationFactory.createAuth(config, auth);
+      authMethod = authOperationFactory.createAuth(config, auth, credentials);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
       handleError(ex);
@@ -178,4 +181,9 @@ class SMTPAuthentication {
     errorHandler.handle(th);
   }
 
+  private boolean isLoginConfigured() {
+    return config.getLogin() != LoginOption.DISABLED
+      && ((config.getUsername() != null && config.getPassword() != null)
+      || credentials != null);
+  }
 }

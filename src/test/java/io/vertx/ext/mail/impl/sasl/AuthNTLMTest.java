@@ -42,7 +42,7 @@ public class AuthNTLMTest extends SMTPTestDummy {
   @Test
   public void testAuthUserName() {
     MailConfig config = configLogin().setUsername("CORP\\testuserA").setPassword("test_password");
-    AuthOperation auth = new AuthOperationFactory(null).createAuth(config, "NTLM");
+    AuthOperation auth = new AuthOperationFactory(null).createAuth(config, "NTLM", null);
     assertNotNull(auth);
     assertTrue(auth instanceof NTLMAuth);
     NTLMAuth ntlmAuth = (NTLMAuth)auth;
@@ -51,7 +51,7 @@ public class AuthNTLMTest extends SMTPTestDummy {
     assertEquals("test_password", ntlmAuth.password);
 
     config = configLogin().setUsername("testuserA").setPassword("test_password").setNtDomain("CORP").setWorkstation("exVM");
-    auth = new AuthOperationFactory(null).createAuth(config, "NTLM");
+    auth = new AuthOperationFactory(null).createAuth(config, "NTLM", null);
     assertNotNull(auth);
     assertTrue(auth instanceof NTLMAuth);
     ntlmAuth = (NTLMAuth)auth;

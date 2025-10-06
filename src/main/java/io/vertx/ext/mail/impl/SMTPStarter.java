@@ -16,11 +16,12 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
+
+import java.util.function.Supplier;
 
 /**
  * this encapsulates open connection, initial dialogue and authentication
@@ -29,26 +30,52 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
  */
 class SMTPStarter {
 
+  private static final Expectation<UsernamePasswordCredentials> CREDENTIALS_EXPECTATION = new Expectation<UsernamePasswordCredentials>() {
+    @Override
+    public boolean test(UsernamePasswordCredentials credentials) {
+      return credentials != null && credentials.getUsername() != null && credentials.getPassword() != null;
+    }
+
+    @Override
+    public Throwable describe(UsernamePasswordCredentials credentials) {
+      if (credentials == null) {
+        return new VertxException("Credentials must not be null", true);
+      }
+      return new VertxException("Username or password is null", true);
+    }
+  };
+
+
   private final SMTPConnection connection;
   private final String hostname;
   private final MailConfig config;
   private final AuthOperationFactory authOperationFactory;
+  private final Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier;
   private final Handler<AsyncResult<SMTPConnection>> handler;
 
-  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory, Handler<AsyncResult<SMTPConnection>> handler) {
+  SMTPStarter(SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier, Handler<AsyncResult<SMTPConnection>> handler) {
     this.connection = connection;
     this.hostname = hostname;
     this.config = config;
     this.authOperationFactory = authOperationFactory;
+    this.credentialsSupplier = credentialsSupplier;
     this.handler = handler;
   }
 
   void serverGreeting(String message) {
-    new SMTPInitialDialogue(connection, config, hostname, v -> doAuthentication(), this::handleError).start(message);
+    Future<UsernamePasswordCredentials> creds;
+    if (credentialsSupplier != null) {
+      creds = credentialsSupplier.get().expecting(CREDENTIALS_EXPECTATION);
+    } else {
+      creds = Future.succeededFuture();
+    }
+    creds.onComplete(credentials -> {
+      new SMTPInitialDialogue(connection, config, hostname, v -> doAuthentication(credentials), this::handleError).start(message);
+    }, this::handleError);
   }
 
-  private void doAuthentication() {
-    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture(connection)), this::handleError).start();
+  private void doAuthentication(UsernamePasswordCredentials credentials) {
+    new SMTPAuthentication(connection, config, this.authOperationFactory, v -> handler.handle(Future.succeededFuture(connection)), this::handleError, credentials).start();
   }
 
   private void handleError(Throwable throwable) {
