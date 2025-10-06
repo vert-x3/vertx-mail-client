@@ -16,6 +16,7 @@
 
 package io.vertx.ext.mail.impl.sasl;
 
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.auth.prng.PRNG;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.Utils;
@@ -68,9 +69,9 @@ public final class AuthOperationFactory {
     return this;
   }
 
-  public AuthOperation createAuth(MailConfig mailConfig, String authMethod) {
-    String username = mailConfig.getUsername();
-    String password = mailConfig.getPassword();
+  public AuthOperation createAuth(MailConfig mailConfig, String authMethod, UsernamePasswordCredentials credentials) {
+    String username = credentials != null ? credentials.getUsername() : mailConfig.getUsername();
+    String password = credentials != null ? credentials.getPassword() : mailConfig.getPassword();
     switch (authMethod) {
       case "XOAUTH2":
         return new AuthXOAUTH2(username, password);
@@ -97,5 +98,4 @@ public final class AuthOperationFactory {
     }
     throw new IllegalArgumentException("Unsupported Authentication Method: " + authMethod);
   }
-
 }

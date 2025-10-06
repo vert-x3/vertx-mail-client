@@ -16,9 +16,11 @@
 
 package examples;
 
+import io.vertx.core.Future;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.docgen.Source;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.*;
 
 /**
@@ -48,6 +50,24 @@ public class MailExamples {
     config.setUsername("user");
     config.setPassword("password");
     MailClient mailClient = MailClient.create(vertx, config);
+  }
+
+  public void dynamicCredentials(Vertx vertx) {
+    MailConfig config = new MailConfig()
+      .setHostname("mail.example.com")
+      .setPort(587)
+      .setStarttls(StartTLSOptions.REQUIRED);
+    MailClient mailClient = MailClient.builder(vertx)
+      .with(config)
+      .withCredentialsSupplier(() -> {
+        Future<UsernamePasswordCredentials> future = retrieveCredentialsAsync();
+        return future;
+      })
+      .build();
+  }
+
+  private Future<UsernamePasswordCredentials> retrieveCredentialsAsync() {
+    return Future.succeededFuture();
   }
 
   public void mailMessage() {
