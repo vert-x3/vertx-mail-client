@@ -16,13 +16,14 @@
 
 package io.vertx.tests.mail.client;
 
+import io.vertx.core.Future;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.*;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Timeout;
 import io.vertx.test.core.VertxTestBase;
-
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Before;
@@ -30,6 +31,9 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
+
+import java.util.Objects;
+import java.util.function.Supplier;
 
 /**
  * Support functions for SMTP tests
@@ -68,6 +72,22 @@ public abstract class SMTPTestBase extends VertxTestBase {
    */
   protected MailClient mailClientLogin() {
     return MailClient.create(vertx, configLogin());
+  }
+
+  protected MailClient mailClientLoginWithCredentialsSupplier() {
+    MailConfig config = configLogin();
+    Supplier<Future<UsernamePasswordCredentials>> supplier = new Supplier<>() {
+
+      final String username = Objects.requireNonNull(config.getUsername());
+      final String password = Objects.requireNonNull(config.getPassword());
+
+      @Override
+      public Future<UsernamePasswordCredentials> get() {
+        return Future.succeededFuture(new UsernamePasswordCredentials(username, password));
+      }
+    };
+    config.setUsername(null).setPassword(null);
+    return MailClient.builder(vertx).with(config).withCredentialsSupplier(supplier).build();
   }
 
   /**

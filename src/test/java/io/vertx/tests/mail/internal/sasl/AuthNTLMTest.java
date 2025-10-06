@@ -22,9 +22,9 @@ import io.vertx.ext.mail.MailMessage;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import io.vertx.ext.mail.impl.sasl.NTLMAuth;
-import io.vertx.tests.mail.client.SMTPTestDummy;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import io.vertx.tests.mail.client.SMTPTestDummy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -45,7 +45,7 @@ public class AuthNTLMTest extends SMTPTestDummy {
   @Test
   public void testAuthUserName() {
     MailConfig config = configLogin().setUsername("CORP\\testuserA").setPassword("test_password");
-    AuthOperation auth = new AuthOperationFactory(null).createAuth(config, "NTLM");
+    AuthOperation auth = new AuthOperationFactory(null).createAuth(config, "NTLM", null);
     assertNotNull(auth);
     assertTrue(auth instanceof NTLMAuth);
     NTLMAuth ntlmAuth = (NTLMAuth)auth;
@@ -54,7 +54,7 @@ public class AuthNTLMTest extends SMTPTestDummy {
     assertEquals("test_password", ntlmAuth.password());
 
     config = configLogin().setUsername("testuserA").setPassword("test_password").setNtDomain("CORP").setWorkstation("exVM");
-    auth = new AuthOperationFactory(null).createAuth(config, "NTLM");
+    auth = new AuthOperationFactory(null).createAuth(config, "NTLM", null);
     assertNotNull(auth);
     assertTrue(auth instanceof NTLMAuth);
     ntlmAuth = (NTLMAuth)auth;

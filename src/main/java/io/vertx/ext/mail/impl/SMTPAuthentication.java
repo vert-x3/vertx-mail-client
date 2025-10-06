@@ -22,6 +22,7 @@ import io.vertx.core.Promise;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.LoginOption;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperation;
@@ -46,19 +47,20 @@ class SMTPAuthentication {
   private final AuthOperationFactory authOperationFactory;
 
   private final Promise<Void> promise;
+  private final UsernamePasswordCredentials credentials;
 
-  SMTPAuthentication(ContextInternal context, SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory) {
+  SMTPAuthentication(ContextInternal context, SMTPConnection connection, MailConfig config, AuthOperationFactory authOperationFactory, UsernamePasswordCredentials credentials) {
     this.connection = connection;
     this.config = config;
     this.authOperationFactory = authOperationFactory;
     this.promise = context.promise();
+    this.credentials = credentials;
   }
 
   public Future<Void> start() {
     List<String> auths = intersectAllowedMethods();
     final boolean foundAllowedMethods = !auths.isEmpty();
-    if (config.getLogin() != LoginOption.DISABLED && config.getUsername() != null && config.getPassword() != null
-      && foundAllowedMethods) {
+    if (isLoginConfigured() && foundAllowedMethods) {
       authCmd(auths);
     } else {
       if (config.getLogin() == LoginOption.REQUIRED) {
@@ -115,7 +117,7 @@ class SMTPAuthentication {
   private void authMethod(String auth, Handler<Throwable> onError) {
     AuthOperation authMethod;
     try {
-      authMethod = authOperationFactory.createAuth(config, auth);
+      authMethod = authOperationFactory.createAuth(config, auth, credentials);
     } catch (IllegalArgumentException | SecurityException ex) {
       log.warn("authentication factory threw exception", ex);
       promise.fail(ex);
@@ -173,4 +175,9 @@ class SMTPAuthentication {
     });
   }
 
+  private boolean isLoginConfigured() {
+    return config.getLogin() != LoginOption.DISABLED
+      && ((config.getUsername() != null && config.getPassword() != null)
+      || credentials != null);
+  }
 }

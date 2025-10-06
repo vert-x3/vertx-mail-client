@@ -26,8 +26,8 @@ import io.vertx.ext.mail.impl.sasl.AuthXOAUTH2;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.junit.Assert.*;
 
 /**
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
@@ -35,23 +35,21 @@ import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 public class AuthOperationFactoryTest {
 
   /**
-   * Test method for
-   * {@link io.vertx.ext.mail.impl.sasl.AuthOperationFactory#createAuth(MailConfig, java.lang.String)}
-   * make sure that the default auth method works and is PLAIN
+   * Test that the default auth method works and is PLAIN
    */
   @Test
   public final void testCreateAuth() {
-    Assert.assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "PLAIN").getClass());
+    Assert.assertEquals(AuthPlain.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "PLAIN", null).getClass());
   }
 
   @Test(expected = IllegalArgumentException.class)
   public final void testAuthNotFound() {
-    assertNull(new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "ASDF"));
+    assertNull(new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("pw"), "ASDF", null));
   }
 
   @Test
   public final void testCreateXOAUTH2Auth() {
-    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("token"), "XOAUTH2").getClass());
+    assertEquals(AuthXOAUTH2.class, new AuthOperationFactory(null).createAuth(new MailConfig().setUsername("user").setPassword("token"), "XOAUTH2", null).getClass());
   }
 
   @Test
