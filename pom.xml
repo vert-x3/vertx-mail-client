@@ -32,7 +32,7 @@
 
   <properties>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
-    <hamcrest.version>2.2</hamcrest.version>
+    <hamcrest.version>3.0</hamcrest.version>
     <james.jdkim.version>0.3</james.jdkim.version>
     <junit.version>4.13.2</junit.version>
     <subethasmtp.version>3.1.7</subethasmtp.version>
