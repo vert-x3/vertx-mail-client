@@ -16,10 +16,15 @@
 
 package io.vertx.ext.mail.impl;
 
+import io.vertx.core.Expectation;
 import io.vertx.core.Future;
+import io.vertx.core.VertxException;
 import io.vertx.core.internal.ContextInternal;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
+
+import java.util.function.Supplier;
 
 /**
  * this encapsulates open connection, initial dialogue and authentication
@@ -28,23 +33,47 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
  */
 class SMTPStarter {
 
+  private static final Expectation<UsernamePasswordCredentials> CREDENTIALS_EXPECTATION = new Expectation<>() {
+    @Override
+    public boolean test(UsernamePasswordCredentials credentials) {
+      return credentials != null && credentials.getUsername() != null && credentials.getPassword() != null;
+    }
+
+    @Override
+    public Throwable describe(UsernamePasswordCredentials credentials) {
+      if (credentials == null) {
+        return new VertxException("Credentials must not be null", true);
+      }
+      return new VertxException("Username or password is null", true);
+    }
+  };
+
   private final ContextInternal context;
   private final SMTPConnection connection;
   private final String hostname;
   private final MailConfig config;
   private final AuthOperationFactory authOperationFactory;
+  private final Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier;
 
-  SMTPStarter(ContextInternal context, SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory) {
+  SMTPStarter(ContextInternal context, SMTPConnection connection, MailConfig config, String hostname, AuthOperationFactory authOperationFactory, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
     this.context = context;
     this.connection = connection;
     this.hostname = hostname;
     this.config = config;
     this.authOperationFactory = authOperationFactory;
+    this.credentialsSupplier = credentialsSupplier;
   }
 
   Future<Void> serverGreeting(String message) {
-    return new SMTPInitialDialogue(context, connection, config, hostname).start(message)
-      .flatMap(ignored -> new SMTPAuthentication(context, connection, config, this.authOperationFactory).start());
+    Future<UsernamePasswordCredentials> creds;
+    if (credentialsSupplier != null) {
+      creds = credentialsSupplier.get().expecting(CREDENTIALS_EXPECTATION);
+    } else {
+      creds = Future.succeededFuture();
+    }
+    return creds.compose(credentials -> {
+      return new SMTPInitialDialogue(context, connection, config, hostname).start(message)
+        .flatMap(ignored -> new SMTPAuthentication(context, connection, config, authOperationFactory, credentials).start());
+    });
   }
-
 }
