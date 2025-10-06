@@ -18,7 +18,6 @@ package io.vertx.ext.mail;
 
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -53,6 +52,32 @@ public class MailAuthTest extends SMTPTestDummy {
       "221 2.0.0 Bye");
 
     testSuccess(mailClientLogin());
+  }
+
+  @Test
+  public void authLoginTestWithCredentialsSupplier(TestContext testContext) {
+    this.testContext = testContext;
+    smtpServer.setDialogue("220 example.com ESMTP",
+      "EHLO",
+      "250-example.com\n" +
+        "250 AUTH LOGIN",
+      "AUTH LOGIN",
+      "334 VXNlcm5hbWU6",
+      "eHh4",
+      "334 UGFzc3dvcmQ6",
+      "eXl5",
+      "250 2.1.0 Ok",
+      "MAIL FROM",
+      "250 2.1.0 Ok",
+      "RCPT TO",
+      "250 2.1.5 Ok",
+      "DATA",
+      "354 End data with <CR><LF>.<CR><LF>",
+      "250 2.0.0 Ok: queued as ABCD",
+      "QUIT",
+      "221 2.0.0 Bye");
+
+    testSuccess(mailClientLoginWithCredentialsSupplier());
   }
 
   @Test

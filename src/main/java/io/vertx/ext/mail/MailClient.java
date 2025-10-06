@@ -19,9 +19,9 @@ package io.vertx.ext.mail;
 import io.vertx.codegen.annotations.Fluent;
 import io.vertx.codegen.annotations.VertxGen;
 import io.vertx.core.*;
-import io.vertx.ext.mail.impl.MailClientImpl;
+import io.vertx.ext.mail.impl.MailClientBuilderImpl;
 
-import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * SMTP mail client for Vert.x
@@ -39,6 +39,15 @@ public interface MailClient {
   String DEFAULT_POOL_NAME = "DEFAULT_POOL";
 
   /**
+   * Provide a builder for {@link MailClient}.
+   * <p>
+   * It can be used to configure advanced settings like changing credentials with {@link MailClientBuilder#withCredentialsSupplier(Supplier)}.
+   */
+  static MailClientBuilder builder(Vertx vertx) {
+    return new MailClientBuilderImpl(vertx);
+  }
+
+  /**
    * Create a non shared instance of the mail client.
    *
    * @param vertx  the Vertx instance the operation will be run in
@@ -46,7 +55,7 @@ public interface MailClient {
    * @return MailClient instance that can then be used to send multiple mails
    */
   static MailClient create(Vertx vertx, MailConfig config) {
-    return new MailClientImpl(vertx, config, UUID.randomUUID().toString());
+    return builder(vertx).with(config).build();
   }
 
   /**
@@ -59,7 +68,7 @@ public interface MailClient {
    * @return the client
    */
   static MailClient createShared(Vertx vertx, MailConfig config, String poolName) {
-    return new MailClientImpl(vertx, config, poolName);
+    return builder(vertx).with(config).shared(poolName).build();
   }
 
   /**
@@ -69,7 +78,7 @@ public interface MailClient {
    * @return the client
    */
   static MailClient createShared(Vertx vertx, MailConfig config) {
-    return new MailClientImpl(vertx, config, DEFAULT_POOL_NAME);
+    return builder(vertx).with(config).shared(DEFAULT_POOL_NAME).build();
   }
 
   /**

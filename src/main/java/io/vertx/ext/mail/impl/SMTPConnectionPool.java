@@ -16,19 +16,14 @@
 
 package io.vertx.ext.mail.impl;
 
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Context;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.net.NetClient;
 import io.vertx.core.net.impl.pool.Lease;
 import io.vertx.ext.auth.PRNG;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.StartTLSOptions;
 import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
@@ -36,6 +31,7 @@ import io.vertx.ext.mail.impl.sasl.AuthOperationFactory;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 class SMTPConnectionPool {
@@ -50,14 +46,21 @@ class SMTPConnectionPool {
   private final Vertx vertx;
   private final NetClient netClient;
   private final MailConfig config;
+  private final Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier;
 
   private boolean closed = false;
   private final AtomicReference<SMTPEndPoint> endPoint = new AtomicReference<>();
   private long timerID = -1;
 
+  // Useful for testing
   SMTPConnectionPool(Vertx vertx, MailConfig config) {
+    this(vertx, config, null);
+  }
+
+  SMTPConnectionPool(Vertx vertx, MailConfig config, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
     this.vertx = vertx;
     this.config = config;
+    this.credentialsSupplier = credentialsSupplier;
     // If the hostname verification isn't set yet, but we are configured to use SSL, update that now
     String verification = config.getHostnameVerificationAlgorithm();
     if ((verification == null || verification.isEmpty()) && !config.isTrustAll() &&
@@ -126,7 +129,7 @@ class SMTPConnectionPool {
       } else {
         reset = false;
         Promise<SMTPConnection> connInitial = contextInternal.promise();
-        SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, connInitial);
+        SMTPStarter starter = new SMTPStarter(conn, this.config, hostname, authOperationFactory, credentialsSupplier, connInitial);
         try {
           conn.init(starter::serverGreeting);
         } catch (Exception e) {

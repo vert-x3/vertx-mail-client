@@ -22,6 +22,7 @@ import io.vertx.core.impl.logging.Logger;
 import io.vertx.core.impl.logging.LoggerFactory;
 import io.vertx.core.shareddata.LocalMap;
 import io.vertx.core.shareddata.Shareable;
+import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.MailMessage;
@@ -33,6 +34,7 @@ import io.vertx.ext.mail.mailencoder.MailEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -60,10 +62,15 @@ public class MailClientImpl implements MailClient {
   // the constructor may throw IllegalStateException because of wrong DKIM configuration.
   private final List<DKIMSigner> dkimSigners;
 
+  // Useful for testing
   public MailClientImpl(Vertx vertx, MailConfig config, String poolName) {
+    this(vertx, config, poolName, null);
+  }
+
+  public MailClientImpl(Vertx vertx, MailConfig config, String poolName, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
     this.vertx = vertx;
     this.config = config;
-    this.holder = lookupHolder(poolName, config);
+    this.holder = lookupHolder(poolName, config, credentialsSupplier);
     this.connectionPool = holder.pool();
     if (config != null && config.isEnableDKIM() && config.getDKIMSignOptions() != null) {
       dkimSigners = config.getDKIMSignOptions().stream().map(ops -> new DKIMSigner(ops, vertx)).collect(Collectors.toList());
@@ -219,12 +226,12 @@ public class MailClientImpl implements MailClient {
     return connectionPool;
   }
 
-  private MailHolder lookupHolder(String poolName, MailConfig config) {
+  private MailHolder lookupHolder(String poolName, MailConfig config, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
     synchronized (vertx) {
       LocalMap<String, MailHolder> map = vertx.sharedData().getLocalMap(POOL_LOCAL_MAP_NAME);
       MailHolder theHolder = map.get(poolName);
       if (theHolder == null) {
-        theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName));
+        theHolder = new MailHolder(vertx, config, () -> removeFromMap(map, poolName), credentialsSupplier);
         map.put(poolName, theHolder);
       } else {
         theHolder.incRefCount();
@@ -247,9 +254,9 @@ public class MailClientImpl implements MailClient {
     final Runnable closeRunner;
     int refCount = 1;
 
-    MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner) {
+    MailHolder(Vertx vertx, MailConfig config, Runnable closeRunner, Supplier<Future<UsernamePasswordCredentials>> credentialsSupplier) {
       this.closeRunner = closeRunner;
-      this.pool= new SMTPConnectionPool(vertx, config);
+      this.pool = new SMTPConnectionPool(vertx, config, credentialsSupplier);
     }
 
     SMTPConnectionPool pool() {
