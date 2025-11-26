@@ -16,16 +16,16 @@
 
 package io.vertx.tests.mail.client;
 
-import io.vertx.core.internal.logging.Logger;
-import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.net.ProxyType;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.test.proxy.SocksProxy;
-import io.vertx.test.proxy.TestProxyBase;
+import io.vertx.test.proxy.Proxy;
+import io.vertx.test.proxy.ProxyKind;
+import io.vertx.test.proxy.WithProxy;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,24 +37,23 @@ import org.junit.runner.RunWith;
 @RunWith(VertxUnitRunner.class)
 public class MailProxyTest extends SMTPTestWiser {
 
-  private static final Logger log = LoggerFactory.getLogger(MailProxyTest.class);
-
-  private TestProxyBase proxy;
+  @Rule
+  public Proxy proxy = new Proxy();
 
   @Test
+  @WithProxy(kind = ProxyKind.SOCKS5)
   public void testSetUpProxy(TestContext context) throws Exception {
     this.testContext = context;
     MailConfig mailConfig = configLogin().setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setPort(11080));
-    proxy = new SocksProxy();
-    proxy.start(vertx);
     MailClient client = MailClient.createShared(vertx, mailConfig);
     client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
-      assertEquals("localhost:1587", proxy.getLastUri());
+      assertEquals("localhost:1587", proxy.lastUri());
       client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
 
   @Test
+  @WithProxy(kind = ProxyKind.SOCKS5, username = "proxyUser")
   public void testSetUpProxyAuth(TestContext context) throws Exception {
     this.testContext = context;
     MailConfig mailConfig = configLogin().setProxyOptions(new ProxyOptions()
@@ -63,23 +62,10 @@ public class MailProxyTest extends SMTPTestWiser {
       .setUsername("proxyUser")
       .setPassword("proxyUser")
     );
-    proxy = new SocksProxy();
-    proxy.username("proxyUser");
-    proxy.start(vertx);
     MailClient client = MailClient.createShared(vertx, mailConfig);
     client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
-      assertEquals("localhost:1587", proxy.getLastUri());
+      assertEquals("localhost:1587", proxy.lastUri());
       client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
-
-  @Override
-  public void tearDown() throws Exception {
-    super.tearDown();
-    if (proxy != null) {
-      log.debug("stop the proxy server.");
-      proxy.stop();
-    }
-  }
-
 }
