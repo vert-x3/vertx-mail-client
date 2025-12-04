@@ -8,8 +8,3 @@ A simple asynchronous SMTP client for Vert.x
 Please see the main documentation on the web-site for a full description:
 
 * https://vertx.io/docs/vertx-mail-client/java/[Java documentation]
-* https://vertx.io/docs/vertx-mail-client/js/[JavaScript documentation]
-* https://vertx.io/docs/vertx-mail-client/kotlin/[Kotlin documentation]
-* https://vertx.io/docs/vertx-mail-client/groovy/[Groovy documentation]
-* https://vertx.io/docs/vertx-mail-client/ruby/[Ruby documentation]
-
