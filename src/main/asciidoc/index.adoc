@@ -178,6 +178,7 @@ The MailMessage object has the following properties
 * `cc` same as to
 * `bcc` same as to
 * `bounceAddress` String representing the error address (MAIL FROM), if not set from is used
+* `subject` String representing the subject of the mail (must be single line)
 * `text` String representing the text/plain part of the mail
 * `html` String representing the text/html part of the mail
 * `attachment` MailAttachment or list of MailAttachment attachments of the message
