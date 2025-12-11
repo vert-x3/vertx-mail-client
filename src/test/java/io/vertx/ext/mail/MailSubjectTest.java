@@ -23,6 +23,8 @@ import org.junit.runner.RunWith;
 
 import javax.mail.internet.MimeMessage;
 
+import static org.junit.Assert.assertThrows;
+
 @RunWith(VertxUnitRunner.class)
 public class MailSubjectTest extends SMTPTestWiser {
 
@@ -51,6 +53,24 @@ public class MailSubjectTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       assertEquals(subject, mimeMessage.getSubject());
+    });
+  }
+
+  @Test
+  public void testSubjectNotSingleLine_LF() {
+    final String subject = "\nfoo\nbar\n";
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      exampleMessage().setSubject(subject);
+    });
+  }
+
+  @Test
+  public void testSubjectNotSingleLine_CR() {
+    final String subject = "\rfoo\rbar\r";
+
+    assertThrows(IllegalArgumentException.class, () -> {
+      exampleMessage().setSubject(subject);
     });
   }
 }
