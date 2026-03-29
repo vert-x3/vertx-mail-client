@@ -17,15 +17,16 @@
 package io.vertx.tests.mail.client;
 
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.ext.auth.authentication.UsernamePasswordCredentials;
 import io.vertx.ext.mail.*;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.Timeout;
-import io.vertx.test.core.VertxTestBase;
 import org.hamcrest.Matcher;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TestRule;
@@ -43,7 +44,7 @@ import java.util.function.Supplier;
  *
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
-public abstract class SMTPTestBase extends VertxTestBase {
+public abstract class SMTPTestBase {
 
   // run all smtp tests with a timeout of 10 seconds
   @Rule
@@ -59,6 +60,7 @@ public abstract class SMTPTestBase extends VertxTestBase {
    * assert operations
    */
   protected TestContext testContext;
+  protected Vertx vertx;
 
   /**
    * @return
@@ -291,24 +293,33 @@ public abstract class SMTPTestBase extends VertxTestBase {
    */
   protected <T> void assertThat(T actual, Matcher<T> matcher) {
     try {
-      super.assertThat(actual, matcher);
+      Assert.assertThat(actual, matcher);
     } catch (AssertionError e) {
       testContext.fail(e);
     }
   }
 
-  @Override
+  @Before
   public void setUp() throws Exception {
-    super.setUp();
+    vertx = Vertx.vertx();
     startSMTP();
   }
 
   protected abstract void startSMTP();
 
-  @Override
+  @After
   public void tearDown() throws Exception {
-    stopSMTP();
-    super.tearDown();
+    try {
+      stopSMTP();
+    } finally {
+      try {
+        vertx
+          .close()
+          .await();
+      } finally {
+        vertx = null;
+      }
+    }
   }
 
   protected abstract void stopSMTP();
