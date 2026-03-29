@@ -33,7 +33,6 @@
   <properties>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
     <assertj.version>3.24.2</assertj.version>
-    <hamcrest.version>2.2</hamcrest.version>
     <james.jdkim.version>0.3</james.jdkim.version>
     <junit.version>4.13.2</junit.version>
     <subethasmtp.version>3.1.7</subethasmtp.version>
@@ -87,18 +86,6 @@
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
       <version>${assertj.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-core</artifactId>
-      <version>${hamcrest.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-library</artifactId>
-      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>

@@ -20,8 +20,6 @@ import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-
 @RunWith(VertxUnitRunner.class)
 public class SMTPSendMailTest extends SMTPTestWiser {
 

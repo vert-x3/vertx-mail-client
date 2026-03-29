@@ -25,8 +25,6 @@ import org.subethamail.wiser.WiserMessage;
 
 import javax.mail.internet.MimeMessage;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 /**
  * Test messages which has longer lines than 1000 characters.
  *
@@ -51,7 +49,7 @@ public class MailLongMessageTest extends SMTPTestWiser {
       final WiserMessage message = wiser.getMessages().get(0);
       testContext.assertEquals("from@example.com", message.getEnvelopeSender());
       final MimeMessage mimeMessage = message.getMimeMessage();
-      assertThat(mimeMessage.getContentType(), containsString("text/html"));
+      assertThat(mimeMessage.getContentType(), s -> s.contains("text/html"));
       testContext.assertEquals("Subject", mimeMessage.getSubject());
       testContext.assertEquals(sb + "\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
     });
