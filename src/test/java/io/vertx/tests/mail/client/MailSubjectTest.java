@@ -38,7 +38,7 @@ public class MailSubjectTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setSubject(subject);
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
-      assertEquals(subject, mimeMessage.getSubject());
+      testContext.assertEquals(subject, mimeMessage.getSubject());
     });
   }
 
@@ -52,7 +52,7 @@ public class MailSubjectTest extends SMTPTestWiser {
     MailMessage message = exampleMessage().setSubject(subject);
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
-      assertEquals(subject, mimeMessage.getSubject());
+      testContext.assertEquals(subject, mimeMessage.getSubject());
     });
   }
 }

@@ -29,8 +29,6 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
-import static org.hamcrest.core.StringContains.containsString;
-
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 
@@ -112,7 +110,7 @@ public class SMTPTestWiser extends SMTPTestBase {
       final WiserMessage message = wiser.getMessages().get(0);
       testContext.assertEquals("from@example.com", message.getEnvelopeSender());
       final MimeMessage mimeMessage = message.getMimeMessage();
-      assertThat(mimeMessage.getContentType(), containsString("text/plain"));
+      assertThat(mimeMessage.getContentType(), s -> s.contains("text/plain"));
       testContext.assertEquals("Subject", mimeMessage.getSubject());
       testContext.assertEquals("Message\n", TestUtils.conv2nl(TestUtils.inputStreamToString(mimeMessage.getInputStream())));
     };

@@ -19,6 +19,7 @@
  */
 package io.vertx.tests.mail.internal;
 
+import io.vertx.core.Vertx;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.ext.mail.MailClient;
@@ -28,8 +29,9 @@ import io.vertx.ext.mail.impl.MailClientImpl;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
-import io.vertx.test.core.VertxTestBase;
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -37,9 +39,25 @@ import org.junit.runner.RunWith;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @RunWith(VertxUnitRunner.class)
-public class MailClientImplTest extends VertxTestBase {
+public class MailClientImplTest {
 
   private static final Logger log = LoggerFactory.getLogger(MailClientImplTest.class);
+
+  private Vertx vertx;
+
+  @Before
+  public void setUp() {
+    vertx = Vertx.vertx();
+  }
+
+  @After
+  public void tearDown() {
+    try {
+      vertx.close().await();
+    } finally {
+      vertx = null;
+    }
+  }
 
   @Test
   public final void testMailClientImpl(TestContext testContext) {

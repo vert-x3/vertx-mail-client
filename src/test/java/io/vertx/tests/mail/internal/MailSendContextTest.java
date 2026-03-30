@@ -37,17 +37,23 @@ public class MailSendContextTest extends SMTPTestWiser {
   private static final Logger log = LoggerFactory.getLogger(MailSendContextTest.class);
 
   private class VerticleA extends VerticleBase {
+    final TestContext testContext;
     MailClient mailClientA;
+
+    public VerticleA(TestContext testContext) {
+      this.testContext = testContext;
+    }
+
     @Override
     public Future<?> start() throws Exception {
       mailClientA = MailClient.create(vertx, configLogin());
       return mailClientA.sendMail(exampleMessage()).compose(r -> {
-        assertEquals(Vertx.currentContext(), context);
+        testContext.assertEquals(Vertx.currentContext(), context);
         // deploy Verticle B
         VerticleB verticleB = new VerticleB();
         return vertx.deployVerticle(verticleB).compose(dr -> {
-          assertEquals(Vertx.currentContext(), context);
-          assertNotNull(verticleB.mailClientB);
+          testContext.assertEquals(Vertx.currentContext(), context);
+          testContext.assertNotNull(verticleB.mailClientB);
           return verticleB.mailClientB.sendMail(exampleMessage());
         });
       });
@@ -74,7 +80,7 @@ public class MailSendContextTest extends SMTPTestWiser {
 
   @Test
   public void sendMailDifferentContext(TestContext testContext) {
-    VerticleA verticleA = new VerticleA();
+    VerticleA verticleA = new VerticleA(testContext);
     log.debug("Deploy VerticleA");
     vertx.deployVerticle(verticleA).onComplete(testContext.asyncAssertSuccess(va -> vertx.undeploy(va).onComplete(testContext.asyncAssertSuccess())));
   }

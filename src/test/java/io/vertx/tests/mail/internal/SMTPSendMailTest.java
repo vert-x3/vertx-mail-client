@@ -20,8 +20,6 @@ import javax.mail.internet.MimeMessage;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.startsWith;
-
 @RunWith(VertxUnitRunner.class)
 public class SMTPSendMailTest extends SMTPTestWiser {
 
@@ -150,7 +148,7 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .flatMap((ignore) -> smtpConnection.write("."))
         .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
-          assertTrue(result.isStatusOk());
+          testContext.assertTrue(result.isStatusOk());
           return result.isStatusOk();
         })
         ;
@@ -180,10 +178,10 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       String rawSubject = mimeMessage.getHeader("Subject", null);
-      assertEquals("raw Subject is not Wrapped", subject, rawSubject);
+      testContext.assertEquals(subject, rawSubject, "raw Subject is not Wrapped");
 
       String rawTo = mimeMessage.getHeader("To", null);
-      assertTrue("raw To contains \\r\\n within the AutoWrapped text", rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"));
+      testContext.assertTrue(rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"), "raw To contains \\r\\n within the AutoWrapped text");
     });
   }
 
@@ -206,10 +204,10 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       String rawSubject = mimeMessage.getHeader("Subject", null);
-      assertEquals("raw Subject is not Wrapped", subject, rawSubject);
+      testContext.assertEquals(subject, rawSubject, "raw Subject is not Wrapped");
 
       String rawTo = mimeMessage.getHeader("To", null);
-      assertTrue("raw To contains \\r\\n within the AutoWrapped text", rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"));
+      testContext.assertTrue(rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"), "raw To contains \\r\\n within the AutoWrapped text");
     });
   }
 
@@ -232,10 +230,10 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       String rawSubject = mimeMessage.getHeader("Subject", null);
-      assertEquals("raw Subject is not Wrapped", subject, rawSubject);
+      testContext.assertEquals(subject, rawSubject, "raw Subject is not Wrapped");
 
       String rawFrom = mimeMessage.getHeader("From", null);
-      assertTrue("raw To contains \\r\\n within the AutoWrapped text", rawFrom.contains("\r\n") && !rawFrom.endsWith("\r\n"));
+      testContext.assertTrue(rawFrom.contains("\r\n") && !rawFrom.endsWith("\r\n"), "raw To contains \\r\\n within the AutoWrapped text");
     });
   }
 
@@ -266,12 +264,12 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       String rawSubject = mimeMessage.getHeader("Subject", null);
-      assertEquals("raw Subject is not Wrapped", subject, rawSubject);
+      testContext.assertEquals(subject, rawSubject, "raw Subject is not Wrapped");
 
       String messageText = mimeMessage.getContent().toString();
-      assertTrue(messageText.endsWith("\r\n"));
-      assertEquals("message text contains \\r\\n 3 Times in AutoWrapped text", 3, messageText.split("\r\n").length);
-      assertEquals(text, messageText.replace("\r\n", "\n"));
+      testContext.assertTrue(messageText.endsWith("\r\n"));
+      testContext.assertEquals(3, messageText.split("\r\n").length, "message text contains \\r\\n 3 Times in AutoWrapped text");
+      testContext.assertEquals(text, messageText.replace("\r\n", "\n"));
     });
   }
 
@@ -301,19 +299,19 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     testSuccess(mailClient, message, () -> {
       final MimeMessage mimeMessage = wiser.getMessages().get(0).getMimeMessage();
       String rawSubject = mimeMessage.getHeader("Subject", null);
-      assertTrue("raw subject contains \\r\\n within the AutoWrapped text", rawSubject.contains("\r\n") && !rawSubject.endsWith("\r\n"));
-      assertEquals(subject, mimeMessage.getSubject());
+      testContext.assertTrue(rawSubject.contains("\r\n") && !rawSubject.endsWith("\r\n"), "raw subject contains \\r\\n within the AutoWrapped text");
+      testContext.assertEquals(subject, mimeMessage.getSubject());
 
       String messageText = mimeMessage.getContent().toString();
-      assertTrue(messageText.endsWith("\r\n"));
-      assertEquals("message text contains \\r\\n 3 Times in AutoWrapped text", 3, messageText.split("\r\n").length);
-      assertEquals(text, messageText.replace("\r\n", "\n"));
+      testContext.assertTrue(messageText.endsWith("\r\n"));
+      testContext.assertEquals(3, messageText.split("\r\n").length, "message text contains \\r\\n 3 Times in AutoWrapped text");
+      testContext.assertEquals(text, messageText.replace("\r\n", "\n"));
 
       String rawTo = mimeMessage.getHeader("To", null);
-      assertTrue("raw To contains \\r\\n within the AutoWrapped text", rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"));
-      assertEquals(recipients, mimeMessage.getAllRecipients().length);
+      testContext.assertTrue(rawTo.contains("\r\n") && !rawTo.endsWith("\r\n"), "raw To contains \\r\\n within the AutoWrapped text");
+      testContext.assertEquals(recipients, mimeMessage.getAllRecipients().length);
       for (Address recipient : mimeMessage.getAllRecipients()) {
-        assertTrue(recipient.toString() + "is in original recipient list", to.contains(recipient.toString()));
+        testContext.assertTrue(to.contains(recipient.toString()), recipient.toString() + "is in original recipient list");
       }
     });
   }

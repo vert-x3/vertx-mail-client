@@ -26,7 +26,7 @@ import io.vertx.ext.mail.impl.sasl.AuthXOAUTH2;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 /**
@@ -57,11 +57,13 @@ public class AuthOperationFactoryTest {
     //TODO intersection between supported and specified
     AuthOperationFactory authOperationFactory = new AuthOperationFactory(null);
     MailConfig mailConfig = new MailConfig();
-    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("XOAUTH2", "NTLM", "DIGEST-MD5", "CRAM-SHA256", "CRAM-SHA1", "CRAM-MD5", "LOGIN", "PLAIN"));
+    assertThat(authOperationFactory.supportedAuths(mailConfig))
+        .containsExactly("XOAUTH2", "NTLM", "DIGEST-MD5", "CRAM-SHA256", "CRAM-SHA1", "CRAM-MD5", "LOGIN", "PLAIN");
 
     mailConfig.setAuthMethods("PLAIN LOGIN");
     // pay attention on the order
-    assertThat(authOperationFactory.supportedAuths(mailConfig), contains("LOGIN", "PLAIN"));
+    assertThat(authOperationFactory.supportedAuths(mailConfig))
+        .containsExactly("LOGIN", "PLAIN");
   }
 
 }

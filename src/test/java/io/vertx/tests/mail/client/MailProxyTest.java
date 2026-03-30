@@ -47,7 +47,7 @@ public class MailProxyTest extends SMTPTestWiser {
     MailConfig mailConfig = configLogin().setProxyOptions(new ProxyOptions().setType(ProxyType.SOCKS5).setPort(11080));
     MailClient client = MailClient.createShared(vertx, mailConfig);
     client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
-      assertEquals("localhost:1587", proxy.lastUri());
+      testContext.assertEquals("localhost:1587", proxy.lastUri());
       client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
@@ -64,7 +64,7 @@ public class MailProxyTest extends SMTPTestWiser {
     );
     MailClient client = MailClient.createShared(vertx, mailConfig);
     client.sendMail(exampleMessage()).onComplete(context.asyncAssertSuccess(r -> {
-      assertEquals("localhost:1587", proxy.lastUri());
+      testContext.assertEquals("localhost:1587", proxy.lastUri());
       client.close().onComplete(context.asyncAssertSuccess());
     }));
   }
