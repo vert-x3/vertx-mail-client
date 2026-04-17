@@ -129,4 +129,18 @@ public final class Utils {
     return Collections.singletonList(element);
   }
 
+  /**
+   * Normalizes embedded header line breaks to CRLF so folded headers are sent
+   * on the wire with RFC-compliant separators.
+   *
+   * @param value the header value
+   * @return the normalized header value
+   */
+  public static String normalizeSmtpLineBreaks(String value) {
+    if (value == null || value.indexOf('\n') == -1 && value.indexOf('\r') == -1) {
+      return value;
+    }
+    return value.replace("\r\n", "\n").replace('\r', '\n').replace("\n", "\r\n");
+  }
+
 }
