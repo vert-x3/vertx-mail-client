@@ -35,8 +35,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Support functions for SMTP tests
  * <p>

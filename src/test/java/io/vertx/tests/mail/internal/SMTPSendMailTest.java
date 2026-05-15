@@ -1,14 +1,11 @@
 package io.vertx.tests.mail.internal;
 
 import io.vertx.core.Expectation;
-import io.vertx.core.Future;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
 import io.vertx.ext.mail.*;
-import io.vertx.ext.mail.impl.SMTPConnection;
 import io.vertx.ext.mail.impl.SMTPConnectionPool;
 import io.vertx.ext.mail.impl.SMTPResponse;
-import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
 import io.vertx.tests.mail.client.SMTPTestWiser;
