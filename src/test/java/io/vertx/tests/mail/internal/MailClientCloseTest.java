@@ -63,13 +63,13 @@ public class MailClientCloseTest extends SMTPTestDummy {
     Async async = testContext.async();
     mailClient.sendMail(exampleMessage()).onComplete(testContext.asyncAssertFailure(t1 -> vertx.setTimer(100, r -> {
       mailClient.close().onComplete(testContext.asyncAssertSuccess());
-      Future<NetSocket> fut = mailClient.getConnectionPool().netClient()
-        .connect(config.getPort(), config.getHostname());
-      fut.onComplete(testContext.asyncAssertFailure(err -> {
-        testContext.assertEquals(IllegalStateException.class, err.getClass());
-        testContext.assertTrue(err.getMessage().contains("Client is closed"));
+      try {
+        mailClient.getConnectionPool().netClient()
+          .connect(config.getPort(), config.getHostname());
+        testContext.fail();
+      } catch (IllegalStateException e) {
         async.complete();
-      }));
+      }
     })));
   }
 
