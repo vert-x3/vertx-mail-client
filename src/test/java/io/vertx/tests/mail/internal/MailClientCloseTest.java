@@ -16,8 +16,6 @@
 
 package io.vertx.tests.mail.internal;
 
-import io.vertx.core.Future;
-import io.vertx.core.net.NetSocket;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.mail.MailConfig;
 import io.vertx.ext.mail.impl.MailClientImpl;
