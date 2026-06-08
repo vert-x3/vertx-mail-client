@@ -33,7 +33,7 @@
 
   <properties>
     <vertx.surefire.useModulePath>false</vertx.surefire.useModulePath>
-    <assertj.version>3.24.2</assertj.version>
+    <assertj.version>3.27.7</assertj.version>
     <james.jdkim.version>0.3</james.jdkim.version>
     <junit.version>4.13.2</junit.version>
     <subethasmtp.version>3.1.7</subethasmtp.version>
