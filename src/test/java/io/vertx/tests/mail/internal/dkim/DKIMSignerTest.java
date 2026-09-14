@@ -172,7 +172,7 @@ public class DKIMSignerTest {
   public void testSimpleHeader() {
     DKIMSignOptions dkimOps = dkimOps().setHeaderCanonAlgo(CanonicalizationAlgorithm.SIMPLE);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
-    // there will be possible to have \n in the header value, keep it as it is.
+    // folded headers are normalized to CRLF before signing.
     String name = "from";
     String value = "user@example.com";
     String canonicHeaderLine = signer.canonicHeader(name, value);
@@ -191,14 +191,14 @@ public class DKIMSignerTest {
     name = " from ";
     value = " user@example.com \n ";
     canonicHeaderLine = signer.canonicHeader(name, value);
-    assertEquals(" from :  user@example.com \n ", canonicHeaderLine);
+    assertEquals(" from :  user@example.com \r\n ", canonicHeaderLine);
   }
 
   @Test
   public void testRelaxedHeader() {
     DKIMSignOptions dkimOps = dkimOps().setHeaderCanonAlgo(CanonicalizationAlgorithm.RELAXED);
     DKIMSigner signer = new DKIMSigner(dkimOps, null);
-    // there will be possible to have \n in the header value
+    // folded headers are normalized to CRLF before relaxed canonicalization.
     String name = "From";
     String value = "user@example.com";
     String canonicHeaderLine = signer.canonicHeader(name, value);

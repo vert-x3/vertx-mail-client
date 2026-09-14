@@ -287,7 +287,7 @@ public class SMTPSendMail {
 
   private Future<Void> sendMailHeaders(MultiMap headers) {
     StringBuilder sb = new StringBuilder();
-    headers.forEach(header -> sb.append(header.getKey()).append(": ").append(header.getValue()).append("\r\n"));
+    headers.forEach(header -> sb.append(header.getKey()).append(": ").append(Utils.normalizeSmtpLineBreaks(header.getValue())).append("\r\n"));
     final String headerLines = sb.toString();
     return connection.writeLineWithDrain(headerLines, written.getAndAdd(headerLines.length()) < 1000);
   }

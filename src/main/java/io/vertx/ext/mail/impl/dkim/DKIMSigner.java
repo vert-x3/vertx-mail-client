@@ -16,6 +16,8 @@
 
 package io.vertx.ext.mail.impl.dkim;
 
+import static io.vertx.ext.mail.impl.Utils.normalizeSmtpLineBreaks;
+
 import io.vertx.codegen.annotations.Nullable;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
@@ -414,7 +416,7 @@ public class DKIMSigner {
     return headers.stream().map(h -> {
       String hValue = encodedMessage.headers().get(h);
       if (hValue != null) {
-        return h + ":" + dkimQuotedPrintableCopiedHeader(hValue);
+        return h + ":" + dkimQuotedPrintableCopiedHeader(normalizeSmtpLineBreaks(hValue));
       }
       throw new RuntimeException("Unknown email header: " + h + " in copied headers.");
     }).collect(Collectors.joining("|"));
@@ -444,11 +446,12 @@ public class DKIMSigner {
    * @return the canonicalization email header in format of 'Name':'Value'.
    */
   public String canonicHeader(String emailHeaderName, String emailHeaderValue) {
+    String normalizedHeaderValue = normalizeSmtpLineBreaks(emailHeaderValue);
     if (this.dkimSignOptions.getHeaderCanonAlgo() == CanonicalizationAlgorithm.SIMPLE) {
-      return emailHeaderName + ": " + emailHeaderValue;
+      return emailHeaderName + ": " + normalizedHeaderValue;
     }
     String headerName = emailHeaderName.trim().toLowerCase();
-    return headerName + ":" + canonicalLine(emailHeaderValue, this.dkimSignOptions.getHeaderCanonAlgo());
+    return headerName + ":" + canonicalLine(normalizedHeaderValue, this.dkimSignOptions.getHeaderCanonAlgo());
   }
 
   public String dkimMailBody(String mailBody) {
