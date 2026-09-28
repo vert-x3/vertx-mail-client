@@ -91,7 +91,7 @@ public class Utils {
    * already have decided that we have to encode the text
    */
   public static boolean mustEncode(char ch) {
-    return ch >= 128 || ch < 10 || ch >= 11 && ch < 32 || ch == '=';
+    return ch >= 128 || ch < 32 || ch == '=';
   }
 
   /*
@@ -102,7 +102,7 @@ public class Utils {
     int lineLen = 0;
     for (int i = 0; i < s.length(); i++) {
       final char ch = s.charAt(i);
-      if (ch != '=' && ch != '\t' && mustEncode(ch)) {
+      if (ch != '=' && ch != '\t' && ch != '\n' && mustEncode(ch)) {
         return true;
       }
       if (ch == '\n') {
