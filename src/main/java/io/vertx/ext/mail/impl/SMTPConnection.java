@@ -17,6 +17,7 @@
 package io.vertx.ext.mail.impl;
 
 import io.vertx.core.*;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.internal.ContextInternal;
 import io.vertx.core.internal.logging.Logger;
 import io.vertx.core.internal.logging.LoggerFactory;
@@ -46,6 +47,9 @@ public class SMTPConnection {
   private final MailConfig config;
   private Lease<SMTPConnection> lease;
   private MultilineParser nsHandler;
+  // guards the hand-over of the data received before init() to nsHandler
+  private final Object dataLock = new Object();
+  private Buffer earlyData;
   private final Handler<Void> evictionHandler;
 
   private boolean evicted;
@@ -68,6 +72,21 @@ public class SMTPConnection {
     this.context = context;
     this.evictionHandler = evictionHandler;
     this.emailsSent = new AtomicLong(0);
+    // the server may send its greeting before init() is called, a NetSocket without handler would drop it
+    ns.handler(this::handleData);
+  }
+
+  private void handleData(Buffer buffer) {
+    synchronized (dataLock) {
+      if (nsHandler != null) {
+        nsHandler.handle(buffer);
+      } else {
+        if (earlyData == null) {
+          earlyData = Buffer.buffer();
+        }
+        earlyData.appendBuffer(buffer);
+      }
+    }
   }
 
   /**
@@ -95,7 +114,7 @@ public class SMTPConnection {
       return context.failedFuture(new IllegalStateException("SMTPConnection has been initialized."));
     }
 
-    this.nsHandler = new MultilineParser(buffer -> {
+    MultilineParser parser = new MultilineParser(buffer -> {
       if (commandReplyHandler == null && !quitSent) {
         log.error("dropping reply arriving after we stopped processing the buffer.");
       } else {
@@ -111,9 +130,16 @@ public class SMTPConnection {
     Promise<String> promise = context.promise();
     commandReplyHandler = promise;
     expirationTimestamp = expirationTimestampOf(config);
-    ns.handler(this.nsHandler);
     ns.exceptionHandler(this::handleNSException);
     ns.closeHandler(this::handleNSClosed);
+    synchronized (dataLock) {
+      nsHandler = parser;
+      if (earlyData != null) {
+        Buffer data = earlyData;
+        earlyData = null;
+        parser.handle(data);
+      }
+    }
 
     return promise.future();
   }
