@@ -21,6 +21,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.impl.ContextInternal;
 import io.vertx.core.impl.NoStackTraceThrowable;
 import io.vertx.core.impl.logging.Logger;
@@ -48,6 +49,9 @@ class SMTPConnection {
   private final MailConfig config;
   private Lease<SMTPConnection> lease;
   private MultilineParser nsHandler;
+  // guards the hand-over of the data received before init() to nsHandler
+  private final Object dataLock = new Object();
+  private Buffer earlyData;
   private final Handler<Void> evictionHandler;
 
   private boolean evicted;
@@ -72,6 +76,21 @@ class SMTPConnection {
     this.context = context;
     this.evictionHandler = evictionHandler;
     this.emailsSent = new AtomicLong(0);
+    // the server may send its greeting before init() is called, a NetSocket without handler would drop it
+    ns.handler(this::handleData);
+  }
+
+  private void handleData(Buffer buffer) {
+    synchronized (dataLock) {
+      if (nsHandler != null) {
+        nsHandler.handle(buffer);
+      } else {
+        if (earlyData == null) {
+          earlyData = Buffer.buffer();
+        }
+        earlyData.appendBuffer(buffer);
+      }
+    }
   }
 
   /**
@@ -98,7 +117,7 @@ class SMTPConnection {
     if (nsHandler != null) {
       throw new IllegalStateException("SMTPConnection has been initialized.");
     }
-    this.nsHandler = new MultilineParser(buffer -> {
+    MultilineParser parser = new MultilineParser(buffer -> {
       if (commandReplyHandler == null && !quitSent) {
         handleError(new IllegalStateException("dropping reply arriving after we stopped processing the buffer."));
       } else {
@@ -114,7 +133,14 @@ class SMTPConnection {
     ns.closeHandler(this::handleNSClosed);
     commandReplyHandler = initialReplyHandler;
     this.expirationTimestamp = expirationTimestampOf(config);
-    ns.handler(this.nsHandler);
+    synchronized (dataLock) {
+      nsHandler = parser;
+      if (earlyData != null) {
+        Buffer data = earlyData;
+        earlyData = null;
+        parser.handle(data);
+      }
+    }
   }
 
   void handleNSException(Throwable t) {
