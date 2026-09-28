@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -127,6 +128,47 @@ public final class Utils {
 
   public static <T> List<T> asList(T element) {
     return Collections.singletonList(element);
+  }
+
+  /**
+   * Validate that a text string does not contain CR or LF characters, which could allow
+   * CRLF header injection (CWE-93).
+   *
+   * @param text  the text to validate, null is allowed
+   * @param label a label for error messages (e.g. "header name", "header value", "content type")
+   * @return the text, for inline assignment
+   * @throws IllegalArgumentException if the text contains CR or LF characters
+   */
+  public static String validateLineCharacters(String text, String label) {
+    if (text == null) {
+      return null;
+    }
+    int lf = text.indexOf('\n');
+    if (lf >= 0) {
+      throw new IllegalArgumentException(label + " contains the LF char on position " + lf);
+    }
+    int cr = text.indexOf('\r');
+    if (cr >= 0) {
+      throw new IllegalArgumentException(label + " contains the CR char on position " + cr);
+    }
+    return text;
+  }
+
+  /**
+   * Validate that all header names and values in a {@link MultiMap} do not contain CR or LF characters.
+   *
+   * @param headers the headers to validate, null is allowed
+   * @return the headers, for inline assignment
+   * @throws IllegalArgumentException if any name or value contains CR or LF characters
+   */
+  public static MultiMap validateLineCharacters(MultiMap headers) {
+    if (headers != null) {
+      for (Map.Entry<String, String> entry : headers) {
+        validateLineCharacters(entry.getKey(), "header name");
+        validateLineCharacters(entry.getValue(), "header value");
+      }
+    }
+    return headers;
   }
 
 }
