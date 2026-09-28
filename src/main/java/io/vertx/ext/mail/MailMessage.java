@@ -102,7 +102,7 @@ public class MailMessage {
     to = Utils.getKeyAsStringOrList(json, "to");
     cc = Utils.getKeyAsStringOrList(json, "cc");
     bcc = Utils.getKeyAsStringOrList(json, "bcc");
-    subject = validateSingleLine(json.getString("subject"));
+    subject = Utils.validateLineCharacters(json.getString("subject"), "subject");
     text = json.getString("text");
     html = json.getString("html");
     if (json.containsKey("inline_attachment")) {
@@ -135,24 +135,6 @@ public class MailMessage {
     return list;
   }
 
-  private String validateSingleLine(String text) {
-    if (text == null) {
-      return text;
-    }
-
-    int lf = text.indexOf('\n');
-    if (lf >= 0) {
-      throw new IllegalArgumentException("Single-line text contains the LF char on position " + lf + ": " + text);
-    }
-
-    int cr = text.indexOf('\r');
-    if (cr >= 0) {
-      throw new IllegalArgumentException("Single-line text contains the CR char on position " + cr + ": " + text);
-    }
-
-    return text;
-  }
-
   /**
    * construct a simple message with text/plain
    *
@@ -164,7 +146,7 @@ public class MailMessage {
   public MailMessage(String from, String to, String subject, String text) {
     this.from = from;
     this.to = Utils.asList(to);
-    this.subject = validateSingleLine(subject);
+    this.subject = Utils.validateLineCharacters(subject, "subject");
     this.text = text;
   }
 
@@ -320,7 +302,7 @@ public class MailMessage {
    * @return this to be able to use it fluently
    */
   public MailMessage setSubject(String subject) {
-    this.subject = validateSingleLine(subject);
+    this.subject = Utils.validateLineCharacters(subject, "subject");
     return this;
   }
 
@@ -441,6 +423,8 @@ public class MailMessage {
     }
     Objects.requireNonNull(key, "no null key accepted");
     Objects.requireNonNull(value, "no null value accepted");
+    Utils.validateLineCharacters(key, "header name");
+    Utils.validateLineCharacters(value, "header value");
     headers.add(key, value);
     return this;
   }
@@ -463,7 +447,7 @@ public class MailMessage {
    */
   @GenIgnore
   public MailMessage setHeaders(MultiMap headers) {
-    this.headers = headers;
+    this.headers = Utils.validateLineCharacters(headers);
     return this;
   }
 

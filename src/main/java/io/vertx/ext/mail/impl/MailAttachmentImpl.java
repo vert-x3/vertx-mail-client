@@ -142,7 +142,7 @@ public class MailAttachmentImpl implements MailAttachment {
 
   @Override
   public MailAttachment setContentType(final String contentType) {
-    this.contentType = contentType;
+    this.contentType = Utils.validateLineCharacters(contentType, "content type");
     return this;
   }
 
@@ -153,7 +153,7 @@ public class MailAttachmentImpl implements MailAttachment {
 
   @Override
   public MailAttachment setDisposition(final String disposition) {
-    this.disposition = disposition;
+    this.disposition = Utils.validateLineCharacters(disposition, "disposition");
     return this;
   }
 
@@ -164,7 +164,7 @@ public class MailAttachmentImpl implements MailAttachment {
 
   @Override
   public MailAttachment setDescription(final String description) {
-    this.description = description;
+    this.description = Utils.validateLineCharacters(description, "description");
     return this;
   }
 
@@ -175,7 +175,7 @@ public class MailAttachmentImpl implements MailAttachment {
 
   @Override
   public MailAttachment setContentId(final String contentId) {
-    this.contentId = contentId;
+    this.contentId = Utils.validateLineCharacters(contentId, "content id");
     return this;
   }
 
@@ -186,6 +186,8 @@ public class MailAttachmentImpl implements MailAttachment {
     }
     Objects.requireNonNull(key, "no null key accepted");
     Objects.requireNonNull(value, "no null value accepted");
+    Utils.validateLineCharacters(key, "header name");
+    Utils.validateLineCharacters(value, "header value");
     headers.add(key, value);
     return this;
   }
@@ -197,7 +199,7 @@ public class MailAttachmentImpl implements MailAttachment {
 
   @Override
   public MailAttachment setHeaders(final MultiMap headers) {
-    this.headers = headers;
+    this.headers = Utils.validateLineCharacters(headers);
     return this;
   }
 
