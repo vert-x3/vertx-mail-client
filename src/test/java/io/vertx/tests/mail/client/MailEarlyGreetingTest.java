@@ -19,6 +19,8 @@ package io.vertx.tests.mail.client;
 import io.vertx.ext.mail.MailClient;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -43,10 +45,21 @@ public class MailEarlyGreetingTest extends SMTPTestDummy {
   private static final int BURSTS = 50;
   private static final int BURST_SIZE = 8;
 
+  private MailClient mailClient;
+
+  @Before
+  public void createMailClient() {
+    // no keep alive: every mail opens a new connection and receives a new greeting
+    mailClient = MailClient.create(vertx, configNoSSL().setKeepAlive(false).setMaxPoolSize(BURST_SIZE));
+  }
+
+  @After
+  public void closeMailClient(TestContext testContext) {
+    mailClient.close().onComplete(testContext.asyncAssertSuccess());
+  }
+
   @Test
   public void testConcurrentSendsOnNewConnections(TestContext testContext) throws Exception {
-    // no keep alive: every mail opens a new connection and receives a new greeting
-    MailClient mailClient = MailClient.create(vertx, configNoSSL().setKeepAlive(false).setMaxPoolSize(BURST_SIZE));
     ExecutorService executor = Executors.newFixedThreadPool(BURST_SIZE);
     try {
       for (int i = 0; i < BURSTS; i++) {
@@ -80,6 +93,5 @@ public class MailEarlyGreetingTest extends SMTPTestDummy {
     } finally {
       executor.shutdownNow();
     }
-    mailClient.close().onComplete(testContext.asyncAssertSuccess());
   }
 }
