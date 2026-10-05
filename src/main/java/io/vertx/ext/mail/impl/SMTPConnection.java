@@ -68,6 +68,8 @@ public class SMTPConnection {
     this.context = context;
     this.evictionHandler = evictionHandler;
     this.emailsSent = new AtomicLong(0);
+    // the server may send its greeting before init() is called, keep it until the handler is set
+    ns.pause();
   }
 
   /**
@@ -114,6 +116,7 @@ public class SMTPConnection {
     ns.handler(this.nsHandler);
     ns.exceptionHandler(this::handleNSException);
     ns.closeHandler(this::handleNSClosed);
+    ns.resume();
 
     return promise.future();
   }
