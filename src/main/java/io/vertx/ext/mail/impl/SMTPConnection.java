@@ -72,6 +72,8 @@ class SMTPConnection {
     this.context = context;
     this.evictionHandler = evictionHandler;
     this.emailsSent = new AtomicLong(0);
+    // the server may send its greeting before init() is called, keep it until the handler is set
+    ns.pause();
   }
 
   /**
@@ -115,6 +117,7 @@ class SMTPConnection {
     commandReplyHandler = initialReplyHandler;
     this.expirationTimestamp = expirationTimestampOf(config);
     ns.handler(this.nsHandler);
+    ns.resume();
   }
 
   void handleNSException(Throwable t) {

@@ -66,7 +66,8 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
 
   @Override
   public void connect(ContextInternal context, PoolConnector.Listener listener, Handler<AsyncResult<ConnectResult<SMTPConnection>>> handler) {
-    netClient.connect(config.getPort(), config.getHostname()).onComplete(ar -> {
+    // connect from the context, so that the connect handler is registered before the socket can read the greeting
+    context.emit(x -> netClient.connect(config.getPort(), config.getHostname()).onComplete(ar -> {
       if (ar.succeeded()) {
         incRefCount();
         SMTPConnection connection = new SMTPConnection(config, ar.result(), context, v -> {
@@ -77,7 +78,7 @@ class SMTPEndPoint extends Endpoint<Lease<SMTPConnection>> implements PoolConnec
       } else {
         handler.handle(Future.failedFuture(ar.cause()));
       }
-    });
+    }));
   }
 
   void close(Promise<List<Future<SMTPConnection>>> promise) {
