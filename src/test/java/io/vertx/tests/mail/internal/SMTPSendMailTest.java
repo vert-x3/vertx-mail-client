@@ -43,6 +43,7 @@ public class SMTPSendMailTest extends SMTPTestWiser {
   private static final Logger log = LoggerFactory.getLogger(SMTPSendMailTest.class);
 
   private final MailConfig config = configNoSSL();
+  private SMTPConnectionPool pool;
 
   @Override
   protected void startSMTP(String factory) {
@@ -57,11 +58,19 @@ public class SMTPSendMailTest extends SMTPTestWiser {
     return b.toString();
   }
 
+  @Override
+  protected void stopSMTP() {
+    if (pool != null) {
+      pool.doClose().await();
+    }
+    super.stopSMTP();
+  }
+
   @Test
   public void testBareLfDetectionFailing(TestContext testContext) {
     this.testContext = testContext;
 
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool = new SMTPConnectionPool(vertx, config);
     pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
@@ -84,7 +93,8 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
           return !result.isStatusOk() && result.getValue().startsWith("554 bare <LF> received after DATA");
-        });
+        })
+        .flatMap(ignore -> smtpConnection.write("QUIT")).mapEmpty();
     }).onComplete(testContext.asyncAssertSuccess());
   }
 
@@ -92,7 +102,7 @@ public class SMTPSendMailTest extends SMTPTestWiser {
   public void testBareLfDetectionEdgeCases(TestContext testContext) {
     this.testContext = testContext;
 
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool = new SMTPConnectionPool(vertx, config);
     pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
@@ -115,7 +125,8 @@ public class SMTPSendMailTest extends SMTPTestWiser {
         .expecting(result -> {
           log.info("DATA end Response: " + result.getValue());
           return !result.isStatusOk() && result.getValue().startsWith("554 bare <LF> received after DATA");
-        });
+        })
+        .flatMap(ignore -> smtpConnection.write("QUIT")).mapEmpty();
     }).onComplete(testContext.asyncAssertSuccess());
   }
 
@@ -123,7 +134,7 @@ public class SMTPSendMailTest extends SMTPTestWiser {
   public void testBareLfDetectionSucceed(TestContext testContext) {
     this.testContext = testContext;
 
-    SMTPConnectionPool pool = new SMTPConnectionPool(vertx, config);
+    pool = new SMTPConnectionPool(vertx, config);
     pool.getConnection("hostname").compose(smtpConnection -> {
 
       //smtpConnection.setExceptionHandler(log::info);
@@ -148,7 +159,7 @@ public class SMTPSendMailTest extends SMTPTestWiser {
           testContext.assertTrue(result.isStatusOk());
           return result.isStatusOk();
         })
-        ;
+        .flatMap(ignore -> smtpConnection.write("QUIT")).mapEmpty();
     }).onComplete(testContext.asyncAssertSuccess());
   }
 
