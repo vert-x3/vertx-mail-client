@@ -59,7 +59,7 @@ class AttachmentPart extends EncodedPart {
     }
     if (name != null) {
       int index = contentType.length() + 22;
-      contentType += "; name=\"" + Utils.encodeHeader(name, index) + "\"";
+      contentType += "; name=\"" + Utils.encodeHeader(name, index, 1) + "\"";
     }
     headers.set("Content-Type", contentType);
     headers.set("Content-Transfer-Encoding", "base64");
@@ -75,7 +75,7 @@ class AttachmentPart extends EncodedPart {
     }
     if (name != null) {
       int index = disposition.length() + 33;
-      disposition += "; filename=\"" + Utils.encodeHeader(name, index) + "\"";
+      disposition += "; filename=\"" + Utils.encodeHeader(name, index, 1) + "\"";
     }
     headers.set("Content-Disposition", disposition);
     if (attachment.getContentId() != null) {
