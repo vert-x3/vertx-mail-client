@@ -380,6 +380,58 @@ public class MailEncoderTest {
   }
 
   @Test
+  public void testSubjectEncodedSupplementaryChar() throws Exception {
+    MailMessage message = new MailMessage();
+    final String subject = "🔐 Configuração";
+    final String encodedSubject = "Subject: =?UTF-8?Q?=F0=9F=94=90_Configura=C3=A7=C3=A3o?=";
+    message.setSubject(subject);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
+  public void testSubjectEncodedSupplementaryCharOnly() throws Exception {
+    MailMessage message = new MailMessage();
+    final String subject = "🔐";
+    final String encodedSubject = "Subject: =?UTF-8?Q?=F0=9F=94=90?=";
+    message.setSubject(subject);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
+  public void testSubjectEncodedSupplementaryCharFolded() throws Exception {
+    MailMessage message = new MailMessage();
+    // 44 plain chars leave less than the 12 chars the encoded emoji needs, so the encoder
+    // must fold before it rather than split it across two encoded-words
+    final String subject = repeat("a", 44) + "🔐";
+    final String encodedSubject = "Subject: =?UTF-8?Q?" + repeat("a", 44) + "?=\n"
+      + " =?UTF-8?Q?=F0=9F=94=90?=";
+    message.setSubject(subject);
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString(encodedSubject));
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
+  public void testEmailNameEncodedSupplementaryChar() throws Exception {
+    MailMessage message = new MailMessage();
+    message.setTo("user@example.com (🔐 Secure)");
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("user@example.com (=?UTF-8?Q?=F0=9F=94=90_Secure?=)"));
+  }
+
+  private static String repeat(String s, int count) {
+    StringBuilder sb = new StringBuilder();
+    for (int i = 0; i < count; i++) {
+      sb.append(s);
+    }
+    return sb.toString();
+  }
+
+  @Test
   public void testTextPlain76Chars() throws Exception {
     MailMessage message = new MailMessage();
     final String text = "ä**********************************************************************";

@@ -68,8 +68,12 @@ public class Utils {
     }
   }
 
-  private static String encodeUnicode(char input) {
-    byte[] bs = String.valueOf(input).getBytes(StandardCharsets.UTF_8);
+  /*
+   * takes a code point rather than a char because a supplementary character is a surrogate pair
+   * in UTF-16, and a lone surrogate cannot be represented in UTF-8, so it would encode as "?"
+   */
+  private static String encodeUnicode(int codePoint) {
+    byte[] bs = new String(Character.toChars(codePoint)).getBytes(StandardCharsets.UTF_8);
     StringBuilder sb = new StringBuilder();
     for (byte b : bs) {
       char ch = (char) b;
@@ -87,10 +91,10 @@ public class Utils {
   }
 
   /*
-   * check if a single char must be encoded as qp, this assumes we
+   * check if a single code point must be encoded as qp, this assumes we
    * already have decided that we have to encode the text
    */
-  public static boolean mustEncode(char ch) {
+  public static boolean mustEncode(int ch) {
     return ch >= 128 || ch < 32 || ch == '=';
   }
 
@@ -153,9 +157,9 @@ public class Utils {
       StringBuilder sb = new StringBuilder();
       sb.append("=?UTF-8?Q?");
       int column = 10 + index;
-      char[] subjectChars = subject.toCharArray();
+      int[] subjectCodePoints = subject.codePoints().toArray();
 
-      for (char ch : subjectChars) {
+      for (int ch : subjectCodePoints) {
         if (ch == '\n') {
           column = 1;
         } else {
@@ -217,8 +221,9 @@ public class Utils {
           boolean fold;
           // Ensure the remaining space can hold at lease the first character of the name.
           // 12 is the length of " (=?UTF-8?Q?", 2 is length of "?=" or "),".
-          if (mustEncode(name.charAt(0))) {
-            fold = index + 12 + encodeUnicode(name.charAt(0)).length() + 2 >= 76;
+          int firstCodePoint = name.codePointAt(0);
+          if (mustEncode(firstCodePoint)) {
+            fold = index + 12 + encodeUnicode(firstCodePoint).length() + 2 >= 76;
           } else {
             fold = index + 12 + 1 + 2 >= 76;
           }
