@@ -179,18 +179,16 @@ public class MailEncoderTest {
     }
     message.setTo(to);
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("To: user0@example.com (Some User Name),user1@example.com\n"
-      + " (Some User Name),user2@example.com (Some User Name),\n"
-      + " user3@example.com (Some User Name),user4@example.com (Some User Name),\n"
-      + " user5@example.com (Some User Name),user6@example.com (Some User Name),\n"
-      + " user7@example.com (Some User Name),user8@example.com (Some User Name),\n"
-      + " user9@example.com (Some User Name),user10@example.com\n"
-      + " (Some User Name),user11@example.com (Some User Name),\n"
-      + " user12@example.com (Some User Name),user13@example.com\n"
-      + " (Some User Name),user14@example.com (Some User Name),\n"
-      + " user15@example.com (Some User Name),user16@example.com\n"
-      + " (Some User Name),user17@example.com (Some User Name),\n"
-      + " user18@example.com (Some User Name),user19@example.com\n" + " (Some User Name)\n"));
+    assertThat(mime, containsString("To: user0@example.com (Some User Name),user1@example.com (Some User Name),\n"
+      + " user2@example.com (Some User Name),user3@example.com (Some User Name),\n"
+      + " user4@example.com (Some User Name),user5@example.com (Some User Name),\n"
+      + " user6@example.com (Some User Name),user7@example.com (Some User Name),\n"
+      + " user8@example.com (Some User Name),user9@example.com (Some User Name),\n"
+      + " user10@example.com (Some User Name),user11@example.com (Some User Name),\n"
+      + " user12@example.com (Some User Name),user13@example.com (Some User Name),\n"
+      + " user14@example.com (Some User Name),user15@example.com (Some User Name),\n"
+      + " user16@example.com (Some User Name),user17@example.com (Some User Name),\n"
+      + " user18@example.com (Some User Name),user19@example.com (Some User Name)\n"));
 
     assertEquals(
         "[Some User Name <user0@example.com>, Some User Name <user1@example.com>, Some User Name <user2@example.com>, Some User Name <user3@example.com>, Some User Name <user4@example.com>, Some User Name <user5@example.com>, Some User Name <user6@example.com>, Some User Name <user7@example.com>, Some User Name <user8@example.com>, Some User Name <user9@example.com>, Some User Name <user10@example.com>, Some User Name <user11@example.com>, Some User Name <user12@example.com>, Some User Name <user13@example.com>, Some User Name <user14@example.com>, Some User Name <user15@example.com>, Some User Name <user16@example.com>, Some User Name <user17@example.com>, Some User Name <user18@example.com>, Some User Name <user19@example.com>]",
@@ -238,8 +236,8 @@ public class MailEncoderTest {
     MailMessage message = new MailMessage();
 
     String[] expected1 = {
-      "To: 0123456789012345678901234567890123456789@me.com (=?UTF-8?Q?=E6=88=91a?=)\n",
-      "To: 0123456789012345678901234567890123456789x@me.com (=?UTF-8?Q?=E6=88=91a?=)\n",
+      "To: 0123456789012345678901234567890123456789@me.com (=?UTF-8?Q?=E6=88=91a?=)\n", // MailEncoder joins lines by \n
+      "To: 0123456789012345678901234567890123456789x@me.com (=?UTF-8?Q?=E6=88=91?=\n =?UTF-8?Q?a?=)",
       "To: 0123456789012345678901234567890123456789xx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
       "To: 0123456789012345678901234567890123456789xxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
       "To: 0123456789012345678901234567890123456789xxxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)"
@@ -249,8 +247,7 @@ public class MailEncoderTest {
       message.setTo(emailHeader + "@me.com (我a)");
       String mime = new MailEncoder(message, HOSTNAME).encode();
       assertThat(mime, containsString(expected1[i]));
-      int foldedAt = mime.substring(mime.indexOf("To:")).indexOf('\n') - 1;
-      assertTrue(foldedAt <= 76);
+      assertLinesWithinLimit(foldedHeader(mime, "To: "));
       emailHeader.append("x");
     }
 
@@ -266,8 +263,7 @@ public class MailEncoderTest {
       message.setTo(emailHeader + "@me.com (a我)");
       String mime = new MailEncoder(message, HOSTNAME).encode();
       assertThat(mime, containsString(expected2[i]));
-      int foldedAt = mime.substring(mime.indexOf("To:")).indexOf('\n');
-      assertTrue(foldedAt <= 76);
+      assertLinesWithinLimit(foldedHeader(mime, "To: "));
       emailHeader.append("x");
     }
   }
@@ -281,6 +277,178 @@ public class MailEncoderTest {
     assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?=C3=A4_this_email_has_an_insanely_long_use?=\n"
       + " =?UTF-8?Q?rname_just_to_check_that_the_text_is_correctly_wrapped_into_mul?=\n"
       + " =?UTF-8?Q?tiple_lines?=)\n"));
+  }
+
+  @Test
+  public void testFromLongEncoded() {
+    MailMessage message = new MailMessage();
+    message.setTo("user@example.com");
+
+    StringBuilder localPart = new StringBuilder();
+    for (int i = 0; i < 40; i++) {
+      localPart.append('f');
+    }
+    for (int i = 40; i <= 70; i++) {
+      message.setFrom("ÇName <" + localPart + "@ex.com>");
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      String header = foldedHeader(mime, "From: ");
+      // https://datatracker.ietf.org/doc/html/rfc2047#section-2
+      // encoded-text = 1*<Any printable ASCII character other than "?" or SPACE>
+      assertThat(header, not(containsString("=?UTF-8?Q??=")));
+      assertLinesWithinLimit(header);
+      localPart.append('f');
+    }
+  }
+
+  @Test
+  public void testFromLongEncodedFolded() {
+    MailMessage message = new MailMessage();
+    message.setTo("user@example.com");
+    message.setFrom("ÇName <ffffffffffffffffffffffffffffffffffffffffffffffff@ex.com>");
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertThat(mime, containsString("From: ffffffffffffffffffffffffffffffffffffffffffffffff@ex.com\n"
+      + " (=?UTF-8?Q?=C3=87Name?=)\n"));
+  }
+
+  @Test
+  public void testEncodedNameFitsLineLimit() {
+    MailMessage message = new MailMessage();
+    message.setFrom("a@example.com");
+
+    StringBuilder localPart = new StringBuilder();
+    for (int i = 0; i < 30; i++) {
+      localPart.append('u');
+    }
+    for (int i = 30; i <= 70; i++) {
+      message.setTo("ÇN <" + localPart + "@ex.com>");
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      assertLinesWithinLimit(foldedHeader(mime, "To: "));
+      localPart.append('u');
+    }
+  }
+
+  @Test
+  public void testEncodedNameListFitsLineLimit() {
+    MailMessage message = new MailMessage();
+    message.setFrom("a@example.com");
+
+    StringBuilder localPart = new StringBuilder();
+    for (int i = 0; i < 30; i++) {
+      localPart.append('u');
+    }
+    for (int i = 30; i <= 70; i++) {
+      message.setTo(Arrays.asList("ÇN <" + localPart + "@ex.com>", "ÇN <second@ex.com>"));
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      assertLinesWithinLimit(foldedHeader(mime, "To: "));
+      localPart.append('u');
+    }
+  }
+
+  @Test
+  public void testEncodedAttachmentNameFitsLineLimit() {
+    StringBuilder name = new StringBuilder("Ç");
+    for (int i = 0; i <= 80; i++) {
+      MailMessage message = new MailMessage();
+      message.setFrom("a@example.com");
+      message.setTo("b@example.com");
+      message.setText("body");
+      message.setAttachment(MailAttachment.create().setData(Buffer.buffer("x")).setName(name + ".txt"));
+      String mime = new MailEncoder(message, HOSTNAME).encode();
+      assertLinesWithinLimit(foldedHeader(mime, "Content-Type: application/octet-stream"));
+      assertLinesWithinLimit(foldedHeader(mime, "Content-Disposition: attachment"));
+      name.append('a');
+    }
+  }
+
+  @Test
+  public void testEncodedAttachmentNameLongContentTypeFitsLineLimit() {
+    // the real docx content type is 71 characters, so "Content-Type: " plus it is already 85 columns
+    String docx = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    StringBuilder contentType = new StringBuilder("application/x");
+    for (int i = 13; i <= docx.length(); i++) {
+      String type = i == docx.length() ? docx : contentType.toString();
+      StringBuilder name = new StringBuilder("Ç");
+      for (int j = 0; j <= 20; j++) {
+        MailMessage message = new MailMessage();
+        message.setFrom("a@example.com");
+        message.setTo("b@example.com");
+        message.setText("body");
+        message.setAttachment(MailAttachment.create()
+          .setData(Buffer.buffer("x"))
+          .setContentType(type)
+          .setName(name + ".docx"));
+        String mime = new MailEncoder(message, HOSTNAME).encode();
+        assertLinesWithinLimit(foldedHeader(mime, "Content-Type: " + type));
+        assertLinesWithinLimit(foldedHeader(mime, "Content-Disposition: attachment"));
+        name.append('a');
+      }
+      contentType.append('x');
+    }
+  }
+
+  // https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+  // these headers hold no encoded word, so RFC 5322 rather than RFC 2047 applies
+  @Test
+  public void testUnencodedNameListFitsLineLimit() {
+    MailMessage message = new MailMessage();
+    message.setFrom("a@example.com");
+
+    // a 60 character display name leaves room for the address and the comma but not for the
+    // next address, which must therefore be folded onto a continuation line
+    StringBuilder name = new StringBuilder();
+    for (int i = 0; i < 60; i++) {
+      name.append('N');
+    }
+    message.setTo(Arrays.asList(name + " <a@ex.com>", "b@ex.com"));
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+    assertLinesWithinLimit(foldedHeader(mime, "To: "), 78);
+
+    // a display name just under the length that forces encoding still has to leave the
+    // following address below the hard limit
+    StringBuilder longName = new StringBuilder();
+    for (int i = 0; i < 990; i++) {
+      longName.append('a');
+    }
+    message.setTo(Arrays.asList(longName + " <a@ex.com>", "b@ex.com"));
+    mime = new MailEncoder(message, HOSTNAME).encode();
+    assertLinesWithinLimit(foldedHeader(mime, "To: "), 998);
+  }
+
+  // the encoder joins headers and folds lines inside a value with a bare \n
+  private static void assertLinesWithinLimit(String header, int limit) {
+    for (String line : header.split("\n")) {
+      assertTrue("line of " + line.length() + " characters: " + line, line.length() <= limit);
+    }
+  }
+
+  // https://datatracker.ietf.org/doc/html/rfc2047#section-2
+  private static void assertLinesWithinLimit(String header) {
+    // encoded-text = 1*<Any printable ASCII character other than "?" or SPACE>
+    assertThat(header, not(containsString("=?UTF-8?Q??=")));
+    for (String line : header.split("\n")) {
+      if (line.contains("=?UTF-8?Q?")) {
+        assertTrue("line of " + line.length() + " characters: " + line, line.length() <= 76);
+      }
+    }
+  }
+
+  /*
+   * returns the named header with its continuation lines, without the trailing line terminator
+   */
+  private static String foldedHeader(String mime, String name) {
+    int start = mime.indexOf(name);
+    assertTrue("header not found: " + name, start >= 0);
+    int end = start;
+    while (true) {
+      int eol = mime.indexOf('\n', end);
+      if (eol < 0) {
+        return mime.substring(start);
+      }
+      end = eol + 1;
+      if (!mime.startsWith(" ", end)) {
+        return mime.substring(start, mime.charAt(eol - 1) == '\r' ? eol - 1 : eol);
+      }
+    }
   }
 
   @Test

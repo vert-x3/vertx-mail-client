@@ -151,6 +151,15 @@ public class Utils {
    * index is the offset of the line that is already used (i.e. the length of the header including ": ")
    */
   static String encodeHeader(String subject, int index) {
+    return encodeHeader(subject, index, 0);
+  }
+
+  /*
+   * reserved is the number of columns the caller appends right after the encoded word, such as the
+   * closing paren of a display name. without it the last encoded-word fills the line up to 76 and
+   * the caller pushes it to 77.
+   */
+  static String encodeHeader(String subject, int index, int reserved) {
     if (!mustEncode(subject)) {
       return subject;
     } else {
@@ -159,13 +168,33 @@ public class Utils {
       int column = 10 + index;
       int[] subjectCodePoints = subject.codePoints().toArray();
 
-      for (int ch : subjectCodePoints) {
+      for (int i = 0; i < subjectCodePoints.length; i++) {
+        int ch = subjectCodePoints[i];
         if (ch == '\n') {
           column = 1;
         } else {
           String encChar = encodeUnicode(ch);
           int newColumn = column + encChar.length();
-          if (newColumn <= 74) {
+          // https://datatracker.ietf.org/doc/html/rfc2047#section-2
+          // encoded-word = "=?" charset "?" encoding "?" encoded-text "?="
+          //
+          // An 'encoded-word' may not be more than 75 characters long, including
+          //   'charset', 'encoding', 'encoded-text', and delimiters.  If it is
+          //   desirable to encode more text than will fit in an 'encoded-word' of
+          //   75 characters, multiple 'encoded-word's (separated by CRLF SPACE) may
+          //   be used.
+          // [...]
+          // While there is no limit to the length of a multiple-line header
+          //   field, each line of a header field that contains one or more
+          //   'encoded-word's is limited to 76 characters.
+
+          // https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+          // There are two limits that this specification places on the number of
+          //   characters in a line.  Each line of characters MUST be no more than
+          //   998 characters, and SHOULD be no more than 78 characters, excluding
+          //   the CRLF.
+          int limit = i == subjectCodePoints.length - 1 ? 74 - reserved : 74;
+          if (newColumn <= limit) {
             sb.append(encChar);
             column = newColumn;
           } else {
@@ -179,11 +208,45 @@ public class Utils {
     }
   }
 
+  /*
+   * Ensure the remaining space on the current line can hold at least the first character of an
+   * encoded name, so that encodeHeader never closes an empty encoded-word.
+   * encodeHeader stops the last character at 74 - reserved, so the first one must fit there too.
+   * index is the column at which the encoded word itself starts and 10 is the length of "=?UTF-8?Q?".
+   */
+  static boolean encodedNameFits(int index, String name, int reserved) {
+    int firstCodePoint = name.codePointAt(0);
+    int firstLength = mustEncode(firstCodePoint) ? encodeUnicode(firstCodePoint).length() : 1;
+    return index + 10 + firstLength <= 74 - reserved;
+  }
+
+  /*
+   * Same check for a display name written as " (" + encoded word, where index is the number of
+   * columns already used and 2 is the length of " (".
+   */
+  private static boolean foldBeforeEncodedName(int index, String name, int reserved) {
+    return !encodedNameFits(index + 2, name, reserved);
+  }
+
   static String encodeHeaderEmail(String address, int index) {
     EmailAddress adr = new EmailAddress(address);
 
-    if (mustEncode(adr.getName())) {
-      return adr.getEmail() + " (" + encodeHeader(adr.getName(), index + adr.getEmail().length() + 2) + ")";
+    String name = adr.getName();
+    if (mustEncode(name)) {
+      String email = adr.getEmail();
+      StringBuilder sb = new StringBuilder(email);
+      int column = index + email.length();
+      if (foldBeforeEncodedName(column, name, 1)) {
+        sb.append("\n ");
+        column = 1;
+      } else {
+        sb.append(' ');
+        column++;
+      }
+      sb.append('(');
+      column++;
+      sb.append(encodeHeader(name, column, 1)).append(')');
+      return sb.toString();
     } else {
       return address;
     }
@@ -191,14 +254,14 @@ public class Utils {
 
   static String encodeEmailList(List<String> addresses, int index) {
     StringBuilder sb = new StringBuilder();
-    boolean firstAddress = true;
-    for (String addr : addresses) {
-      if (firstAddress) {
-        firstAddress = false;
-      } else {
+    for (int i = 0; i < addresses.size(); i++) {
+      String addr = addresses.get(i);
+      if (i > 0) {
         sb.append(',');
         index++;
       }
+      // every address but the last is followed by the comma of the next one
+      int reserved = i == addresses.size() - 1 ? 1 : 2;
       final String email, name;
       // check postmaster against RCPT TO
       if (EmailAddress.POSTMASTER.equalsIgnoreCase(addr)) {
@@ -218,16 +281,7 @@ public class Utils {
       if (!name.isEmpty()) {
         if (mustEncode(name)) {
           boolean hadSpace = false;
-          boolean fold;
-          // Ensure the remaining space can hold at lease the first character of the name.
-          // 12 is the length of " (=?UTF-8?Q?", 2 is length of "?=" or "),".
-          int firstCodePoint = name.codePointAt(0);
-          if (mustEncode(firstCodePoint)) {
-            fold = index + 12 + encodeUnicode(firstCodePoint).length() + 2 >= 76;
-          } else {
-            fold = index + 12 + 1 + 2 >= 76;
-          }
-          if (fold) {
+          if (foldBeforeEncodedName(index, name, reserved)) {
             sb.append("\n ");
             index = 1;
             hadSpace = true;
@@ -238,7 +292,7 @@ public class Utils {
           }
           sb.append('(');
           index++;
-          String encoded = encodeHeader(name, index);
+          String encoded = encodeHeader(name, index, reserved);
           sb.append(encoded);
           if (encoded.contains("\n")) {
             index = encoded.length() - encoded.lastIndexOf('\n');
@@ -262,7 +316,8 @@ public class Utils {
           index++;
           sb.append(name);
           sb.append(')');
-          index += email.length() + 3;
+          // the space and the opening paren have been counted already
+          index += name.length() + 1;
         }
       }
     }

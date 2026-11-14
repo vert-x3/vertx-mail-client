@@ -58,8 +58,16 @@ class AttachmentPart extends EncodedPart {
       contentType = "application/octet-stream";
     }
     if (name != null) {
+      // 14 for "Content-Type: " and 8 for "; name=\""
       int index = contentType.length() + 22;
-      contentType += "; name=\"" + Utils.encodeHeader(name, index) + "\"";
+      String separator = "; name=\"";
+      if (Utils.mustEncode(name) && !Utils.encodedNameFits(index, name, 1)) {
+        // no room left for the first encoded character, fold the parameter onto a continuation
+        // line rather than opening an encoded word we would have to close empty
+        separator = ";\n name=\"";
+        index = 7;
+      }
+      contentType += separator + Utils.encodeHeader(name, index, 1) + "\"";
     }
     headers.set("Content-Type", contentType);
     headers.set("Content-Transfer-Encoding", "base64");
@@ -74,8 +82,14 @@ class AttachmentPart extends EncodedPart {
       disposition = "attachment";
     }
     if (name != null) {
+      // 21 for "Content-Disposition: " and 12 for "; filename=\""
       int index = disposition.length() + 33;
-      disposition += "; filename=\"" + Utils.encodeHeader(name, index) + "\"";
+      String separator = "; filename=\"";
+      if (Utils.mustEncode(name) && !Utils.encodedNameFits(index, name, 1)) {
+        separator = ";\n filename=\"";
+        index = 11;
+      }
+      disposition += separator + Utils.encodeHeader(name, index, 1) + "\"";
     }
     headers.set("Content-Disposition", disposition);
     if (attachment.getContentId() != null) {
