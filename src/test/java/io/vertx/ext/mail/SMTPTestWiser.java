@@ -24,6 +24,7 @@ import javax.mail.internet.MimeMessage;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
+import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
@@ -47,6 +48,10 @@ public class SMTPTestWiser extends SMTPTestBase {
   protected Wiser wiser;
 
   protected void startSMTP(String factory) {
+    startSMTP(factory, true);
+  }
+
+  protected void startSMTP(String factory, boolean bareLf) {
     wiser = new Wiser();
 
     wiser.setPort(1587);
@@ -79,6 +84,12 @@ public class SMTPTestWiser extends SMTPTestBase {
 
     Security.setProperty("ssl.SocketFactory.provider", factory);
     wiser.getServer().setEnableTLS(true);
+
+    if(bareLf){
+      MessageHandlerFactory originalFactory = wiser.getServer().getMessageHandlerFactory();
+      MessageHandlerFactory bareLfFactory = new SMTPTestBareLfMessageHandlerFactory(originalFactory);
+      wiser.getServer().setMessageHandlerFactory(bareLfFactory);
+    }
 
     wiser.start();
   }

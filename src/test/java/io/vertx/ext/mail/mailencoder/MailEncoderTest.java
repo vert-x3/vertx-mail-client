@@ -158,11 +158,11 @@ public class MailEncoderTest {
     }
     message.setTo(to);
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("To: user0@example.com,user1@example.com,user2@example.com,user3@example.com,\n"
-      + " user4@example.com,user5@example.com,user6@example.com,user7@example.com,\n"
-      + " user8@example.com,user9@example.com,user10@example.com,user11@example.com,\n"
-      + " user12@example.com,user13@example.com,user14@example.com,\n"
-      + " user15@example.com,user16@example.com,user17@example.com,\n"
+    assertThat(mime, containsString("To: user0@example.com,user1@example.com,user2@example.com,user3@example.com,\r\n"
+      + " user4@example.com,user5@example.com,user6@example.com,user7@example.com,\r\n"
+      + " user8@example.com,user9@example.com,user10@example.com,user11@example.com,\r\n"
+      + " user12@example.com,user13@example.com,user14@example.com,\r\n"
+      + " user15@example.com,user16@example.com,user17@example.com,\r\n"
       + " user18@example.com,user19@example.com\n"));
 
     assertEquals(
@@ -179,15 +179,15 @@ public class MailEncoderTest {
     }
     message.setTo(to);
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("To: user0@example.com (Some User Name),user1@example.com (Some User Name),\n"
-      + " user2@example.com (Some User Name),user3@example.com (Some User Name),\n"
-      + " user4@example.com (Some User Name),user5@example.com (Some User Name),\n"
-      + " user6@example.com (Some User Name),user7@example.com (Some User Name),\n"
-      + " user8@example.com (Some User Name),user9@example.com (Some User Name),\n"
-      + " user10@example.com (Some User Name),user11@example.com (Some User Name),\n"
-      + " user12@example.com (Some User Name),user13@example.com (Some User Name),\n"
-      + " user14@example.com (Some User Name),user15@example.com (Some User Name),\n"
-      + " user16@example.com (Some User Name),user17@example.com (Some User Name),\n"
+    assertThat(mime, containsString("To: user0@example.com (Some User Name),user1@example.com (Some User Name),\r\n"
+      + " user2@example.com (Some User Name),user3@example.com (Some User Name),\r\n"
+      + " user4@example.com (Some User Name),user5@example.com (Some User Name),\r\n"
+      + " user6@example.com (Some User Name),user7@example.com (Some User Name),\r\n"
+      + " user8@example.com (Some User Name),user9@example.com (Some User Name),\r\n"
+      + " user10@example.com (Some User Name),user11@example.com (Some User Name),\r\n"
+      + " user12@example.com (Some User Name),user13@example.com (Some User Name),\r\n"
+      + " user14@example.com (Some User Name),user15@example.com (Some User Name),\r\n"
+      + " user16@example.com (Some User Name),user17@example.com (Some User Name),\r\n"
       + " user18@example.com (Some User Name),user19@example.com (Some User Name)\n"));
 
     assertEquals(
@@ -204,19 +204,19 @@ public class MailEncoderTest {
     }
     message.setTo(to);
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("To: user0@example.com (=?UTF-8?Q?=C3=84a?=),user1@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user2@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user3@example.com (=?UTF-8?Q?=C3=84a?=),user4@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user5@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user6@example.com (=?UTF-8?Q?=C3=84a?=),user7@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user8@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user9@example.com (=?UTF-8?Q?=C3=84a?=),user10@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user11@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user12@example.com (=?UTF-8?Q?=C3=84a?=),user13@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user14@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user15@example.com (=?UTF-8?Q?=C3=84a?=),user16@example.com\n"
-      + " (=?UTF-8?Q?=C3=84a?=),user17@example.com (=?UTF-8?Q?=C3=84a?=),\n"
-      + " user18@example.com (=?UTF-8?Q?=C3=84a?=),user19@example.com\n" + " (=?UTF-8?Q?=C3=84a?=)\n"));
+    assertThat(mime, containsString("To: user0@example.com (=?UTF-8?Q?=C3=84a?=),user1@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user2@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user3@example.com (=?UTF-8?Q?=C3=84a?=),user4@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user5@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user6@example.com (=?UTF-8?Q?=C3=84a?=),user7@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user8@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user9@example.com (=?UTF-8?Q?=C3=84a?=),user10@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user11@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user12@example.com (=?UTF-8?Q?=C3=84a?=),user13@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user14@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user15@example.com (=?UTF-8?Q?=C3=84a?=),user16@example.com\r\n"
+      + " (=?UTF-8?Q?=C3=84a?=),user17@example.com (=?UTF-8?Q?=C3=84a?=),\r\n"
+      + " user18@example.com (=?UTF-8?Q?=C3=84a?=),user19@example.com\r\n" + " (=?UTF-8?Q?=C3=84a?=)\n"));
   }
 
   @Test
@@ -227,7 +227,7 @@ public class MailEncoderTest {
     String mime = new MailEncoder(message, HOSTNAME).encode();
     assertThat(
       mime,
-      containsString("To: user@example.com\n"
+      containsString("To: user@example.com\r\n"
         + " (this email has an insanely long username just to check that the text is correctly wrapped into multiple lines)\n"));
   }
 
@@ -237,10 +237,10 @@ public class MailEncoderTest {
 
     String[] expected1 = {
       "To: 0123456789012345678901234567890123456789@me.com (=?UTF-8?Q?=E6=88=91a?=)\n", // MailEncoder joins lines by \n
-      "To: 0123456789012345678901234567890123456789x@me.com (=?UTF-8?Q?=E6=88=91?=\n =?UTF-8?Q?a?=)",
-      "To: 0123456789012345678901234567890123456789xx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
-      "To: 0123456789012345678901234567890123456789xxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)",
-      "To: 0123456789012345678901234567890123456789xxxx@me.com\n (=?UTF-8?Q?=E6=88=91a?=)"
+      "To: 0123456789012345678901234567890123456789x@me.com (=?UTF-8?Q?=E6=88=91?=\r\n =?UTF-8?Q?a?=)",
+      "To: 0123456789012345678901234567890123456789xx@me.com\r\n (=?UTF-8?Q?=E6=88=91a?=)",
+      "To: 0123456789012345678901234567890123456789xxx@me.com\r\n (=?UTF-8?Q?=E6=88=91a?=)",
+      "To: 0123456789012345678901234567890123456789xxxx@me.com\r\n (=?UTF-8?Q?=E6=88=91a?=)"
     };
     StringBuilder emailHeader = new StringBuilder("0123456789012345678901234567890123456789");
     for (int i = 0; i < 5; i++) {
@@ -252,11 +252,11 @@ public class MailEncoderTest {
     }
 
     String[] expected2 = {
-      "To: 01234567890123456789012345678901234567890123456@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
-      "To: 01234567890123456789012345678901234567890123456x@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
-      "To: 01234567890123456789012345678901234567890123456xx@me.com (=?UTF-8?Q?a?=\n =?UTF-8?Q?=E6=88=91?=)",
-      "To: 01234567890123456789012345678901234567890123456xxx@me.com\n (=?UTF-8?Q?a=E6=88=91?=)",
-      "To: 01234567890123456789012345678901234567890123456xxxx@me.com\n (=?UTF-8?Q?a=E6=88=91?=)"
+      "To: 01234567890123456789012345678901234567890123456@me.com (=?UTF-8?Q?a?=\r\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456x@me.com (=?UTF-8?Q?a?=\r\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xx@me.com (=?UTF-8?Q?a?=\r\n =?UTF-8?Q?=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xxx@me.com\r\n (=?UTF-8?Q?a=E6=88=91?=)",
+      "To: 01234567890123456789012345678901234567890123456xxxx@me.com\r\n (=?UTF-8?Q?a=E6=88=91?=)"
     };
     emailHeader = new StringBuilder("01234567890123456789012345678901234567890123456");
     for (int i = 0; i < 5; i++) {
@@ -274,8 +274,8 @@ public class MailEncoderTest {
     message
       .setTo("user@example.com (ä this email has an insanely long username just to check that the text is correctly wrapped into multiple lines)");
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?=C3=A4_this_email_has_an_insanely_long_use?=\n"
-      + " =?UTF-8?Q?rname_just_to_check_that_the_text_is_correctly_wrapped_into_mul?=\n"
+    assertThat(mime, containsString("To: user@example.com (=?UTF-8?Q?=C3=A4_this_email_has_an_insanely_long_use?=\r\n"
+      + " =?UTF-8?Q?rname_just_to_check_that_the_text_is_correctly_wrapped_into_mul?=\r\n"
       + " =?UTF-8?Q?tiple_lines?=)\n"));
   }
 
@@ -306,7 +306,7 @@ public class MailEncoderTest {
     message.setTo("user@example.com");
     message.setFrom("ÇName <ffffffffffffffffffffffffffffffffffffffffffffffff@ex.com>");
     String mime = new MailEncoder(message, HOSTNAME).encode();
-    assertThat(mime, containsString("From: ffffffffffffffffffffffffffffffffffffffffffffffff@ex.com\n"
+    assertThat(mime, containsString("From: ffffffffffffffffffffffffffffffffffffffffffffffff@ex.com\r\n"
       + " (=?UTF-8?Q?=C3=87Name?=)\n"));
   }
 
@@ -414,9 +414,9 @@ public class MailEncoderTest {
     assertLinesWithinLimit(foldedHeader(mime, "To: "), 998);
   }
 
-  // the encoder joins headers and folds lines inside a value with a bare \n
+  // the encoder joins headers with a bare \n while folds inside a value use \r\n
   private static void assertLinesWithinLimit(String header, int limit) {
-    for (String line : header.split("\n")) {
+    for (String line : header.split("\r?\n")) {
       assertTrue("line of " + line.length() + " characters: " + line, line.length() <= limit);
     }
   }
@@ -425,7 +425,7 @@ public class MailEncoderTest {
   private static void assertLinesWithinLimit(String header) {
     // encoded-text = 1*<Any printable ASCII character other than "?" or SPACE>
     assertThat(header, not(containsString("=?UTF-8?Q??=")));
-    for (String line : header.split("\n")) {
+    for (String line : header.split("\r\n")) {
       if (line.contains("=?UTF-8?Q?")) {
         assertTrue("line of " + line.length() + " characters: " + line, line.length() <= 76);
       }
@@ -513,10 +513,10 @@ public class MailEncoderTest {
   public void testSubjectEncodedLong() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "ä=======================================================================================";
-    final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
-      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\n"
+    final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\r\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\r\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\r\n"
+      + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D?=\r\n"
       + " =?UTF-8?Q?=3D=3D=3D=3D=3D=3D=3D=3D?=";
     message.setSubject(subject);
     String mime = new MailEncoder(message, HOSTNAME).encode();
@@ -528,7 +528,7 @@ public class MailEncoderTest {
   public void testSubjectEncodedLong2() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "ä****************************************************************************************************************";
-    final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4*************************************************?=\n"
+    final String encodedSubject = "Subject: =?UTF-8?Q?=C3=A4*************************************************?=\r\n"
       + " =?UTF-8?Q?***************************************************************?=\n";
     message.setSubject(subject);
     String mime = new MailEncoder(message, HOSTNAME).encode();
@@ -575,7 +575,7 @@ public class MailEncoderTest {
     // 44 plain chars leave less than the 12 chars the encoded emoji needs, so the encoder
     // must fold before it rather than split it across two encoded-words
     final String subject = repeat("a", 44) + "🔐";
-    final String encodedSubject = "Subject: =?UTF-8?Q?" + repeat("a", 44) + "?=\n"
+    final String encodedSubject = "Subject: =?UTF-8?Q?" + repeat("a", 44) + "?=\r\n"
       + " =?UTF-8?Q?=F0=9F=94=90?=";
     message.setSubject(subject);
     String mime = new MailEncoder(message, HOSTNAME).encode();

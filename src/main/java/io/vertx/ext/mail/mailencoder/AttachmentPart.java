@@ -64,7 +64,7 @@ class AttachmentPart extends EncodedPart {
       if (Utils.mustEncode(name) && !Utils.encodedNameFits(index, name, 1)) {
         // no room left for the first encoded character, fold the parameter onto a continuation
         // line rather than opening an encoded word we would have to close empty
-        separator = ";\n name=\"";
+        separator = ";\r\n name=\"";
         index = 7;
       }
       contentType += separator + Utils.encodeHeader(name, index, 1) + "\"";
@@ -86,7 +86,7 @@ class AttachmentPart extends EncodedPart {
       int index = disposition.length() + 33;
       String separator = "; filename=\"";
       if (Utils.mustEncode(name) && !Utils.encodedNameFits(index, name, 1)) {
-        separator = ";\n filename=\"";
+        separator = ";\r\n filename=\"";
         index = 11;
       }
       disposition += separator + Utils.encodeHeader(name, index, 1) + "\"";

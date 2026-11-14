@@ -198,7 +198,7 @@ public class Utils {
             sb.append(encChar);
             column = newColumn;
           } else {
-            sb.append("?=\n =?UTF-8?Q?").append(encChar);
+            sb.append("?=\r\n =?UTF-8?Q?").append(encChar);
             column = 11 + encChar.length();
           }
         }
@@ -237,7 +237,7 @@ public class Utils {
       StringBuilder sb = new StringBuilder(email);
       int column = index + email.length();
       if (foldBeforeEncodedName(column, name, 1)) {
-        sb.append("\n ");
+        sb.append("\r\n ");
         column = 1;
       } else {
         sb.append(' ');
@@ -272,8 +272,13 @@ public class Utils {
         email = adr.getEmail();
         name = adr.getName();
       }
+      // https://datatracker.ietf.org/doc/html/rfc5322#section-2.1.1
+      // There are two limits that this specification places on the number of
+      //   characters in a line.  Each line of characters MUST be no more than
+      //   998 characters, and SHOULD be no more than 78 characters, excluding
+      //   the CRLF.
       if (index + email.length() >= 76) {
-        sb.append("\n ");
+        sb.append("\r\n ");
         index = 1;
       }
       sb.append(email);
@@ -282,7 +287,7 @@ public class Utils {
         if (mustEncode(name)) {
           boolean hadSpace = false;
           if (foldBeforeEncodedName(index, name, reserved)) {
-            sb.append("\n ");
+            sb.append("\r\n ");
             index = 1;
             hadSpace = true;
           }
@@ -304,7 +309,7 @@ public class Utils {
         } else {
           boolean hadSpace = false;
           if (index + name.length() + 3 >= 76) {
-            sb.append("\n ");
+            sb.append("\r\n ");
             index = 1;
             hadSpace = true;
           }

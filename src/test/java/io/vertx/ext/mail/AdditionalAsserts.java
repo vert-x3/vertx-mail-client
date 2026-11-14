@@ -23,6 +23,6 @@ package io.vertx.ext.mail;
  * @author <a href="http://oss.lehmann.cx/">Alexander Lehmann</a>
  */
 @FunctionalInterface
-interface AdditionalAsserts {
+public interface AdditionalAsserts {
   void doAsserts() throws Exception;
 }
