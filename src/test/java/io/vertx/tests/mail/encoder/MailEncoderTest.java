@@ -340,6 +340,51 @@ public class MailEncoderTest {
   }
 
   @Test
+  public void testSubjectEncodedSupplementaryUnicode() throws Exception {
+    MailMessage message = new MailMessage();
+
+    final String subject = "\uD83D\uDD10";
+    final String encodedSubject = "=?UTF-8?Q?=F0=9F=94=90?=";
+
+    message.setSubject(subject);
+
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+
+    assertThat(mime).contains(encodedSubject);
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
+  public void testSubjectEncodedMultipleSupplementaryUnicode() throws Exception {
+    MailMessage message = new MailMessage();
+
+    final String subject = "Hello 🔐 🚀 World";
+    final String encodedSubject =
+      "=?UTF-8?Q?Hello_=F0=9F=94=90_=F0=9F=9A=80_World?=";
+
+    message.setSubject(subject);
+
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+
+    assertThat(mime).contains(encodedSubject);
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
+  public void testSubjectEncodedSupplementaryUnicodeLong() throws Exception {
+    MailMessage message = new MailMessage();
+
+    final String subject = "A".repeat(50) + "🔐" + "B".repeat(40);
+
+    message.setSubject(subject);
+
+    String mime = new MailEncoder(message, HOSTNAME).encode();
+
+    assertThat(mime).contains("=F0=9F=94=90");
+    assertEquals(subject, TestUtils.getMessage(mime).getSubject());
+  }
+
+  @Test
   public void testSubjectEncodedLong() throws Exception {
     MailMessage message = new MailMessage();
     final String subject = "ä=======================================================================================";
