@@ -68,38 +68,21 @@ public class Utils {
     }
   }
 
-//  private static String encodeUnicode(char input) {
-//    byte[] bs = String.valueOf(input).getBytes(StandardCharsets.UTF_8);
-//    StringBuilder sb = new StringBuilder();
-//    for (byte b : bs) {
-//      char ch = (char) b;
-//      if (!mustEncode(ch) && ch != '_' && ch != '?') {
-//        if (ch == ' ') {
-//          sb.append("_");
-//        } else {
-//          sb.append(ch);
-//        }
-//      } else {
-//        sb.append(encodeChar(ch));
-//      }
-//    }
-//    return sb.toString();
-//  }
-private static String encodeUnicode(int codePoint) {
-  byte[] bs = new String(Character.toChars(codePoint)).getBytes(StandardCharsets.UTF_8);
-  StringBuilder sb = new StringBuilder();
+  private static String encodeUnicode(int codePoint) {
+    byte[] bs = new String(Character.toChars(codePoint)).getBytes(StandardCharsets.UTF_8);
+    StringBuilder sb = new StringBuilder();
 
-  for (byte b : bs) {
-    char ch = (char) (b & 0xff);
-    if (!mustEncode(ch) && ch != '_' && ch != '?') {
-      if (ch == ' ') {
-        sb.append("_");
+    for (byte b : bs) {
+      char ch = (char) (b & 0xff);
+      if (!mustEncode(ch) && ch != '_' && ch != '?') {
+        if (ch == ' ') {
+          sb.append("_");
+        } else {
+          sb.append(ch);
+        }
       } else {
-        sb.append(ch);
+        sb.append(encodeChar(ch));
       }
-    } else {
-      sb.append(encodeChar(ch));
-    }
   }
   return sb.toString();
 }
@@ -171,13 +154,6 @@ private static String encodeUnicode(int codePoint) {
       StringBuilder sb = new StringBuilder();
       sb.append("=?UTF-8?Q?");
       int column = 10 + index;
-      char[] subjectChars = subject.toCharArray();
-
-//      for (char ch : subjectChars) {
-//        if (ch == '\n') {
-//          column = 1;
-//        } else {
-//          String encChar = encodeUnicode(ch);
       for (int i = 0; i < subject.length();) {
         int codePoint = subject.codePointAt(i);
         i += Character.charCount(codePoint);
@@ -269,7 +245,6 @@ private static String encodeUnicode(int codePoint) {
           if (mustEncode(name.charAt(0))) {
             int codePoint = name.codePointAt(0);
             fold = index + 12 + encodeUnicode(codePoint).length() + 2 >= 76;
-            //fold = index + 12 + encodeUnicode(name.charAt(0)).length() + 2 >= 76;
           } else {
             fold = index + 12 + 1 + 2 >= 76;
           }
